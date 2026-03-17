@@ -1,0 +1,125 @@
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.models.benefit import Benefit
+from app.models.family import Family
+from app.models.person import Person
+from app.schemas.benefit import BenefitCreate, BenefitUpdate
+from app.services.family_service import recalculate_family_summary
+
+
+def _validate_family_and_person(
+    db: Session,
+    family_id: int,
+    person_id: int | None,
+) -> Family:
+    """
+    Valida se a família existe e, quando person_id for informado,
+    garante que a pessoa pertença à família.
+    """
+    family = db.get(Family, family_id)
+    if family is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Família não encontrada.",
+        )
+
+    if person_id is not None:
+        person = db.get(Person, person_id)
+        if person is None or person.family_id != family_id:
+            raise HTTPException(
+                status_code=400,
+                detail="A pessoa informada não pertence a esta família.",
+            )
+
+    return family
+
+
+def create_benefit(db: Session, family_id: int, payload: BenefitCreate) -> Benefit:
+    """Cria um benefício e recalcula o resumo financeiro da família."""
+    family = _validate_family_and_person(db, family_id, payload.person_id)
+
+    benefit = Benefit(
+        family_id=family_id,
+        person_id=payload.person_id,
+        benefit_type=payload.benefit_type,
+        monthly_amount=payload.monthly_amount,
+        counts_as_income=payload.counts_as_income,
+        is_active=payload.is_active,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        notes=payload.notes,
+    )
+
+    db.add(benefit)
+    db.flush()
+
+    recalculate_family_summary(db, family)
+
+    db.commit()
+    db.refresh(benefit)
+    return benefit
+
+
+def list_benefits_by_family(db: Session, family_id: int) -> list[Benefit]:
+    """Lista todos os benefícios de uma família."""
+    family = db.get(Family, family_id)
+    if family is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Família não encontrada.",
+        )
+
+    stmt = (
+        select(Benefit)
+        .where(Benefit.family_id == family_id)
+        .order_by(Benefit.id.asc())
+    )
+    return list(db.scalars(stmt).all())
+
+
+def update_benefit(db: Session, benefit_id: int, payload: BenefitUpdate) -> Benefit:
+    """Atualiza um benefício existente e recalcula a renda da família."""
+    benefit = db.get(Benefit, benefit_id)
+    if benefit is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Benefício não encontrado.",
+        )
+
+    family = _validate_family_and_person(db, benefit.family_id, payload.person_id)
+
+    benefit.person_id = payload.person_id
+    benefit.benefit_type = payload.benefit_type
+    benefit.monthly_amount = payload.monthly_amount
+    benefit.counts_as_income = payload.counts_as_income
+    benefit.is_active = payload.is_active
+    benefit.start_date = payload.start_date
+    benefit.end_date = payload.end_date
+    benefit.notes = payload.notes
+
+    recalculate_family_summary(db, family)
+
+    db.commit()
+    db.refresh(benefit)
+    return benefit
+
+
+def delete_benefit(db: Session, benefit_id: int) -> None:
+    """Exclui um benefício e recalcula a renda da família."""
+    benefit = db.get(Benefit, benefit_id)
+    if benefit is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Benefício não encontrado.",
+        )
+
+    family = db.get(Family, benefit.family_id)
+
+    db.delete(benefit)
+    db.flush()
+
+    recalculate_family_summary(db, family)
+
+    db.commit()

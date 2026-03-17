@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+.venv/
+venv/
+.env
+
+# FastAPI / tooling
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Node / React
+node_modules/
+dist/
+build/
+coverage/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic / migrations cache
+*.pyc
+
+# local uploads / temp
+uploads/
+temp/
