@@ -6,6 +6,7 @@ const menuItems = [
   { path: "/families", label: "Famílias" },
   { path: "/items", label: "Itens" },
   { path: "/basket-types", label: "Cestas" },
+  { path: "/deliveries", label: "Entregas" },
 ];
 
 /**

@@ -122,7 +122,7 @@ export function ItemsPage() {
             <h3>Catálogo operacional</h3>
           </div>
 
-          <div className="toolbar">
+          <div className="toolbar toolbar--row">
             <input
               className="toolbar__input"
               type="text"
@@ -130,6 +130,14 @@ export function ItemsPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
+
+            <Link to="/items/new" className="button button--link">
+              Novo item
+            </Link>
+
+            <Link to="/stock-batches/new" className="button button--secondary button--link">
+              Nova entrada de lote
+            </Link>
           </div>
         </div>
 

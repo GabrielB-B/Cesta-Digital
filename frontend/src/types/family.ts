@@ -88,6 +88,13 @@ export interface FamilyListItemResponse {
   has_chronic_illness_member: boolean;
   has_unemployed_member: boolean;
   needs_extra_support: boolean;
+  attends_church: boolean;
+  church_name: string | null;
+  community_relationship: string | null;
+  responsible_education_level: string | null;
+  has_internet_access: boolean;
+  has_mobile_phone: boolean;
+  has_computer: boolean;
   social_notes: string | null;
   internal_notes: string | null;
   contacts: FamilyContactResponse[];
@@ -141,7 +148,56 @@ export interface FamilyCreatePayload {
   has_chronic_illness_member: boolean;
   has_unemployed_member: boolean;
   needs_extra_support: boolean;
+  attends_church: boolean;
+  church_name: string | null;
+  community_relationship: string | null;
+  responsible_education_level: string | null;
+  has_internet_access: boolean;
+  has_mobile_phone: boolean;
+  has_computer: boolean;
   social_notes: string | null;
   internal_notes: string | null;
   contacts: FamilyContactCreatePayload[];
+}
+
+export interface FamilyPersonCreatePayload {
+  full_name: string;
+  birth_date: string;
+  kinship: string;
+  gender: string | null;
+  phone: string | null;
+  education_level: string | null;
+  is_currently_studying: boolean;
+  is_currently_working: boolean;
+  occupation: string | null;
+  individual_income: number;
+  has_disability: boolean;
+  has_chronic_illness: boolean;
+  is_pregnant: boolean;
+  is_nursing_mother: boolean;
+  notes: string | null;
+  is_family_responsible: boolean;
+}
+
+export interface FamilyBenefitCreatePayload {
+  person_id: number | null;
+  benefit_type: string;
+  monthly_amount: number;
+  counts_as_income: boolean;
+  is_active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  notes: string | null;
+}
+
+export interface FamilyAssessmentCreatePayload {
+  assessment_date: string;
+  vulnerability_score: number;
+  system_suggestion: string;
+  final_decision: string;
+  decision_reason: string | null;
+  exception_reason: string | null;
+  co_approved_by_user_id: number | null;
+  next_revaluation_date: string | null;
+  technical_notes: string | null;
 }

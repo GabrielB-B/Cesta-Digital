@@ -8,7 +8,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schemas.person import PersonCreate, PersonResponse, PersonUpdate
 from app.services.person_service import (
-    create_person,
+    create_person_for_family,
     delete_person,
     list_people_by_family,
     update_person,
@@ -18,13 +18,13 @@ router = APIRouter(tags=["Pessoas da Família"])
 
 
 @router.post("/families/{family_id}/people", response_model=PersonResponse, status_code=201)
-def create_person_endpoint(
+def create_person_for_family_endpoint(
     family_id: int,
     payload: PersonCreate,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
-    return create_person(db, family_id, payload)
+    return create_person_for_family(db, family_id, payload)
 
 
 @router.get("/families/{family_id}/people", response_model=list[PersonResponse])

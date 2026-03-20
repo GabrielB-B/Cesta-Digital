@@ -88,6 +88,13 @@ class FamilyCreate(BaseModel):
     income_per_capita: Decimal = Decimal("0.00")
 
     receives_government_assistance: bool = False
+    attends_church: bool = False
+    church_name: str | None = None
+    community_relationship: str | None = None
+    responsible_education_level: str | None = None
+    has_internet_access: bool = False
+    has_mobile_phone: bool = False
+    has_computer: bool = False
 
     housing_type: str | None = None
     has_water_supply: bool = False
@@ -207,6 +214,14 @@ class FamilyResponse(BaseModel):
     has_water_supply: bool
     has_electricity: bool
     has_sanitation: bool
+    
+    attends_church: bool
+    church_name: str | None
+    community_relationship: str | None
+    responsible_education_level: str | None
+    has_internet_access: bool
+    has_mobile_phone: bool
+    has_computer: bool
 
     rooms_count: int
     bedrooms_count: int

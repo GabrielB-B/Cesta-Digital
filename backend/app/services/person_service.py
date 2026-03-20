@@ -8,26 +8,21 @@ from app.schemas.person import PersonCreate, PersonUpdate
 from app.services.family_service import recalculate_family_summary
 
 
-def create_person(db: Session, family_id: int, payload: PersonCreate) -> Person:
+def create_person_for_family(
+    db: Session,
+    family_id: int,
+    payload: PersonCreate,
+) -> Person:
+    """
+    Cria um membro vinculado a uma família e recalcula
+    os indicadores consolidados da família.
+    """
     family = db.get(Family, family_id)
     if family is None:
         raise HTTPException(
             status_code=404,
             detail="Família não encontrada.",
         )
-
-    if payload.is_family_responsible:
-        existing_responsible = db.scalar(
-            select(Person).where(
-                Person.family_id == family_id,
-                Person.is_family_responsible.is_(True),
-            )
-        )
-        if existing_responsible is not None:
-            raise HTTPException(
-                status_code=409,
-                detail="Esta família já possui uma pessoa marcada como responsável.",
-            )
 
     person = Person(
         family_id=family_id,
@@ -60,6 +55,9 @@ def create_person(db: Session, family_id: int, payload: PersonCreate) -> Person:
 
 
 def list_people_by_family(db: Session, family_id: int) -> list[Person]:
+    """
+    Lista os membros vinculados a uma família.
+    """
     family = db.get(Family, family_id)
     if family is None:
         raise HTTPException(
@@ -70,12 +68,15 @@ def list_people_by_family(db: Session, family_id: int) -> list[Person]:
     stmt = (
         select(Person)
         .where(Person.family_id == family_id)
-        .order_by(Person.id.asc())
+        .order_by(Person.full_name.asc())
     )
     return list(db.scalars(stmt).all())
 
 
 def update_person(db: Session, person_id: int, payload: PersonUpdate) -> Person:
+    """
+    Atualiza os dados de um membro e recalcula o resumo da família.
+    """
     person = db.get(Person, person_id)
     if person is None:
         raise HTTPException(

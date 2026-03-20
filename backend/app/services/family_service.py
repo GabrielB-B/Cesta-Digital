@@ -147,6 +147,13 @@ def create_family(db: Session, payload: FamilyCreate, current_user: User) -> Fam
         needs_extra_support=payload.needs_extra_support,
         social_notes=payload.social_notes,
         internal_notes=payload.internal_notes,
+        attends_church=payload.attends_church,
+        church_name=payload.church_name,
+        community_relationship=payload.community_relationship,
+        responsible_education_level=payload.responsible_education_level,
+        has_internet_access=payload.has_internet_access,
+        has_mobile_phone=payload.has_mobile_phone,
+        has_computer=payload.has_computer,
     )
 
     for contact in payload.contacts:

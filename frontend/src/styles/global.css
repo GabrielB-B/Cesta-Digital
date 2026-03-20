@@ -674,3 +674,49 @@ input {
     align-items: stretch;
   }
 }
+
+select option {
+  background: #101524;
+  color: #ffffff;
+}
+
+select {
+  appearance: auto;
+}
+
+select,
+select option {
+  color: #ffffff;
+}
+
+select {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+select option {
+  background-color: #161b2a;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+} 
+
+.panel-card__header--actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+} 
+
+.button--small {
+  height: 38px;
+  padding: 0 14px;
+  font-size: 0.9rem;
+}
+
+.table-muted {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}

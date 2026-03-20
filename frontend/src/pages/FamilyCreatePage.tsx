@@ -50,6 +50,13 @@ export function FamilyCreatePage() {
     contact_type: "principal",
     is_whatsapp: true,
     contact_notes: "",
+    attends_church: false,
+    church_name: "",
+    community_relationship: "",
+    responsible_education_level: "",
+    has_internet_access: false,
+    has_mobile_phone: false,
+    has_computer: false,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -152,6 +159,14 @@ export function FamilyCreatePage() {
                 },
               ]
             : [],
+        attends_church: formData.attends_church,
+        church_name: formData.church_name.trim() || null,
+        community_relationship: formData.community_relationship.trim() || null,
+        responsible_education_level:
+          formData.responsible_education_level.trim() || null,
+        has_internet_access: formData.has_internet_access,
+        has_mobile_phone: formData.has_mobile_phone,
+        has_computer: formData.has_computer,
       };
 
       const response = await api.post<FamilyListItemResponse>("/families", payload);
