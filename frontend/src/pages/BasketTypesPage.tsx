@@ -113,13 +113,19 @@ export function BasketTypesPage() {
           </div>
 
           <div className="toolbar">
-            <input
-              className="toolbar__input"
-              type="text"
-              placeholder="Buscar por nome ou status"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
+            <div className="toolbar toolbar--row">
+              <input
+                className="toolbar__input"
+                type="text"
+                placeholder="Buscar por nome ou status"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+
+              <Link to="/basket-types/new" className="button button--link">
+                Novo tipo
+              </Link>
+            </div>
           </div>
         </div>
 

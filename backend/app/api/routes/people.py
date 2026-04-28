@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.person import PersonCreate, PersonResponse, PersonUpdate
@@ -14,7 +14,10 @@ from app.services.person_service import (
     update_person,
 )
 
-router = APIRouter(tags=["Pessoas da Família"])
+router = APIRouter(
+    tags=["Pessoas da Família"],
+    dependencies=[Depends(require_any_role("admin", "lider_social"))],
+)
 
 
 @router.post("/families/{family_id}/people", response_model=PersonResponse, status_code=201)
@@ -24,7 +27,7 @@ def create_person_for_family_endpoint(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
-    return create_person_for_family(db, family_id, payload)
+    return create_person_for_family(db, family_id, payload, current_user)
 
 
 @router.get("/families/{family_id}/people", response_model=list[PersonResponse])
@@ -43,7 +46,7 @@ def update_person_endpoint(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
-    return update_person(db, person_id, payload)
+    return update_person(db, person_id, payload, current_user)
 
 
 @router.delete("/people/{person_id}", status_code=204)
@@ -52,5 +55,5 @@ def delete_person_endpoint(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
-    delete_person(db, person_id)
+    delete_person(db, person_id, current_user)
     return Response(status_code=204)

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import re
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -14,6 +15,27 @@ def get_password_hash(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
+
+
+def validate_password_strength(password: str) -> str:
+    normalized = password.strip()
+
+    if len(normalized) < 8:
+        raise ValueError("A senha deve ter pelo menos 8 caracteres.")
+
+    if not re.search(r"[A-Z]", normalized):
+        raise ValueError("A senha deve conter pelo menos uma letra maiuscula.")
+
+    if not re.search(r"[a-z]", normalized):
+        raise ValueError("A senha deve conter pelo menos uma letra minuscula.")
+
+    if not re.search(r"\d", normalized):
+        raise ValueError("A senha deve conter pelo menos um numero.")
+
+    if not re.search(r"[^A-Za-z0-9]", normalized):
+        raise ValueError("A senha deve conter pelo menos um caractere especial.")
+
+    return normalized
 
 
 def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:

@@ -3,13 +3,16 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.item import ItemCreate, ItemDetailResponse, ItemResponse
 from app.services.item_service import create_item, get_item_detail, list_items
 
-router = APIRouter(tags=["Itens"])
+router = APIRouter(
+    tags=["Itens"],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 
 
 @router.post("/items", response_model=ItemResponse, status_code=201)

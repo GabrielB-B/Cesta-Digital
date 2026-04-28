@@ -3,13 +3,16 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.basket_availability import BasketAvailabilityResponse
 from app.services.basket_availability_service import get_basket_availability
 
-router = APIRouter(tags=["Disponibilidade de Cestas"])
+router = APIRouter(
+    tags=["Disponibilidade de Cestas"],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 
 
 @router.get(

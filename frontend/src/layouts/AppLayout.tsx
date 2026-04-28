@@ -1,20 +1,109 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { AppIcon } from "../components/AppIcon";
+import { BrandLockup } from "../components/BrandLockup";
+import { useAuth } from "../contexts/useAuth";
 
-const menuItems = [
-  { path: "/", label: "Dashboard" },
-  { path: "/families", label: "Famílias" },
-  { path: "/items", label: "Itens" },
-  { path: "/basket-types", label: "Cestas" },
-  { path: "/deliveries", label: "Entregas" },
-];
+type MenuIconName =
+  | "dashboard"
+  | "families"
+  | "finance"
+  | "items"
+  | "categories"
+  | "baskets"
+  | "deliveries"
+  | "audit"
+  | "users";
 
-/**
- * Layout principal da aplicação autenticada.
- */
+function formatRole(role: string): string {
+  if (role === "admin") {
+    return "Administrador";
+  }
+
+  if (role === "lider_social") {
+    return "Lider social";
+  }
+
+  if (role === "operador") {
+    return "Operador";
+  }
+
+  return "Usuario";
+}
+
 export function AppLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const userRoles = user?.roles ?? [];
+
+  function hasAnyRole(...roles: string[]): boolean {
+    return roles.some((role) => userRoles.includes(role));
+  }
+
+  const menuItems = [
+    { path: "/", label: "Dashboard", icon: "dashboard", visible: true },
+    {
+      path: "/families",
+      label: "Familias",
+      icon: "families",
+      visible: hasAnyRole("admin", "lider_social"),
+    },
+    {
+      path: "/financial-summary",
+      label: "Financeiro",
+      icon: "finance",
+      visible: hasAnyRole("admin", "lider_social"),
+    },
+    {
+      path: "/items",
+      label: "Itens",
+      icon: "items",
+      visible: hasAnyRole("admin", "operador"),
+    },
+    {
+      path: "/item-categories",
+      label: "Categorias",
+      icon: "categories",
+      visible: hasAnyRole("admin", "operador"),
+    },
+    {
+      path: "/basket-types",
+      label: "Cestas",
+      icon: "baskets",
+      visible: hasAnyRole("admin", "operador"),
+    },
+    {
+      path: "/deliveries",
+      label: "Entregas",
+      icon: "deliveries",
+      visible: hasAnyRole("admin", "operador"),
+    },
+    {
+      path: "/users",
+      label: "Usuarios",
+      icon: "users",
+      visible: hasAnyRole("admin"),
+    },
+    {
+      path: "/audit-logs",
+      label: "Auditoria",
+      icon: "audit",
+      visible: hasAnyRole("admin"),
+    },
+  ] satisfies Array<{
+    path: string;
+    label: string;
+    icon: MenuIconName;
+    visible: boolean;
+  }>;
+
+  const visibleMenuItems = menuItems.filter((item) => item.visible);
+
+  const currentSection =
+    visibleMenuItems.find(
+      (item) => item.path !== "/" && location.pathname.startsWith(item.path)
+    ) ?? visibleMenuItems[0];
+
+  const primaryRole = formatRole(userRoles[0] ?? "");
 
   function isActive(path: string): boolean {
     if (path === "/") {
@@ -31,12 +120,15 @@ export function AppLayout() {
 
         <div className="sidebar__content">
           <div className="sidebar__brand">
-            <h1>Cesta Digital</h1>
-            <p>UPG • Gestão social e operacional</p>
+            <BrandLockup
+              variant="sidebar"
+              title="Cesta Digital"
+              subtitle="UPG | Gestao social e operacional"
+            />
           </div>
 
           <nav className="sidebar__nav">
-            {menuItems.map((item) => (
+            {visibleMenuItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -46,23 +138,37 @@ export function AppLayout() {
                     : "sidebar__link"
                 }
               >
-                {item.label}
+                <span className="sidebar__link-icon">
+                  <AppIcon name={item.icon} />
+                </span>
+                <span>{item.label}</span>
               </Link>
             ))}
           </nav>
+
+          <div className="sidebar__footer">
+            <span className="sidebar__footer-label">Sessao ativa</span>
+            <strong>{user?.name ?? "Usuario"}</strong>
+            <p>{primaryRole}</p>
+          </div>
         </div>
       </aside>
 
       <main className="content">
         <header className="topbar">
-          <div className="topbar__welcome">
-            <strong>{user?.name ?? "Usuário"}</strong>
-            <span className="topbar__email">{user?.email}</span>
-          </div>
+          <span className="topbar__section">{currentSection.label}</span>
 
-          <button className="button button--secondary" onClick={logout}>
-            Sair
-          </button>
+          <div className="topbar__actions">
+            <div className="topbar__welcome">
+              <strong>{user?.name ?? "Usuario"}</strong>
+              <span className="topbar__email">{user?.email}</span>
+            </div>
+
+            <button className="button button--secondary button--icon" onClick={logout}>
+              <AppIcon name="logout" className="button__icon" />
+              <span>Sair</span>
+            </button>
+          </div>
         </header>
 
         <section className="page-content">

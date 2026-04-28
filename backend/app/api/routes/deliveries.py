@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.delivery import (
@@ -19,7 +19,10 @@ from app.services.delivery_service import (
     list_delivery_schedules,
 )
 
-router = APIRouter(tags=["Entregas"])
+router = APIRouter(
+    tags=["Entregas"],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 
 
 @router.post("/delivery-schedules", response_model=DeliveryScheduleResponse, status_code=201)

@@ -7,15 +7,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base_class import Base, TimestampMixin
 
 
-from decimal import Decimal
-from typing import List
-
-from sqlalchemy import Boolean, Date, ForeignKey, Numeric, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from app.db.base_class import Base, TimestampMixin
-
-
 class Family(TimestampMixin, Base):
     """Representa uma família acompanhada pelo sistema."""
 

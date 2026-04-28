@@ -1,7 +1,49 @@
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { BrandLockup } from "../components/BrandLockup";
+import { useAuth } from "../contexts/useAuth";
+
+interface ValidationIssue {
+  loc?: Array<string | number>;
+  msg?: string;
+}
+
+function normalizeLoginError(detail: unknown) {
+  if (typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+
+  if (Array.isArray(detail)) {
+    const issues = detail as ValidationIssue[];
+    const missingFields = issues
+      .filter((issue) => issue.msg === "Field required")
+      .map((issue) => {
+        const field = issue.loc ? issue.loc[issue.loc.length - 1] : undefined;
+
+        if (field === "username") {
+          return "email";
+        }
+
+        if (field === "password") {
+          return "senha";
+        }
+
+        return null;
+      })
+      .filter((field): field is "email" | "senha" => field !== null);
+
+    if (missingFields.length === 2) {
+      return "Informe email e senha para entrar.";
+    }
+
+    if (missingFields.length === 1) {
+      return `Informe ${missingFields[0]} para entrar.`;
+    }
+  }
+
+  return "";
+}
 
 /**
  * Tela inicial de autenticação.
@@ -10,29 +52,45 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("admin@cestadigital.app");
-  const [password, setPassword] = useState("Admin@123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+
+    const normalizedEmail = email.trim();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedEmail && !normalizedPassword) {
+      setError("Informe email e senha para entrar.");
+      return;
+    }
+
+    if (!normalizedEmail) {
+      setError("Informe o email para entrar.");
+      return;
+    }
+
+    if (!normalizedPassword) {
+      setError("Informe a senha para entrar.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
+      await login(normalizedEmail, normalizedPassword);
       navigate("/");
     } catch (err) {
-      console.error("Erro real do login:", err);
-
       if (axios.isAxiosError(err)) {
         const backendDetail = err.response?.data?.detail;
+        const normalizedError = normalizeLoginError(backendDetail);
 
-        if (typeof backendDetail === "string") {
-          setError(backendDetail);
-        } else if (Array.isArray(backendDetail)) {
-          setError(JSON.stringify(backendDetail));
+        if (normalizedError) {
+          setError(normalizedError);
         } else if (err.response?.status) {
           setError(`Erro ${err.response.status} ao autenticar.`);
         } else {
@@ -49,8 +107,22 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <h1>Cesta Digital</h1>
-        <p>Entre para acessar o sistema da UPG.</p>
+        <div className="login-card__brand">
+          <BrandLockup
+            variant="login"
+            eyebrow="Plataforma oficial"
+            subtitle="Acesso centralizado para atendimento social, estoque e entregas."
+          />
+        </div>
+
+        <div className="login-card__intro">
+          <p className="login-card__lead">
+            Entre com suas credenciais para continuar.
+          </p>
+          <p className="login-card__support">
+            Use o email cadastrado no sistema e confira se o backend está ativo.
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} className="form">
           <label className="form__group">
@@ -58,8 +130,15 @@ export function LoginPage() {
             <input
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (error) {
+                  setError("");
+                }
+              }}
               placeholder="Digite seu email"
+              autoComplete="email"
+              required
             />
           </label>
 
@@ -68,12 +147,23 @@ export function LoginPage() {
             <input
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                if (error) {
+                  setError("");
+                }
+              }}
               placeholder="Digite sua senha"
+              autoComplete="current-password"
+              required
             />
           </label>
 
-          {error ? <p className="form__error">{error}</p> : null}
+          {error ? (
+            <p className="form__error" role="alert" aria-live="polite">
+              {error}
+            </p>
+          ) : null}
 
           <button type="submit" className="button" disabled={isSubmitting}>
             {isSubmitting ? "Entrando..." : "Entrar"}

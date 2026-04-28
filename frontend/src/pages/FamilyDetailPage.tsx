@@ -1,11 +1,9 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { getApiErrorMessage } from "../utils/api-error";
 import type { FamilyDetailResponse } from "../types/family";
 
-/**
- * Tela detalhada da família, com visão completa para atendimento e acompanhamento.
- */
 export function FamilyDetailPage() {
   const { familyId } = useParams();
   const [family, setFamily] = useState<FamilyDetailResponse | null>(null);
@@ -27,9 +25,11 @@ export function FamilyDetailPage() {
         if (isMounted) {
           setFamily(response.data);
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setError("Não foi possível carregar o detalhe da família.");
+          setError(
+            getApiErrorMessage(err, "Nao foi possivel carregar o detalhe da familia.")
+          );
         }
       } finally {
         if (isMounted) {
@@ -66,7 +66,7 @@ export function FamilyDetailPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="empty-state">Carregando detalhe da família...</p>
+          <p className="empty-state">Carregando detalhe da familia...</p>
         </div>
       </div>
     );
@@ -77,7 +77,7 @@ export function FamilyDetailPage() {
       <div className="page-stack">
         <div className="panel-card">
           <p className="status-error">
-            {error || "Não foi possível carregar a família."}
+            {error || "Nao foi possivel carregar a familia."}
           </p>
           <div className="panel-actions">
             <Link to="/families" className="button button--secondary">
@@ -93,7 +93,7 @@ export function FamilyDetailPage() {
     <div className="page-stack">
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Detalhe da família</p>
+          <p className="eyebrow">Detalhe da familia</p>
           <h2>{family.internal_code}</h2>
           <p className="hero-card__description">{formattedAddress}</p>
         </div>
@@ -125,7 +125,7 @@ export function FamilyDetailPage() {
               <strong>{family.total_adults}</strong>
             </div>
             <div className="detail-item">
-              <span>Crianças</span>
+              <span>Criancas</span>
               <strong>{family.total_children}</strong>
             </div>
             <div className="detail-item">
@@ -133,7 +133,7 @@ export function FamilyDetailPage() {
               <strong>{family.total_elderly}</strong>
             </div>
             <div className="detail-item">
-              <span>Bebês</span>
+              <span>Bebes</span>
               <strong>{family.total_babies}</strong>
             </div>
             <div className="detail-item">
@@ -147,7 +147,7 @@ export function FamilyDetailPage() {
           <div className="panel-card__header">
             <div>
               <p className="eyebrow">Contatos</p>
-              <h3>Contatos da família</h3>
+              <h3>Contatos da familia</h3>
             </div>
           </div>
 
@@ -179,40 +179,40 @@ export function FamilyDetailPage() {
           <div className="panel-card__header">
             <div>
               <p className="eyebrow">Perfil social</p>
-              <h3>Vínculo comunitário e acesso</h3>
+              <h3>Vinculo comunitario e acesso</h3>
             </div>
           </div>
 
           <div className="detail-grid">
             <div className="detail-item">
               <span>Frequenta igreja</span>
-              <strong>{family.attends_church ? "Sim" : "Não"}</strong>
+              <strong>{family.attends_church ? "Sim" : "Nao"}</strong>
             </div>
             <div className="detail-item">
               <span>Igreja</span>
-              <strong>{family.church_name || "Não informado"}</strong>
+              <strong>{family.church_name || "Nao informado"}</strong>
             </div>
             <div className="detail-item">
-              <span>Relação com a comunidade</span>
-              <strong>{family.community_relationship || "Não informado"}</strong>
+              <span>Relacao com a comunidade</span>
+              <strong>{family.community_relationship || "Nao informado"}</strong>
             </div>
             <div className="detail-item">
-              <span>Escolaridade do responsável</span>
+              <span>Escolaridade do responsavel</span>
               <strong>
-                {family.responsible_education_level || "Não informado"}
+                {family.responsible_education_level || "Nao informado"}
               </strong>
             </div>
             <div className="detail-item">
-              <span>Acesso à internet</span>
-              <strong>{family.has_internet_access ? "Sim" : "Não"}</strong>
+              <span>Acesso a internet</span>
+              <strong>{family.has_internet_access ? "Sim" : "Nao"}</strong>
             </div>
             <div className="detail-item">
-              <span>Celular disponível</span>
-              <strong>{family.has_mobile_phone ? "Sim" : "Não"}</strong>
+              <span>Celular disponivel</span>
+              <strong>{family.has_mobile_phone ? "Sim" : "Nao"}</strong>
             </div>
             <div className="detail-item">
               <span>Computador</span>
-              <strong>{family.has_computer ? "Sim" : "Não"}</strong>
+              <strong>{family.has_computer ? "Sim" : "Nao"}</strong>
             </div>
           </div>
         </article>
@@ -221,7 +221,7 @@ export function FamilyDetailPage() {
           <div className="panel-card__header panel-card__header--actions">
             <div>
               <p className="eyebrow">Pessoas</p>
-              <h3>Composição familiar</h3>
+              <h3>Composicao familiar</h3>
             </div>
 
             <Link
@@ -241,9 +241,10 @@ export function FamilyDetailPage() {
                   <tr>
                     <th>Nome</th>
                     <th>Parentesco</th>
-                    <th>Ocupação</th>
+                    <th>Ocupacao</th>
                     <th>Renda</th>
-                    <th>Responsável</th>
+                    <th>Responsavel</th>
+                    <th>Acoes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -251,9 +252,19 @@ export function FamilyDetailPage() {
                     <tr key={person.id}>
                       <td>{person.full_name}</td>
                       <td>{person.kinship}</td>
-                      <td>{person.occupation ?? "Não informado"}</td>
+                      <td>{person.occupation ?? "Nao informado"}</td>
                       <td>{formatCurrency(person.individual_income)}</td>
-                      <td>{person.is_family_responsible ? "Sim" : "Não"}</td>
+                      <td>{person.is_family_responsible ? "Sim" : "Nao"}</td>
+                      <td>
+                        <div className="table-actions">
+                          <Link
+                            to={`/families/${family.id}/people/${person.id}/edit`}
+                            className="button button--secondary button--small"
+                          >
+                            Editar
+                          </Link>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -267,20 +278,20 @@ export function FamilyDetailPage() {
         <article className="panel-card">
           <div className="panel-card__header panel-card__header--actions">
             <div>
-              <p className="eyebrow">Benefícios</p>
-              <h3>Benefícios vinculados</h3>
+              <p className="eyebrow">Beneficios</p>
+              <h3>Beneficios vinculados</h3>
             </div>
 
             <Link
               to={`/families/${family.id}/benefits/new`}
               className="button button--secondary button--link"
             >
-              Novo benefício
+              Novo beneficio
             </Link>
           </div>
 
           {family.benefits.length === 0 ? (
-            <p className="empty-state">Nenhum benefício cadastrado.</p>
+            <p className="empty-state">Nenhum beneficio cadastrado.</p>
           ) : (
             <div className="stack-list">
               {family.benefits.map((benefit) => (
@@ -291,13 +302,21 @@ export function FamilyDetailPage() {
                       {benefit.is_active ? "Ativo" : "Inativo"} •{" "}
                       {benefit.counts_as_income
                         ? "Conta como renda"
-                        : "Não conta como renda"}
+                        : "Nao conta como renda"}
                     </p>
                   </div>
 
-                  <span className="pill">
-                    {formatCurrency(benefit.monthly_amount)}
-                  </span>
+                  <div className="stack-item__actions">
+                    <span className="pill">
+                      {formatCurrency(benefit.monthly_amount)}
+                    </span>
+                    <Link
+                      to={`/families/${family.id}/benefits/${benefit.id}/edit`}
+                      className="button button--secondary button--small"
+                    >
+                      Editar
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -307,29 +326,29 @@ export function FamilyDetailPage() {
         <article className="panel-card">
           <div className="panel-card__header panel-card__header--actions">
             <div>
-              <p className="eyebrow">Avaliações</p>
-              <h3>Histórico social</h3>
+              <p className="eyebrow">Avaliacoes</p>
+              <h3>Historico social</h3>
             </div>
 
             <Link
               to={`/families/${family.id}/assessments/new`}
               className="button button--secondary button--link"
             >
-              Nova avaliação
+              Nova avaliacao
             </Link>
           </div>
 
           {family.assessments.length === 0 ? (
-            <p className="empty-state">Nenhuma avaliação registrada.</p>
+            <p className="empty-state">Nenhuma avaliacao registrada.</p>
           ) : (
             <div className="table-wrapper">
               <table className="data-table">
                 <thead>
                   <tr>
                     <th>Data</th>
-                    <th>Sugestão</th>
-                    <th>Decisão final</th>
-                    <th>Pontuação</th>
+                    <th>Sugestao</th>
+                    <th>Decisao final</th>
+                    <th>Pontuacao</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -354,7 +373,7 @@ export function FamilyDetailPage() {
 
       <div className="panel-actions">
         <Link to="/families" className="button button--secondary">
-          Voltar para famílias
+          Voltar para familias
         </Link>
       </div>
     </div>

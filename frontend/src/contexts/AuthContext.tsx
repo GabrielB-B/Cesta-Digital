@@ -1,20 +1,17 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
 import { api } from "../api/client";
+import { AuthContext } from "./auth-context";
 import type {
   AuthContextData,
   CurrentUserResponse,
   LoginResponse,
 } from "../types/auth";
-
-const AuthContext = createContext<AuthContextData | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -29,79 +26,98 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.getItem("cesta_digital_token")
   );
   const [user, setUser] = useState<CurrentUserResponse | null>(null);
-
-  const loadCurrentUser = useCallback(async () => {
-    const storedToken = localStorage.getItem("cesta_digital_token");
-
-    if (!storedToken) {
-      setUser(null);
-      return;
-    }
-
-    try {
-      const response = await api.get<CurrentUserResponse>("/auth/me");
-      setUser(response.data);
-    } catch {
-      localStorage.removeItem("cesta_digital_token");
-      setToken(null);
-      setUser(null);
-    }
-  }, []);
+  const [isLoading, setIsLoading] = useState(Boolean(token));
 
   useEffect(() => {
+    let isMounted = true;
+
+    if (!token) {
+      setIsLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    async function loadCurrentUser() {
+      if (isMounted) {
+        setIsLoading(true);
+      }
+
+      try {
+        const response = await api.get<CurrentUserResponse>("/auth/me");
+
+        if (isMounted) {
+          setUser(response.data);
+        }
+      } catch {
+        localStorage.removeItem("cesta_digital_token");
+
+        if (isMounted) {
+          setToken(null);
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
     void loadCurrentUser();
-  }, [loadCurrentUser]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   const login = useCallback(async (email: string, password: string) => {
+    setIsLoading(true);
+
     const body = new URLSearchParams();
     body.append("username", email);
     body.append("password", password);
     body.append("grant_type", "password");
 
-    const response = await api.post<LoginResponse>("/auth/login", body, {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    });
+    try {
+      const response = await api.post<LoginResponse>("/auth/login", body, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
 
-    localStorage.setItem("cesta_digital_token", response.data.access_token);
-    setToken(response.data.access_token);
+      localStorage.setItem("cesta_digital_token", response.data.access_token);
+      setToken(response.data.access_token);
 
-    const meResponse = await api.get<CurrentUserResponse>("/auth/me", {
-      headers: {
-        Authorization: `Bearer ${response.data.access_token}`,
-      },
-    });
+      const meResponse = await api.get<CurrentUserResponse>("/auth/me", {
+        headers: {
+          Authorization: `Bearer ${response.data.access_token}`,
+        },
+      });
 
-    setUser(meResponse.data);
+      setUser(meResponse.data);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem("cesta_digital_token");
     setToken(null);
     setUser(null);
+    setIsLoading(false);
   }, []);
 
   const value = useMemo<AuthContextData>(
     () => ({
       token,
       isAuthenticated: Boolean(token),
+      isLoading,
       user,
       login,
       logout,
     }),
-    [token, user, login, logout]
+    [token, isLoading, user, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth(): AuthContextData {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth deve ser usado dentro de AuthProvider.");
-  }
-
-  return context;
 }

@@ -18,6 +18,7 @@ export interface CurrentUserResponse {
 export interface AuthContextData {
   token: string | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   user: CurrentUserResponse | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;

@@ -1,21 +1,39 @@
 from datetime import date
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
-ALLOWED_DECISIONS = {
+ALLOWED_FINAL_DECISIONS = {
     "apta_recorrente",
     "apta_emergencial",
     "em_analise",
     "inapta",
+    "inativa",
 }
 
 
-class SocialAssessmentBase(BaseModel):
-    """Campos compartilhados entre criação e atualização de avaliação social."""
+class EligibilityPreviewResponse(BaseModel):
+    """Preview da elegibilidade automática da família."""
+
+    family_id: int
+    internal_code: str
+    income_per_capita: Decimal
+    extreme_poverty_limit: Decimal
+    poverty_limit: Decimal
+    system_suggestion: str
+    poverty_band: str
+    economic_reason: str
+    social_weight_score: int
+    social_aggravating_factors: list[str]
+    priority_level: str
+
+
+class SocialAssessmentCreate(BaseModel):
+    """Payload de criação de avaliação social."""
 
     assessment_date: date
+    vulnerability_score: int
     final_decision: str
     decision_reason: str | None = None
     exception_reason: str | None = None
@@ -26,32 +44,14 @@ class SocialAssessmentBase(BaseModel):
     @field_validator("final_decision")
     @classmethod
     def validate_final_decision(cls, value: str) -> str:
-        if value not in ALLOWED_DECISIONS:
+        value = value.strip().lower()
+        if value not in ALLOWED_FINAL_DECISIONS:
             raise ValueError("Decisão final inválida.")
         return value
 
-    @model_validator(mode="after")
-    def validate_dates(self):
-        if (
-            self.next_revaluation_date is not None
-            and self.next_revaluation_date < self.assessment_date
-        ):
-            raise ValueError(
-                "A próxima reavaliação não pode ser anterior à data da avaliação."
-            )
-        return self
-
-
-class SocialAssessmentCreate(SocialAssessmentBase):
-    """Payload de criação de avaliação social."""
-
-
-class SocialAssessmentUpdate(SocialAssessmentBase):
-    """Payload de atualização de avaliação social."""
-
 
 class SocialAssessmentResponse(BaseModel):
-    """Resposta serializada de avaliação social."""
+    """Resposta serializada da avaliação social."""
 
     model_config = ConfigDict(from_attributes=True)
 

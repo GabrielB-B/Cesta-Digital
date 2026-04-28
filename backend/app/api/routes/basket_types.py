@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.basket_type import (
@@ -21,7 +21,10 @@ from app.services.basket_type_service import (
     list_basket_types,
 )
 
-router = APIRouter(tags=["Tipos de Cesta"])
+router = APIRouter(
+    tags=["Tipos de Cesta"],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 
 
 @router.post("/basket-types", response_model=BasketTypeResponse, status_code=201)

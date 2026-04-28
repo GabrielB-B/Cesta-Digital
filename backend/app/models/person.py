@@ -36,8 +36,6 @@ class Person(TimestampMixin, Base):
 
     family: Mapped["Family"] = relationship(back_populates="people")
 
-    family: Mapped["Family"] = relationship(back_populates="people")
-
     benefits: Mapped[list["Benefit"]] = relationship(
         back_populates="person",
     )

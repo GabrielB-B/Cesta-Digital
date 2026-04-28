@@ -42,6 +42,8 @@ export interface FamilyBenefitResponse {
 export interface FamilyAssessmentResponse {
   id: number;
   assessment_date: string;
+  monthly_income_total_at_time: string;
+  income_per_capita_at_time: string;
   vulnerability_score: number;
   system_suggestion: string;
   final_decision: string;
@@ -179,6 +181,8 @@ export interface FamilyPersonCreatePayload {
   is_family_responsible: boolean;
 }
 
+export type FamilyPersonUpdatePayload = FamilyPersonCreatePayload;
+
 export interface FamilyBenefitCreatePayload {
   person_id: number | null;
   benefit_type: string;
@@ -190,14 +194,30 @@ export interface FamilyBenefitCreatePayload {
   notes: string | null;
 }
 
+export type FamilyBenefitUpdatePayload = FamilyBenefitCreatePayload;
+
 export interface FamilyAssessmentCreatePayload {
   assessment_date: string;
   vulnerability_score: number;
-  system_suggestion: string;
+  system_suggestion?: string;
   final_decision: string;
   decision_reason: string | null;
   exception_reason: string | null;
   co_approved_by_user_id: number | null;
   next_revaluation_date: string | null;
   technical_notes: string | null;
+}
+
+export interface EligibilityPreviewResponse {
+  family_id: number;
+  internal_code: string;
+  income_per_capita: string;
+  extreme_poverty_limit: string;
+  poverty_limit: string;
+  system_suggestion: string;
+  poverty_band: string;
+  economic_reason: string;
+  social_weight_score: number;
+  social_aggravating_factors: string[];
+  priority_level: string;
 }

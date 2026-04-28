@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { getApiErrorMessage } from "../utils/api-error";
 import type { FamilyPersonCreatePayload, FamilyPersonResponse } from "../types/family";
 
-/**
- * Cadastro individual de membro vinculado a uma família.
- */
 export function FamilyPersonCreatePage() {
   const navigate = useNavigate();
   const { familyId } = useParams();
@@ -56,7 +54,7 @@ export function FamilyPersonCreatePage() {
     setError("");
 
     if (!familyId) {
-      setError("Família não identificada.");
+      setError("Familia nao identificada.");
       return;
     }
 
@@ -84,8 +82,10 @@ export function FamilyPersonCreatePage() {
 
       await api.post<FamilyPersonResponse>(`/families/${familyId}/people`, payload);
       navigate(`/families/${familyId}`);
-    } catch {
-      setError("Não foi possível cadastrar o membro da família.");
+    } catch (err) {
+      setError(
+        getApiErrorMessage(err, "Nao foi possivel cadastrar o membro da familia.")
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -95,10 +95,10 @@ export function FamilyPersonCreatePage() {
     <div className="page-stack">
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Composição familiar</p>
+          <p className="eyebrow">Composicao familiar</p>
           <h2>Novo membro</h2>
           <p className="hero-card__description">
-            Cadastre individualmente os membros da família para enriquecer o perfil social.
+            Cadastre individualmente os membros da familia para enriquecer o perfil social.
           </p>
         </div>
       </section>
@@ -139,13 +139,13 @@ export function FamilyPersonCreatePage() {
               name="kinship"
               value={formData.kinship}
               onChange={handleInputChange}
-              placeholder="Ex.: responsável, filho, avó..."
+              placeholder="Ex.: responsavel, filho, avo..."
               required
             />
           </label>
 
           <label className="form__group">
-            <span>Gênero</span>
+            <span>Genero</span>
             <select
               name="gender"
               value={formData.gender}
@@ -155,7 +155,7 @@ export function FamilyPersonCreatePage() {
               <option value="masculino">Masculino</option>
               <option value="feminino">Feminino</option>
               <option value="outro">Outro</option>
-              <option value="nao_informado">Não informado</option>
+              <option value="nao_informado">Nao informado</option>
             </select>
           </label>
 
@@ -176,18 +176,18 @@ export function FamilyPersonCreatePage() {
               onChange={handleInputChange}
             >
               <option value="">Selecione</option>
-              <option value="nao_informado">Não informado</option>
+              <option value="nao_informado">Nao informado</option>
               <option value="fundamental_incompleto">Fundamental incompleto</option>
               <option value="fundamental_completo">Fundamental completo</option>
-              <option value="medio_incompleto">Médio incompleto</option>
-              <option value="medio_completo">Médio completo</option>
+              <option value="medio_incompleto">Medio incompleto</option>
+              <option value="medio_completo">Medio completo</option>
               <option value="superior_incompleto">Superior incompleto</option>
               <option value="superior_completo">Superior completo</option>
             </select>
           </label>
 
           <label className="form__group">
-            <span>Ocupação</span>
+            <span>Ocupacao</span>
             <input
               name="occupation"
               value={formData.occupation}
@@ -208,7 +208,7 @@ export function FamilyPersonCreatePage() {
           </label>
 
           <label className="form__group form__group--wide">
-            <span>Observações</span>
+            <span>Observacoes</span>
             <textarea
               name="notes"
               value={formData.notes}
@@ -220,8 +220,8 @@ export function FamilyPersonCreatePage() {
 
         <div className="panel-card__header">
           <div>
-            <p className="eyebrow">Condição</p>
-            <h3>Situação individual</h3>
+            <p className="eyebrow">Condicao</p>
+            <h3>Situacao individual</h3>
           </div>
         </div>
 
@@ -233,7 +233,7 @@ export function FamilyPersonCreatePage() {
               checked={formData.is_currently_studying}
               onChange={handleInputChange}
             />
-            <span>Está estudando</span>
+            <span>Esta estudando</span>
           </label>
 
           <label className="checkbox-card">
@@ -243,7 +243,7 @@ export function FamilyPersonCreatePage() {
               checked={formData.is_currently_working}
               onChange={handleInputChange}
             />
-            <span>Está trabalhando</span>
+            <span>Esta trabalhando</span>
           </label>
 
           <label className="checkbox-card">
@@ -253,7 +253,7 @@ export function FamilyPersonCreatePage() {
               checked={formData.is_family_responsible}
               onChange={handleInputChange}
             />
-            <span>Responsável familiar</span>
+            <span>Responsavel familiar</span>
           </label>
 
           <label className="checkbox-card">
@@ -263,7 +263,7 @@ export function FamilyPersonCreatePage() {
               checked={formData.has_disability}
               onChange={handleInputChange}
             />
-            <span>Pessoa com deficiência</span>
+            <span>Pessoa com deficiencia</span>
           </label>
 
           <label className="checkbox-card">
@@ -273,7 +273,7 @@ export function FamilyPersonCreatePage() {
               checked={formData.has_chronic_illness}
               onChange={handleInputChange}
             />
-            <span>Doença crônica</span>
+            <span>Doenca cronica</span>
           </label>
 
           <label className="checkbox-card">

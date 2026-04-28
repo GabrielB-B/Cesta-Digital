@@ -3,13 +3,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.family import FamilyCreate, FamilyDetailResponse, FamilyResponse
 from app.services.family_service import create_family, get_family_detail, list_families
 
-router = APIRouter(prefix="/families", tags=["Famílias"])
+router = APIRouter(
+    prefix="/families",
+    tags=["Famílias"],
+    dependencies=[Depends(require_any_role("admin", "lider_social"))],
+)
 
 
 @router.post("", response_model=FamilyResponse, status_code=201)

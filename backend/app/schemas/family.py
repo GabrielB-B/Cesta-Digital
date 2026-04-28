@@ -64,6 +64,8 @@ class FamilyAssessmentResponse(BaseModel):
 
     id: int
     assessment_date: date
+    monthly_income_total_at_time: Decimal
+    income_per_capita_at_time: Decimal
     vulnerability_score: int
     system_suggestion: str
     final_decision: str

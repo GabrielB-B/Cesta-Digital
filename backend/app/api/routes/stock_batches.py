@@ -3,13 +3,16 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.stock_batch import StockBatchCreate, StockBatchResponse
 from app.services.stock_batch_service import create_stock_batch, list_stock_batches
 
-router = APIRouter(tags=["Lotes de Estoque"])
+router = APIRouter(
+    tags=["Lotes de Estoque"],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 
 
 @router.post("/stock-batches", response_model=StockBatchResponse, status_code=201)

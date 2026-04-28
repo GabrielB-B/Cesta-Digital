@@ -4,25 +4,54 @@ from sqlalchemy.orm import Session
 
 from app.models.family import Family
 from app.models.person import Person
+from app.models.user import User
 from app.schemas.person import PersonCreate, PersonUpdate
+from app.services.audit_log_service import record_audit_log
 from app.services.family_service import recalculate_family_summary
+
+
+def _ensure_unique_family_responsible(
+    db: Session,
+    family_id: int,
+    is_family_responsible: bool,
+    current_person_id: int | None = None,
+) -> None:
+    if not is_family_responsible:
+        return
+
+    stmt = select(Person).where(
+        Person.family_id == family_id,
+        Person.is_family_responsible.is_(True),
+    )
+    if current_person_id is not None:
+        stmt = stmt.where(Person.id != current_person_id)
+
+    existing_responsible = db.scalar(stmt)
+    if existing_responsible is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Esta familia ja possui outra pessoa marcada como responsavel.",
+        )
 
 
 def create_person_for_family(
     db: Session,
     family_id: int,
     payload: PersonCreate,
+    current_user: User,
 ) -> Person:
-    """
-    Cria um membro vinculado a uma família e recalcula
-    os indicadores consolidados da família.
-    """
     family = db.get(Family, family_id)
     if family is None:
         raise HTTPException(
             status_code=404,
-            detail="Família não encontrada.",
+            detail="Familia nao encontrada.",
         )
+
+    _ensure_unique_family_responsible(
+        db,
+        family_id,
+        payload.is_family_responsible,
+    )
 
     person = Person(
         family_id=family_id,
@@ -48,6 +77,19 @@ def create_person_for_family(
     db.flush()
 
     recalculate_family_summary(db, family)
+    family.updated_by_user_id = current_user.id
+    record_audit_log(
+        db,
+        event_type="family.person.created",
+        actor_user=current_user,
+        entity_type="person",
+        entity_id=person.id,
+        details={
+            "family_id": family.id,
+            "full_name": person.full_name,
+            "is_family_responsible": person.is_family_responsible,
+        },
+    )
 
     db.commit()
     db.refresh(person)
@@ -55,14 +97,11 @@ def create_person_for_family(
 
 
 def list_people_by_family(db: Session, family_id: int) -> list[Person]:
-    """
-    Lista os membros vinculados a uma família.
-    """
     family = db.get(Family, family_id)
     if family is None:
         raise HTTPException(
             status_code=404,
-            detail="Família não encontrada.",
+            detail="Familia nao encontrada.",
         )
 
     stmt = (
@@ -73,30 +112,25 @@ def list_people_by_family(db: Session, family_id: int) -> list[Person]:
     return list(db.scalars(stmt).all())
 
 
-def update_person(db: Session, person_id: int, payload: PersonUpdate) -> Person:
-    """
-    Atualiza os dados de um membro e recalcula o resumo da família.
-    """
+def update_person(
+    db: Session,
+    person_id: int,
+    payload: PersonUpdate,
+    current_user: User,
+) -> Person:
     person = db.get(Person, person_id)
     if person is None:
         raise HTTPException(
             status_code=404,
-            detail="Pessoa não encontrada.",
+            detail="Pessoa nao encontrada.",
         )
 
-    if payload.is_family_responsible:
-        existing_responsible = db.scalar(
-            select(Person).where(
-                Person.family_id == person.family_id,
-                Person.is_family_responsible.is_(True),
-                Person.id != person.id,
-            )
-        )
-        if existing_responsible is not None:
-            raise HTTPException(
-                status_code=409,
-                detail="Esta família já possui outra pessoa marcada como responsável.",
-            )
+    _ensure_unique_family_responsible(
+        db,
+        person.family_id,
+        payload.is_family_responsible,
+        current_person_id=person.id,
+    )
 
     person.full_name = payload.full_name
     person.birth_date = payload.birth_date
@@ -117,25 +151,51 @@ def update_person(db: Session, person_id: int, payload: PersonUpdate) -> Person:
 
     family = db.get(Family, person.family_id)
     recalculate_family_summary(db, family)
+    family.updated_by_user_id = current_user.id
+    record_audit_log(
+        db,
+        event_type="family.person.updated",
+        actor_user=current_user,
+        entity_type="person",
+        entity_id=person.id,
+        details={
+            "family_id": person.family_id,
+            "full_name": person.full_name,
+            "is_family_responsible": person.is_family_responsible,
+        },
+    )
 
     db.commit()
     db.refresh(person)
     return person
 
 
-def delete_person(db: Session, person_id: int) -> None:
+def delete_person(db: Session, person_id: int, current_user: User) -> None:
     person = db.get(Person, person_id)
     if person is None:
         raise HTTPException(
             status_code=404,
-            detail="Pessoa não encontrada.",
+            detail="Pessoa nao encontrada.",
         )
 
     family = db.get(Family, person.family_id)
+    full_name = person.full_name
 
     db.delete(person)
     db.flush()
 
     recalculate_family_summary(db, family)
+    family.updated_by_user_id = current_user.id
+    record_audit_log(
+        db,
+        event_type="family.person.deleted",
+        actor_user=current_user,
+        entity_type="person",
+        entity_id=person_id,
+        details={
+            "family_id": family.id,
+            "full_name": full_name,
+        },
+    )
 
     db.commit()

@@ -135,8 +135,25 @@ export function ItemsPage() {
               Novo item
             </Link>
 
-            <Link to="/stock-batches/new" className="button button--secondary button--link">
+            <Link
+              to="/item-categories"
+              className="button button--secondary button--link"
+            >
+              Categorias
+            </Link>
+
+            <Link
+              to="/stock-batches/new"
+              className="button button--secondary button--link"
+            >
               Nova entrada de lote
+            </Link>
+
+            <Link
+              to="/stock-movements/new"
+              className="button button--secondary button--link"
+            >
+              Movimentação manual
             </Link>
           </div>
         </div>

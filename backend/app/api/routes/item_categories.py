@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.item_category import ItemCategoryCreate, ItemCategoryResponse
@@ -12,7 +12,10 @@ from app.services.item_category_service import (
     list_item_categories,
 )
 
-router = APIRouter(tags=["Categorias de Itens"])
+router = APIRouter(
+    tags=["Categorias de Itens"],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 
 
 @router.post("/item-categories", response_model=ItemCategoryResponse, status_code=201)

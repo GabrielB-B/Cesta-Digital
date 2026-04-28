@@ -74,3 +74,10 @@ export interface StockMovementResponse {
   notes: string | null;
   created_by_user_id: number;
 }
+
+export interface StockMovementCreatePayload {
+  batch_id: number;
+  movement_type: string;
+  quantity: number;
+  notes: string | null;
+}

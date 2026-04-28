@@ -139,6 +139,12 @@ export function ItemDetailPage() {
           <span className="hero-badge">
             Alerta mínimo: {item.minimum_stock_alert}
           </span>
+          <Link
+            to={`/stock-movements/new?itemId=${item.id}`}
+            className="button button--secondary button--link"
+          >
+            Nova movimentação
+          </Link>
         </div>
       </section>
 

@@ -12,10 +12,10 @@ from app.models.person import Person
 from app.models.social_assessment import SocialAssessment
 from app.models.user import User
 from app.schemas.family import FamilyCreate
+from app.services.audit_log_service import record_audit_log
 
 
 def calculate_age(birth_date: date) -> int:
-    """Calcula idade atual a partir da data de nascimento."""
     today = date.today()
     age = today.year - birth_date.year
     if (today.month, today.day) < (birth_date.month, birth_date.day):
@@ -24,10 +24,6 @@ def calculate_age(birth_date: date) -> int:
 
 
 def recalculate_family_summary(db: Session, family: Family) -> None:
-    """
-    Recalcula os indicadores consolidados da família com base
-    nas pessoas e benefícios ativos que contam como renda.
-    """
     people_stmt = select(Person).where(Person.family_id == family.id)
     people = list(db.scalars(people_stmt).all())
 
@@ -99,14 +95,13 @@ def recalculate_family_summary(db: Session, family: Family) -> None:
 
 
 def create_family(db: Session, payload: FamilyCreate, current_user: User) -> Family:
-    """Cria uma nova família com seus contatos iniciais."""
     existing_family = db.scalar(
         select(Family).where(Family.internal_code == payload.internal_code)
     )
     if existing_family is not None:
         raise HTTPException(
             status_code=409,
-            detail="Já existe uma família cadastrada com esse código interno.",
+            detail="Ja existe uma familia cadastrada com esse codigo interno.",
         )
 
     family = Family(
@@ -168,6 +163,20 @@ def create_family(db: Session, payload: FamilyCreate, current_user: User) -> Fam
         )
 
     db.add(family)
+    db.flush()
+    record_audit_log(
+        db,
+        event_type="family.created",
+        actor_user=current_user,
+        entity_type="family",
+        entity_id=family.id,
+        details={
+            "internal_code": family.internal_code,
+            "status": family.status,
+            "city": family.city,
+            "state": family.state,
+        },
+    )
     db.commit()
     db.refresh(family)
 
@@ -175,7 +184,6 @@ def create_family(db: Session, payload: FamilyCreate, current_user: User) -> Fam
 
 
 def list_families(db: Session) -> list[Family]:
-    """Lista famílias com contatos e pessoas já carregados."""
     stmt = (
         select(Family)
         .options(
@@ -188,7 +196,6 @@ def list_families(db: Session) -> list[Family]:
 
 
 def get_family_detail(db: Session, family_id: int) -> Family:
-    """Busca a família completa para telas de detalhe do frontend."""
     stmt = (
         select(Family)
         .options(
@@ -204,7 +211,7 @@ def get_family_detail(db: Session, family_id: int) -> Family:
     if family is None:
         raise HTTPException(
             status_code=404,
-            detail="Família não encontrada.",
+            detail="Familia nao encontrada.",
         )
 
     return family

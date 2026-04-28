@@ -1,5 +1,6 @@
 from app.db.base_class import Base
 
+from app.models.audit_log import AuditLog
 from app.models.basket_type import BasketType
 from app.models.basket_type_item import BasketTypeItem
 from app.models.benefit import Benefit
@@ -19,6 +20,7 @@ from app.models.user_role import UserRole
 
 __all__ = [
     "Base",
+    "AuditLog",
     "User",
     "Role",
     "UserRole",

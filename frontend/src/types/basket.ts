@@ -5,6 +5,17 @@ export interface BasketTypeResponse {
   notes: string | null;
 }
 
+export interface BasketTypeCreatePayload {
+  name: string;
+  is_active: boolean;
+  notes: string | null;
+}
+
+export interface BasketTypeItemCreatePayload {
+  item_id: number;
+  required_quantity: number;
+}
+
 export interface BasketTypeRecipeItemResponse {
   item_id: number;
   item_name: string;

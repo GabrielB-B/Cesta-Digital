@@ -4,7 +4,9 @@ import { api } from "../api/client";
 import type {
   BasketAvailabilityResponse,
   BasketTypeDetailResponse,
+  BasketTypeItemCreatePayload,
 } from "../types/basket";
+import type { ItemDetailResponse } from "../types/item";
 
 /**
  * Detalhe operacional do tipo de cesta, com receita e disponibilidade.
@@ -15,48 +17,43 @@ export function BasketTypeDetailPage() {
   const [availability, setAvailability] = useState<BasketAvailabilityResponse | null>(
     null
   );
+  const [items, setItems] = useState<ItemDetailResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmittingRecipe, setIsSubmittingRecipe] = useState(false);
   const [error, setError] = useState("");
+  const [recipeError, setRecipeError] = useState("");
+  const [recipeForm, setRecipeForm] = useState({
+    item_id: "",
+    required_quantity: 1,
+  });
+
+  async function loadBasketTypeData(targetBasketTypeId: string) {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const [detailResponse, availabilityResponse, itemsResponse] = await Promise.all([
+        api.get<BasketTypeDetailResponse>(`/basket-types/${targetBasketTypeId}`),
+        api.get<BasketAvailabilityResponse>(
+          `/basket-types/${targetBasketTypeId}/availability`
+        ),
+        api.get<ItemDetailResponse[]>("/items"),
+      ]);
+
+      setBasketType(detailResponse.data);
+      setAvailability(availabilityResponse.data);
+      setItems(itemsResponse.data);
+    } catch {
+      setError("Não foi possível carregar o detalhe da cesta.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadBasketTypeDetail() {
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const [detailResponse, availabilityResponse] = await Promise.all([
-          api.get<BasketTypeDetailResponse>(`/basket-types/${basketTypeId}`),
-          api.get<BasketAvailabilityResponse>(
-            `/basket-types/${basketTypeId}/availability`
-          ),
-        ]);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setBasketType(detailResponse.data);
-        setAvailability(availabilityResponse.data);
-      } catch {
-        if (isMounted) {
-          setError("Não foi possível carregar o detalhe da cesta.");
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
     if (basketTypeId) {
-      void loadBasketTypeDetail();
+      void loadBasketTypeData(basketTypeId);
     }
-
-    return () => {
-      isMounted = false;
-    };
   }, [basketTypeId]);
 
   const limitingItems = useMemo(() => {
@@ -68,6 +65,41 @@ export function BasketTypeDetailPage() {
       availability.limiting_item_ids.includes(item.item_id)
     );
   }, [availability]);
+
+  const availableItemsToAdd = useMemo(() => {
+    const existingItemIds = new Set(basketType?.basket_items.map((item) => item.item_id) ?? []);
+    return items.filter((item) => !existingItemIds.has(item.id));
+  }, [basketType, items]);
+
+  async function handleAddRecipeItem(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setRecipeError("");
+
+    if (!basketTypeId || !recipeForm.item_id) {
+      setRecipeError("Selecione um item para adicionar à receita.");
+      return;
+    }
+
+    setIsSubmittingRecipe(true);
+
+    try {
+      const payload: BasketTypeItemCreatePayload = {
+        item_id: Number(recipeForm.item_id),
+        required_quantity: Number(recipeForm.required_quantity),
+      };
+
+      await api.post(`/basket-types/${basketTypeId}/items`, payload);
+      setRecipeForm({
+        item_id: "",
+        required_quantity: 1,
+      });
+      await loadBasketTypeData(basketTypeId);
+    } catch {
+      setRecipeError("Não foi possível adicionar o item à receita.");
+    } finally {
+      setIsSubmittingRecipe(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -152,6 +184,74 @@ export function BasketTypeDetailPage() {
           )}
         </article>
 
+        <form onSubmit={handleAddRecipeItem} className="panel-card form-panel">
+          <div className="panel-card__header">
+            <div>
+              <p className="eyebrow">Receita</p>
+              <h3>Adicionar item</h3>
+            </div>
+          </div>
+
+          <div className="form-grid">
+            <label className="form__group form__group--wide">
+              <span>Item disponível</span>
+              <select
+                value={recipeForm.item_id}
+                onChange={(event) =>
+                  setRecipeForm((previous) => ({
+                    ...previous,
+                    item_id: event.target.value,
+                  }))
+                }
+                required
+              >
+                <option value="">Selecione</option>
+                {availableItemsToAdd.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} • {item.category_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="form__group">
+              <span>Quantidade exigida</span>
+              <input
+                type="number"
+                min="1"
+                value={recipeForm.required_quantity}
+                onChange={(event) =>
+                  setRecipeForm((previous) => ({
+                    ...previous,
+                    required_quantity: Number(event.target.value),
+                  }))
+                }
+                required
+              />
+            </label>
+          </div>
+
+          {availableItemsToAdd.length === 0 ? (
+            <p className="empty-state">
+              Todos os itens cadastrados já estão presentes nesta receita.
+            </p>
+          ) : null}
+
+          {recipeError ? <p className="status-error">{recipeError}</p> : null}
+
+          <div className="panel-actions">
+            <button
+              type="submit"
+              className="button"
+              disabled={isSubmittingRecipe || availableItemsToAdd.length === 0}
+            >
+              {isSubmittingRecipe ? "Salvando..." : "Adicionar à receita"}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="content-grid">
         <article className="panel-card">
           <div className="panel-card__header">
             <div>
@@ -182,6 +282,30 @@ export function BasketTypeDetailPage() {
               ))}
             </div>
           )}
+        </article>
+
+        <article className="panel-card">
+          <div className="panel-card__header">
+            <div>
+              <p className="eyebrow">Disponibilidade</p>
+              <h3>Resumo rápido</h3>
+            </div>
+          </div>
+
+          <div className="detail-grid">
+            <div className="detail-item">
+              <span>Total de itens na receita</span>
+              <strong>{basketType.basket_items.length}</strong>
+            </div>
+            <div className="detail-item">
+              <span>Cestas possíveis</span>
+              <strong>{availability.possible_baskets}</strong>
+            </div>
+            <div className="detail-item">
+              <span>Itens limitantes</span>
+              <strong>{limitingItems.length}</strong>
+            </div>
+          </div>
         </article>
       </section>
 

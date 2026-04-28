@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 from app.models.benefit import Benefit
 from app.models.family import Family
 from app.models.person import Person
+from app.models.user import User
 from app.schemas.benefit import BenefitCreate, BenefitUpdate
+from app.services.audit_log_service import record_audit_log
 from app.services.family_service import recalculate_family_summary
 
 
@@ -14,15 +16,11 @@ def _validate_family_and_person(
     family_id: int,
     person_id: int | None,
 ) -> Family:
-    """
-    Valida se a família existe e, quando person_id for informado,
-    garante que a pessoa pertença à família.
-    """
     family = db.get(Family, family_id)
     if family is None:
         raise HTTPException(
             status_code=404,
-            detail="Família não encontrada.",
+            detail="Familia nao encontrada.",
         )
 
     if person_id is not None:
@@ -30,14 +28,18 @@ def _validate_family_and_person(
         if person is None or person.family_id != family_id:
             raise HTTPException(
                 status_code=400,
-                detail="A pessoa informada não pertence a esta família.",
+                detail="A pessoa informada nao pertence a esta familia.",
             )
 
     return family
 
 
-def create_benefit(db: Session, family_id: int, payload: BenefitCreate) -> Benefit:
-    """Cria um benefício e recalcula o resumo financeiro da família."""
+def create_benefit(
+    db: Session,
+    family_id: int,
+    payload: BenefitCreate,
+    current_user: User,
+) -> Benefit:
     family = _validate_family_and_person(db, family_id, payload.person_id)
 
     benefit = Benefit(
@@ -56,6 +58,19 @@ def create_benefit(db: Session, family_id: int, payload: BenefitCreate) -> Benef
     db.flush()
 
     recalculate_family_summary(db, family)
+    family.updated_by_user_id = current_user.id
+    record_audit_log(
+        db,
+        event_type="family.benefit.created",
+        actor_user=current_user,
+        entity_type="benefit",
+        entity_id=benefit.id,
+        details={
+            "family_id": family.id,
+            "benefit_type": benefit.benefit_type,
+            "is_active": benefit.is_active,
+        },
+    )
 
     db.commit()
     db.refresh(benefit)
@@ -63,12 +78,11 @@ def create_benefit(db: Session, family_id: int, payload: BenefitCreate) -> Benef
 
 
 def list_benefits_by_family(db: Session, family_id: int) -> list[Benefit]:
-    """Lista todos os benefícios de uma família."""
     family = db.get(Family, family_id)
     if family is None:
         raise HTTPException(
             status_code=404,
-            detail="Família não encontrada.",
+            detail="Familia nao encontrada.",
         )
 
     stmt = (
@@ -79,13 +93,17 @@ def list_benefits_by_family(db: Session, family_id: int) -> list[Benefit]:
     return list(db.scalars(stmt).all())
 
 
-def update_benefit(db: Session, benefit_id: int, payload: BenefitUpdate) -> Benefit:
-    """Atualiza um benefício existente e recalcula a renda da família."""
+def update_benefit(
+    db: Session,
+    benefit_id: int,
+    payload: BenefitUpdate,
+    current_user: User,
+) -> Benefit:
     benefit = db.get(Benefit, benefit_id)
     if benefit is None:
         raise HTTPException(
             status_code=404,
-            detail="Benefício não encontrado.",
+            detail="Beneficio nao encontrado.",
         )
 
     family = _validate_family_and_person(db, benefit.family_id, payload.person_id)
@@ -100,26 +118,51 @@ def update_benefit(db: Session, benefit_id: int, payload: BenefitUpdate) -> Bene
     benefit.notes = payload.notes
 
     recalculate_family_summary(db, family)
+    family.updated_by_user_id = current_user.id
+    record_audit_log(
+        db,
+        event_type="family.benefit.updated",
+        actor_user=current_user,
+        entity_type="benefit",
+        entity_id=benefit.id,
+        details={
+            "family_id": family.id,
+            "benefit_type": benefit.benefit_type,
+            "is_active": benefit.is_active,
+        },
+    )
 
     db.commit()
     db.refresh(benefit)
     return benefit
 
 
-def delete_benefit(db: Session, benefit_id: int) -> None:
-    """Exclui um benefício e recalcula a renda da família."""
+def delete_benefit(db: Session, benefit_id: int, current_user: User) -> None:
     benefit = db.get(Benefit, benefit_id)
     if benefit is None:
         raise HTTPException(
             status_code=404,
-            detail="Benefício não encontrado.",
+            detail="Beneficio nao encontrado.",
         )
 
     family = db.get(Family, benefit.family_id)
+    benefit_type = benefit.benefit_type
 
     db.delete(benefit)
     db.flush()
 
     recalculate_family_summary(db, family)
+    family.updated_by_user_id = current_user.id
+    record_audit_log(
+        db,
+        event_type="family.benefit.deleted",
+        actor_user=current_user,
+        entity_type="benefit",
+        entity_id=benefit_id,
+        details={
+            "family_id": family.id,
+            "benefit_type": benefit_type,
+        },
+    )
 
     db.commit()

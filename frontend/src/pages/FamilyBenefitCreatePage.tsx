@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { getApiErrorMessage } from "../utils/api-error";
 import type {
   FamilyBenefitCreatePayload,
   FamilyBenefitResponse,
   FamilyDetailResponse,
 } from "../types/family";
 
-/**
- * Cadastro de benefício vinculado à família.
- */
 export function FamilyBenefitCreatePage() {
   const navigate = useNavigate();
   const { familyId } = useParams();
@@ -36,14 +34,15 @@ export function FamilyBenefitCreatePage() {
     async function loadFamily() {
       try {
         setIsLoadingFamily(true);
+        setError("");
         const response = await api.get<FamilyDetailResponse>(`/families/${familyId}`);
 
         if (isMounted) {
           setFamily(response.data);
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setError("Não foi possível carregar a família.");
+          setError(getApiErrorMessage(err, "Nao foi possivel carregar a familia."));
         }
       } finally {
         if (isMounted) {
@@ -85,7 +84,7 @@ export function FamilyBenefitCreatePage() {
     setError("");
 
     if (!familyId) {
-      setError("Família não identificada.");
+      setError("Familia nao identificada.");
       return;
     }
 
@@ -105,8 +104,8 @@ export function FamilyBenefitCreatePage() {
 
       await api.post<FamilyBenefitResponse>(`/families/${familyId}/benefits`, payload);
       navigate(`/families/${familyId}`);
-    } catch {
-      setError("Não foi possível cadastrar o benefício.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel cadastrar o beneficio."));
     } finally {
       setIsSubmitting(false);
     }
@@ -116,10 +115,10 @@ export function FamilyBenefitCreatePage() {
     <div className="page-stack">
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Benefício</p>
-          <h2>Novo benefício</h2>
+          <p className="eyebrow">Beneficio</p>
+          <h2>Novo beneficio</h2>
           <p className="hero-card__description">
-            Cadastre benefícios vinculados à família para refletir melhor a situação social e a renda.
+            Cadastre beneficios vinculados a familia para refletir melhor a situacao social e a renda.
           </p>
         </div>
       </section>
@@ -128,7 +127,7 @@ export function FamilyBenefitCreatePage() {
         <div className="panel-card__header">
           <div>
             <p className="eyebrow">Cadastro</p>
-            <h3>Dados do benefício</h3>
+            <h3>Dados do beneficio</h3>
           </div>
         </div>
 
@@ -141,7 +140,7 @@ export function FamilyBenefitCreatePage() {
               onChange={handleInputChange}
               disabled={isLoadingFamily}
             >
-              <option value="">Sem vínculo específico</option>
+              <option value="">Sem vinculo especifico</option>
               {family?.people.map((person) => (
                 <option key={person.id} value={person.id}>
                   {person.full_name}
@@ -151,12 +150,12 @@ export function FamilyBenefitCreatePage() {
           </label>
 
           <label className="form__group">
-            <span>Tipo do benefício</span>
+            <span>Tipo do beneficio</span>
             <input
               name="benefit_type"
               value={formData.benefit_type}
               onChange={handleInputChange}
-              placeholder="Ex.: Bolsa Família"
+              placeholder="Ex.: Bolsa Familia"
               required
             />
           </label>
@@ -175,7 +174,7 @@ export function FamilyBenefitCreatePage() {
           </label>
 
           <label className="form__group">
-            <span>Início</span>
+            <span>Inicio</span>
             <input
               type="date"
               name="start_date"
@@ -211,11 +210,11 @@ export function FamilyBenefitCreatePage() {
               checked={formData.is_active}
               onChange={handleInputChange}
             />
-            <span>Benefício ativo</span>
+            <span>Beneficio ativo</span>
           </label>
 
           <label className="form__group form__group--wide">
-            <span>Observações</span>
+            <span>Observacoes</span>
             <textarea
               name="notes"
               value={formData.notes}
@@ -236,7 +235,7 @@ export function FamilyBenefitCreatePage() {
           </Link>
 
           <button type="submit" className="button" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : "Cadastrar benefício"}
+            {isSubmitting ? "Salvando..." : "Cadastrar beneficio"}
           </button>
         </div>
       </form>

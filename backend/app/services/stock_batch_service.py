@@ -6,6 +6,7 @@ from app.models.item import Item
 from app.models.stock_batch import StockBatch
 from app.models.user import User
 from app.schemas.stock_batch import StockBatchCreate
+from app.services.audit_log_service import record_audit_log
 
 
 def create_stock_batch(
@@ -13,19 +14,11 @@ def create_stock_batch(
     payload: StockBatchCreate,
     current_user: User,
 ) -> StockBatch:
-    """
-    Registra uma entrada real de item no estoque por lote.
-
-    Regras importantes:
-    - o item deve existir
-    - se o item controla validade, a data de validade é obrigatória
-    - current_quantity nasce igual à entry_quantity
-    """
     item = db.get(Item, payload.item_id)
     if item is None:
         raise HTTPException(
             status_code=404,
-            detail="Item não encontrado.",
+            detail="Item nao encontrado.",
         )
 
     if item.tracks_expiration and payload.expiration_date is None:
@@ -47,12 +40,24 @@ def create_stock_batch(
     )
 
     db.add(batch)
+    db.flush()
+    record_audit_log(
+        db,
+        event_type="stock.batch.created",
+        actor_user=current_user,
+        entity_type="stock_batch",
+        entity_id=batch.id,
+        details={
+            "item_id": batch.item_id,
+            "entry_quantity": int(batch.entry_quantity),
+            "source_type": batch.source_type,
+        },
+    )
     db.commit()
     db.refresh(batch)
     return batch
 
 
 def list_stock_batches(db: Session) -> list[StockBatch]:
-    """Lista todos os lotes de estoque cadastrados."""
     stmt = select(StockBatch).order_by(StockBatch.id.desc())
     return list(db.scalars(stmt).all())
