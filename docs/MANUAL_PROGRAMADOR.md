@@ -173,3 +173,22 @@ localStorage.removeItem("cesta_digital_token")
 - Confirme se a API esta em `http://127.0.0.1:8000`.
 - Confirme `frontend/.env`.
 - Reinicie `npm run dev` depois de mudar `.env`.
+
+## Comandos rapidos para iniciar localmente
+
+### Backend
+
+```powershell
+cd C:\Users\Gabriel\Documents\cesta-digital\backend
+.venv\Scripts\Activate.ps1
+alembic upgrade head
+python scripts\seed_initial_data.py
+uvicorn app.main:app --reload
+```
+
+### Frontend
+
+```powershell
+cd C:\Users\Gabriel\Documents\cesta-digital\frontend
+npm run dev
+```

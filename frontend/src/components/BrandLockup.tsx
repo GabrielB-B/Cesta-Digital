@@ -13,16 +13,12 @@ export function BrandLockup({
   variant = "sidebar",
   eyebrow,
   title = "Cesta Digital",
-  subtitle = "UPG | Gestão social e operacional",
+  subtitle = "UPG | Gestao social e operacional",
 }: BrandLockupProps) {
   return (
     <div className={`brand-lockup brand-lockup--${variant}`}>
       <div className="brand-lockup__mark-shell" aria-hidden="true">
-        <img
-          className="brand-lockup__mark"
-          src={brandLogo}
-          alt=""
-        />
+        <img className="brand-lockup__mark" src={brandLogo} alt="" />
       </div>
 
       <div className="brand-lockup__content">

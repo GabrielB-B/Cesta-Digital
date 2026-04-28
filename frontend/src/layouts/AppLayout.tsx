@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { AppIcon } from "../components/AppIcon";
 import { BrandLockup } from "../components/BrandLockup";
@@ -13,6 +14,16 @@ type MenuIconName =
   | "deliveries"
   | "audit"
   | "users";
+
+const SIDEBAR_STORAGE_KEY = "cestaDigital.sidebarCollapsed";
+
+function getInitialSidebarState(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+}
 
 function formatRole(role: string): string {
   if (role === "admin") {
@@ -34,6 +45,8 @@ export function AppLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
   const userRoles = user?.roles ?? [];
+  const [isSidebarCollapsed, setIsSidebarCollapsed] =
+    useState(getInitialSidebarState);
 
   function hasAnyRole(...roles: string[]): boolean {
     return roles.some((role) => userRoles.includes(role));
@@ -113,18 +126,54 @@ export function AppLayout() {
     return location.pathname.startsWith(path);
   }
 
+  function toggleSidebar() {
+    setIsSidebarCollapsed((current) => {
+      const nextState = !current;
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextState));
+      }
+
+      return nextState;
+    });
+  }
+
   return (
-    <div className="app-shell">
+    <div
+      className={
+        isSidebarCollapsed
+          ? "app-shell app-shell--sidebar-collapsed"
+          : "app-shell"
+      }
+    >
       <aside className="sidebar">
         <div className="sidebar__overlay" />
 
         <div className="sidebar__content">
-          <div className="sidebar__brand">
-            <BrandLockup
-              variant="sidebar"
-              title="Cesta Digital"
-              subtitle="UPG | Gestao social e operacional"
-            />
+          <div className="sidebar__brand-row">
+            <div className="sidebar__brand">
+              <BrandLockup
+                variant="sidebar"
+                title="Cesta Digital"
+                subtitle="UPG | Gestao social e operacional"
+              />
+            </div>
+
+            <button
+              className="sidebar__toggle"
+              type="button"
+              aria-expanded={!isSidebarCollapsed}
+              aria-label={
+                isSidebarCollapsed
+                  ? "Expandir menu lateral"
+                  : "Recolher menu lateral"
+              }
+              onClick={toggleSidebar}
+            >
+              <AppIcon
+                name={isSidebarCollapsed ? "panel-open" : "panel-close"}
+              />
+            </button>
           </div>
 
           <nav className="sidebar__nav">
@@ -132,6 +181,7 @@ export function AppLayout() {
               <Link
                 key={item.path}
                 to={item.path}
+                title={isSidebarCollapsed ? item.label : undefined}
                 className={
                   isActive(item.path)
                     ? "sidebar__link sidebar__link--active"
@@ -141,7 +191,7 @@ export function AppLayout() {
                 <span className="sidebar__link-icon">
                   <AppIcon name={item.icon} />
                 </span>
-                <span>{item.label}</span>
+                <span className="sidebar__link-label">{item.label}</span>
               </Link>
             ))}
           </nav>
