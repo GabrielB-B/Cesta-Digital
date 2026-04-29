@@ -12,13 +12,13 @@
   --bg-soft: #101524;
   --bg-card: rgba(18, 24, 40, 0.88);
   --bg-card-2: rgba(20, 28, 48, 0.95);
-  --sidebar: linear-gradient(180deg, #35172f 0%, #22203a 42%, #151c2d 70%, #48143c 100%);
-  --wine: #9b2f74;
-  --wine-strong: #d9499d;
-  --wine-glow: rgba(217, 73, 157, 0.26);
-  --primary: #e25aa8;
-  --primary-soft: rgba(226, 90, 168, 0.17);
-  --primary-strong: #ff8dca;
+  --sidebar: linear-gradient(180deg, #191525 0%, #151b2a 46%, #1b1c31 72%, #281629 100%);
+  --wine: #7f2b63;
+  --wine-strong: #cf5a9d;
+  --wine-glow: rgba(207, 90, 157, 0.16);
+  --primary: #d75c9d;
+  --primary-soft: rgba(215, 92, 157, 0.13);
+  --primary-strong: #f08ac3;
   --border: rgba(255, 255, 255, 0.08);
   --text: #f7f8fc;
   --text-soft: #b7bfd3;
@@ -41,7 +41,7 @@ body,
 body {
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(168, 58, 125, 0.2), transparent 28%),
+    radial-gradient(circle at top left, rgba(132, 48, 103, 0.14), transparent 28%),
     radial-gradient(circle at top right, rgba(84, 140, 255, 0.1), transparent 22%),
     linear-gradient(180deg, #0a0d16 0%, #0d1120 100%);
   color: var(--text);
@@ -79,7 +79,7 @@ textarea {
   top: 0;
   height: 100vh;
   background: var(--sidebar);
-  border-right: 1px solid rgba(255, 141, 202, 0.14);
+  border-right: 1px solid rgba(240, 138, 195, 0.1);
   overflow: hidden;
   isolation: isolate;
   box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
@@ -89,10 +89,10 @@ textarea {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 10% -4%, rgba(226, 90, 168, 0.42), transparent 34%),
-    radial-gradient(circle at 0% 100%, rgba(126, 31, 96, 0.42), transparent 40%),
-    radial-gradient(circle at 85% 72%, rgba(67, 139, 255, 0.1), transparent 24%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 44%, rgba(155, 47, 116, 0.14));
+    radial-gradient(circle at 10% -4%, rgba(215, 92, 157, 0.2), transparent 34%),
+    radial-gradient(circle at 0% 100%, rgba(118, 43, 96, 0.18), transparent 42%),
+    radial-gradient(circle at 85% 72%, rgba(67, 139, 255, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 48%, rgba(127, 43, 99, 0.07));
   pointer-events: none;
 }
 
@@ -123,20 +123,18 @@ textarea {
   align-items: center;
   justify-content: center;
   position: relative;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   margin-top: 5px;
   padding: 0;
   appearance: none;
-  border: 1px solid rgba(255, 141, 202, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
-  background:
-    linear-gradient(135deg, rgba(226, 90, 168, 0.34), rgba(255, 255, 255, 0.08)),
-    rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.045);
   box-shadow:
-    0 14px 28px rgba(155, 47, 116, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 10px 24px rgba(0, 0, 0, 0.16);
+  color: rgba(255, 255, 255, 0.78);
   cursor: pointer;
   flex-shrink: 0;
   overflow: hidden;
@@ -150,29 +148,61 @@ textarea {
 .sidebar__toggle::before {
   content: "";
   position: absolute;
-  inset: 4px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 72%);
-  opacity: 0.85;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 0 9px, rgba(255, 255, 255, 0.055) 9px 10px, transparent 10px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 70%);
+  opacity: 0.68;
 }
 
 .sidebar__toggle:hover {
-  background:
-    linear-gradient(135deg, rgba(255, 118, 192, 0.42), rgba(255, 255, 255, 0.1)),
-    rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 170, 220, 0.42);
+  background: rgba(255, 255, 255, 0.065);
+  border-color: rgba(240, 138, 195, 0.26);
   box-shadow:
-    0 18px 34px rgba(217, 73, 157, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  transform: translateY(-2px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 12px 26px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
-.sidebar__toggle svg {
+.sidebar__toggle-glyph {
+  display: grid;
+  grid-template-columns: 5px 14px 6px;
+  align-items: center;
+  gap: 5px;
   position: relative;
   z-index: 1;
-  width: 19px;
-  height: 19px;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.24));
+}
+
+.sidebar__toggle-dots,
+.sidebar__toggle-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sidebar__toggle-dots span {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(240, 138, 195, 0.78);
+  box-shadow: 0 0 10px rgba(207, 90, 157, 0.18);
+}
+
+.sidebar__toggle-lines span {
+  width: 14px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.sidebar__toggle-arrow {
+  width: 6px;
+  height: 6px;
+  border-top: 1.8px solid currentColor;
+  border-right: 1.8px solid currentColor;
+  transform: rotate(225deg);
+  transition: transform 180ms ease;
 }
 
 .sidebar__nav {
@@ -201,17 +231,17 @@ textarea {
 }
 
 .sidebar__link:hover {
-  background: rgba(226, 90, 168, 0.13);
-  border-color: rgba(255, 141, 202, 0.18);
+  background: rgba(215, 92, 157, 0.085);
+  border-color: rgba(240, 138, 195, 0.14);
   transform: translateX(2px);
 }
 
 .sidebar__link--active {
-  background: linear-gradient(135deg, rgba(226, 90, 168, 0.3), rgba(255, 255, 255, 0.1));
-  border-color: rgba(255, 141, 202, 0.28);
+  background: linear-gradient(135deg, rgba(215, 92, 157, 0.17), rgba(255, 255, 255, 0.075));
+  border-color: rgba(240, 138, 195, 0.19);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 16px 36px rgba(155, 47, 116, 0.16);
+    0 14px 30px rgba(127, 43, 99, 0.1);
 }
 
 .sidebar__link-icon {
@@ -247,9 +277,9 @@ textarea {
   padding: 18px;
   border-radius: 20px;
   background:
-    linear-gradient(145deg, rgba(155, 47, 116, 0.34), rgba(255, 255, 255, 0.06)),
+    linear-gradient(145deg, rgba(127, 43, 99, 0.2), rgba(255, 255, 255, 0.045)),
     rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 141, 202, 0.16);
+  border: 1px solid rgba(240, 138, 195, 0.12);
   backdrop-filter: blur(10px);
   transition:
     opacity 160ms ease,
@@ -294,6 +324,14 @@ textarea {
   height: 38px;
   margin-top: 0;
   border-radius: 999px;
+}
+
+.app-shell--sidebar-collapsed .sidebar__toggle-glyph {
+  grid-template-columns: 6px 14px 5px;
+}
+
+.app-shell--sidebar-collapsed .sidebar__toggle-arrow {
+  transform: rotate(45deg);
 }
 
 .app-shell--sidebar-collapsed .brand-lockup {

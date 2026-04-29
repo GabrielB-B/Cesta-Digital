@@ -170,9 +170,18 @@ export function AppLayout() {
               }
               onClick={toggleSidebar}
             >
-              <AppIcon
-                name={isSidebarCollapsed ? "panel-open" : "panel-close"}
-              />
+              <span className="sidebar__toggle-glyph" aria-hidden="true">
+                <span className="sidebar__toggle-dots">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                <span className="sidebar__toggle-lines">
+                  <span />
+                  <span />
+                </span>
+                <span className="sidebar__toggle-arrow" />
+              </span>
             </button>
           </div>
 
