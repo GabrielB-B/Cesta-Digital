@@ -8,8 +8,6 @@ type AppIconName =
   | "deliveries"
   | "audit"
   | "users"
-  | "panel-open"
-  | "panel-close"
   | "logout";
 
 interface AppIconProps {
@@ -108,22 +106,6 @@ export function AppIcon({ name, className }: AppIconProps) {
           <path d="M6 19a6 6 0 0 1 12 0" />
           <path d="M18.5 6.5h2.5" />
           <path d="M19.75 5.25v2.5" />
-        </>
-      ) : null}
-
-      {name === "panel-open" ? (
-        <>
-          <rect x="3" y="4" width="18" height="16" rx="3" />
-          <path d="M9 4v16" />
-          <path d="m14 9 3 3-3 3" />
-        </>
-      ) : null}
-
-      {name === "panel-close" ? (
-        <>
-          <rect x="3" y="4" width="18" height="16" rx="3" />
-          <path d="M9 4v16" />
-          <path d="m17 9-3 3 3 3" />
         </>
       ) : null}
 

@@ -71,7 +71,7 @@ textarea {
 }
 
 .app-shell--sidebar-collapsed {
-  grid-template-columns: 96px 1fr;
+  grid-template-columns: 88px 1fr;
 }
 
 .sidebar {
@@ -108,7 +108,7 @@ textarea {
 
 .sidebar__brand-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 2px 2px 0;
@@ -123,17 +123,17 @@ textarea {
   align-items: center;
   justify-content: center;
   position: relative;
-  width: 40px;
-  height: 40px;
-  margin-top: 5px;
+  width: 36px;
+  height: 34px;
+  margin-top: 0;
   padding: 0;
   appearance: none;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.045);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.032);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 10px 24px rgba(0, 0, 0, 0.16);
+    0 8px 18px rgba(0, 0, 0, 0.14);
   color: rgba(255, 255, 255, 0.78);
   cursor: pointer;
   flex-shrink: 0;
@@ -150,26 +150,31 @@ textarea {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, transparent 0 9px, rgba(255, 255, 255, 0.055) 9px 10px, transparent 10px),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 70%);
-  opacity: 0.68;
+    linear-gradient(90deg, transparent 0 8px, rgba(255, 255, 255, 0.045) 8px 9px, transparent 9px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 70%);
+  opacity: 0.62;
 }
 
 .sidebar__toggle:hover {
-  background: rgba(255, 255, 255, 0.065);
-  border-color: rgba(240, 138, 195, 0.26);
+  background: rgba(255, 255, 255, 0.052);
+  border-color: rgba(240, 138, 195, 0.22);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 12px 26px rgba(0, 0, 0, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 10px 22px rgba(0, 0, 0, 0.18);
   color: #ffffff;
   transform: translateY(-1px);
 }
 
+.sidebar__toggle:focus-visible {
+  outline: 2px solid rgba(240, 138, 195, 0.34);
+  outline-offset: 3px;
+}
+
 .sidebar__toggle-glyph {
   display: grid;
-  grid-template-columns: 5px 14px 6px;
+  grid-template-columns: 4px 12px 5px;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   position: relative;
   z-index: 1;
 }
@@ -182,25 +187,25 @@ textarea {
 }
 
 .sidebar__toggle-dots span {
-  width: 3px;
-  height: 3px;
+  width: 2.5px;
+  height: 2.5px;
   border-radius: 999px;
   background: rgba(240, 138, 195, 0.78);
   box-shadow: 0 0 10px rgba(207, 90, 157, 0.18);
 }
 
 .sidebar__toggle-lines span {
-  width: 14px;
+  width: 12px;
   height: 2px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.68);
 }
 
 .sidebar__toggle-arrow {
-  width: 6px;
-  height: 6px;
-  border-top: 1.8px solid currentColor;
-  border-right: 1.8px solid currentColor;
+  width: 5px;
+  height: 5px;
+  border-top: 1.7px solid currentColor;
+  border-right: 1.7px solid currentColor;
   transform: rotate(225deg);
   transition: transform 180ms ease;
 }
@@ -309,25 +314,26 @@ textarea {
 }
 
 .app-shell--sidebar-collapsed .sidebar__content {
-  padding: 22px 14px;
+  padding: 26px 18px;
 }
 
 .app-shell--sidebar-collapsed .sidebar__brand-row {
   align-items: center;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   padding: 0;
 }
 
 .app-shell--sidebar-collapsed .sidebar__toggle {
-  width: 48px;
-  height: 38px;
+  width: 38px;
+  height: 30px;
   margin-top: 0;
   border-radius: 999px;
 }
 
 .app-shell--sidebar-collapsed .sidebar__toggle-glyph {
-  grid-template-columns: 6px 14px 5px;
+  grid-template-columns: 4px 10px 5px;
+  gap: 4px;
 }
 
 .app-shell--sidebar-collapsed .sidebar__toggle-arrow {
@@ -336,6 +342,15 @@ textarea {
 
 .app-shell--sidebar-collapsed .brand-lockup {
   justify-content: center;
+}
+
+.app-shell--sidebar-collapsed .brand-lockup--sidebar .brand-lockup__mark-shell {
+  width: 52px;
+  height: 52px;
+}
+
+.app-shell--sidebar-collapsed .brand-lockup--sidebar .brand-lockup__mark {
+  transform: scale(1.5) translateX(1px);
 }
 
 .app-shell--sidebar-collapsed .brand-lockup__content,
@@ -360,15 +375,15 @@ textarea {
 
 .app-shell--sidebar-collapsed .sidebar__nav {
   align-items: center;
-  margin-top: 22px;
+  margin-top: 26px;
 }
 
 .app-shell--sidebar-collapsed .sidebar__link {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   justify-content: center;
   padding: 0;
-  border-radius: 18px;
+  border-radius: 17px;
 }
 
 .app-shell--sidebar-collapsed .sidebar__link:hover {
@@ -1137,6 +1152,8 @@ textarea::placeholder {
   height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.22));
+  transform: scale(1.42) translateX(1px);
+  transform-origin: center;
 }
 
 .brand-lockup__content {
@@ -1176,8 +1193,8 @@ textarea::placeholder {
 }
 
 .brand-lockup--sidebar .brand-lockup__mark-shell {
-  width: 68px;
-  height: 68px;
+  width: 60px;
+  height: 60px;
   padding: 0;
 }
 
