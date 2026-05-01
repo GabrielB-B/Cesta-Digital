@@ -140,7 +140,14 @@ export function FamilyAssessmentCreatePage() {
         `/families/${familyId}/assessments`,
         payload
       );
-      navigate(`/families/${familyId}`);
+      navigate(`/families/${familyId}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Avaliação social registrada com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel cadastrar a avaliacao social."));
     } finally {
@@ -336,7 +343,11 @@ export function FamilyAssessmentCreatePage() {
           </label>
         </div>
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions">
           <Link

@@ -204,7 +204,7 @@ export function BasketTypeDetailPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="status-error">
+          <p className="status-error" role="alert" aria-live="polite">
             {error || "Nao foi possivel carregar a cesta."}
           </p>
           <div className="panel-actions">
@@ -238,7 +238,11 @@ export function BasketTypeDetailPage() {
         </div>
       </section>
 
-      {successMessage ? <p className="status-success">{successMessage}</p> : null}
+      {successMessage ? (
+        <p className="status-success" role="status" aria-live="polite">
+          {successMessage}
+        </p>
+      ) : null}
 
       <section className="content-grid">
         <form onSubmit={handleSaveBasketType} className="panel-card form-panel">
@@ -353,7 +357,11 @@ export function BasketTypeDetailPage() {
             </p>
           ) : null}
 
-          {recipeError ? <p className="status-error">{recipeError}</p> : null}
+          {recipeError ? (
+            <p className="status-error" role="alert" aria-live="polite">
+              {recipeError}
+            </p>
+          ) : null}
 
           <div className="panel-actions">
             <button

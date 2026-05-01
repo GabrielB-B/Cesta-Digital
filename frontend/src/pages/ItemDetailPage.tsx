@@ -183,7 +183,7 @@ export function ItemDetailPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="status-error">
+          <p className="status-error" role="alert" aria-live="polite">
             {error || "Nao foi possivel carregar o item."}
           </p>
           <div className="panel-actions">
@@ -226,7 +226,11 @@ export function ItemDetailPage() {
         </div>
       </section>
 
-      {error ? <p className="status-error">{error}</p> : null}
+      {error ? (
+        <p className="status-error" role="alert" aria-live="polite">
+          {error}
+        </p>
+      ) : null}
 
       <section className="content-grid">
         <article className="panel-card">
@@ -402,7 +406,11 @@ export function ItemDetailPage() {
             </label>
           </div>
 
-          {successMessage ? <p className="status-success">{successMessage}</p> : null}
+          {successMessage ? (
+            <p className="status-success" role="status" aria-live="polite">
+              {successMessage}
+            </p>
+          ) : null}
 
           <div className="panel-actions">
             <button type="submit" className="button" disabled={isSavingItem}>

@@ -145,7 +145,9 @@ export function BasketTypesPage() {
         {isLoading ? (
           <p className="empty-state">Carregando tipos de cesta...</p>
         ) : error ? (
-          <p className="status-error">{error}</p>
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
         ) : basketTypes.length === 0 ? (
           <p className="empty-state">
             Nenhum tipo de cesta encontrado para o filtro informado.

@@ -1,66 +1,78 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { getApiErrorMessage } from "../utils/api-error";
-import { formatTodayForInput } from "../utils/format";
 import type {
-  FamilyCreatePayload,
-  FamilyListItemResponse,
+  FamilyContactCreatePayload,
+  FamilyDetailResponse,
+  FamilyUpdatePayload,
 } from "../types/family";
 
-/**
- * Formulário inicial de cadastro de família.
- * Mantém o payload compatível com o backend já construído.
- */
-export function FamilyCreatePage() {
+const initialFormData = {
+  internal_code: "",
+  status: "em_analise",
+  registration_date: "",
+  last_evaluation_date: "",
+  next_revaluation_date: "",
+  monthly_income_total: "0",
+  monthly_essential_expenses: "0",
+  receives_government_assistance: false,
+  housing_type: "",
+  has_water_supply: true,
+  has_electricity: true,
+  has_sanitation: false,
+  rooms_count: "0",
+  bedrooms_count: "0",
+  zip_code: "",
+  street: "",
+  number: "",
+  complement: "",
+  neighborhood: "",
+  city: "",
+  state: "SE",
+  reference_point: "",
+  total_adults: "1",
+  total_children: "0",
+  total_elderly: "0",
+  total_babies: "0",
+  has_pregnant_member: false,
+  has_disabled_member: false,
+  has_chronic_illness_member: false,
+  has_unemployed_member: false,
+  needs_extra_support: false,
+  attends_church: false,
+  church_name: "",
+  community_relationship: "",
+  responsible_education_level: "",
+  has_internet_access: false,
+  has_mobile_phone: false,
+  has_computer: false,
+  social_notes: "",
+  internal_notes: "",
+  contact_name: "",
+  contact_phone: "",
+  contact_type: "principal",
+  is_whatsapp: true,
+  contact_notes: "",
+};
+
+function dateForInput(value: string | null | undefined): string {
+  return value ? value.split("T")[0] : "";
+}
+
+function numberForInput(value: string | number | null | undefined): string {
+  return String(value ?? 0);
+}
+
+export function FamilyEditPage() {
   const navigate = useNavigate();
+  const { familyId } = useParams();
 
-  const [formData, setFormData] = useState({
-    internal_code: "",
-    status: "em_analise",
-    registration_date: formatTodayForInput(),
-    monthly_income_total: 0,
-    monthly_essential_expenses: 0,
-    receives_government_assistance: false,
-    housing_type: "",
-    has_water_supply: true,
-    has_electricity: true,
-    has_sanitation: false,
-    rooms_count: 0,
-    bedrooms_count: 0,
-    zip_code: "",
-    street: "",
-    number: "",
-    complement: "",
-    neighborhood: "",
-    city: "",
-    state: "SE",
-    reference_point: "",
-    total_adults: 1,
-    total_children: 0,
-    total_elderly: 0,
-    total_babies: 0,
-    has_pregnant_member: false,
-    has_disabled_member: false,
-    has_chronic_illness_member: false,
-    has_unemployed_member: false,
-    needs_extra_support: false,
-    social_notes: "",
-    internal_notes: "",
-    contact_name: "",
-    contact_phone: "",
-    contact_type: "principal",
-    is_whatsapp: true,
-    contact_notes: "",
-    attends_church: false,
-    church_name: "",
-    community_relationship: "",
-    responsible_education_level: "",
-    has_internet_access: false,
-    has_mobile_phone: false,
-    has_computer: false,
-  });
-
+  const [formData, setFormData] = useState(initialFormData);
+  const [extraContacts, setExtraContacts] = useState<FamilyContactCreatePayload[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -78,8 +90,110 @@ export function FamilyCreatePage() {
     formData.total_babies,
   ]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadFamily() {
+      try {
+        setIsLoading(true);
+        setError("");
+
+        const response = await api.get<FamilyDetailResponse>(
+          `/families/${familyId}`
+        );
+        const family = response.data;
+        const primaryContact = family.contacts[0];
+
+        if (!isMounted) {
+          return;
+        }
+
+        setFormData({
+          internal_code: family.internal_code,
+          status: family.status,
+          registration_date: dateForInput(family.registration_date),
+          last_evaluation_date: dateForInput(family.last_evaluation_date),
+          next_revaluation_date: dateForInput(family.next_revaluation_date),
+          monthly_income_total: numberForInput(family.monthly_income_total),
+          monthly_essential_expenses: numberForInput(
+            family.monthly_essential_expenses
+          ),
+          receives_government_assistance:
+            family.receives_government_assistance,
+          housing_type: family.housing_type ?? "",
+          has_water_supply: family.has_water_supply,
+          has_electricity: family.has_electricity,
+          has_sanitation: family.has_sanitation,
+          rooms_count: numberForInput(family.rooms_count),
+          bedrooms_count: numberForInput(family.bedrooms_count),
+          zip_code: family.zip_code ?? "",
+          street: family.street,
+          number: family.number,
+          complement: family.complement ?? "",
+          neighborhood: family.neighborhood,
+          city: family.city,
+          state: family.state,
+          reference_point: family.reference_point ?? "",
+          total_adults: numberForInput(family.total_adults),
+          total_children: numberForInput(family.total_children),
+          total_elderly: numberForInput(family.total_elderly),
+          total_babies: numberForInput(family.total_babies),
+          has_pregnant_member: family.has_pregnant_member,
+          has_disabled_member: family.has_disabled_member,
+          has_chronic_illness_member: family.has_chronic_illness_member,
+          has_unemployed_member: family.has_unemployed_member,
+          needs_extra_support: family.needs_extra_support,
+          attends_church: family.attends_church,
+          church_name: family.church_name ?? "",
+          community_relationship: family.community_relationship ?? "",
+          responsible_education_level:
+            family.responsible_education_level ?? "",
+          has_internet_access: family.has_internet_access,
+          has_mobile_phone: family.has_mobile_phone,
+          has_computer: family.has_computer,
+          social_notes: family.social_notes ?? "",
+          internal_notes: family.internal_notes ?? "",
+          contact_name: primaryContact?.contact_name ?? "",
+          contact_phone: primaryContact?.phone ?? "",
+          contact_type: primaryContact?.contact_type ?? "principal",
+          is_whatsapp: primaryContact?.is_whatsapp ?? true,
+          contact_notes: primaryContact?.notes ?? "",
+        });
+        setExtraContacts(
+          family.contacts.slice(1).map((contact) => ({
+            contact_name: contact.contact_name,
+            phone: contact.phone,
+            contact_type: contact.contact_type,
+            is_whatsapp: contact.is_whatsapp,
+            notes: contact.notes,
+          }))
+        );
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            getApiErrorMessage(err, "Nao foi possivel carregar a familia.")
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    if (familyId) {
+      void loadFamily();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [familyId]);
+
   function handleInputChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) {
     const { name, value, type } = event.target as HTMLInputElement;
 
@@ -101,82 +215,92 @@ export function FamilyCreatePage() {
     event.preventDefault();
     setError("");
 
+    if (!familyId) {
+      setError("Familia nao identificada.");
+      return;
+    }
+
     if (totalResidents < 1) {
       setError("A família precisa ter pelo menos 1 morador.");
       return;
     }
 
-    setIsSubmitting(true);
+    const primaryContact =
+      formData.contact_name.trim() || formData.contact_phone.trim()
+        ? [
+            {
+              contact_name: formData.contact_name.trim() || null,
+              phone: formData.contact_phone.trim() || null,
+              contact_type: formData.contact_type,
+              is_whatsapp: formData.is_whatsapp,
+              notes: formData.contact_notes.trim() || null,
+            },
+          ]
+        : [];
+
+    const payload: FamilyUpdatePayload = {
+      internal_code: formData.internal_code.trim(),
+      status: formData.status,
+      registration_date: formData.registration_date,
+      last_evaluation_date: formData.last_evaluation_date || null,
+      next_revaluation_date: formData.next_revaluation_date || null,
+      monthly_income_total: Number(formData.monthly_income_total),
+      monthly_essential_expenses: Number(formData.monthly_essential_expenses),
+      income_per_capita:
+        totalResidents > 0
+          ? Number(formData.monthly_income_total) / totalResidents
+          : 0,
+      receives_government_assistance:
+        formData.receives_government_assistance,
+      housing_type: formData.housing_type.trim() || null,
+      has_water_supply: formData.has_water_supply,
+      has_electricity: formData.has_electricity,
+      has_sanitation: formData.has_sanitation,
+      rooms_count: Number(formData.rooms_count),
+      bedrooms_count: Number(formData.bedrooms_count),
+      zip_code: formData.zip_code.trim() || null,
+      street: formData.street.trim(),
+      number: formData.number.trim(),
+      complement: formData.complement.trim() || null,
+      neighborhood: formData.neighborhood.trim(),
+      city: formData.city.trim(),
+      state: formData.state.trim().toUpperCase(),
+      reference_point: formData.reference_point.trim() || null,
+      total_residents: totalResidents,
+      total_adults: Number(formData.total_adults),
+      total_children: Number(formData.total_children),
+      total_elderly: Number(formData.total_elderly),
+      total_babies: Number(formData.total_babies),
+      has_pregnant_member: formData.has_pregnant_member,
+      has_disabled_member: formData.has_disabled_member,
+      has_chronic_illness_member: formData.has_chronic_illness_member,
+      has_unemployed_member: formData.has_unemployed_member,
+      needs_extra_support: formData.needs_extra_support,
+      social_notes: formData.social_notes.trim() || null,
+      internal_notes: formData.internal_notes.trim() || null,
+      contacts: [...primaryContact, ...extraContacts],
+      attends_church: formData.attends_church,
+      church_name: formData.church_name.trim() || null,
+      community_relationship: formData.community_relationship.trim() || null,
+      responsible_education_level:
+        formData.responsible_education_level.trim() || null,
+      has_internet_access: formData.has_internet_access,
+      has_mobile_phone: formData.has_mobile_phone,
+      has_computer: formData.has_computer,
+    };
 
     try {
-      const payload: FamilyCreatePayload = {
-        internal_code: formData.internal_code.trim(),
-        status: formData.status,
-        registration_date: formData.registration_date,
-        last_evaluation_date: null,
-        next_revaluation_date: null,
-        monthly_income_total: Number(formData.monthly_income_total),
-        monthly_essential_expenses: Number(formData.monthly_essential_expenses),
-        income_per_capita:
-          totalResidents > 0
-            ? Number(formData.monthly_income_total) / totalResidents
-            : 0,
-        receives_government_assistance:
-          formData.receives_government_assistance,
-        housing_type: formData.housing_type.trim() || null,
-        has_water_supply: formData.has_water_supply,
-        has_electricity: formData.has_electricity,
-        has_sanitation: formData.has_sanitation,
-        rooms_count: Number(formData.rooms_count),
-        bedrooms_count: Number(formData.bedrooms_count),
-        zip_code: formData.zip_code.trim() || null,
-        street: formData.street.trim(),
-        number: formData.number.trim(),
-        complement: formData.complement.trim() || null,
-        neighborhood: formData.neighborhood.trim(),
-        city: formData.city.trim(),
-        state: formData.state.trim().toUpperCase(),
-        reference_point: formData.reference_point.trim() || null,
-        total_residents: totalResidents,
-        total_adults: Number(formData.total_adults),
-        total_children: Number(formData.total_children),
-        total_elderly: Number(formData.total_elderly),
-        total_babies: Number(formData.total_babies),
-        has_pregnant_member: formData.has_pregnant_member,
-        has_disabled_member: formData.has_disabled_member,
-        has_chronic_illness_member: formData.has_chronic_illness_member,
-        has_unemployed_member: formData.has_unemployed_member,
-        needs_extra_support: formData.needs_extra_support,
-        social_notes: formData.social_notes.trim() || null,
-        internal_notes: formData.internal_notes.trim() || null,
-        contacts:
-          formData.contact_name.trim() || formData.contact_phone.trim()
-            ? [
-                {
-                  contact_name: formData.contact_name.trim() || null,
-                  phone: formData.contact_phone.trim() || null,
-                  contact_type: formData.contact_type,
-                  is_whatsapp: formData.is_whatsapp,
-                  notes: formData.contact_notes.trim() || null,
-                },
-              ]
-            : [],
-        attends_church: formData.attends_church,
-        church_name: formData.church_name.trim() || null,
-        community_relationship: formData.community_relationship.trim() || null,
-        responsible_education_level:
-          formData.responsible_education_level.trim() || null,
-        has_internet_access: formData.has_internet_access,
-        has_mobile_phone: formData.has_mobile_phone,
-        has_computer: formData.has_computer,
-      };
+      setIsSubmitting(true);
+      const response = await api.put<FamilyDetailResponse>(
+        `/families/${familyId}`,
+        payload
+      );
 
-      const response = await api.post<FamilyListItemResponse>("/families", payload);
       navigate(`/families/${response.data.id}`, {
         state: {
           flash: {
             type: "success",
-            message: "Família cadastrada com sucesso.",
+            message: "Cadastro da família atualizado com sucesso.",
           },
         },
       });
@@ -184,7 +308,7 @@ export function FamilyCreatePage() {
       setError(
         getApiErrorMessage(
           err,
-          "Não foi possível cadastrar a família. Verifique os campos obrigatórios."
+          "Não foi possível atualizar o cadastro da família."
         )
       );
     } finally {
@@ -192,15 +316,25 @@ export function FamilyCreatePage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="page-stack">
+        <div className="panel-card">
+          <p className="empty-state">Carregando cadastro da familia...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-stack">
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Novo cadastro</p>
-          <h2>Cadastrar família</h2>
+          <p className="eyebrow">Cadastro social</p>
+          <h2>Editar família</h2>
           <p className="hero-card__description">
-            Registre os dados iniciais da família para começar o acompanhamento
-            social no sistema.
+            Atualize os dados cadastrais, sociais, financeiros e de contato da
+            família com registro de auditoria.
           </p>
         </div>
       </section>
@@ -208,8 +342,8 @@ export function FamilyCreatePage() {
       <form onSubmit={handleSubmit} className="panel-card form-panel">
         <div className="panel-card__header">
           <div>
-            <p className="eyebrow">Dados iniciais</p>
-            <h3>Identificação e endereço</h3>
+            <p className="eyebrow">Identificação</p>
+            <h3>Dados principais e endereço</h3>
           </div>
         </div>
 
@@ -220,13 +354,12 @@ export function FamilyCreatePage() {
               name="internal_code"
               value={formData.internal_code}
               onChange={handleInputChange}
-              placeholder="Ex.: FAM-0002"
               required
             />
           </label>
 
           <label className="form__group">
-            <span>Status inicial</span>
+            <span>Status</span>
             <select
               name="status"
               value={formData.status}
@@ -252,12 +385,31 @@ export function FamilyCreatePage() {
           </label>
 
           <label className="form__group">
+            <span>Última avaliação</span>
+            <input
+              type="date"
+              name="last_evaluation_date"
+              value={formData.last_evaluation_date}
+              onChange={handleInputChange}
+            />
+          </label>
+
+          <label className="form__group">
+            <span>Próxima reavaliação</span>
+            <input
+              type="date"
+              name="next_revaluation_date"
+              value={formData.next_revaluation_date}
+              onChange={handleInputChange}
+            />
+          </label>
+
+          <label className="form__group">
             <span>CEP</span>
             <input
               name="zip_code"
               value={formData.zip_code}
               onChange={handleInputChange}
-              placeholder="Opcional"
             />
           </label>
 
@@ -334,7 +486,7 @@ export function FamilyCreatePage() {
         <div className="panel-card__header">
           <div>
             <p className="eyebrow">Composição</p>
-            <h3>Moradores e condições básicas</h3>
+            <h3>Moradores, moradia e vulnerabilidades</h3>
           </div>
         </div>
 
@@ -416,7 +568,6 @@ export function FamilyCreatePage() {
               name="housing_type"
               value={formData.housing_type}
               onChange={handleInputChange}
-              placeholder="Ex.: cedida, alugada..."
             />
           </label>
         </div>
@@ -515,8 +666,8 @@ export function FamilyCreatePage() {
 
         <div className="panel-card__header">
           <div>
-            <p className="eyebrow">Condição econômica</p>
-            <h3>Renda e despesas</h3>
+            <p className="eyebrow">Renda e vínculo</p>
+            <h3>Dados sociais complementares</h3>
           </div>
         </div>
 
@@ -544,12 +695,81 @@ export function FamilyCreatePage() {
               onChange={handleInputChange}
             />
           </label>
+
+          <label className="checkbox-card">
+            <input
+              type="checkbox"
+              name="attends_church"
+              checked={formData.attends_church}
+              onChange={handleInputChange}
+            />
+            <span>Frequenta igreja</span>
+          </label>
+
+          <label className="form__group">
+            <span>Igreja</span>
+            <input
+              name="church_name"
+              value={formData.church_name}
+              onChange={handleInputChange}
+            />
+          </label>
+
+          <label className="form__group">
+            <span>Vínculo comunitário</span>
+            <input
+              name="community_relationship"
+              value={formData.community_relationship}
+              onChange={handleInputChange}
+            />
+          </label>
+
+          <label className="form__group">
+            <span>Escolaridade do responsável</span>
+            <input
+              name="responsible_education_level"
+              value={formData.responsible_education_level}
+              onChange={handleInputChange}
+            />
+          </label>
+        </div>
+
+        <div className="checkbox-grid">
+          <label className="checkbox-card">
+            <input
+              type="checkbox"
+              name="has_internet_access"
+              checked={formData.has_internet_access}
+              onChange={handleInputChange}
+            />
+            <span>Tem internet</span>
+          </label>
+
+          <label className="checkbox-card">
+            <input
+              type="checkbox"
+              name="has_mobile_phone"
+              checked={formData.has_mobile_phone}
+              onChange={handleInputChange}
+            />
+            <span>Tem celular</span>
+          </label>
+
+          <label className="checkbox-card">
+            <input
+              type="checkbox"
+              name="has_computer"
+              checked={formData.has_computer}
+              onChange={handleInputChange}
+            />
+            <span>Tem computador</span>
+          </label>
         </div>
 
         <div className="panel-card__header">
           <div>
-            <p className="eyebrow">Contato principal</p>
-            <h3>Contato inicial da família</h3>
+            <p className="eyebrow">Contato e observações</p>
+            <h3>Comunicação principal</h3>
           </div>
         </div>
 
@@ -604,16 +824,7 @@ export function FamilyCreatePage() {
               onChange={handleInputChange}
             />
           </label>
-        </div>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Observações</p>
-            <h3>Anotações sociais e internas</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
           <label className="form__group form__group--wide">
             <span>Observações sociais</span>
             <textarea
@@ -641,13 +852,16 @@ export function FamilyCreatePage() {
           </p>
         ) : null}
 
-        <div className="panel-actions">
-          <Link to="/families" className="button button--secondary button--link">
+        <div className="panel-actions panel-actions--spread">
+          <Link
+            to={`/families/${familyId}`}
+            className="button button--secondary button--link"
+          >
             Cancelar
           </Link>
 
           <button type="submit" className="button" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : "Cadastrar família"}
+            {isSubmitting ? "Salvando..." : "Salvar cadastro"}
           </button>
         </div>
       </form>

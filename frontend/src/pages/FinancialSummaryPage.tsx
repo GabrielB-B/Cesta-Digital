@@ -69,7 +69,7 @@ export function FinancialSummaryPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="status-error">
+          <p className="status-error" role="alert" aria-live="polite">
             {error || "Não foi possível carregar os dados financeiros."}
           </p>
         </div>

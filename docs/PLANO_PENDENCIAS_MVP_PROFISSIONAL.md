@@ -119,10 +119,26 @@ Concluido nesta rodada:
 
 Ainda pendente:
 
-- Criar uma edicao completa de todos os campos cadastrais da familia, alem do status/inativacao ja entregue.
 - Avaliar paginacao server-side para historicos secundarios: lotes, movimentos e entregas realizadas.
 - Padronizar todos os textos visiveis entre portugues com acento e portugues sem acento.
-- Melhorar feedback de sucesso nos fluxos de criacao que redirecionam imediatamente.
-- Revisar acessibilidade de formularios: foco apos erro, `aria-live` consistente e botoes com `type` explicito.
+- Criar smoke/e2e de frontend para login, familias, estoque e entregas.
+- Ligar observabilidade externa e staging real.
+
+## Rodada Premium Em 2026-05-01
+
+Concluido nesta rodada:
+
+- Checkpoint git criado apos recuperacao do desligamento.
+- Feedback global de sucesso adicionado para fluxos que redirecionam apos criar, editar ou excluir registros.
+- Mensagens de erro e sucesso visiveis passaram a usar `role` e `aria-live` nos principais fluxos operacionais.
+- Tipografia da interface revisada para remover `letter-spacing` negativo e escala por viewport em titulo de pagina.
+- Edicao completa do cadastro da familia criada no backend com `PUT /families/{family_id}`, auditoria `family.updated` e teste de integracao.
+- Tela de edicao completa da familia adicionada ao frontend, acessivel pelo detalhe da familia.
+
+Ainda pendente apos esta rodada:
+
+- Avaliar paginacao server-side para historicos secundarios: lotes, movimentos e entregas realizadas.
+- Padronizar todos os textos visiveis entre portugues com acento e portugues sem acento.
+- Revisar acessibilidade de formularios: foco apos erro, `aria-live` restante e botoes com `type` explicito em componentes futuros.
 - Criar smoke/e2e de frontend para login, familias, estoque e entregas.
 - Ligar observabilidade externa e staging real.

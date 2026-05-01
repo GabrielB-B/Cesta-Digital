@@ -162,6 +162,8 @@ export interface FamilyCreatePayload {
   contacts: FamilyContactCreatePayload[];
 }
 
+export type FamilyUpdatePayload = FamilyCreatePayload;
+
 export interface FamilyPersonCreatePayload {
   full_name: string;
   birth_date: string;

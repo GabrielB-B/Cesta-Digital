@@ -34,7 +34,14 @@ export function BasketTypeCreatePage() {
       };
 
       const response = await api.post<BasketTypeResponse>("/basket-types", payload);
-      navigate(`/basket-types/${response.data.id}`);
+      navigate(`/basket-types/${response.data.id}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Tipo de cesta cadastrado com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(
         getApiErrorMessage(err, "Não foi possível cadastrar o tipo de cesta.")
@@ -95,7 +102,11 @@ export function BasketTypeCreatePage() {
           </label>
         </div>
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions panel-actions--spread">
           <Link

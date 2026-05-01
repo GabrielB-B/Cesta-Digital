@@ -103,7 +103,14 @@ export function FamilyBenefitCreatePage() {
       };
 
       await api.post<FamilyBenefitResponse>(`/families/${familyId}/benefits`, payload);
-      navigate(`/families/${familyId}`);
+      navigate(`/families/${familyId}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Benefício cadastrado com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel cadastrar o beneficio."));
     } finally {
@@ -224,7 +231,11 @@ export function FamilyBenefitCreatePage() {
           </label>
         </div>
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions">
           <Link

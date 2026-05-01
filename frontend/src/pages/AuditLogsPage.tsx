@@ -232,7 +232,11 @@ export function AuditLogsPage() {
           </div>
         </div>
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         {isLoading ? (
           <p className="empty-state">Carregando trilha de auditoria...</p>

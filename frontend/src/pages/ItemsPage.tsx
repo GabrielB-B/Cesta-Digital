@@ -159,7 +159,9 @@ export function ItemsPage() {
         {isLoading ? (
           <p className="empty-state">Carregando itens...</p>
         ) : error ? (
-          <p className="status-error">{error}</p>
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
         ) : items.length === 0 ? (
           <p className="empty-state">
             Nenhum item encontrado para o filtro informado.

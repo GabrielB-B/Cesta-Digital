@@ -107,7 +107,14 @@ export function StockBatchCreatePage() {
       };
 
       const response = await api.post<StockBatchResponse>("/stock-batches", payload);
-      navigate(`/items/${response.data.item_id}`);
+      navigate(`/items/${response.data.item_id}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Entrada de lote registrada com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(
         getApiErrorMessage(err, "Não foi possível registrar a entrada do lote.")
@@ -238,7 +245,11 @@ export function StockBatchCreatePage() {
           </div>
         ) : null}
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions">
           <Link to="/items" className="button button--secondary button--link">

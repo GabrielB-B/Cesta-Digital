@@ -15,6 +15,7 @@ import { FamilyBenefitCreatePage } from "./pages/FamilyBenefitCreatePage";
 import { FamilyBenefitEditPage } from "./pages/FamilyBenefitEditPage";
 import { FamilyCreatePage } from "./pages/FamilyCreatePage";
 import { FamilyDetailPage } from "./pages/FamilyDetailPage";
+import { FamilyEditPage } from "./pages/FamilyEditPage";
 import { FamilyPersonCreatePage } from "./pages/FamilyPersonCreatePage";
 import { FamilyPersonEditPage } from "./pages/FamilyPersonEditPage";
 import { ItemCategoriesPage } from "./pages/ItemCategoriesPage";
@@ -66,6 +67,14 @@ function App() {
               element={
                 <RoleRoute allowedRoles={["admin", "lider_social"]}>
                   <FamilyDetailPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="families/:familyId/edit"
+              element={
+                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                  <FamilyEditPage />
                 </RoleRoute>
               }
             />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { AppIcon } from "../components/AppIcon";
 import { BrandLockup } from "../components/BrandLockup";
@@ -16,6 +16,15 @@ type MenuIconName =
   | "users";
 
 const SIDEBAR_STORAGE_KEY = "cestaDigital.sidebarCollapsed";
+
+type FlashMessage = {
+  type: "success" | "error";
+  message: string;
+};
+
+type RouteState = {
+  flash?: FlashMessage;
+};
 
 function getInitialSidebarState(): boolean {
   if (typeof window === "undefined") {
@@ -47,6 +56,26 @@ export function AppLayout() {
   const userRoles = user?.roles ?? [];
   const [isSidebarCollapsed, setIsSidebarCollapsed] =
     useState(getInitialSidebarState);
+  const [dismissedFlashKey, setDismissedFlashKey] = useState<string | null>(
+    null
+  );
+  const routeState = location.state as RouteState | null;
+  const routeFlash =
+    routeState?.flash?.message && dismissedFlashKey !== location.key
+      ? routeState.flash
+      : null;
+
+  useEffect(() => {
+    if (!routeState?.flash?.message) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setDismissedFlashKey(location.key);
+    }, 6000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [location.key, routeState?.flash?.message]);
 
   function hasAnyRole(...roles: string[]): boolean {
     return roles.some((role) => userRoles.includes(role));
@@ -229,6 +258,16 @@ export function AppLayout() {
         </header>
 
         <section className="page-content">
+          {routeFlash ? (
+            <p
+              className={`flash-message flash-message--${routeFlash.type}`}
+              role={routeFlash.type === "error" ? "alert" : "status"}
+              aria-live="polite"
+            >
+              {routeFlash.message}
+            </p>
+          ) : null}
+
           <Outlet />
         </section>
       </main>

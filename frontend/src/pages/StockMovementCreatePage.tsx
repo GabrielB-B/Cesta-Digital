@@ -141,7 +141,14 @@ export function StockMovementCreatePage() {
         "/stock-movements",
         payload
       );
-      navigate(`/items/${response.data.item_id}`);
+      navigate(`/items/${response.data.item_id}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Movimentação registrada com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(
         getApiErrorMessage(err, "Não foi possível registrar a movimentação.")
@@ -249,7 +256,11 @@ export function StockMovementCreatePage() {
           </div>
         ) : null}
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions panel-actions--spread">
           <Link to="/items" className="button button--secondary button--link">

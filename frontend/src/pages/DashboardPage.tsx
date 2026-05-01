@@ -153,7 +153,7 @@ export function DashboardPage() {
       <div className="dashboard-page">
         <div className="hero-card">
           <h2>Dashboard</h2>
-          <p className="status-error">
+          <p className="status-error" role="alert" aria-live="polite">
             {error || "Não foi possível montar o dashboard."}
           </p>
         </div>

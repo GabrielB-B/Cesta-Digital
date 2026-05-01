@@ -36,6 +36,96 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
         self.assertEqual(list_response.headers["x-total-count"], "1")
         self.assertEqual(list_response.json()[0]["internal_code"], "FAM-PHASE2")
 
+    def test_family_full_registration_update_is_audited(self):
+        family = self.create_family(
+            self.headers,
+            internal_code="FAM-EDIT",
+            contacts=[
+                {
+                    "contact_name": "Maria",
+                    "phone": "79999990000",
+                    "contact_type": "principal",
+                    "is_whatsapp": True,
+                    "notes": None,
+                }
+            ],
+        )
+
+        payload = {
+            "internal_code": "FAM-EDIT-UPDATED",
+            "status": "apta_emergencial",
+            "registration_date": family["registration_date"],
+            "last_evaluation_date": None,
+            "next_revaluation_date": "2026-06-01",
+            "monthly_income_total": 500,
+            "monthly_essential_expenses": 250,
+            "income_per_capita": 250,
+            "receives_government_assistance": True,
+            "attends_church": True,
+            "church_name": "UPG",
+            "community_relationship": "participante",
+            "responsible_education_level": "ensino_medio",
+            "has_internet_access": True,
+            "has_mobile_phone": True,
+            "has_computer": False,
+            "housing_type": "alugada",
+            "has_water_supply": True,
+            "has_electricity": True,
+            "has_sanitation": True,
+            "rooms_count": 3,
+            "bedrooms_count": 2,
+            "zip_code": "49010-000",
+            "street": "Rua Atualizada",
+            "number": "22",
+            "complement": "Casa",
+            "neighborhood": "Centro",
+            "city": "Aracaju",
+            "state": "SE",
+            "reference_point": "Proximo a praca",
+            "total_residents": 2,
+            "total_adults": 1,
+            "total_children": 1,
+            "total_elderly": 0,
+            "total_babies": 0,
+            "has_pregnant_member": False,
+            "has_disabled_member": False,
+            "has_chronic_illness_member": False,
+            "has_unemployed_member": True,
+            "needs_extra_support": True,
+            "social_notes": "Atualizacao social.",
+            "internal_notes": "Atualizacao operacional.",
+            "contacts": [
+                {
+                    "contact_name": "Maria Atualizada",
+                    "phone": "79888880000",
+                    "contact_type": "principal",
+                    "is_whatsapp": True,
+                    "notes": "Preferir WhatsApp.",
+                }
+            ],
+        }
+
+        update_response = self.client.put(
+            f"/families/{family['id']}",
+            json=payload,
+            headers=self.headers,
+        )
+
+        self.assertEqual(update_response.status_code, 200, update_response.text)
+        updated_family = update_response.json()
+        self.assertEqual(updated_family["internal_code"], "FAM-EDIT-UPDATED")
+        self.assertEqual(updated_family["status"], "apta_emergencial")
+        self.assertEqual(updated_family["city"], "Aracaju")
+        self.assertEqual(updated_family["contacts"][0]["phone"], "79888880000")
+
+        audit_response = self.client.get(
+            "/audit-logs",
+            headers=self.headers,
+            params={"event_type": "family.updated"},
+        )
+        self.assertEqual(audit_response.status_code, 200, audit_response.text)
+        self.assertEqual(audit_response.json()["items"][0]["entity_id"], str(family["id"]))
+
     def test_item_category_item_and_basket_recipe_updates(self):
         category = self.create_item_category(self.headers)
         item_response = self.client.post(

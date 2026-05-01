@@ -162,8 +162,16 @@ export function ItemCategoriesPage() {
             </label>
           </div>
 
-          {error ? <p className="status-error">{error}</p> : null}
-          {successMessage ? <p className="status-success">{successMessage}</p> : null}
+          {error ? (
+            <p className="status-error" role="alert" aria-live="polite">
+              {error}
+            </p>
+          ) : null}
+          {successMessage ? (
+            <p className="status-success" role="status" aria-live="polite">
+              {successMessage}
+            </p>
+          ) : null}
 
           <div className="panel-actions">
             {formData.id ? (

@@ -107,7 +107,14 @@ export function ItemCreatePage() {
       };
 
       const response = await api.post<ItemDetailResponse>("/items", payload);
-      navigate(`/items/${response.data.id}`);
+      navigate(`/items/${response.data.id}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Item cadastrado com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(getApiErrorMessage(err, "Não foi possível cadastrar o item."));
     } finally {
@@ -236,7 +243,11 @@ export function ItemCreatePage() {
           </label>
         </div>
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions">
           <Link to="/items" className="button button--secondary button--link">

@@ -11,11 +11,13 @@ from app.schemas.family import (
     FamilyDetailResponse,
     FamilyResponse,
     FamilyStatusUpdate,
+    FamilyUpdate,
 )
 from app.services.family_service import (
     create_family,
     get_family_detail,
     list_families,
+    update_family,
     update_family_status,
 )
 
@@ -66,6 +68,17 @@ def get_family_detail_endpoint(
 ):
     """Retorna o detalhe completo de uma familia."""
     return get_family_detail(db, family_id)
+
+
+@router.put("/{family_id}", response_model=FamilyDetailResponse)
+def update_family_endpoint(
+    family_id: int,
+    payload: FamilyUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    """Atualiza os dados cadastrais completos de uma familia."""
+    return update_family(db, family_id, payload, current_user)
 
 
 @router.patch("/{family_id}/status", response_model=FamilyDetailResponse)

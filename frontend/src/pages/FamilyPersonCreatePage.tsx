@@ -81,7 +81,14 @@ export function FamilyPersonCreatePage() {
       };
 
       await api.post<FamilyPersonResponse>(`/families/${familyId}/people`, payload);
-      navigate(`/families/${familyId}`);
+      navigate(`/families/${familyId}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Membro da família cadastrado com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(
         getApiErrorMessage(err, "Nao foi possivel cadastrar o membro da familia.")
@@ -297,7 +304,11 @@ export function FamilyPersonCreatePage() {
           </label>
         </div>
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions">
           <Link

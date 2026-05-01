@@ -100,7 +100,14 @@ export function DeliveryScheduleCreatePage() {
       };
 
       await api.post<DeliveryScheduleResponse>("/delivery-schedules", payload);
-      navigate("/deliveries");
+      navigate("/deliveries", {
+        state: {
+          flash: {
+            type: "success",
+            message: "Agendamento criado com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(getApiErrorMessage(err, "Não foi possível criar o agendamento."));
     } finally {
@@ -201,7 +208,11 @@ export function DeliveryScheduleCreatePage() {
           </label>
         </div>
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions">
           <Link to="/deliveries" className="button button--secondary button--link">

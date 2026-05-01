@@ -147,7 +147,14 @@ export function FamilyPersonEditPage() {
       };
 
       await api.put(`/people/${personId}`, payload);
-      navigate(`/families/${familyId}`);
+      navigate(`/families/${familyId}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Membro da família atualizado com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel atualizar o membro."));
     } finally {
@@ -170,7 +177,14 @@ export function FamilyPersonEditPage() {
 
     try {
       await api.delete(`/people/${personId}`);
-      navigate(`/families/${familyId}`);
+      navigate(`/families/${familyId}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Membro da família excluído com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel excluir o membro."));
     } finally {
@@ -192,7 +206,9 @@ export function FamilyPersonEditPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="status-error">{error}</p>
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
           <div className="panel-actions">
             <Link to={`/families/${familyId}`} className="button button--secondary">
               Voltar
@@ -408,7 +424,11 @@ export function FamilyPersonEditPage() {
           </label>
         </div>
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions panel-actions--spread">
           <button

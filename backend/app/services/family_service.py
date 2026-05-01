@@ -11,8 +11,53 @@ from app.models.family_contact import FamilyContact
 from app.models.person import Person
 from app.models.social_assessment import SocialAssessment
 from app.models.user import User
-from app.schemas.family import FamilyCreate, FamilyStatusUpdate
+from app.schemas.family import FamilyCreate, FamilyStatusUpdate, FamilyUpdate
 from app.services.audit_log_service import record_audit_log
+
+FAMILY_EDITABLE_FIELDS = (
+    "internal_code",
+    "status",
+    "registration_date",
+    "last_evaluation_date",
+    "next_revaluation_date",
+    "monthly_income_total",
+    "monthly_essential_expenses",
+    "income_per_capita",
+    "receives_government_assistance",
+    "housing_type",
+    "has_water_supply",
+    "has_electricity",
+    "has_sanitation",
+    "rooms_count",
+    "bedrooms_count",
+    "zip_code",
+    "street",
+    "number",
+    "complement",
+    "neighborhood",
+    "city",
+    "state",
+    "reference_point",
+    "total_residents",
+    "total_adults",
+    "total_children",
+    "total_elderly",
+    "total_babies",
+    "has_pregnant_member",
+    "has_disabled_member",
+    "has_chronic_illness_member",
+    "has_unemployed_member",
+    "needs_extra_support",
+    "social_notes",
+    "internal_notes",
+    "attends_church",
+    "church_name",
+    "community_relationship",
+    "responsible_education_level",
+    "has_internet_access",
+    "has_mobile_phone",
+    "has_computer",
+)
 
 
 def calculate_age(birth_date: date) -> int:
@@ -250,6 +295,66 @@ def get_family_detail(db: Session, family_id: int) -> Family:
         )
 
     return family
+
+
+def update_family(
+    db: Session,
+    family_id: int,
+    payload: FamilyUpdate,
+    current_user: User,
+) -> Family:
+    family = get_family_detail(db, family_id)
+
+    existing_family = db.scalar(
+        select(Family).where(
+            Family.internal_code == payload.internal_code,
+            Family.id != family_id,
+        )
+    )
+    if existing_family is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Ja existe uma familia cadastrada com esse codigo interno.",
+        )
+
+    changed_fields = [
+        field
+        for field in FAMILY_EDITABLE_FIELDS
+        if getattr(family, field) != getattr(payload, field)
+    ]
+
+    for field in FAMILY_EDITABLE_FIELDS:
+        setattr(family, field, getattr(payload, field))
+
+    family.updated_by_user_id = current_user.id
+    family.contacts.clear()
+
+    for contact in payload.contacts:
+        family.contacts.append(
+            FamilyContact(
+                contact_name=contact.contact_name,
+                phone=contact.phone,
+                contact_type=contact.contact_type,
+                is_whatsapp=contact.is_whatsapp,
+                notes=contact.notes,
+            )
+        )
+
+    record_audit_log(
+        db,
+        event_type="family.updated",
+        actor_user=current_user,
+        entity_type="family",
+        entity_id=family.id,
+        details={
+            "internal_code": family.internal_code,
+            "changed_fields": changed_fields,
+            "contacts_count": len(payload.contacts),
+        },
+    )
+    db.commit()
+    db.refresh(family)
+    return get_family_detail(db, family.id)
 
 
 def update_family_status(

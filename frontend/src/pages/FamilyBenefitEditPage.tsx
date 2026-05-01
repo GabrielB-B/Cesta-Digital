@@ -125,7 +125,14 @@ export function FamilyBenefitEditPage() {
       };
 
       await api.put(`/benefits/${benefitId}`, payload);
-      navigate(`/families/${familyId}`);
+      navigate(`/families/${familyId}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Benefício atualizado com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel atualizar o beneficio."));
     } finally {
@@ -148,7 +155,14 @@ export function FamilyBenefitEditPage() {
 
     try {
       await api.delete(`/benefits/${benefitId}`);
-      navigate(`/families/${familyId}`);
+      navigate(`/families/${familyId}`, {
+        state: {
+          flash: {
+            type: "success",
+            message: "Benefício excluído com sucesso.",
+          },
+        },
+      });
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel excluir o beneficio."));
     } finally {
@@ -170,7 +184,9 @@ export function FamilyBenefitEditPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="status-error">{error}</p>
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
           <div className="panel-actions">
             <Link to={`/families/${familyId}`} className="button button--secondary">
               Voltar
@@ -292,7 +308,11 @@ export function FamilyBenefitEditPage() {
           </label>
         </div>
 
-        {error ? <p className="status-error">{error}</p> : null}
+        {error ? (
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
+        ) : null}
 
         <div className="panel-actions panel-actions--spread">
           <button

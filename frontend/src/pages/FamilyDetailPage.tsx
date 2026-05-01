@@ -121,7 +121,7 @@ export function FamilyDetailPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="status-error">
+          <p className="status-error" role="alert" aria-live="polite">
             {error || "Nao foi possivel carregar a familia."}
           </p>
           <div className="panel-actions">
@@ -148,6 +148,12 @@ export function FamilyDetailPage() {
           <span className="hero-badge">
             Renda per capita: {formatCurrency(family.income_per_capita)}
           </span>
+          <Link
+            to={`/families/${family.id}/edit`}
+            className="button button--secondary button--link"
+          >
+            Editar cadastro
+          </Link>
         </div>
       </section>
 
@@ -196,7 +202,9 @@ export function FamilyDetailPage() {
           </div>
 
           {statusMessage ? (
-            <p className="status-success">{statusMessage}</p>
+            <p className="status-success" role="status" aria-live="polite">
+              {statusMessage}
+            </p>
           ) : null}
 
           <div className="panel-actions">

@@ -300,7 +300,11 @@ export function UsersPage() {
             </div>
           ) : null}
 
-          {error ? <p className="status-error">{error}</p> : null}
+          {error ? (
+            <p className="status-error" role="alert" aria-live="polite">
+              {error}
+            </p>
+          ) : null}
 
           <div className="panel-actions panel-actions--spread">
             <button

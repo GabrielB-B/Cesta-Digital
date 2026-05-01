@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class FamilyContactCreate(BaseModel):
@@ -130,7 +130,7 @@ class FamilyCreate(BaseModel):
     social_notes: str | None = None
     internal_notes: str | None = None
 
-    contacts: list[FamilyContactCreate] = []
+    contacts: list[FamilyContactCreate] = Field(default_factory=list)
 
     @field_validator("internal_code")
     @classmethod
@@ -213,6 +213,10 @@ class FamilyStatusUpdate(BaseModel):
         if value not in allowed:
             raise ValueError("Status de familia invalido.")
         return value
+
+
+class FamilyUpdate(FamilyCreate):
+    pass
 
 
 class FamilyResponse(BaseModel):

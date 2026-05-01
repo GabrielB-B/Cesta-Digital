@@ -182,7 +182,9 @@ export function FamiliesPage() {
         {isLoading ? (
           <p className="empty-state">Carregando familias...</p>
         ) : error ? (
-          <p className="status-error">{error}</p>
+          <p className="status-error" role="alert" aria-live="polite">
+            {error}
+          </p>
         ) : families.length === 0 ? (
           <p className="empty-state">
             Nenhuma familia encontrada para o filtro informado.
