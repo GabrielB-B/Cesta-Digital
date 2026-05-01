@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { getApiErrorMessage } from "../utils/api-error";
+import { formatDateTime } from "../utils/format";
 import type { AuditLogItemResponse, AuditLogListResponse } from "../types/audit";
-
-function formatDateTime(value: string): string {
-  return new Date(value).toLocaleString("pt-BR");
-}
 
 function formatEvent(eventType: string): string {
   return eventType.replaceAll(".", " / ");
@@ -35,6 +32,7 @@ export function AuditLogsPage() {
   const [offset, setOffset] = useState(0);
   const [limit] = useState(25);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState("");
 
   async function loadAuditLogs(
@@ -83,6 +81,33 @@ export function AuditLogsPage() {
     };
     setFilters(clearedFilters);
     void loadAuditLogs(0, clearedFilters);
+  }
+
+  async function handleExportCsv() {
+    try {
+      setIsExporting(true);
+      setError("");
+
+      const response = await api.get<Blob>("/audit-logs/export", {
+        params: {
+          event_type: filters.event_type || undefined,
+          actor_email: filters.actor_email || undefined,
+          entity_type: filters.entity_type || undefined,
+        },
+        responseType: "blob",
+      });
+
+      const downloadUrl = URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "audit-logs.csv";
+      link.click();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel exportar a auditoria."));
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   const hasPreviousPage = offset > 0;
@@ -180,6 +205,14 @@ export function AuditLogsPage() {
           </div>
 
           <div className="inline-actions">
+            <button
+              type="button"
+              className="button button--secondary button--small"
+              onClick={() => void handleExportCsv()}
+              disabled={isExporting}
+            >
+              {isExporting ? "Exportando..." : "Exportar CSV"}
+            </button>
             <button
               type="button"
               className="button button--secondary button--small"

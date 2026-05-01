@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
+import { getApiErrorMessage } from "../utils/api-error";
+import { formatDateOnly } from "../utils/format";
 import type {
   ItemDetailResponse,
   StockBatchResponse,
@@ -68,9 +70,11 @@ export function StockMovementCreatePage() {
             }));
           }
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setError("Não foi possível carregar lotes e itens.");
+          setError(
+            getApiErrorMessage(err, "Não foi possível carregar lotes e itens.")
+          );
         }
       } finally {
         if (isMounted) {
@@ -138,8 +142,10 @@ export function StockMovementCreatePage() {
         payload
       );
       navigate(`/items/${response.data.item_id}`);
-    } catch {
-      setError("Não foi possível registrar a movimentação.");
+    } catch (err) {
+      setError(
+        getApiErrorMessage(err, "Não foi possível registrar a movimentação.")
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -236,7 +242,7 @@ export function StockMovementCreatePage() {
               <span>Validade</span>
               <strong>
                 {selectedBatch.expiration_date
-                  ? new Date(selectedBatch.expiration_date).toLocaleDateString("pt-BR")
+                  ? formatDateOnly(selectedBatch.expiration_date)
                   : "Sem validade"}
               </strong>
             </div>

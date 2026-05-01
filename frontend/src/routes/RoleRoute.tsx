@@ -1,6 +1,6 @@
-import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useAuth } from "../contexts/useAuth";
+import { AccessDeniedPage } from "../pages/AccessDeniedPage";
 
 interface RoleRouteProps {
   allowedRoles: string[];
@@ -25,7 +25,7 @@ export function RoleRoute({ allowedRoles, children }: RoleRouteProps) {
   const isAllowed = allowedRoles.some((role) => userRoles.includes(role));
 
   if (!isAllowed) {
-    return <Navigate to="/" replace />;
+    return <AccessDeniedPage allowedRoles={allowedRoles} />;
   }
 
   return <>{children}</>;

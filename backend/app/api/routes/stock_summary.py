@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, require_any_role
@@ -17,11 +17,24 @@ router = APIRouter(
 
 @router.get("/stock-summary", response_model=list[StockSummaryResponse])
 def list_stock_summary_endpoint(
+    response: Response,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
+    q: str | None = Query(default=None),
+    is_active: bool | None = Query(default=None),
+    limit: int | None = Query(default=None, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
 ):
     """Lista o estoque consolidado por item."""
-    return list_stock_summary(db)
+    summary, total = list_stock_summary(
+        db,
+        q=q,
+        is_active=is_active,
+        limit=limit,
+        offset=offset,
+    )
+    response.headers["X-Total-Count"] = str(total)
+    return summary
 
 
 @router.get("/stock-alerts", response_model=list[StockAlertResponse])

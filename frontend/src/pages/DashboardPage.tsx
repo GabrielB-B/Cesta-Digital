@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { AppIcon } from "../components/AppIcon";
 import { useAuth } from "../contexts/useAuth";
+import { getApiErrorMessage } from "../utils/api-error";
+import { formatDateOnly } from "../utils/format";
 import type { DashboardOverviewResponse } from "../types/dashboard";
 
 /**
@@ -29,9 +31,14 @@ export function DashboardPage() {
         if (isMounted) {
           setData(response.data);
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setError("Não foi possível carregar os indicadores do dashboard.");
+          setError(
+            getApiErrorMessage(
+              err,
+              "Não foi possível carregar os indicadores do dashboard."
+            )
+          );
         }
       } finally {
         if (isMounted) {
@@ -269,9 +276,7 @@ export function DashboardPage() {
                   </div>
 
                   <span className="pill">
-                    {new Date(item.next_revaluation_date).toLocaleDateString(
-                      "pt-BR"
-                    )}
+                    {formatDateOnly(item.next_revaluation_date)}
                   </span>
                 </div>
               ))}

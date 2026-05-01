@@ -22,7 +22,9 @@
 - Pydantic `2.12.5`
 - Pydantic Settings `2.13.1`
 - PyMySQL `1.1.2`
-- python-jose `3.5.0`
+- PyJWT `2.12.0`
+- python-multipart `0.0.26`
+- cryptography `46.0.7`
 - passlib `1.7.4`
 - bcrypt `4.0.1`
 - Uvicorn `0.42.0`

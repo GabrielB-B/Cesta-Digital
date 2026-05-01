@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BrandLockup } from "../components/BrandLockup";
 import { useAuth } from "../contexts/useAuth";
+import { getApiErrorMessage } from "../utils/api-error";
 
 interface ValidationIssue {
   loc?: Array<string | number>;
@@ -91,10 +92,8 @@ export function LoginPage() {
 
         if (normalizedError) {
           setError(normalizedError);
-        } else if (err.response?.status) {
-          setError(`Erro ${err.response.status} ao autenticar.`);
         } else {
-          setError("Não foi possível conectar ao backend.");
+          setError(getApiErrorMessage(err, "Erro inesperado ao tentar entrar."));
         }
       } else {
         setError("Erro inesperado ao tentar entrar.");

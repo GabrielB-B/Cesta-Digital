@@ -2,6 +2,13 @@ export interface ItemCategoryResponse {
   id: number;
   name: string;
   description: string | null;
+  is_active: boolean;
+}
+
+export interface ItemCategoryPayload {
+  name: string;
+  description: string | null;
+  is_active: boolean;
 }
 
 export interface ItemCreatePayload {
@@ -74,6 +81,8 @@ export interface StockMovementResponse {
   notes: string | null;
   created_by_user_id: number;
 }
+
+export type ItemUpdatePayload = ItemCreatePayload;
 
 export interface StockMovementCreatePayload {
   batch_id: number;

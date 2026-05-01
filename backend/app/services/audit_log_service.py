@@ -8,6 +8,26 @@ from app.models.audit_log import AuditLog
 from app.models.user import User
 
 
+def _build_audit_filters(
+    *,
+    event_type: str | None = None,
+    actor_email: str | None = None,
+    entity_type: str | None = None,
+):
+    filters = []
+
+    if event_type:
+        filters.append(AuditLog.event_type == event_type.strip())
+
+    if actor_email:
+        filters.append(AuditLog.actor_email == actor_email.strip().lower())
+
+    if entity_type:
+        filters.append(AuditLog.entity_type == entity_type.strip())
+
+    return filters
+
+
 def record_audit_log(
     db: Session,
     *,
@@ -45,16 +65,11 @@ def list_audit_logs(
     limit: int = 50,
     offset: int = 0,
 ) -> dict[str, object]:
-    filters = []
-
-    if event_type:
-        filters.append(AuditLog.event_type == event_type.strip())
-
-    if actor_email:
-        filters.append(AuditLog.actor_email == actor_email.strip().lower())
-
-    if entity_type:
-        filters.append(AuditLog.entity_type == entity_type.strip())
+    filters = _build_audit_filters(
+        event_type=event_type,
+        actor_email=actor_email,
+        entity_type=entity_type,
+    )
 
     total_stmt = select(func.count(AuditLog.id))
     items_stmt = select(AuditLog).order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
@@ -72,3 +87,24 @@ def list_audit_logs(
         "offset": offset,
         "items": items,
     }
+
+
+def export_audit_logs(
+    db: Session,
+    *,
+    event_type: str | None = None,
+    actor_email: str | None = None,
+    entity_type: str | None = None,
+    limit: int = 5000,
+) -> list[AuditLog]:
+    filters = _build_audit_filters(
+        event_type=event_type,
+        actor_email=actor_email,
+        entity_type=entity_type,
+    )
+    stmt = select(AuditLog).order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
+
+    if filters:
+        stmt = stmt.where(*filters)
+
+    return list(db.scalars(stmt.limit(limit)).all())

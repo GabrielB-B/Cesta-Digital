@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.benefit import Benefit
@@ -11,7 +11,7 @@ from app.models.family_contact import FamilyContact
 from app.models.person import Person
 from app.models.social_assessment import SocialAssessment
 from app.models.user import User
-from app.schemas.family import FamilyCreate
+from app.schemas.family import FamilyCreate, FamilyStatusUpdate
 from app.services.audit_log_service import record_audit_log
 
 
@@ -183,7 +183,32 @@ def create_family(db: Session, payload: FamilyCreate, current_user: User) -> Fam
     return get_family_detail(db, family.id)
 
 
-def list_families(db: Session) -> list[Family]:
+def list_families(
+    db: Session,
+    *,
+    q: str | None = None,
+    status: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[Family], int]:
+    filters = []
+    search_term = (q or "").strip()
+
+    if search_term:
+        normalized_term = f"%{search_term.lower()}%"
+        filters.append(
+            or_(
+                func.lower(Family.internal_code).like(normalized_term),
+                func.lower(Family.city).like(normalized_term),
+                func.lower(Family.neighborhood).like(normalized_term),
+                func.lower(Family.status).like(normalized_term),
+            )
+        )
+
+    if status:
+        filters.append(Family.status == status.strip().lower())
+
+    total_stmt = select(func.count(Family.id))
     stmt = (
         select(Family)
         .options(
@@ -192,7 +217,17 @@ def list_families(db: Session) -> list[Family]:
         )
         .order_by(Family.id.desc())
     )
-    return list(db.scalars(stmt).all())
+
+    if filters:
+        total_stmt = total_stmt.where(*filters)
+        stmt = stmt.where(*filters)
+
+    total = db.scalar(total_stmt) or 0
+
+    if limit is not None:
+        stmt = stmt.offset(offset).limit(limit)
+
+    return list(db.scalars(stmt).all()), total
 
 
 def get_family_detail(db: Session, family_id: int) -> Family:
@@ -215,3 +250,35 @@ def get_family_detail(db: Session, family_id: int) -> Family:
         )
 
     return family
+
+
+def update_family_status(
+    db: Session,
+    family_id: int,
+    payload: FamilyStatusUpdate,
+    current_user: User,
+) -> Family:
+    family = get_family_detail(db, family_id)
+    previous_status = family.status
+
+    family.status = payload.status
+    family.updated_by_user_id = current_user.id
+
+    if payload.internal_notes is not None:
+        family.internal_notes = payload.internal_notes.strip() or None
+
+    record_audit_log(
+        db,
+        event_type="family.status_updated",
+        actor_user=current_user,
+        entity_type="family",
+        entity_id=family.id,
+        details={
+            "internal_code": family.internal_code,
+            "previous_status": previous_status,
+            "new_status": family.status,
+        },
+    )
+    db.commit()
+    db.refresh(family)
+    return get_family_detail(db, family.id)

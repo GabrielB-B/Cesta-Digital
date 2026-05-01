@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from fastapi import HTTPException
-from sqlalchemy import case, select
+from sqlalchemy import case, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -14,7 +14,11 @@ from app.models.item import Item
 from app.models.stock_batch import StockBatch
 from app.models.stock_movement import StockMovement
 from app.models.user import User
-from app.schemas.delivery import DeliveryFromScheduleCreate, DeliveryScheduleCreate
+from app.schemas.delivery import (
+    DeliveryFromScheduleCreate,
+    DeliveryScheduleCreate,
+    DeliveryScheduleUpdate,
+)
 from app.services.audit_log_service import record_audit_log
 
 
@@ -79,14 +83,90 @@ def create_delivery_schedule(
     return schedule
 
 
-def list_delivery_schedules(db: Session) -> list[DeliverySchedule]:
+def list_delivery_schedules(
+    db: Session,
+    *,
+    status: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[DeliverySchedule], int]:
+    total_stmt = select(func.count(DeliverySchedule.id))
     stmt = select(DeliverySchedule).order_by(DeliverySchedule.id.desc())
-    return list(db.scalars(stmt).all())
+
+    if status:
+        normalized_status = status.strip().lower()
+        total_stmt = total_stmt.where(DeliverySchedule.status == normalized_status)
+        stmt = stmt.where(DeliverySchedule.status == normalized_status)
+
+    total = db.scalar(total_stmt) or 0
+
+    if limit is not None:
+        stmt = stmt.offset(offset).limit(limit)
+
+    return list(db.scalars(stmt).all()), total
 
 
 def list_deliveries(db: Session) -> list[Delivery]:
     stmt = select(Delivery).order_by(Delivery.id.desc())
     return list(db.scalars(stmt).all())
+
+
+def update_delivery_schedule(
+    db: Session,
+    schedule_id: int,
+    payload: DeliveryScheduleUpdate,
+    current_user: User,
+) -> DeliverySchedule:
+    schedule = db.scalar(
+        select(DeliverySchedule)
+        .where(DeliverySchedule.id == schedule_id)
+        .with_for_update()
+    )
+    if schedule is None:
+        raise HTTPException(status_code=404, detail="Agendamento nao encontrado.")
+
+    if schedule.status == "retirado":
+        raise HTTPException(
+            status_code=400,
+            detail="Agendamentos ja retirados nao podem ser alterados.",
+        )
+
+    family = db.get(Family, schedule.family_id)
+    if family is None:
+        raise HTTPException(status_code=404, detail="Familia nao encontrada.")
+
+    basket_type = db.get(BasketType, schedule.basket_type_id)
+    if basket_type is None:
+        raise HTTPException(status_code=404, detail="Tipo de cesta nao encontrado.")
+
+    previous_state = {
+        "scheduled_date": schedule.scheduled_date.isoformat(),
+        "status": schedule.status,
+        "notes": schedule.notes,
+    }
+
+    schedule.scheduled_date = payload.scheduled_date
+    schedule.status = payload.status
+    schedule.notes = payload.notes
+
+    record_audit_log(
+        db,
+        event_type="delivery.schedule.updated",
+        actor_user=current_user,
+        entity_type="delivery_schedule",
+        entity_id=schedule.id,
+        details={
+            "previous": previous_state,
+            "current": {
+                "scheduled_date": schedule.scheduled_date.isoformat(),
+                "status": schedule.status,
+                "notes": schedule.notes,
+            },
+        },
+    )
+    db.commit()
+    db.refresh(schedule)
+    return schedule
 
 
 def _get_recipe_items(db: Session, basket_type_id: int) -> list[dict]:

@@ -74,3 +74,7 @@ class ItemResponse(BaseModel):
 
 class ItemDetailResponse(ItemResponse):
     category_name: str
+
+
+class ItemUpdate(ItemCreate):
+    pass

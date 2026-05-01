@@ -22,7 +22,7 @@ class UserAdminBase(BaseModel):
     def validate_name(cls, value: str) -> str:
         value = value.strip()
         if not value:
-            raise ValueError("O nome do usuÃ¡rio Ã© obrigatÃ³rio.")
+            raise ValueError("O nome do usuario e obrigatorio.")
         return value
 
     @field_validator("roles")
@@ -36,7 +36,7 @@ class UserAdminBase(BaseModel):
                 normalized_roles.append(normalized)
 
         if not normalized_roles:
-            raise ValueError("Selecione pelo menos um perfil para o usuÃ¡rio.")
+            raise ValueError("Selecione pelo menos um perfil para o usuario.")
 
         return normalized_roles
 

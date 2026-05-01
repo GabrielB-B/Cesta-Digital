@@ -1,35 +1,58 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
+import { PaginationControls } from "../components/PaginationControls";
 import type { BasketTypeResponse } from "../types/basket";
 import type {
   DeliveryFromScheduleCreatePayload,
   DeliveryResponse,
   DeliveryScheduleResponse,
+  DeliveryScheduleUpdatePayload,
 } from "../types/delivery";
 import type { FamilyListItemResponse } from "../types/family";
+import { getApiErrorMessage } from "../utils/api-error";
+import { formatDateOnly, formatDateTime } from "../utils/format";
 
-/**
- * Tela operacional de agendamentos e entregas.
- * Permite confirmar a entrega diretamente pela interface.
- */
+const PAGE_SIZE = 25;
+
+type ScheduleDraft = {
+  scheduled_date: string;
+  status: string;
+  notes: string;
+};
+
 export function DeliveriesPage() {
   const [schedules, setSchedules] = useState<DeliveryScheduleResponse[]>([]);
   const [deliveries, setDeliveries] = useState<DeliveryResponse[]>([]);
   const [families, setFamilies] = useState<FamilyListItemResponse[]>([]);
   const [basketTypes, setBasketTypes] = useState<BasketTypeResponse[]>([]);
+  const [scheduleDrafts, setScheduleDrafts] = useState<Record<number, ScheduleDraft>>(
+    {}
+  );
+  const [statusFilter, setStatusFilter] = useState("");
+  const [totalSchedules, setTotalSchedules] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmittingScheduleId, setIsSubmittingScheduleId] = useState<number | null>(null);
+  const [isSubmittingScheduleId, setIsSubmittingScheduleId] = useState<number | null>(
+    null
+  );
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  async function loadData() {
+  async function loadData(nextOffset = offset, activeStatus = statusFilter) {
     try {
       setIsLoading(true);
       setError("");
 
       const [schedulesResponse, deliveriesResponse, familiesResponse, basketTypesResponse] =
         await Promise.all([
-          api.get<DeliveryScheduleResponse[]>("/delivery-schedules"),
+          api.get<DeliveryScheduleResponse[]>("/delivery-schedules", {
+            params: {
+              status: activeStatus || undefined,
+              limit: PAGE_SIZE,
+              offset: nextOffset,
+            },
+          }),
           api.get<DeliveryResponse[]>("/deliveries"),
           api.get<FamilyListItemResponse[]>("/families"),
           api.get<BasketTypeResponse[]>("/basket-types"),
@@ -39,28 +62,50 @@ export function DeliveriesPage() {
       setDeliveries(deliveriesResponse.data);
       setFamilies(familiesResponse.data);
       setBasketTypes(basketTypesResponse.data);
-    } catch {
-      setError("Não foi possível carregar os dados de entregas.");
+      setTotalSchedules(
+        Number(schedulesResponse.headers["x-total-count"] ?? schedulesResponse.data.length)
+      );
+      setOffset(nextOffset);
+      setScheduleDrafts(
+        Object.fromEntries(
+          schedulesResponse.data.map((schedule) => [
+            schedule.id,
+            {
+              scheduled_date: schedule.scheduled_date,
+              status: schedule.status,
+              notes: schedule.notes ?? "",
+            },
+          ])
+        )
+      );
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel carregar as entregas."));
     } finally {
       setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    void loadData();
+    void loadData(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const summary = useMemo(() => {
     return {
-      totalSchedules: schedules.length,
-      pendingSchedules: schedules.filter((schedule) => schedule.status === "agendado").length,
-      completedSchedules: schedules.filter((schedule) => schedule.status === "retirado").length,
+      totalSchedules,
+      pendingSchedules: schedules.filter((schedule) => schedule.status === "agendado")
+        .length,
+      completedSchedules: schedules.filter((schedule) => schedule.status === "retirado")
+        .length,
       totalDeliveries: deliveries.length,
     };
-  }, [schedules, deliveries]);
+  }, [schedules, deliveries, totalSchedules]);
 
   function getFamilyCode(familyId: number): string {
-    return families.find((family) => family.id === familyId)?.internal_code ?? `Família #${familyId}`;
+    return (
+      families.find((family) => family.id === familyId)?.internal_code ??
+      `Familia #${familyId}`
+    );
   }
 
   function getBasketTypeName(basketTypeId: number): string {
@@ -73,6 +118,7 @@ export function DeliveriesPage() {
   async function handleConfirmDelivery(scheduleId: number) {
     try {
       setError("");
+      setSuccessMessage("");
       setIsSubmittingScheduleId(scheduleId);
 
       const payload: DeliveryFromScheduleCreatePayload = {
@@ -82,53 +128,122 @@ export function DeliveriesPage() {
       };
 
       await api.post(`/deliveries/from-schedule/${scheduleId}`, payload);
-      await loadData();
-    } catch {
-      setError("Não foi possível confirmar a entrega deste agendamento.");
+      setSuccessMessage("Entrega confirmada e estoque baixado automaticamente.");
+      await loadData(offset);
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel confirmar a entrega."));
     } finally {
       setIsSubmittingScheduleId(null);
     }
+  }
+
+  async function handleSaveSchedule(scheduleId: number) {
+    const draft = scheduleDrafts[scheduleId];
+    if (!draft) {
+      return;
+    }
+
+    try {
+      setError("");
+      setSuccessMessage("");
+      setIsSubmittingScheduleId(scheduleId);
+
+      const payload: DeliveryScheduleUpdatePayload = {
+        scheduled_date: draft.scheduled_date,
+        status: draft.status,
+        notes: draft.notes.trim() || null,
+      };
+
+      await api.put(`/delivery-schedules/${scheduleId}`, payload);
+      setSuccessMessage("Agendamento atualizado com auditoria registrada.");
+      await loadData(offset);
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel atualizar o agendamento."));
+    } finally {
+      setIsSubmittingScheduleId(null);
+    }
+  }
+
+  async function handleCancelSchedule(schedule: DeliveryScheduleResponse) {
+    const confirmed = window.confirm("Cancelar este agendamento?");
+    if (!confirmed) {
+      return;
+    }
+
+    setScheduleDrafts((previous) => ({
+      ...previous,
+      [schedule.id]: {
+        scheduled_date: schedule.scheduled_date,
+        status: "cancelado",
+        notes: schedule.notes ?? "Cancelado pela interface.",
+      },
+    }));
+
+    try {
+      setError("");
+      setSuccessMessage("");
+      setIsSubmittingScheduleId(schedule.id);
+
+      await api.put(`/delivery-schedules/${schedule.id}`, {
+        scheduled_date: schedule.scheduled_date,
+        status: "cancelado",
+        notes: schedule.notes ?? "Cancelado pela interface.",
+      } satisfies DeliveryScheduleUpdatePayload);
+      setSuccessMessage("Agendamento cancelado.");
+      await loadData(offset);
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel cancelar o agendamento."));
+    } finally {
+      setIsSubmittingScheduleId(null);
+    }
+  }
+
+  async function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await loadData(0, statusFilter);
   }
 
   return (
     <div className="page-stack">
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Operação</p>
+          <p className="eyebrow">Operacao</p>
           <h2>Agendamentos e entregas</h2>
           <p className="hero-card__description">
-            Organize retiradas, acompanhe o status dos agendamentos e confirme entregas diretamente pela interface.
+            Reagende, cancele e confirme retiradas com registro de auditoria e
+            baixa automatica de estoque.
           </p>
         </div>
       </section>
 
       <section className="stats-grid">
         <article className="stat-card">
-          <p className="stat-card__title">Agendamentos</p>
+          <p className="stat-card__title">Agendamentos filtrados</p>
           <strong className="stat-card__value">{summary.totalSchedules}</strong>
-          <span className="stat-card__description">Total registrado no sistema.</span>
+          <span className="stat-card__description">Resultado da consulta.</span>
         </article>
 
         <article className="stat-card">
           <p className="stat-card__title">Pendentes</p>
           <strong className="stat-card__value">{summary.pendingSchedules}</strong>
-          <span className="stat-card__description">Ainda aguardando retirada.</span>
+          <span className="stat-card__description">Nesta pagina.</span>
         </article>
 
         <article className="stat-card">
           <p className="stat-card__title">Retirados</p>
           <strong className="stat-card__value">{summary.completedSchedules}</strong>
-          <span className="stat-card__description">Agendamentos já concluídos.</span>
+          <span className="stat-card__description">Nesta pagina.</span>
         </article>
 
         <article className="stat-card">
           <p className="stat-card__title">Entregas</p>
           <strong className="stat-card__value">{summary.totalDeliveries}</strong>
-          <span className="stat-card__description">Total de entregas registradas.</span>
+          <span className="stat-card__description">Historico registrado.</span>
         </article>
       </section>
 
       {error ? <p className="status-error">{error}</p> : null}
+      {successMessage ? <p className="status-success">{successMessage}</p> : null}
 
       <section className="panel-card">
         <div className="panel-card__header panel-card__header--actions">
@@ -137,58 +252,181 @@ export function DeliveriesPage() {
             <h3>Retiradas programadas</h3>
           </div>
 
-          <Link to="/deliveries/schedules/new" className="button button--link">
-            Novo agendamento
-          </Link>
+          <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
+            <select
+              className="toolbar__input toolbar__input--select"
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+            >
+              <option value="">Todos</option>
+              <option value="agendado">Agendados</option>
+              <option value="cancelado">Cancelados</option>
+              <option value="faltou">Faltou</option>
+              <option value="reagendado">Reagendados</option>
+              <option value="retirado">Retirados</option>
+            </select>
+
+            <button type="submit" className="button" disabled={isLoading}>
+              {isLoading ? "Consultando..." : "Aplicar"}
+            </button>
+
+            <Link to="/deliveries/schedules/new" className="button button--link">
+              Novo agendamento
+            </Link>
+          </form>
         </div>
 
         {isLoading ? (
           <p className="empty-state">Carregando agendamentos...</p>
         ) : schedules.length === 0 ? (
-          <p className="empty-state">Nenhum agendamento cadastrado.</p>
+          <p className="empty-state">Nenhum agendamento encontrado.</p>
         ) : (
-          <div className="table-wrapper">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Família</th>
-                  <th>Cesta</th>
-                  <th>Data</th>
-                  <th>Status</th>
-                  <th>Observação</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {schedules.map((schedule) => (
-                  <tr key={schedule.id}>
-                    <td>{getFamilyCode(schedule.family_id)}</td>
-                    <td>{getBasketTypeName(schedule.basket_type_id)}</td>
-                    <td>{new Date(schedule.scheduled_date).toLocaleDateString("pt-BR")}</td>
-                    <td>
-                      <span className="pill">{schedule.status}</span>
-                    </td>
-                    <td>{schedule.notes ?? "—"}</td>
-                    <td>
-                      {schedule.status === "agendado" ? (
-                        <button
-                          className="button button--small"
-                          onClick={() => void handleConfirmDelivery(schedule.id)}
-                          disabled={isSubmittingScheduleId === schedule.id}
-                        >
-                          {isSubmittingScheduleId === schedule.id
-                            ? "Confirmando..."
-                            : "Confirmar entrega"}
-                        </button>
-                      ) : (
-                        <span className="table-muted">Sem ação</span>
-                      )}
-                    </td>
+          <>
+            <div className="table-wrapper">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Familia</th>
+                    <th>Cesta</th>
+                    <th>Data</th>
+                    <th>Status</th>
+                    <th>Observacao</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {schedules.map((schedule) => {
+                    const draft = scheduleDrafts[schedule.id];
+                    const isLocked = schedule.status === "retirado";
+
+                    return (
+                      <tr key={schedule.id}>
+                        <td>{getFamilyCode(schedule.family_id)}</td>
+                        <td>{getBasketTypeName(schedule.basket_type_id)}</td>
+                        <td>
+                          {isLocked ? (
+                            formatDateOnly(schedule.scheduled_date)
+                          ) : (
+                            <input
+                              className="table-input"
+                              type="date"
+                              value={draft?.scheduled_date ?? schedule.scheduled_date}
+                              onChange={(event) =>
+                                setScheduleDrafts((previous) => ({
+                                  ...previous,
+                                  [schedule.id]: {
+                                    ...(previous[schedule.id] ?? {
+                                      scheduled_date: schedule.scheduled_date,
+                                      status: schedule.status,
+                                      notes: schedule.notes ?? "",
+                                    }),
+                                    scheduled_date: event.target.value,
+                                  },
+                                }))
+                              }
+                            />
+                          )}
+                        </td>
+                        <td>
+                          {isLocked ? (
+                            <span className="pill pill--success">{schedule.status}</span>
+                          ) : (
+                            <select
+                              className="table-input"
+                              value={draft?.status ?? schedule.status}
+                              onChange={(event) =>
+                                setScheduleDrafts((previous) => ({
+                                  ...previous,
+                                  [schedule.id]: {
+                                    ...(previous[schedule.id] ?? {
+                                      scheduled_date: schedule.scheduled_date,
+                                      status: schedule.status,
+                                      notes: schedule.notes ?? "",
+                                    }),
+                                    status: event.target.value,
+                                  },
+                                }))
+                              }
+                            >
+                              <option value="agendado">Agendado</option>
+                              <option value="reagendado">Reagendado</option>
+                              <option value="faltou">Faltou</option>
+                              <option value="cancelado">Cancelado</option>
+                            </select>
+                          )}
+                        </td>
+                        <td>
+                          {isLocked ? (
+                            schedule.notes ?? "-"
+                          ) : (
+                            <input
+                              className="table-input table-input--wide"
+                              value={draft?.notes ?? schedule.notes ?? ""}
+                              onChange={(event) =>
+                                setScheduleDrafts((previous) => ({
+                                  ...previous,
+                                  [schedule.id]: {
+                                    ...(previous[schedule.id] ?? {
+                                      scheduled_date: schedule.scheduled_date,
+                                      status: schedule.status,
+                                      notes: schedule.notes ?? "",
+                                    }),
+                                    notes: event.target.value,
+                                  },
+                                }))
+                              }
+                            />
+                          )}
+                        </td>
+                        <td>
+                          {isLocked ? (
+                            <span className="table-muted">Sem acao</span>
+                          ) : (
+                            <div className="table-actions">
+                              <button
+                                type="button"
+                                className="button button--secondary button--small"
+                                onClick={() => void handleSaveSchedule(schedule.id)}
+                                disabled={isSubmittingScheduleId === schedule.id}
+                              >
+                                Salvar
+                              </button>
+                              {schedule.status === "agendado" ? (
+                                <button
+                                  type="button"
+                                  className="button button--small"
+                                  onClick={() => void handleConfirmDelivery(schedule.id)}
+                                  disabled={isSubmittingScheduleId === schedule.id}
+                                >
+                                  Confirmar
+                                </button>
+                              ) : null}
+                              <button
+                                type="button"
+                                className="button button--danger button--small"
+                                onClick={() => void handleCancelSchedule(schedule)}
+                                disabled={isSubmittingScheduleId === schedule.id}
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <PaginationControls
+              total={totalSchedules}
+              offset={offset}
+              limit={PAGE_SIZE}
+              isLoading={isLoading}
+              onPageChange={(nextOffset) => void loadData(nextOffset)}
+            />
+          </>
         )}
       </section>
 
@@ -196,7 +434,7 @@ export function DeliveriesPage() {
         <div className="panel-card__header">
           <div>
             <p className="eyebrow">Entregas</p>
-            <h3>Histórico de entregas</h3>
+            <h3>Historico de entregas</h3>
           </div>
         </div>
 
@@ -209,11 +447,11 @@ export function DeliveriesPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Família</th>
+                  <th>Familia</th>
                   <th>Cesta</th>
                   <th>Data/hora</th>
                   <th>Status</th>
-                  <th>Observação</th>
+                  <th>Observacao</th>
                 </tr>
               </thead>
               <tbody>
@@ -221,11 +459,11 @@ export function DeliveriesPage() {
                   <tr key={delivery.id}>
                     <td>{getFamilyCode(delivery.family_id)}</td>
                     <td>{getBasketTypeName(delivery.basket_type_id)}</td>
-                    <td>{new Date(delivery.delivery_date).toLocaleString("pt-BR")}</td>
+                    <td>{formatDateTime(delivery.delivery_date)}</td>
                     <td>
                       <span className="pill pill--success">{delivery.status}</span>
                     </td>
-                    <td>{delivery.notes ?? "—"}</td>
+                    <td>{delivery.notes ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>

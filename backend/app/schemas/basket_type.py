@@ -28,6 +28,10 @@ class BasketTypeResponse(BaseModel):
     notes: str | None
 
 
+class BasketTypeUpdate(BasketTypeCreate):
+    pass
+
+
 class BasketTypeItemCreate(BaseModel):
     """Payload para adicionar item à receita da cesta."""
 
@@ -53,7 +57,19 @@ class BasketTypeItemResponse(BaseModel):
     required_quantity: int
 
 
+class BasketTypeItemUpdate(BaseModel):
+    required_quantity: int
+
+    @field_validator("required_quantity")
+    @classmethod
+    def validate_required_quantity(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("A quantidade exigida deve ser maior que zero.")
+        return value
+
+
 class BasketTypeRecipeItemResponse(BaseModel):
+    id: int
     item_id: int
     item_name: str
     unit_measure: str

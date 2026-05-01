@@ -7,10 +7,8 @@ import type {
   BasketTypeItemCreatePayload,
 } from "../types/basket";
 import type { ItemDetailResponse } from "../types/item";
+import { getApiErrorMessage } from "../utils/api-error";
 
-/**
- * Detalhe operacional do tipo de cesta, com receita e disponibilidade.
- */
 export function BasketTypeDetailPage() {
   const { basketTypeId } = useParams();
   const [basketType, setBasketType] = useState<BasketTypeDetailResponse | null>(null);
@@ -18,14 +16,23 @@ export function BasketTypeDetailPage() {
     null
   );
   const [items, setItems] = useState<ItemDetailResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmittingRecipe, setIsSubmittingRecipe] = useState(false);
-  const [error, setError] = useState("");
-  const [recipeError, setRecipeError] = useState("");
+  const [quantityDrafts, setQuantityDrafts] = useState<Record<number, string>>({});
+  const [basketForm, setBasketForm] = useState({
+    name: "",
+    is_active: true,
+    notes: "",
+  });
   const [recipeForm, setRecipeForm] = useState({
     item_id: "",
     required_quantity: 1,
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSavingBasket, setIsSavingBasket] = useState(false);
+  const [isSubmittingRecipe, setIsSubmittingRecipe] = useState(false);
+  const [busyRecipeItemId, setBusyRecipeItemId] = useState<number | null>(null);
+  const [error, setError] = useState("");
+  const [recipeError, setRecipeError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   async function loadBasketTypeData(targetBasketTypeId: string) {
     setIsLoading(true);
@@ -43,8 +50,21 @@ export function BasketTypeDetailPage() {
       setBasketType(detailResponse.data);
       setAvailability(availabilityResponse.data);
       setItems(itemsResponse.data);
-    } catch {
-      setError("Não foi possível carregar o detalhe da cesta.");
+      setBasketForm({
+        name: detailResponse.data.name,
+        is_active: detailResponse.data.is_active,
+        notes: detailResponse.data.notes ?? "",
+      });
+      setQuantityDrafts(
+        Object.fromEntries(
+          detailResponse.data.basket_items.map((item) => [
+            item.item_id,
+            String(item.required_quantity),
+          ])
+        )
+      );
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel carregar a cesta."));
     } finally {
       setIsLoading(false);
     }
@@ -67,16 +87,44 @@ export function BasketTypeDetailPage() {
   }, [availability]);
 
   const availableItemsToAdd = useMemo(() => {
-    const existingItemIds = new Set(basketType?.basket_items.map((item) => item.item_id) ?? []);
+    const existingItemIds = new Set(
+      basketType?.basket_items.map((item) => item.item_id) ?? []
+    );
     return items.filter((item) => !existingItemIds.has(item.id));
   }, [basketType, items]);
+
+  async function handleSaveBasketType(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!basketTypeId) {
+      return;
+    }
+
+    try {
+      setIsSavingBasket(true);
+      setError("");
+      setSuccessMessage("");
+
+      await api.put(`/basket-types/${basketTypeId}`, {
+        name: basketForm.name.trim(),
+        is_active: basketForm.is_active,
+        notes: basketForm.notes.trim() || null,
+      });
+      await loadBasketTypeData(basketTypeId);
+      setSuccessMessage("Tipo de cesta atualizado com auditoria registrada.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel salvar o tipo de cesta."));
+    } finally {
+      setIsSavingBasket(false);
+    }
+  }
 
   async function handleAddRecipeItem(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setRecipeError("");
 
     if (!basketTypeId || !recipeForm.item_id) {
-      setRecipeError("Selecione um item para adicionar à receita.");
+      setRecipeError("Selecione um item para adicionar a receita.");
       return;
     }
 
@@ -94,10 +142,51 @@ export function BasketTypeDetailPage() {
         required_quantity: 1,
       });
       await loadBasketTypeData(basketTypeId);
-    } catch {
-      setRecipeError("Não foi possível adicionar o item à receita.");
+    } catch (err) {
+      setRecipeError(getApiErrorMessage(err, "Nao foi possivel adicionar o item."));
     } finally {
       setIsSubmittingRecipe(false);
+    }
+  }
+
+  async function handleUpdateRecipeItem(itemId: number) {
+    if (!basketTypeId) {
+      return;
+    }
+
+    try {
+      setBusyRecipeItemId(itemId);
+      setRecipeError("");
+      await api.put(`/basket-types/${basketTypeId}/items/${itemId}`, {
+        required_quantity: Number(quantityDrafts[itemId] ?? 0),
+      });
+      await loadBasketTypeData(basketTypeId);
+    } catch (err) {
+      setRecipeError(getApiErrorMessage(err, "Nao foi possivel atualizar a receita."));
+    } finally {
+      setBusyRecipeItemId(null);
+    }
+  }
+
+  async function handleDeleteRecipeItem(itemId: number) {
+    if (!basketTypeId) {
+      return;
+    }
+
+    const confirmed = window.confirm("Remover este item da receita?");
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setBusyRecipeItemId(itemId);
+      setRecipeError("");
+      await api.delete(`/basket-types/${basketTypeId}/items/${itemId}`);
+      await loadBasketTypeData(basketTypeId);
+    } catch (err) {
+      setRecipeError(getApiErrorMessage(err, "Nao foi possivel remover o item."));
+    } finally {
+      setBusyRecipeItemId(null);
     }
   }
 
@@ -116,7 +205,7 @@ export function BasketTypeDetailPage() {
       <div className="page-stack">
         <div className="panel-card">
           <p className="status-error">
-            {error || "Não foi possível carregar a cesta."}
+            {error || "Nao foi possivel carregar a cesta."}
           </p>
           <div className="panel-actions">
             <Link to="/basket-types" className="button button--secondary">
@@ -135,13 +224,13 @@ export function BasketTypeDetailPage() {
           <p className="eyebrow">Detalhe da cesta</p>
           <h2>{basketType.name}</h2>
           <p className="hero-card__description">
-            {basketType.notes || "Sem observações adicionais para este tipo de cesta."}
+            {basketType.notes || "Sem observacoes adicionais para este tipo de cesta."}
           </p>
         </div>
 
         <div className="hero-badges">
           <span className="hero-badge">
-            Cestas possíveis: {availability.possible_baskets}
+            Cestas possiveis: {availability.possible_baskets}
           </span>
           <span className="hero-badge">
             Status: {basketType.is_active ? "Ativa" : "Inativa"}
@@ -149,40 +238,67 @@ export function BasketTypeDetailPage() {
         </div>
       </section>
 
+      {successMessage ? <p className="status-success">{successMessage}</p> : null}
+
       <section className="content-grid">
-        <article className="panel-card">
+        <form onSubmit={handleSaveBasketType} className="panel-card form-panel">
           <div className="panel-card__header">
             <div>
-              <p className="eyebrow">Receita</p>
-              <h3>Composição da cesta</h3>
+              <p className="eyebrow">Cadastro</p>
+              <h3>Editar tipo de cesta</h3>
             </div>
           </div>
 
-          {basketType.basket_items.length === 0 ? (
-            <p className="empty-state">Nenhum item cadastrado nesta receita.</p>
-          ) : (
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Unidade</th>
-                    <th>Quantidade exigida</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {basketType.basket_items.map((item) => (
-                    <tr key={item.item_id}>
-                      <td>{item.item_name}</td>
-                      <td>{item.unit_measure}</td>
-                      <td>{item.required_quantity}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </article>
+          <div className="form-grid">
+            <label className="form__group">
+              <span>Nome</span>
+              <input
+                value={basketForm.name}
+                onChange={(event) =>
+                  setBasketForm((previous) => ({
+                    ...previous,
+                    name: event.target.value,
+                  }))
+                }
+                required
+              />
+            </label>
+
+            <label className="checkbox-card">
+              <input
+                type="checkbox"
+                checked={basketForm.is_active}
+                onChange={(event) =>
+                  setBasketForm((previous) => ({
+                    ...previous,
+                    is_active: event.target.checked,
+                  }))
+                }
+              />
+              Tipo ativo
+            </label>
+
+            <label className="form__group form__group--wide">
+              <span>Observacoes</span>
+              <textarea
+                value={basketForm.notes}
+                onChange={(event) =>
+                  setBasketForm((previous) => ({
+                    ...previous,
+                    notes: event.target.value,
+                  }))
+                }
+                rows={3}
+              />
+            </label>
+          </div>
+
+          <div className="panel-actions">
+            <button type="submit" className="button" disabled={isSavingBasket}>
+              {isSavingBasket ? "Salvando..." : "Salvar tipo"}
+            </button>
+          </div>
+        </form>
 
         <form onSubmit={handleAddRecipeItem} className="panel-card form-panel">
           <div className="panel-card__header">
@@ -194,7 +310,7 @@ export function BasketTypeDetailPage() {
 
           <div className="form-grid">
             <label className="form__group form__group--wide">
-              <span>Item disponível</span>
+              <span>Item disponivel</span>
               <select
                 value={recipeForm.item_id}
                 onChange={(event) =>
@@ -208,7 +324,7 @@ export function BasketTypeDetailPage() {
                 <option value="">Selecione</option>
                 {availableItemsToAdd.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.name} • {item.category_name}
+                    {item.name} | {item.category_name}
                   </option>
                 ))}
               </select>
@@ -233,7 +349,7 @@ export function BasketTypeDetailPage() {
 
           {availableItemsToAdd.length === 0 ? (
             <p className="empty-state">
-              Todos os itens cadastrados já estão presentes nesta receita.
+              Todos os itens cadastrados ja estao presentes nesta receita.
             </p>
           ) : null}
 
@@ -245,13 +361,81 @@ export function BasketTypeDetailPage() {
               className="button"
               disabled={isSubmittingRecipe || availableItemsToAdd.length === 0}
             >
-              {isSubmittingRecipe ? "Salvando..." : "Adicionar à receita"}
+              {isSubmittingRecipe ? "Salvando..." : "Adicionar a receita"}
             </button>
           </div>
         </form>
       </section>
 
       <section className="content-grid">
+        <article className="panel-card">
+          <div className="panel-card__header">
+            <div>
+              <p className="eyebrow">Receita</p>
+              <h3>Composicao da cesta</h3>
+            </div>
+          </div>
+
+          {basketType.basket_items.length === 0 ? (
+            <p className="empty-state">Nenhum item cadastrado nesta receita.</p>
+          ) : (
+            <div className="table-wrapper">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Unidade</th>
+                    <th>Quantidade</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {basketType.basket_items.map((item) => (
+                    <tr key={item.item_id}>
+                      <td>{item.item_name}</td>
+                      <td>{item.unit_measure}</td>
+                      <td>
+                        <input
+                          className="table-input"
+                          type="number"
+                          min="1"
+                          value={quantityDrafts[item.item_id] ?? item.required_quantity}
+                          onChange={(event) =>
+                            setQuantityDrafts((previous) => ({
+                              ...previous,
+                              [item.item_id]: event.target.value,
+                            }))
+                          }
+                        />
+                      </td>
+                      <td>
+                        <div className="table-actions">
+                          <button
+                            type="button"
+                            className="button button--secondary button--small"
+                            disabled={busyRecipeItemId === item.item_id}
+                            onClick={() => void handleUpdateRecipeItem(item.item_id)}
+                          >
+                            Salvar
+                          </button>
+                          <button
+                            type="button"
+                            className="button button--danger button--small"
+                            disabled={busyRecipeItemId === item.item_id}
+                            onClick={() => void handleDeleteRecipeItem(item.item_id)}
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </article>
+
         <article className="panel-card">
           <div className="panel-card__header">
             <div>
@@ -271,7 +455,7 @@ export function BasketTypeDetailPage() {
                   <div>
                     <strong>{item.item_name}</strong>
                     <p className="stack-item__muted">
-                      Disponível: {item.available_quantity} {item.unit_measure}
+                      Disponivel: {item.available_quantity} {item.unit_measure}
                     </p>
                   </div>
 
@@ -282,30 +466,6 @@ export function BasketTypeDetailPage() {
               ))}
             </div>
           )}
-        </article>
-
-        <article className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Disponibilidade</p>
-              <h3>Resumo rápido</h3>
-            </div>
-          </div>
-
-          <div className="detail-grid">
-            <div className="detail-item">
-              <span>Total de itens na receita</span>
-              <strong>{basketType.basket_items.length}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Cestas possíveis</span>
-              <strong>{availability.possible_baskets}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Itens limitantes</span>
-              <strong>{limitingItems.length}</strong>
-            </div>
-          </div>
         </article>
       </section>
 
@@ -323,10 +483,10 @@ export function BasketTypeDetailPage() {
               <thead>
                 <tr>
                   <th>Item</th>
-                  <th>Necessário</th>
-                  <th>Disponível</th>
-                  <th>Possíveis por item</th>
-                  <th>Falta para próxima</th>
+                  <th>Necessario</th>
+                  <th>Disponivel</th>
+                  <th>Possiveis por item</th>
+                  <th>Falta para proxima</th>
                 </tr>
               </thead>
               <tbody>

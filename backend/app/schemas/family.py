@@ -195,6 +195,26 @@ class FamilyCreate(BaseModel):
         return self
 
 
+class FamilyStatusUpdate(BaseModel):
+    status: str
+    internal_notes: str | None = None
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        value = value.strip().lower()
+        allowed = {
+            "apta_recorrente",
+            "apta_emergencial",
+            "em_analise",
+            "inapta",
+            "inativa",
+        }
+        if value not in allowed:
+            raise ValueError("Status de familia invalido.")
+        return value
+
+
 class FamilyResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, require_any_role
@@ -11,12 +11,14 @@ from app.schemas.delivery import (
     DeliveryResponse,
     DeliveryScheduleCreate,
     DeliveryScheduleResponse,
+    DeliveryScheduleUpdate,
 )
 from app.services.delivery_service import (
     create_delivery_from_schedule,
     create_delivery_schedule,
     list_deliveries,
     list_delivery_schedules,
+    update_delivery_schedule,
 )
 
 router = APIRouter(
@@ -37,11 +39,33 @@ def create_delivery_schedule_endpoint(
 
 @router.get("/delivery-schedules", response_model=list[DeliveryScheduleResponse])
 def list_delivery_schedules_endpoint(
+    response: Response,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    status: str | None = Query(default=None),
+    limit: int | None = Query(default=None, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+):
+    """Lista os agendamentos cadastrados."""
+    schedules, total = list_delivery_schedules(
+        db,
+        status=status,
+        limit=limit,
+        offset=offset,
+    )
+    response.headers["X-Total-Count"] = str(total)
+    return schedules
+
+
+@router.put("/delivery-schedules/{schedule_id}", response_model=DeliveryScheduleResponse)
+def update_delivery_schedule_endpoint(
+    schedule_id: int,
+    payload: DeliveryScheduleUpdate,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
-    """Lista os agendamentos cadastrados."""
-    return list_delivery_schedules(db)
+    """Cancela, reagenda ou atualiza um agendamento ainda nao retirado."""
+    return update_delivery_schedule(db, schedule_id, payload, current_user)
 
 
 @router.post(

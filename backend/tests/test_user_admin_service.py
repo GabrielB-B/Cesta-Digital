@@ -13,7 +13,7 @@ os.environ.setdefault("DB_PASSWORD", "test")
 os.environ.setdefault("FIRST_ADMIN_NAME", "Admin")
 os.environ.setdefault("FIRST_ADMIN_EMAIL", "admin@example.com")
 os.environ.setdefault("FIRST_ADMIN_PASSWORD", "Admin@12345")
-os.environ.setdefault("SECRET_KEY", "test-secret-key")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-with-32-plus-chars")
 
 from app.core.security import get_password_hash, verify_password
 from app.db.base import Base

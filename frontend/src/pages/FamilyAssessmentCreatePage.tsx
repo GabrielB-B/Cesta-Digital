@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { getApiErrorMessage } from "../utils/api-error";
+import { formatTodayForInput } from "../utils/format";
 import type {
   EligibilityPreviewResponse,
   FamilyAssessmentCreatePayload,
@@ -21,7 +23,7 @@ export function FamilyAssessmentCreatePage() {
   const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    assessment_date: new Date().toISOString().slice(0, 10),
+    assessment_date: formatTodayForInput(),
     vulnerability_score: 0,
     final_decision: "apta_emergencial",
     decision_reason: "",
@@ -48,9 +50,14 @@ export function FamilyAssessmentCreatePage() {
             vulnerability_score: response.data.social_weight_score,
           }));
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setError("Não foi possível carregar a sugestão automática do sistema.");
+          setError(
+            getApiErrorMessage(
+              err,
+              "Nao foi possivel carregar a sugestao automatica do sistema."
+            )
+          );
         }
       } finally {
         if (isMounted) {
@@ -96,8 +103,22 @@ export function FamilyAssessmentCreatePage() {
 
     if (divergesFromSystem && !hasOverrideReason) {
       setError(
-        "Quando a decisão final divergir da sugestão automática, informe o motivo."
+        "Quando a decisao final divergir da sugestao automatica, informe o motivo."
       );
+      return;
+    }
+
+    const vulnerabilityScore = Number(formData.vulnerability_score);
+    if (vulnerabilityScore < 0 || vulnerabilityScore > 100) {
+      setError("A pontuacao de vulnerabilidade deve ficar entre 0 e 100.");
+      return;
+    }
+
+    if (
+      formData.next_revaluation_date &&
+      formData.next_revaluation_date < formData.assessment_date
+    ) {
+      setError("A proxima reavaliacao nao pode ser anterior a avaliacao.");
       return;
     }
 
@@ -106,7 +127,7 @@ export function FamilyAssessmentCreatePage() {
     try {
       const payload: FamilyAssessmentCreatePayload = {
         assessment_date: formData.assessment_date,
-        vulnerability_score: Number(formData.vulnerability_score),
+        vulnerability_score: vulnerabilityScore,
         final_decision: formData.final_decision,
         decision_reason: formData.decision_reason.trim() || null,
         exception_reason: formData.exception_reason.trim() || null,
@@ -120,8 +141,8 @@ export function FamilyAssessmentCreatePage() {
         payload
       );
       navigate(`/families/${familyId}`);
-    } catch {
-      setError("Não foi possível cadastrar a avaliação social.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel cadastrar a avaliacao social."));
     } finally {
       setIsSubmitting(false);
     }
@@ -251,6 +272,7 @@ export function FamilyAssessmentCreatePage() {
             <input
               type="number"
               min="0"
+              max="100"
               name="vulnerability_score"
               value={formData.vulnerability_score}
               onChange={handleInputChange}

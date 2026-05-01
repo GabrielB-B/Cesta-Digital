@@ -33,7 +33,6 @@ URLs:
 cd C:\Users\Gabriel\Documents\cesta-digital\frontend
 npm run dev
 ```
-
 URL:
 
 - Frontend: `http://127.0.0.1:5173`

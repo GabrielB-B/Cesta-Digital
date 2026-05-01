@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 
 ALLOWED_FINAL_DECISIONS = {
@@ -14,7 +14,7 @@ ALLOWED_FINAL_DECISIONS = {
 
 
 class EligibilityPreviewResponse(BaseModel):
-    """Preview da elegibilidade automática da família."""
+    """Preview da elegibilidade automatica da familia."""
 
     family_id: int
     internal_code: str
@@ -30,7 +30,7 @@ class EligibilityPreviewResponse(BaseModel):
 
 
 class SocialAssessmentCreate(BaseModel):
-    """Payload de criação de avaliação social."""
+    """Payload de criacao de avaliacao social."""
 
     assessment_date: date
     vulnerability_score: int
@@ -46,12 +46,28 @@ class SocialAssessmentCreate(BaseModel):
     def validate_final_decision(cls, value: str) -> str:
         value = value.strip().lower()
         if value not in ALLOWED_FINAL_DECISIONS:
-            raise ValueError("Decisão final inválida.")
+            raise ValueError("Decisao final invalida.")
         return value
+
+    @field_validator("vulnerability_score")
+    @classmethod
+    def validate_vulnerability_score(cls, value: int) -> int:
+        if value < 0 or value > 100:
+            raise ValueError("A pontuacao de vulnerabilidade deve ficar entre 0 e 100.")
+        return value
+
+    @model_validator(mode="after")
+    def validate_dates(self):
+        if (
+            self.next_revaluation_date is not None
+            and self.next_revaluation_date < self.assessment_date
+        ):
+            raise ValueError("A proxima reavaliacao nao pode ser anterior a avaliacao.")
+        return self
 
 
 class SocialAssessmentResponse(BaseModel):
-    """Resposta serializada da avaliação social."""
+    """Resposta serializada da avaliacao social."""
 
     model_config = ConfigDict(from_attributes=True)
 

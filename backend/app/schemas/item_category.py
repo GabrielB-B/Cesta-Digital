@@ -6,6 +6,7 @@ class ItemCategoryCreate(BaseModel):
 
     name: str
     description: str | None = None
+    is_active: bool = True
 
     @field_validator("name")
     @classmethod
@@ -24,3 +25,8 @@ class ItemCategoryResponse(BaseModel):
     id: int
     name: str
     description: str | None
+    is_active: bool
+
+
+class ItemCategoryUpdate(ItemCategoryCreate):
+    pass

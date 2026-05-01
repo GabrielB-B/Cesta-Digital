@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models.item import Item
@@ -6,7 +6,14 @@ from app.models.item_category import ItemCategory
 from app.models.stock_batch import StockBatch
 
 
-def list_stock_summary(db: Session) -> list[dict]:
+def list_stock_summary(
+    db: Session,
+    *,
+    q: str | None = None,
+    is_active: bool | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[dict], int]:
     """
     Consolida o estoque por item somando o saldo atual dos lotes.
 
@@ -15,6 +22,25 @@ def list_stock_summary(db: Session) -> list[dict]:
     - a soma usa current_quantity, não entry_quantity
     - o alerta é baseado em minimum_stock_alert
     """
+    filters = []
+    search_term = (q or "").strip()
+    if search_term:
+        normalized_term = f"%{search_term.lower()}%"
+        filters.append(
+            or_(
+                func.lower(Item.name).like(normalized_term),
+                func.lower(Item.unit_measure).like(normalized_term),
+                func.lower(ItemCategory.name).like(normalized_term),
+            )
+        )
+
+    if is_active is not None:
+        filters.append(Item.is_active.is_(is_active))
+
+    total_stmt = (
+        select(func.count(Item.id))
+        .join(ItemCategory, Item.category_id == ItemCategory.id)
+    )
     stmt = (
         select(
             Item.id.label("item_id"),
@@ -43,6 +69,15 @@ def list_stock_summary(db: Session) -> list[dict]:
         .order_by(Item.name.asc())
     )
 
+    if filters:
+        total_stmt = total_stmt.where(*filters)
+        stmt = stmt.where(*filters)
+
+    total = db.scalar(total_stmt) or 0
+
+    if limit is not None:
+        stmt = stmt.offset(offset).limit(limit)
+
     rows = db.execute(stmt).all()
 
     summary = []
@@ -66,14 +101,14 @@ def list_stock_summary(db: Session) -> list[dict]:
             }
         )
 
-    return summary
+    return summary, total
 
 
 def list_stock_alerts(db: Session) -> list[dict]:
     """
     Retorna apenas os itens com estoque abaixo do mínimo configurado.
     """
-    summary = list_stock_summary(db)
+    summary, _ = list_stock_summary(db)
 
     alerts = [
         {

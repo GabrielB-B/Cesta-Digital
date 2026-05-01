@@ -2,50 +2,95 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { getApiErrorMessage } from "../utils/api-error";
+import { formatDateOnly } from "../utils/format";
 import type { FamilyDetailResponse } from "../types/family";
 
 export function FamilyDetailPage() {
   const { familyId } = useParams();
   const [family, setFamily] = useState<FamilyDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [error, setError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusForm, setStatusForm] = useState({
+    status: "em_analise",
+    internal_notes: "",
+  });
+
+  async function loadFamilyDetail(isMounted = true) {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      const response = await api.get<FamilyDetailResponse>(
+        `/families/${familyId}`
+      );
+
+      if (isMounted) {
+        setFamily(response.data);
+        setStatusForm({
+          status: response.data.status,
+          internal_notes: response.data.internal_notes ?? "",
+        });
+      }
+    } catch (err) {
+      if (isMounted) {
+        setError(
+          getApiErrorMessage(err, "Nao foi possivel carregar o detalhe da familia.")
+        );
+      }
+    } finally {
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    }
+  }
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadFamilyDetail() {
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const response = await api.get<FamilyDetailResponse>(
-          `/families/${familyId}`
-        );
-
-        if (isMounted) {
-          setFamily(response.data);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(
-            getApiErrorMessage(err, "Nao foi possivel carregar o detalhe da familia.")
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
     if (familyId) {
-      void loadFamilyDetail();
+      void loadFamilyDetail(isMounted);
     }
 
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [familyId]);
+
+  async function handleStatusSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!familyId) {
+      return;
+    }
+
+    try {
+      setIsUpdatingStatus(true);
+      setError("");
+      setStatusMessage("");
+
+      const response = await api.patch<FamilyDetailResponse>(
+        `/families/${familyId}/status`,
+        {
+          status: statusForm.status,
+          internal_notes: statusForm.internal_notes.trim() || null,
+        }
+      );
+
+      setFamily(response.data);
+      setStatusForm({
+        status: response.data.status,
+        internal_notes: response.data.internal_notes ?? "",
+      });
+      setStatusMessage("Status atualizado com auditoria registrada.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel atualizar o status."));
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  }
 
   const formattedAddress = useMemo(() => {
     if (!family) {
@@ -104,6 +149,66 @@ export function FamilyDetailPage() {
             Renda per capita: {formatCurrency(family.income_per_capita)}
           </span>
         </div>
+      </section>
+
+      <section className="panel-card">
+        <form onSubmit={handleStatusSubmit} className="form-panel">
+          <div className="panel-card__header">
+            <div>
+              <p className="eyebrow">Gestao do cadastro</p>
+              <h3>Status e inativacao</h3>
+            </div>
+          </div>
+
+          <div className="form-grid">
+            <label className="form__group">
+              <span>Status</span>
+              <select
+                value={statusForm.status}
+                onChange={(event) =>
+                  setStatusForm((previous) => ({
+                    ...previous,
+                    status: event.target.value,
+                  }))
+                }
+              >
+                <option value="apta_recorrente">Apta recorrente</option>
+                <option value="apta_emergencial">Apta emergencial</option>
+                <option value="em_analise">Em analise</option>
+                <option value="inapta">Inapta</option>
+                <option value="inativa">Inativa</option>
+              </select>
+            </label>
+
+            <label className="form__group form__group--wide">
+              <span>Observacao interna</span>
+              <textarea
+                value={statusForm.internal_notes}
+                onChange={(event) =>
+                  setStatusForm((previous) => ({
+                    ...previous,
+                    internal_notes: event.target.value,
+                  }))
+                }
+                rows={3}
+              />
+            </label>
+          </div>
+
+          {statusMessage ? (
+            <p className="status-success">{statusMessage}</p>
+          ) : null}
+
+          <div className="panel-actions">
+            <button
+              type="submit"
+              className="button"
+              disabled={isUpdatingStatus}
+            >
+              {isUpdatingStatus ? "Atualizando..." : "Salvar status"}
+            </button>
+          </div>
+        </form>
       </section>
 
       <section className="content-grid">
@@ -355,9 +460,7 @@ export function FamilyDetailPage() {
                   {family.assessments.map((assessment) => (
                     <tr key={assessment.id}>
                       <td>
-                        {new Date(assessment.assessment_date).toLocaleDateString(
-                          "pt-BR"
-                        )}
+                        {formatDateOnly(assessment.assessment_date)}
                       </td>
                       <td>{assessment.system_suggestion}</td>
                       <td>{assessment.final_decision}</td>

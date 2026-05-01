@@ -39,6 +39,20 @@ class DeliveryScheduleResponse(BaseModel):
     created_by_user_id: int
 
 
+class DeliveryScheduleUpdate(BaseModel):
+    scheduled_date: date
+    status: str
+    notes: str | None = None
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        value = value.strip().lower()
+        if value not in ALLOWED_SCHEDULE_STATUSES:
+            raise ValueError("Status de agendamento invalido.")
+        return value
+
+
 class DeliveryFromScheduleCreate(BaseModel):
     """Payload para confirmar entrega a partir de um agendamento."""
 

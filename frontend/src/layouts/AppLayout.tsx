@@ -158,31 +158,6 @@ export function AppLayout() {
                 subtitle="UPG | Gestao social e operacional"
               />
             </div>
-
-            <button
-              className="sidebar__toggle"
-              type="button"
-              aria-expanded={!isSidebarCollapsed}
-              aria-label={
-                isSidebarCollapsed
-                  ? "Expandir menu lateral"
-                  : "Recolher menu lateral"
-              }
-              onClick={toggleSidebar}
-            >
-              <span className="sidebar__toggle-glyph" aria-hidden="true">
-                <span className="sidebar__toggle-dots">
-                  <span />
-                  <span />
-                  <span />
-                </span>
-                <span className="sidebar__toggle-lines">
-                  <span />
-                  <span />
-                </span>
-                <span className="sidebar__toggle-arrow" />
-              </span>
-            </button>
           </div>
 
           <nav className="sidebar__nav">
@@ -211,6 +186,25 @@ export function AppLayout() {
             <p>{primaryRole}</p>
           </div>
         </div>
+
+        <button
+          className="sidebar__toggle"
+          type="button"
+          aria-expanded={!isSidebarCollapsed}
+          aria-label={
+            isSidebarCollapsed
+              ? "Expandir menu lateral"
+              : "Recolher menu lateral"
+          }
+          title={
+            isSidebarCollapsed
+              ? "Expandir menu lateral"
+              : "Recolher menu lateral"
+          }
+          onClick={toggleSidebar}
+        >
+          <AppIcon name="sidebarToggle" className="sidebar__toggle-icon" />
+        </button>
       </aside>
 
       <main className="content">
@@ -223,7 +217,11 @@ export function AppLayout() {
               <span className="topbar__email">{user?.email}</span>
             </div>
 
-            <button className="button button--secondary button--icon" onClick={logout}>
+            <button
+              className="button button--secondary button--icon"
+              type="button"
+              onClick={logout}
+            >
               <AppIcon name="logout" className="button__icon" />
               <span>Sair</span>
             </button>

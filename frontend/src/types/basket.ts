@@ -17,6 +17,7 @@ export interface BasketTypeItemCreatePayload {
 }
 
 export interface BasketTypeRecipeItemResponse {
+  id: number;
   item_id: number;
   item_name: string;
   unit_measure: string;

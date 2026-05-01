@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import type { BasketTypeCreatePayload, BasketTypeResponse } from "../types/basket";
+import { getApiErrorMessage } from "../utils/api-error";
 
 /**
  * Cadastro de tipo de cesta.
@@ -34,8 +35,10 @@ export function BasketTypeCreatePage() {
 
       const response = await api.post<BasketTypeResponse>("/basket-types", payload);
       navigate(`/basket-types/${response.data.id}`);
-    } catch {
-      setError("Não foi possível cadastrar o tipo de cesta.");
+    } catch (err) {
+      setError(
+        getApiErrorMessage(err, "Não foi possível cadastrar o tipo de cesta.")
+      );
     } finally {
       setIsSubmitting(false);
     }

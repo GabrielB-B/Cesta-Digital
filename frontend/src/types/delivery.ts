@@ -27,6 +27,12 @@ export interface DeliveryScheduleCreatePayload {
   notes: string | null;
 }
 
+export interface DeliveryScheduleUpdatePayload {
+  scheduled_date: string;
+  status: string;
+  notes: string | null;
+}
+
 export interface DeliveryFromScheduleCreatePayload {
   delivery_date: string;
   status: string;

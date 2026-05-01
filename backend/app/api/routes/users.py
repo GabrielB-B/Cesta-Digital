@@ -22,7 +22,7 @@ from app.services.user_admin_service import (
 )
 
 router = APIRouter(
-    tags=["AdministraÃ§Ã£o de UsuÃ¡rios"],
+    tags=["Administracao de Usuarios"],
     dependencies=[Depends(require_any_role("admin"))],
 )
 

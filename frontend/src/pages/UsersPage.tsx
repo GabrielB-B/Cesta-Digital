@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 import { getApiErrorMessage } from "../utils/api-error";
+import { formatDateTime } from "../utils/format";
 import { isStrongPassword, PASSWORD_POLICY_HINT } from "../utils/password";
 import type {
   RoleOptionResponse,
@@ -17,14 +18,6 @@ const initialFormState = {
   is_active: true,
   roles: [] as string[],
 };
-
-function formatDateTime(value: string | null): string {
-  if (!value) {
-    return "Nunca";
-  }
-
-  return new Date(value).toLocaleString("pt-BR");
-}
 
 export function UsersPage() {
   const [users, setUsers] = useState<UserAdminResponse[]>([]);

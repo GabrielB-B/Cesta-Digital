@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { formatTodayForInput } from "../utils/format";
+import { getApiErrorMessage } from "../utils/api-error";
 import type {
   ItemDetailResponse,
   StockBatchCreatePayload,
@@ -22,7 +24,7 @@ export function StockBatchCreatePage() {
     item_id: "",
     source_type: "doacao_item",
     entry_quantity: 1,
-    entry_date: new Date().toISOString().slice(0, 10),
+    entry_date: formatTodayForInput(),
     expiration_date: "",
     estimated_unit_value: 0,
     notes: "",
@@ -39,9 +41,14 @@ export function StockBatchCreatePage() {
         if (isMounted) {
           setItems(response.data);
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setError("Não foi possível carregar os itens para entrada de lote.");
+          setError(
+            getApiErrorMessage(
+              err,
+              "Não foi possível carregar os itens para entrada de lote."
+            )
+          );
         }
       } finally {
         if (isMounted) {
@@ -101,8 +108,10 @@ export function StockBatchCreatePage() {
 
       const response = await api.post<StockBatchResponse>("/stock-batches", payload);
       navigate(`/items/${response.data.item_id}`);
-    } catch {
-      setError("Não foi possível registrar a entrada do lote.");
+    } catch (err) {
+      setError(
+        getApiErrorMessage(err, "Não foi possível registrar a entrada do lote.")
+      );
     } finally {
       setIsSubmitting(false);
     }

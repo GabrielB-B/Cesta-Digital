@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
+from jwt import InvalidTokenError
 from sqlalchemy.orm import Session
 
 from app.core.request_context import attach_authenticated_user
@@ -30,7 +30,7 @@ def get_current_user(
         if subject is None:
             raise credentials_exception
         user_id = int(subject)
-    except (JWTError, ValueError):
+    except (InvalidTokenError, ValueError):
         raise credentials_exception
 
     user = db.get(User, user_id)
@@ -71,7 +71,7 @@ def require_any_role(*allowed_roles: str):
         if not current_user_roles.intersection(normalized_allowed_roles):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="VocÃª nÃ£o tem permissÃ£o para acessar este recurso.",
+                detail="Voce nao tem permissao para acessar este recurso.",
             )
 
         return current_user

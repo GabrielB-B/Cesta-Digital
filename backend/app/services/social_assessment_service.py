@@ -41,6 +41,20 @@ def create_social_assessment(
             ),
         )
 
+    if payload.co_approved_by_user_id is not None:
+        if payload.co_approved_by_user_id == current_user.id:
+            raise HTTPException(
+                status_code=422,
+                detail="O coaprovador deve ser diferente do aprovador principal.",
+            )
+
+        co_approver = db.get(User, payload.co_approved_by_user_id)
+        if co_approver is None or not co_approver.is_active:
+            raise HTTPException(
+                status_code=422,
+                detail="Coaprovador nao encontrado ou inativo.",
+            )
+
     assessment = SocialAssessment(
         family_id=family_id,
         assessment_date=payload.assessment_date,

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { getApiErrorMessage } from "../utils/api-error";
 import type {
   ItemCategoryResponse,
   ItemCreatePayload,
@@ -40,9 +41,14 @@ export function ItemCreatePage() {
         if (isMounted) {
           setCategories(response.data);
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setError("Não foi possível carregar as categorias de item.");
+          setError(
+            getApiErrorMessage(
+              err,
+              "Não foi possível carregar as categorias de item."
+            )
+          );
         }
       } finally {
         if (isMounted) {
@@ -102,8 +108,8 @@ export function ItemCreatePage() {
 
       const response = await api.post<ItemDetailResponse>("/items", payload);
       navigate(`/items/${response.data.id}`);
-    } catch {
-      setError("Não foi possível cadastrar o item.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Não foi possível cadastrar o item."));
     } finally {
       setIsSubmitting(false);
     }

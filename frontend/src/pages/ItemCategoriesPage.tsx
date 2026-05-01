@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import type { ItemCategoryResponse } from "../types/item";
+import type { ItemCategoryPayload, ItemCategoryResponse } from "../types/item";
+import { getApiErrorMessage } from "../utils/api-error";
 
-/**
- * Cadastro e consulta de categorias de item.
- */
 export function ItemCategoriesPage() {
   const [categories, setCategories] = useState<ItemCategoryResponse[]>([]);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [formData, setFormData] = useState({
+    id: null as number | null,
+    name: "",
+    description: "",
+    is_active: true,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   async function loadCategories() {
     try {
@@ -19,8 +22,8 @@ export function ItemCategoriesPage() {
       setError("");
       const response = await api.get<ItemCategoryResponse[]>("/item-categories");
       setCategories(response.data);
-    } catch {
-      setError("Não foi possível carregar as categorias.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel carregar as categorias."));
     } finally {
       setIsLoading(false);
     }
@@ -30,11 +33,21 @@ export function ItemCategoriesPage() {
     void loadCategories();
   }, []);
 
+  function resetForm() {
+    setFormData({
+      id: null,
+      name: "",
+      description: "",
+      is_active: true,
+    });
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setSuccessMessage("");
 
-    if (!name.trim()) {
+    if (!formData.name.trim()) {
       setError("Informe o nome da categoria.");
       return;
     }
@@ -42,30 +55,52 @@ export function ItemCategoriesPage() {
     setIsSubmitting(true);
 
     try {
-      await api.post<ItemCategoryResponse>("/item-categories", {
-        name: name.trim(),
-        description: description.trim() || null,
-      });
+      const payload: ItemCategoryPayload = {
+        name: formData.name.trim(),
+        description: formData.description.trim() || null,
+        is_active: formData.is_active,
+      };
 
-      setName("");
-      setDescription("");
+      if (formData.id) {
+        await api.put<ItemCategoryResponse>(
+          `/item-categories/${formData.id}`,
+          payload
+        );
+        setSuccessMessage("Categoria atualizada com auditoria registrada.");
+      } else {
+        await api.post<ItemCategoryResponse>("/item-categories", payload);
+        setSuccessMessage("Categoria cadastrada.");
+      }
+
+      resetForm();
       await loadCategories();
-    } catch {
-      setError("Não foi possível cadastrar a categoria.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Nao foi possivel salvar a categoria."));
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function handleEdit(category: ItemCategoryResponse) {
+    setError("");
+    setSuccessMessage("");
+    setFormData({
+      id: category.id,
+      name: category.name,
+      description: category.description ?? "",
+      is_active: category.is_active,
+    });
   }
 
   return (
     <div className="page-stack">
       <section className="hero-card">
         <div>
-          <p className="eyebrow">Catálogo</p>
+          <p className="eyebrow">Catalogo</p>
           <h2>Categorias de item</h2>
           <p className="hero-card__description">
-            Organize os itens do estoque por grupos para manter cadastros,
-            relatórios e consultas consistentes.
+            Organize categorias, edite nomes e inative grupos sem perder
+            historico operacional.
           </p>
         </div>
       </section>
@@ -74,8 +109,10 @@ export function ItemCategoriesPage() {
         <form onSubmit={handleSubmit} className="panel-card form-panel">
           <div className="panel-card__header">
             <div>
-              <p className="eyebrow">Novo cadastro</p>
-              <h3>Nova categoria</h3>
+              <p className="eyebrow">
+                {formData.id ? "Edicao" : "Novo cadastro"}
+              </p>
+              <h3>{formData.id ? "Editar categoria" : "Nova categoria"}</h3>
             </div>
           </div>
 
@@ -83,18 +120,42 @@ export function ItemCategoriesPage() {
             <label className="form__group">
               <span>Nome</span>
               <input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
+                value={formData.name}
+                onChange={(event) =>
+                  setFormData((previous) => ({
+                    ...previous,
+                    name: event.target.value,
+                  }))
+                }
                 placeholder="Ex.: alimentos"
                 required
               />
             </label>
 
+            <label className="checkbox-card">
+              <input
+                type="checkbox"
+                checked={formData.is_active}
+                onChange={(event) =>
+                  setFormData((previous) => ({
+                    ...previous,
+                    is_active: event.target.checked,
+                  }))
+                }
+              />
+              Categoria ativa
+            </label>
+
             <label className="form__group form__group--wide">
-              <span>Descrição</span>
+              <span>Descricao</span>
               <textarea
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
+                value={formData.description}
+                onChange={(event) =>
+                  setFormData((previous) => ({
+                    ...previous,
+                    description: event.target.value,
+                  }))
+                }
                 rows={4}
                 placeholder="Descreva o uso desta categoria"
               />
@@ -102,10 +163,26 @@ export function ItemCategoriesPage() {
           </div>
 
           {error ? <p className="status-error">{error}</p> : null}
+          {successMessage ? <p className="status-success">{successMessage}</p> : null}
 
           <div className="panel-actions">
+            {formData.id ? (
+              <button
+                type="button"
+                className="button button--secondary"
+                onClick={resetForm}
+                disabled={isSubmitting}
+              >
+                Cancelar edicao
+              </button>
+            ) : null}
+
             <button type="submit" className="button" disabled={isSubmitting}>
-              {isSubmitting ? "Salvando..." : "Cadastrar categoria"}
+              {isSubmitting
+                ? "Salvando..."
+                : formData.id
+                  ? "Salvar categoria"
+                  : "Cadastrar categoria"}
             </button>
           </div>
         </form>
@@ -129,11 +206,24 @@ export function ItemCategoriesPage() {
                   <div>
                     <strong>{category.name}</strong>
                     <p className="stack-item__muted">
-                      {category.description || "Sem descrição"}
+                      {category.description || "Sem descricao"}
                     </p>
                   </div>
 
-                  <span className="pill">#{category.id}</span>
+                  <div className="stack-item__actions">
+                    {category.is_active ? (
+                      <span className="pill pill--success">Ativa</span>
+                    ) : (
+                      <span className="pill">Inativa</span>
+                    )}
+                    <button
+                      type="button"
+                      className="button button--secondary button--small"
+                      onClick={() => handleEdit(category)}
+                    >
+                      Editar
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { FinancialSummaryResponse } from "../types/financial";
+import { getApiErrorMessage } from "../utils/api-error";
 
 function formatCurrency(value: string): string {
   return Number(value).toLocaleString("pt-BR", {
@@ -31,9 +32,14 @@ export function FinancialSummaryPage() {
         if (isMounted) {
           setSummary(response.data);
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setError("Não foi possível carregar o resumo financeiro.");
+          setError(
+            getApiErrorMessage(
+              err,
+              "Não foi possível carregar o resumo financeiro."
+            )
+          );
         }
       } finally {
         if (isMounted) {

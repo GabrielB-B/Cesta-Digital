@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { getApiErrorMessage } from "../utils/api-error";
+import { formatTodayForInput } from "../utils/format";
 import type {
   FamilyCreatePayload,
   FamilyListItemResponse,
@@ -16,7 +18,7 @@ export function FamilyCreatePage() {
   const [formData, setFormData] = useState({
     internal_code: "",
     status: "em_analise",
-    registration_date: new Date().toISOString().slice(0, 10),
+    registration_date: formatTodayForInput(),
     monthly_income_total: 0,
     monthly_essential_expenses: 0,
     receives_government_assistance: false,
@@ -171,9 +173,12 @@ export function FamilyCreatePage() {
 
       const response = await api.post<FamilyListItemResponse>("/families", payload);
       navigate(`/families/${response.data.id}`);
-    } catch {
+    } catch (err) {
       setError(
-        "Não foi possível cadastrar a família. Verifique os campos obrigatórios."
+        getApiErrorMessage(
+          err,
+          "Não foi possível cadastrar a família. Verifique os campos obrigatórios."
+        )
       );
     } finally {
       setIsSubmitting(false);

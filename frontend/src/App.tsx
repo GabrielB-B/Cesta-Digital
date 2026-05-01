@@ -22,6 +22,7 @@ import { ItemCreatePage } from "./pages/ItemCreatePage";
 import { ItemDetailPage } from "./pages/ItemDetailPage";
 import { ItemsPage } from "./pages/ItemsPage";
 import { LoginPage } from "./pages/LoginPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 import { StockBatchCreatePage } from "./pages/StockBatchCreatePage";
 import { StockMovementCreatePage } from "./pages/StockMovementCreatePage";
 import { UsersPage } from "./pages/UsersPage";
@@ -220,6 +221,7 @@ function App() {
                 </RoleRoute>
               }
             />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

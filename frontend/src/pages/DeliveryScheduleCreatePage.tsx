@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { getApiErrorMessage } from "../utils/api-error";
+import { formatTodayForInput } from "../utils/format";
 import type { BasketTypeResponse } from "../types/basket";
 import type {
   DeliveryScheduleCreatePayload,
@@ -23,7 +25,7 @@ export function DeliveryScheduleCreatePage() {
   const [formData, setFormData] = useState({
     family_id: "",
     basket_type_id: "",
-    scheduled_date: new Date().toISOString().slice(0, 10),
+    scheduled_date: formatTodayForInput(),
     status: "agendado",
     notes: "",
   });
@@ -43,9 +45,14 @@ export function DeliveryScheduleCreatePage() {
           setFamilies(familiesResponse.data);
           setBasketTypes(basketTypesResponse.data);
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setError("Não foi possível carregar famílias e tipos de cesta.");
+          setError(
+            getApiErrorMessage(
+              err,
+              "Não foi possível carregar famílias e tipos de cesta."
+            )
+          );
         }
       } finally {
         if (isMounted) {
@@ -94,8 +101,8 @@ export function DeliveryScheduleCreatePage() {
 
       await api.post<DeliveryScheduleResponse>("/delivery-schedules", payload);
       navigate("/deliveries");
-    } catch {
-      setError("Não foi possível criar o agendamento.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Não foi possível criar o agendamento."));
     } finally {
       setIsSubmitting(false);
     }
