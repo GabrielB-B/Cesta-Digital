@@ -8,7 +8,6 @@ type AppIconName =
   | "deliveries"
   | "audit"
   | "users"
-  | "sidebarToggle"
   | "logout";
 
 interface AppIconProps {
@@ -115,13 +114,6 @@ export function AppIcon({ name, className }: AppIconProps) {
           <path d="M10 17v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1" />
           <path d="M14 16l5-4-5-4" />
           <path d="M19 12H9" />
-        </>
-      ) : null}
-
-      {name === "sidebarToggle" ? (
-        <>
-          <path d="M7 4v16" />
-          <path d="m16 7-5 5 5 5" />
         </>
       ) : null}
     </svg>

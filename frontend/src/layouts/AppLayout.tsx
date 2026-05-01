@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { AppIcon } from "../components/AppIcon";
 import { BrandLockup } from "../components/BrandLockup";
@@ -146,6 +147,9 @@ export function AppLayout() {
     ) ?? visibleMenuItems[0];
 
   const primaryRole = formatRole(userRoles[0] ?? "");
+  const SidebarToggleIcon = isSidebarCollapsed
+    ? PanelLeftOpen
+    : PanelLeftClose;
 
   function isActive(path: string): boolean {
     if (path === "/") {
@@ -233,7 +237,11 @@ export function AppLayout() {
           }
           onClick={toggleSidebar}
         >
-          <AppIcon name="sidebarToggle" className="sidebar__toggle-icon" />
+          <SidebarToggleIcon
+            className="sidebar__toggle-icon"
+            aria-hidden="true"
+            strokeWidth={1.9}
+          />
         </button>
       </aside>
 

@@ -178,16 +178,6 @@ textarea {
     transform 180ms ease;
 }
 
-.sidebar__toggle::before {
-  content: "";
-  position: absolute;
-  inset: 9px auto 9px 6px;
-  width: 2px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, var(--accent-gold), var(--accent-leaf));
-  opacity: 0.64;
-}
-
 .sidebar__toggle:hover {
   background:
     linear-gradient(180deg, rgba(53, 37, 24, 0.98), rgba(23, 30, 26, 0.98)),
@@ -210,11 +200,11 @@ textarea {
 }
 
 .sidebar__toggle-icon {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   position: relative;
   z-index: 1;
-  transition: transform 180ms ease;
+  transition: color 180ms ease, transform 180ms ease;
 }
 
 .sidebar__nav {
@@ -371,10 +361,6 @@ textarea {
 
 .app-shell--sidebar-collapsed .sidebar__toggle {
   right: -14px;
-}
-
-.app-shell--sidebar-collapsed .sidebar__toggle-icon {
-  transform: rotate(180deg);
 }
 
 .app-shell--sidebar-collapsed .brand-lockup {
