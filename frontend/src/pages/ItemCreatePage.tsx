@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { FormActions } from "../components/FormActions";
+import { FormSection } from "../components/FormSection";
+import { PageHeader } from "../components/PageHeader";
+import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
 import type {
   ItemCategoryResponse,
@@ -124,26 +128,14 @@ export function ItemCreatePage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Novo item</p>
-          <h2>Cadastrar item</h2>
-          <p className="hero-card__description">
-            Crie um novo item no catálogo do estoque para uso em lotes,
-            movimentações e montagem de cestas.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Novo item"
+        title="Cadastrar item"
+        description="Crie um novo item no catálogo do estoque para uso em lotes, movimentações e montagem de cestas."
+      />
 
       <form onSubmit={handleSubmit} className="panel-card form-panel">
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Catálogo</p>
-            <h3>Dados principais do item</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Catálogo" title="Dados principais do item">
           <label className="form__group">
             <span>Categoria</span>
             <select
@@ -241,15 +233,13 @@ export function ItemCreatePage() {
               rows={4}
             />
           </label>
-        </div>
+        </FormSection>
 
         {error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : null}
 
-        <div className="panel-actions">
+        <FormActions>
           <Link to="/items" className="button button--secondary button--link">
             Cancelar
           </Link>
@@ -257,7 +247,7 @@ export function ItemCreatePage() {
           <button type="submit" className="button" disabled={isSubmitting}>
             {isSubmitting ? "Salvando..." : "Cadastrar item"}
           </button>
-        </div>
+        </FormActions>
       </form>
     </div>
   );

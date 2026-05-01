@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { FormActions } from "../components/FormActions";
+import { FormSection } from "../components/FormSection";
+import { PageHeader } from "../components/PageHeader";
+import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
 import type {
   FamilyContactCreatePayload,
@@ -320,7 +324,9 @@ export function FamilyEditPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="empty-state">Carregando cadastro da familia...</p>
+          <StateMessage variant="loading">
+            Carregando cadastro da familia...
+          </StateMessage>
         </div>
       </div>
     );
@@ -328,26 +334,14 @@ export function FamilyEditPage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Cadastro social</p>
-          <h2>Editar família</h2>
-          <p className="hero-card__description">
-            Atualize os dados cadastrais, sociais, financeiros e de contato da
-            família com registro de auditoria.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Cadastro social"
+        title="Editar família"
+        description="Atualize os dados cadastrais, sociais, financeiros e de contato da família com registro de auditoria."
+      />
 
       <form onSubmit={handleSubmit} className="panel-card form-panel">
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Identificação</p>
-            <h3>Dados principais e endereço</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Identificação" title="Dados principais e endereço">
           <label className="form__group">
             <span>Código interno</span>
             <input
@@ -481,16 +475,9 @@ export function FamilyEditPage() {
               onChange={handleInputChange}
             />
           </label>
-        </div>
+        </FormSection>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Composição</p>
-            <h3>Moradores, moradia e vulnerabilidades</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Composição" title="Moradores e moradia">
           <label className="form__group">
             <span>Adultos</span>
             <input
@@ -570,9 +557,13 @@ export function FamilyEditPage() {
               onChange={handleInputChange}
             />
           </label>
-        </div>
+        </FormSection>
 
-        <div className="checkbox-grid">
+        <FormSection
+          eyebrow="Vulnerabilidades"
+          title="Sinais de atenção no acompanhamento"
+          gridClassName="checkbox-grid"
+        >
           <label className="checkbox-card">
             <input
               type="checkbox"
@@ -662,16 +653,9 @@ export function FamilyEditPage() {
             />
             <span>Precisa de apoio extra</span>
           </label>
-        </div>
+        </FormSection>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Renda e vínculo</p>
-            <h3>Dados sociais complementares</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Renda e vínculo" title="Dados sociais complementares">
           <label className="form__group">
             <span>Renda mensal total</span>
             <input
@@ -732,9 +716,13 @@ export function FamilyEditPage() {
               onChange={handleInputChange}
             />
           </label>
-        </div>
+        </FormSection>
 
-        <div className="checkbox-grid">
+        <FormSection
+          eyebrow="Acesso digital"
+          title="Comunicação e recursos disponíveis"
+          gridClassName="checkbox-grid"
+        >
           <label className="checkbox-card">
             <input
               type="checkbox"
@@ -764,16 +752,9 @@ export function FamilyEditPage() {
             />
             <span>Tem computador</span>
           </label>
-        </div>
+        </FormSection>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Contato e observações</p>
-            <h3>Comunicação principal</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Contato e observações" title="Comunicação principal">
           <label className="form__group">
             <span>Nome do contato</span>
             <input
@@ -844,15 +825,13 @@ export function FamilyEditPage() {
               rows={4}
             />
           </label>
-        </div>
+        </FormSection>
 
         {error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : null}
 
-        <div className="panel-actions panel-actions--spread">
+        <FormActions spread>
           <Link
             to={`/families/${familyId}`}
             className="button button--secondary button--link"
@@ -863,7 +842,7 @@ export function FamilyEditPage() {
           <button type="submit" className="button" disabled={isSubmitting}>
             {isSubmitting ? "Salvando..." : "Salvar cadastro"}
           </button>
-        </div>
+        </FormActions>
       </form>
     </div>
   );

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { AppIcon } from "../components/AppIcon";
+import { DataTable } from "../components/DataTable";
+import { MetricGrid } from "../components/MetricGrid";
 import { useAuth } from "../contexts/useAuth";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateOnly } from "../utils/format";
@@ -206,18 +208,16 @@ export function DashboardPage() {
               Famílias inativas: {data.inactive_families}
             </span>
           </div>
+
+          <div className="operation-flow" aria-label="Fluxo operacional">
+            <span>Atendimento</span>
+            <span>Estoque</span>
+            <span>Entrega</span>
+          </div>
         </div>
       </section>
 
-      <section className="stats-grid">
-        {summaryCards.map((card) => (
-          <article key={card.title} className="stat-card">
-            <p className="stat-card__title">{card.title}</p>
-            <strong className="stat-card__value">{card.value}</strong>
-            <span className="stat-card__description">{card.description}</span>
-          </article>
-        ))}
-      </section>
+      <MetricGrid items={summaryCards} />
 
       <section className="content-grid">
         <article className="panel-card">
@@ -299,8 +299,7 @@ export function DashboardPage() {
               Nenhum item está abaixo do mínimo no momento.
             </p>
           ) : (
-            <div className="table-wrapper">
-              <table className="data-table">
+            <DataTable caption="Itens abaixo do minimo">
                 <thead>
                   <tr>
                     <th>Item</th>
@@ -319,8 +318,7 @@ export function DashboardPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
+            </DataTable>
           )}
         </article>
       </section>

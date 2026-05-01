@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
+import { DataTable } from "../components/DataTable";
+import { MetricGrid } from "../components/MetricGrid";
+import { PageHeader } from "../components/PageHeader";
+import { PanelHeader } from "../components/PanelHeader";
 import { PaginationControls } from "../components/PaginationControls";
+import { StateMessage } from "../components/StateMessage";
 import type { StockSummaryResponse } from "../types/item";
 import { getApiErrorMessage } from "../utils/api-error";
 
@@ -67,68 +72,71 @@ export function ItemsPage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Estoque</p>
-          <h2>Itens</h2>
-          <p className="hero-card__description">
-            Acompanhe o catalogo operacional com filtros e paginacao executados
-            no backend.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Estoque"
+        title="Itens"
+        description="Acompanhe o catalogo operacional com filtros e paginacao executados no backend."
+      />
 
-      <section className="stats-grid">
-        <article className="stat-card">
-          <p className="stat-card__title">Resultado filtrado</p>
-          <strong className="stat-card__value">{summary.total}</strong>
-          <span className="stat-card__description">Itens encontrados.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Itens ativos</p>
-          <strong className="stat-card__value">{summary.active}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Abaixo do minimo</p>
-          <strong className="stat-card__value">{summary.belowMinimum}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Controlam validade</p>
-          <strong className="stat-card__value">{summary.withExpiration}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-      </section>
+      <MetricGrid
+        items={[
+          {
+            title: "Resultado filtrado",
+            value: summary.total,
+            description: "Itens encontrados.",
+          },
+          {
+            title: "Itens ativos",
+            value: summary.active,
+            description: "Nesta pagina.",
+          },
+          {
+            title: "Abaixo do minimo",
+            value: summary.belowMinimum,
+            description: "Nesta pagina.",
+          },
+          {
+            title: "Controlam validade",
+            value: summary.withExpiration,
+            description: "Nesta pagina.",
+          },
+        ]}
+      />
 
       <section className="panel-card">
-        <div className="panel-card__header panel-card__header--stack">
-          <div>
-            <p className="eyebrow">Consulta</p>
-            <h3>Catalogo operacional</h3>
-          </div>
+        <PanelHeader
+          eyebrow="Consulta"
+          title="Catalogo operacional"
+          stacked
+          actions={
+            <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
+            <label className="toolbar__field">
+              <span className="sr-only">Buscar itens</span>
+              <input
+                className="toolbar__input"
+                type="text"
+                name="items_search"
+                placeholder="Buscar por item, categoria ou unidade..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
 
-          <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
-            <input
-              className="toolbar__input"
-              type="text"
-              placeholder="Buscar por item, categoria ou unidade"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-
-            <select
-              className="toolbar__input toolbar__input--select"
-              value={activeFilter}
-              onChange={(event) => setActiveFilter(event.target.value)}
-            >
-              <option value="">Todos</option>
-              <option value="true">Ativos</option>
-              <option value="false">Inativos</option>
-            </select>
+            <label className="toolbar__field toolbar__field--select">
+              <span className="sr-only">Filtrar itens por status</span>
+              <select
+                className="toolbar__input toolbar__input--select"
+                name="items_status"
+                value={activeFilter}
+                onChange={(event) => setActiveFilter(event.target.value)}
+              >
+                <option value="">Todos</option>
+                <option value="true">Ativos</option>
+                <option value="false">Inativos</option>
+              </select>
+            </label>
 
             <button type="submit" className="button" disabled={isLoading}>
               {isLoading ? "Consultando..." : "Aplicar"}
@@ -154,62 +162,59 @@ export function ItemsPage() {
               Categorias
             </Link>
           </form>
-        </div>
+          }
+        />
 
         {isLoading ? (
-          <p className="empty-state">Carregando itens...</p>
+          <StateMessage variant="loading">Carregando itens...</StateMessage>
         ) : error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : items.length === 0 ? (
-          <p className="empty-state">
+          <StateMessage>
             Nenhum item encontrado para o filtro informado.
-          </p>
+          </StateMessage>
         ) : (
           <>
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Categoria</th>
-                    <th>Unidade</th>
-                    <th>Quantidade</th>
-                    <th>Minimo</th>
-                    <th>Lotes</th>
-                    <th>Status</th>
-                    <th></th>
+            <DataTable caption="Catalogo operacional de itens">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Categoria</th>
+                  <th>Unidade</th>
+                  <th>Quantidade</th>
+                  <th>Minimo</th>
+                  <th>Lotes</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item) => (
+                  <tr key={item.item_id}>
+                    <td>{item.item_name}</td>
+                    <td>{item.category_name}</td>
+                    <td>{item.unit_measure}</td>
+                    <td>{item.total_quantity}</td>
+                    <td>{item.minimum_stock_alert}</td>
+                    <td>{item.total_batches}</td>
+                    <td>
+                      {item.is_below_minimum ? (
+                        <span className="pill pill--danger">Atencao</span>
+                      ) : item.is_active ? (
+                        <span className="pill pill--success">Ativo</span>
+                      ) : (
+                        <span className="pill">Inativo</span>
+                      )}
+                    </td>
+                    <td>
+                      <Link to={`/items/${item.item_id}`} className="table-link">
+                        Ver detalhe
+                      </Link>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr key={item.item_id}>
-                      <td>{item.item_name}</td>
-                      <td>{item.category_name}</td>
-                      <td>{item.unit_measure}</td>
-                      <td>{item.total_quantity}</td>
-                      <td>{item.minimum_stock_alert}</td>
-                      <td>{item.total_batches}</td>
-                      <td>
-                        {item.is_below_minimum ? (
-                          <span className="pill pill--danger">Atencao</span>
-                        ) : item.is_active ? (
-                          <span className="pill pill--success">Ativo</span>
-                        ) : (
-                          <span className="pill">Inativo</span>
-                        )}
-                      </td>
-                      <td>
-                        <Link to={`/items/${item.item_id}`} className="table-link">
-                          Ver detalhe
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </DataTable>
 
             <PaginationControls
               total={total}

@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
+import { DataTable } from "../components/DataTable";
+import { MetricGrid } from "../components/MetricGrid";
+import { PageHeader } from "../components/PageHeader";
+import { PanelHeader } from "../components/PanelHeader";
 import { PaginationControls } from "../components/PaginationControls";
+import { StateMessage } from "../components/StateMessage";
 import type { FamilyListItemResponse } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
 
@@ -93,72 +98,73 @@ export function FamiliesPage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Modulo social</p>
-          <h2>Familias</h2>
-          <p className="hero-card__description">
-            Consulte familias por busca e status direto no servidor, com
-            paginacao para bases maiores.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Modulo social"
+        title="Familias"
+        description="Consulte familias por busca e status direto no servidor, com paginacao para bases maiores."
+      />
 
-      <section className="stats-grid">
-        <article className="stat-card">
-          <p className="stat-card__title">Resultado filtrado</p>
-          <strong className="stat-card__value">{summary.total}</strong>
-          <span className="stat-card__description">
-            Familias encontradas na consulta atual.
-          </span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Aptas recorrentes</p>
-          <strong className="stat-card__value">{summary.recurring}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Aptas emergenciais</p>
-          <strong className="stat-card__value">{summary.emergency}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Em analise</p>
-          <strong className="stat-card__value">{summary.underReview}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-      </section>
+      <MetricGrid
+        items={[
+          {
+            title: "Resultado filtrado",
+            value: summary.total,
+            description: "Familias encontradas na consulta atual.",
+          },
+          {
+            title: "Aptas recorrentes",
+            value: summary.recurring,
+            description: "Nesta pagina.",
+          },
+          {
+            title: "Aptas emergenciais",
+            value: summary.emergency,
+            description: "Nesta pagina.",
+          },
+          {
+            title: "Em analise",
+            value: summary.underReview,
+            description: "Nesta pagina.",
+          },
+        ]}
+      />
 
       <section className="panel-card">
-        <div className="panel-card__header panel-card__header--stack">
-          <div>
-            <p className="eyebrow">Consulta</p>
-            <h3>Familias cadastradas</h3>
-          </div>
+        <PanelHeader
+          eyebrow="Consulta"
+          title="Familias cadastradas"
+          stacked
+          actions={
+            <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
+            <label className="toolbar__field">
+              <span className="sr-only">Buscar familias</span>
+              <input
+                className="toolbar__input"
+                type="text"
+                name="families_search"
+                placeholder="Buscar por codigo, cidade, bairro ou status..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
 
-          <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
-            <input
-              className="toolbar__input"
-              type="text"
-              placeholder="Buscar por codigo, cidade, bairro ou status"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-
-            <select
-              className="toolbar__input toolbar__input--select"
-              value={status}
-              onChange={(event) => setStatus(event.target.value)}
-            >
-              {familyStatusOptions.map((option) => (
-                <option key={option.value || "all"} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <label className="toolbar__field toolbar__field--select">
+              <span className="sr-only">Filtrar por status</span>
+              <select
+                className="toolbar__input toolbar__input--select"
+                name="family_status"
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+              >
+                {familyStatusOptions.map((option) => (
+                  <option key={option.value || "all"} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
             <button type="submit" className="button" disabled={isLoading}>
               {isLoading ? "Consultando..." : "Aplicar"}
@@ -177,59 +183,53 @@ export function FamiliesPage() {
               Nova familia
             </Link>
           </form>
-        </div>
+          }
+        />
 
         {isLoading ? (
-          <p className="empty-state">Carregando familias...</p>
+          <StateMessage variant="loading">Carregando familias...</StateMessage>
         ) : error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : families.length === 0 ? (
-          <p className="empty-state">
+          <StateMessage>
             Nenhuma familia encontrada para o filtro informado.
-          </p>
+          </StateMessage>
         ) : (
           <>
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Codigo</th>
-                    <th>Status</th>
-                    <th>Cidade</th>
-                    <th>Moradores</th>
-                    <th>Renda per capita</th>
-                    <th>Contato principal</th>
-                    <th></th>
+            <DataTable caption="Familias cadastradas">
+              <thead>
+                <tr>
+                  <th>Codigo</th>
+                  <th>Status</th>
+                  <th>Cidade</th>
+                  <th>Moradores</th>
+                  <th>Renda per capita</th>
+                  <th>Contato principal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {families.map((family) => (
+                  <tr key={family.id}>
+                    <td>{family.internal_code}</td>
+                    <td>
+                      <span className="pill">{formatStatus(family.status)}</span>
+                    </td>
+                    <td>
+                      {family.city}/{family.state}
+                    </td>
+                    <td>{family.total_residents}</td>
+                    <td>{formatCurrency(family.income_per_capita)}</td>
+                    <td>{family.contacts[0]?.contact_name ?? "Sem contato"}</td>
+                    <td>
+                      <Link to={`/families/${family.id}`} className="table-link">
+                        Ver detalhe
+                      </Link>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {families.map((family) => (
-                    <tr key={family.id}>
-                      <td>{family.internal_code}</td>
-                      <td>
-                        <span className="pill">{formatStatus(family.status)}</span>
-                      </td>
-                      <td>
-                        {family.city}/{family.state}
-                      </td>
-                      <td>{family.total_residents}</td>
-                      <td>{formatCurrency(family.income_per_capita)}</td>
-                      <td>{family.contacts[0]?.contact_name ?? "Sem contato"}</td>
-                      <td>
-                        <Link
-                          to={`/families/${family.id}`}
-                          className="table-link"
-                        >
-                          Ver detalhe
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </DataTable>
 
             <PaginationControls
               total={total}

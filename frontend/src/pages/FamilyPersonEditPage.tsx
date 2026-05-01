@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { FormActions } from "../components/FormActions";
+import { FormSection } from "../components/FormSection";
+import { PageHeader } from "../components/PageHeader";
+import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
 import type {
   FamilyDetailResponse,
@@ -196,7 +200,9 @@ export function FamilyPersonEditPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="empty-state">Carregando membro da familia...</p>
+          <StateMessage variant="loading">
+            Carregando membro da familia...
+          </StateMessage>
         </div>
       </div>
     );
@@ -206,14 +212,12 @@ export function FamilyPersonEditPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
-          <div className="panel-actions">
+          <StateMessage variant="error">{error}</StateMessage>
+          <FormActions>
             <Link to={`/families/${familyId}`} className="button button--secondary">
               Voltar
             </Link>
-          </div>
+          </FormActions>
         </div>
       </div>
     );
@@ -221,25 +225,14 @@ export function FamilyPersonEditPage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Composicao familiar</p>
-          <h2>Editar membro</h2>
-          <p className="hero-card__description">
-            Atualize os dados do membro e mantenha o resumo social coerente com a realidade.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Composicao familiar"
+        title="Editar membro"
+        description="Atualize os dados do membro e mantenha o resumo social coerente com a realidade."
+      />
 
       <form onSubmit={handleSubmit} className="panel-card form-panel">
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Pessoa</p>
-            <h3>Dados individuais</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Pessoa" title="Dados individuais">
           <label className="form__group form__group--wide">
             <span>Nome completo</span>
             <input
@@ -343,16 +336,13 @@ export function FamilyPersonEditPage() {
               rows={4}
             />
           </label>
-        </div>
+        </FormSection>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Condicao</p>
-            <h3>Situacao individual</h3>
-          </div>
-        </div>
-
-        <div className="checkbox-grid">
+        <FormSection
+          eyebrow="Condicao"
+          title="Situacao individual"
+          gridClassName="checkbox-grid"
+        >
           <label className="checkbox-card">
             <input
               type="checkbox"
@@ -422,15 +412,13 @@ export function FamilyPersonEditPage() {
             />
             <span>Lactante</span>
           </label>
-        </div>
+        </FormSection>
 
         {error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : null}
 
-        <div className="panel-actions panel-actions--spread">
+        <FormActions spread>
           <button
             type="button"
             className="button button--danger"
@@ -452,7 +440,7 @@ export function FamilyPersonEditPage() {
               {isSubmitting ? "Salvando..." : "Salvar alteracoes"}
             </button>
           </div>
-        </div>
+        </FormActions>
       </form>
     </div>
   );

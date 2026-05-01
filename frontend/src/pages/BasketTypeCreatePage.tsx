@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { FormActions } from "../components/FormActions";
+import { FormSection } from "../components/FormSection";
+import { PageHeader } from "../components/PageHeader";
+import { StateMessage } from "../components/StateMessage";
 import type { BasketTypeCreatePayload, BasketTypeResponse } from "../types/basket";
 import { getApiErrorMessage } from "../utils/api-error";
 
@@ -53,26 +57,14 @@ export function BasketTypeCreatePage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Cestas</p>
-          <h2>Novo tipo de cesta</h2>
-          <p className="hero-card__description">
-            Crie um modelo de cesta para depois montar a receita com os itens do
-            estoque.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Cestas"
+        title="Novo tipo de cesta"
+        description="Crie um modelo de cesta para depois montar a receita com os itens do estoque."
+      />
 
       <form onSubmit={handleSubmit} className="panel-card form-panel">
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Cadastro</p>
-            <h3>Dados do tipo de cesta</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Cadastro" title="Dados do tipo de cesta">
           <label className="form__group">
             <span>Nome</span>
             <input
@@ -100,15 +92,13 @@ export function BasketTypeCreatePage() {
               rows={4}
             />
           </label>
-        </div>
+        </FormSection>
 
         {error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : null}
 
-        <div className="panel-actions panel-actions--spread">
+        <FormActions spread>
           <Link
             to="/basket-types"
             className="button button--secondary button--link"
@@ -119,7 +109,7 @@ export function BasketTypeCreatePage() {
           <button type="submit" className="button" disabled={isSubmitting}>
             {isSubmitting ? "Salvando..." : "Cadastrar tipo"}
           </button>
-        </div>
+        </FormActions>
       </form>
     </div>
   );

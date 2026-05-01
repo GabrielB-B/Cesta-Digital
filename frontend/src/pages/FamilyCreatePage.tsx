@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { FormActions } from "../components/FormActions";
+import { FormSection } from "../components/FormSection";
+import { PageHeader } from "../components/PageHeader";
+import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatTodayForInput } from "../utils/format";
 import type {
@@ -194,26 +198,14 @@ export function FamilyCreatePage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Novo cadastro</p>
-          <h2>Cadastrar família</h2>
-          <p className="hero-card__description">
-            Registre os dados iniciais da família para começar o acompanhamento
-            social no sistema.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Novo cadastro"
+        title="Cadastrar família"
+        description="Registre os dados iniciais da família para começar o acompanhamento social no sistema."
+      />
 
       <form onSubmit={handleSubmit} className="panel-card form-panel">
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Dados iniciais</p>
-            <h3>Identificação e endereço</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Dados iniciais" title="Identificação e endereço">
           <label className="form__group">
             <span>Código interno</span>
             <input
@@ -329,16 +321,9 @@ export function FamilyCreatePage() {
               onChange={handleInputChange}
             />
           </label>
-        </div>
+        </FormSection>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Composição</p>
-            <h3>Moradores e condições básicas</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Composição" title="Moradores e condições básicas">
           <label className="form__group">
             <span>Adultos</span>
             <input
@@ -419,9 +404,13 @@ export function FamilyCreatePage() {
               placeholder="Ex.: cedida, alugada..."
             />
           </label>
-        </div>
+        </FormSection>
 
-        <div className="checkbox-grid">
+        <FormSection
+          eyebrow="Vulnerabilidades"
+          title="Sinais de atenção no acompanhamento"
+          gridClassName="checkbox-grid"
+        >
           <label className="checkbox-card">
             <input
               type="checkbox"
@@ -511,16 +500,9 @@ export function FamilyCreatePage() {
             />
             <span>Precisa de apoio extra</span>
           </label>
-        </div>
+        </FormSection>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Condição econômica</p>
-            <h3>Renda e despesas</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Condição econômica" title="Renda e despesas">
           <label className="form__group">
             <span>Renda mensal total</span>
             <input
@@ -544,16 +526,9 @@ export function FamilyCreatePage() {
               onChange={handleInputChange}
             />
           </label>
-        </div>
+        </FormSection>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Contato principal</p>
-            <h3>Contato inicial da família</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Contato principal" title="Contato inicial da família">
           <label className="form__group">
             <span>Nome do contato</span>
             <input
@@ -604,16 +579,9 @@ export function FamilyCreatePage() {
               onChange={handleInputChange}
             />
           </label>
-        </div>
+        </FormSection>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Observações</p>
-            <h3>Anotações sociais e internas</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Observações" title="Anotações sociais e internas">
           <label className="form__group form__group--wide">
             <span>Observações sociais</span>
             <textarea
@@ -633,15 +601,13 @@ export function FamilyCreatePage() {
               rows={4}
             />
           </label>
-        </div>
+        </FormSection>
 
         {error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : null}
 
-        <div className="panel-actions">
+        <FormActions>
           <Link to="/families" className="button button--secondary button--link">
             Cancelar
           </Link>
@@ -649,7 +615,7 @@ export function FamilyCreatePage() {
           <button type="submit" className="button" disabled={isSubmitting}>
             {isSubmitting ? "Salvando..." : "Cadastrar família"}
           </button>
-        </div>
+        </FormActions>
       </form>
     </div>
   );

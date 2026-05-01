@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { DataTable } from "../components/DataTable";
+import { FormActions } from "../components/FormActions";
+import { FormSection } from "../components/FormSection";
+import { PageHeader } from "../components/PageHeader";
+import { PanelHeader } from "../components/PanelHeader";
+import { StateMessage } from "../components/StateMessage";
 import type {
   ItemCategoryResponse,
   ItemDetailResponse,
@@ -173,7 +179,9 @@ export function ItemDetailPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="empty-state">Carregando detalhe do item...</p>
+          <StateMessage variant="loading">
+            Carregando detalhe do item...
+          </StateMessage>
         </div>
       </div>
     );
@@ -183,14 +191,14 @@ export function ItemDetailPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="status-error" role="alert" aria-live="polite">
+          <StateMessage variant="error">
             {error || "Nao foi possivel carregar o item."}
-          </p>
-          <div className="panel-actions">
+          </StateMessage>
+          <FormActions>
             <Link to="/items" className="button button--secondary">
               Voltar
             </Link>
-          </div>
+          </FormActions>
         </div>
       </div>
     );
@@ -198,16 +206,12 @@ export function ItemDetailPage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Detalhe do item</p>
-          <h2>{item.name}</h2>
-          <p className="hero-card__description">
-            Categoria: {item.category_name} | Unidade: {item.unit_measure}
-          </p>
-        </div>
-
-        <div className="hero-badges">
+      <PageHeader
+        eyebrow="Detalhe do item"
+        title={item.name}
+        description={`Categoria: ${item.category_name} | Unidade: ${item.unit_measure}`}
+        meta={
+          <div className="hero-badges">
           <span className="hero-badge">
             Estoque atual: {summary?.total_quantity ?? totalCurrentQuantity}
           </span>
@@ -223,23 +227,17 @@ export function ItemDetailPage() {
           >
             Nova movimentacao
           </Link>
-        </div>
-      </section>
+          </div>
+        }
+      />
 
       {error ? (
-        <p className="status-error" role="alert" aria-live="polite">
-          {error}
-        </p>
+        <StateMessage variant="error">{error}</StateMessage>
       ) : null}
 
       <section className="content-grid">
         <article className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Resumo</p>
-              <h3>Dados principais</h3>
-            </div>
-          </div>
+          <PanelHeader eyebrow="Resumo" title="Dados principais" />
 
           <div className="detail-grid">
             <div className="detail-item">
@@ -270,14 +268,7 @@ export function ItemDetailPage() {
         </article>
 
         <form onSubmit={handleItemSave} className="panel-card form-panel">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Cadastro</p>
-              <h3>Editar item</h3>
-            </div>
-          </div>
-
-          <div className="form-grid">
+          <FormSection eyebrow="Cadastro" title="Editar item">
             <label className="form__group">
               <span>Categoria</span>
               <select
@@ -404,36 +395,28 @@ export function ItemDetailPage() {
                 rows={3}
               />
             </label>
-          </div>
+          </FormSection>
 
           {successMessage ? (
-            <p className="status-success" role="status" aria-live="polite">
-              {successMessage}
-            </p>
+            <StateMessage variant="success">{successMessage}</StateMessage>
           ) : null}
 
-          <div className="panel-actions">
+          <FormActions>
             <button type="submit" className="button" disabled={isSavingItem}>
               {isSavingItem ? "Salvando..." : "Salvar item"}
             </button>
-          </div>
+          </FormActions>
         </form>
       </section>
 
       <section className="content-grid">
         <article className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Lotes</p>
-              <h3>Entradas e saldos</h3>
-            </div>
-          </div>
+          <PanelHeader eyebrow="Lotes" title="Entradas e saldos" />
 
           {batches.length === 0 ? (
-            <p className="empty-state">Nenhum lote encontrado para este item.</p>
+            <StateMessage>Nenhum lote encontrado para este item.</StateMessage>
           ) : (
-            <div className="table-wrapper">
-              <table className="data-table">
+            <DataTable caption="Lotes do item">
                 <thead>
                   <tr>
                     <th>ID</th>
@@ -456,26 +439,19 @@ export function ItemDetailPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
+            </DataTable>
           )}
         </article>
 
         <article className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Movimentacoes</p>
-              <h3>Historico do item</h3>
-            </div>
-          </div>
+          <PanelHeader eyebrow="Movimentacoes" title="Historico do item" />
 
           {movements.length === 0 ? (
-            <p className="empty-state">
+            <StateMessage>
               Nenhuma movimentacao encontrada para este item.
-            </p>
+            </StateMessage>
           ) : (
-            <div className="table-wrapper">
-              <table className="data-table">
+            <DataTable caption="Historico de movimentacoes do item">
                 <thead>
                   <tr>
                     <th>ID</th>
@@ -496,17 +472,16 @@ export function ItemDetailPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
+            </DataTable>
           )}
         </article>
       </section>
 
-      <div className="panel-actions">
+      <FormActions>
         <Link to="/items" className="button button--secondary">
           Voltar para itens
         </Link>
-      </div>
+      </FormActions>
     </div>
   );
 }

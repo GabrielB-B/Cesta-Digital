@@ -280,13 +280,18 @@ export function UsersPage() {
               <p className="table-muted">{PASSWORD_POLICY_HINT}</p>
 
               <div className="toolbar toolbar--row">
-                <input
-                  className="toolbar__input"
-                  type="password"
-                  value={passwordReset}
-                  onChange={(event) => setPasswordReset(event.target.value)}
-                  placeholder="Nova senha forte"
-                />
+                <label className="toolbar__field">
+                  <span className="sr-only">Nova senha forte</span>
+                  <input
+                    className="toolbar__input"
+                    type="password"
+                    name="password_reset"
+                    value={passwordReset}
+                    onChange={(event) => setPasswordReset(event.target.value)}
+                    placeholder="Nova senha forte..."
+                    autoComplete="new-password"
+                  />
+                </label>
 
                 <button
                   type="button"

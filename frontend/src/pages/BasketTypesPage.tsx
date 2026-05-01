@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
+import { DataTable } from "../components/DataTable";
+import { MetricGrid } from "../components/MetricGrid";
+import { PageHeader } from "../components/PageHeader";
+import { PanelHeader } from "../components/PanelHeader";
 import { PaginationControls } from "../components/PaginationControls";
+import { StateMessage } from "../components/StateMessage";
 import type { BasketTypeResponse } from "../types/basket";
 import { getApiErrorMessage } from "../utils/api-error";
 
@@ -66,62 +71,66 @@ export function BasketTypesPage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Cestas</p>
-          <h2>Tipos de cesta</h2>
-          <p className="hero-card__description">
-            Consulte modelos de cesta com filtros server-side e paginacao para
-            crescimento da operacao.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Cestas"
+        title="Tipos de cesta"
+        description="Consulte modelos de cesta com filtros server-side e paginacao para crescimento da operacao."
+      />
 
-      <section className="stats-grid">
-        <article className="stat-card">
-          <p className="stat-card__title">Resultado filtrado</p>
-          <strong className="stat-card__value">{summary.total}</strong>
-          <span className="stat-card__description">Modelos encontrados.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Ativos</p>
-          <strong className="stat-card__value">{summary.active}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Inativos</p>
-          <strong className="stat-card__value">{summary.inactive}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-      </section>
+      <MetricGrid
+        items={[
+          {
+            title: "Resultado filtrado",
+            value: summary.total,
+            description: "Modelos encontrados.",
+          },
+          {
+            title: "Ativos",
+            value: summary.active,
+            description: "Nesta pagina.",
+          },
+          {
+            title: "Inativos",
+            value: summary.inactive,
+            description: "Nesta pagina.",
+          },
+        ]}
+      />
 
       <section className="panel-card">
-        <div className="panel-card__header panel-card__header--stack">
-          <div>
-            <p className="eyebrow">Consulta</p>
-            <h3>Modelos de cesta</h3>
-          </div>
+        <PanelHeader
+          eyebrow="Consulta"
+          title="Modelos de cesta"
+          stacked
+          actions={
+            <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
+            <label className="toolbar__field">
+              <span className="sr-only">Buscar tipos de cesta</span>
+              <input
+                className="toolbar__input"
+                type="text"
+                name="basket_types_search"
+                placeholder="Buscar por nome ou observacao..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
 
-          <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
-            <input
-              className="toolbar__input"
-              type="text"
-              placeholder="Buscar por nome ou observacao"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-
-            <select
-              className="toolbar__input toolbar__input--select"
-              value={activeFilter}
-              onChange={(event) => setActiveFilter(event.target.value)}
-            >
-              <option value="">Todos</option>
-              <option value="true">Ativos</option>
-              <option value="false">Inativos</option>
-            </select>
+            <label className="toolbar__field toolbar__field--select">
+              <span className="sr-only">Filtrar tipos de cesta por status</span>
+              <select
+                className="toolbar__input toolbar__input--select"
+                name="basket_types_status"
+                value={activeFilter}
+                onChange={(event) => setActiveFilter(event.target.value)}
+              >
+                <option value="">Todos</option>
+                <option value="true">Ativos</option>
+                <option value="false">Inativos</option>
+              </select>
+            </label>
 
             <button type="submit" className="button" disabled={isLoading}>
               {isLoading ? "Consultando..." : "Aplicar"}
@@ -140,55 +149,54 @@ export function BasketTypesPage() {
               Novo tipo
             </Link>
           </form>
-        </div>
+          }
+        />
 
         {isLoading ? (
-          <p className="empty-state">Carregando tipos de cesta...</p>
+          <StateMessage variant="loading">
+            Carregando tipos de cesta...
+          </StateMessage>
         ) : error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : basketTypes.length === 0 ? (
-          <p className="empty-state">
+          <StateMessage>
             Nenhum tipo de cesta encontrado para o filtro informado.
-          </p>
+          </StateMessage>
         ) : (
           <>
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Status</th>
-                    <th>Observacoes</th>
-                    <th></th>
+            <DataTable caption="Modelos de cesta cadastrados">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Status</th>
+                  <th>Observacoes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {basketTypes.map((basketType) => (
+                  <tr key={basketType.id}>
+                    <td>{basketType.name}</td>
+                    <td>
+                      {basketType.is_active ? (
+                        <span className="pill pill--success">Ativa</span>
+                      ) : (
+                        <span className="pill">Inativa</span>
+                      )}
+                    </td>
+                    <td>{basketType.notes || "Sem observacoes"}</td>
+                    <td>
+                      <Link
+                        to={`/basket-types/${basketType.id}`}
+                        className="table-link"
+                      >
+                        Ver detalhe
+                      </Link>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {basketTypes.map((basketType) => (
-                    <tr key={basketType.id}>
-                      <td>{basketType.name}</td>
-                      <td>
-                        {basketType.is_active ? (
-                          <span className="pill pill--success">Ativa</span>
-                        ) : (
-                          <span className="pill">Inativa</span>
-                        )}
-                      </td>
-                      <td>{basketType.notes || "Sem observacoes"}</td>
-                      <td>
-                        <Link
-                          to={`/basket-types/${basketType.id}`}
-                          className="table-link"
-                        >
-                          Ver detalhe
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </DataTable>
 
             <PaginationControls
               total={total}

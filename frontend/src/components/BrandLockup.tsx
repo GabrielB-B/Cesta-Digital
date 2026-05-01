@@ -16,9 +16,16 @@ export function BrandLockup({
   subtitle = "UPG | Gestao social e operacional",
 }: BrandLockupProps) {
   return (
-    <div className={`brand-lockup brand-lockup--${variant}`}>
+    <div className={`brand-lockup brand-lockup--${variant}`} translate="no">
       <div className="brand-lockup__mark-shell" aria-hidden="true">
-        <img className="brand-lockup__mark" src={brandLogo} alt="" />
+        <img
+          className="brand-lockup__mark"
+          src={brandLogo}
+          alt=""
+          width="1365"
+          height="2048"
+          decoding="async"
+        />
       </div>
 
       <div className="brand-lockup__content">

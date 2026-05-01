@@ -128,6 +128,7 @@ export function LoginPage() {
             <span>Email</span>
             <input
               type="email"
+              name="email"
               value={email}
               onChange={(event) => {
                 setEmail(event.target.value);
@@ -137,6 +138,7 @@ export function LoginPage() {
               }}
               placeholder="Digite seu email"
               autoComplete="email"
+              spellCheck={false}
               required
             />
           </label>
@@ -145,6 +147,7 @@ export function LoginPage() {
             <span>Senha</span>
             <input
               type="password"
+              name="password"
               value={password}
               onChange={(event) => {
                 setPassword(event.target.value);

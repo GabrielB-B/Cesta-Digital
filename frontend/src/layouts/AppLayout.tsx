@@ -172,13 +172,18 @@ export function AppLayout() {
   }
 
   return (
-    <div
-      className={
-        isSidebarCollapsed
-          ? "app-shell app-shell--sidebar-collapsed"
-          : "app-shell"
-      }
-    >
+    <>
+      <a className="skip-link" href="#conteudo-principal">
+        Pular para o conteudo
+      </a>
+
+      <div
+        className={
+          isSidebarCollapsed
+            ? "app-shell app-shell--sidebar-collapsed"
+            : "app-shell"
+        }
+      >
       <aside className="sidebar">
         <div className="sidebar__overlay" />
 
@@ -245,7 +250,7 @@ export function AppLayout() {
         </button>
       </aside>
 
-      <main className="content">
+      <main id="conteudo-principal" className="content">
         <header className="topbar">
           <span className="topbar__section">{currentSection.label}</span>
 
@@ -281,6 +286,7 @@ export function AppLayout() {
           <Outlet />
         </section>
       </main>
-    </div>
+      </div>
+    </>
   );
 }

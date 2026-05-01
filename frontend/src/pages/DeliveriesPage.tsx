@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
+import { DataTable } from "../components/DataTable";
+import { MetricGrid } from "../components/MetricGrid";
+import { PageHeader } from "../components/PageHeader";
+import { PanelHeader } from "../components/PanelHeader";
 import { PaginationControls } from "../components/PaginationControls";
+import { StateMessage } from "../components/StateMessage";
 import type { BasketTypeResponse } from "../types/basket";
 import type {
   DeliveryFromScheduleCreatePayload,
@@ -205,74 +210,66 @@ export function DeliveriesPage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Operacao</p>
-          <h2>Agendamentos e entregas</h2>
-          <p className="hero-card__description">
-            Reagende, cancele e confirme retiradas com registro de auditoria e
-            baixa automatica de estoque.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Operacao"
+        title="Agendamentos e entregas"
+        description="Reagende, cancele e confirme retiradas com registro de auditoria e baixa automatica de estoque."
+      />
 
-      <section className="stats-grid">
-        <article className="stat-card">
-          <p className="stat-card__title">Agendamentos filtrados</p>
-          <strong className="stat-card__value">{summary.totalSchedules}</strong>
-          <span className="stat-card__description">Resultado da consulta.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Pendentes</p>
-          <strong className="stat-card__value">{summary.pendingSchedules}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Retirados</p>
-          <strong className="stat-card__value">{summary.completedSchedules}</strong>
-          <span className="stat-card__description">Nesta pagina.</span>
-        </article>
-
-        <article className="stat-card">
-          <p className="stat-card__title">Entregas</p>
-          <strong className="stat-card__value">{summary.totalDeliveries}</strong>
-          <span className="stat-card__description">Historico registrado.</span>
-        </article>
-      </section>
+      <MetricGrid
+        items={[
+          {
+            title: "Agendamentos filtrados",
+            value: summary.totalSchedules,
+            description: "Resultado da consulta.",
+          },
+          {
+            title: "Pendentes",
+            value: summary.pendingSchedules,
+            description: "Nesta pagina.",
+          },
+          {
+            title: "Retirados",
+            value: summary.completedSchedules,
+            description: "Nesta pagina.",
+          },
+          {
+            title: "Entregas",
+            value: summary.totalDeliveries,
+            description: "Historico registrado.",
+          },
+        ]}
+      />
 
       {error ? (
-        <p className="status-error" role="alert" aria-live="polite">
-          {error}
-        </p>
+        <StateMessage variant="error">{error}</StateMessage>
       ) : null}
       {successMessage ? (
-        <p className="status-success" role="status" aria-live="polite">
-          {successMessage}
-        </p>
+        <StateMessage variant="success">{successMessage}</StateMessage>
       ) : null}
 
       <section className="panel-card">
-        <div className="panel-card__header panel-card__header--actions">
-          <div>
-            <p className="eyebrow">Agendamentos</p>
-            <h3>Retiradas programadas</h3>
-          </div>
-
-          <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
-            <select
-              className="toolbar__input toolbar__input--select"
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-            >
-              <option value="">Todos</option>
-              <option value="agendado">Agendados</option>
-              <option value="cancelado">Cancelados</option>
-              <option value="faltou">Faltou</option>
-              <option value="reagendado">Reagendados</option>
-              <option value="retirado">Retirados</option>
-            </select>
+        <PanelHeader
+          eyebrow="Agendamentos"
+          title="Retiradas programadas"
+          actions={
+            <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
+            <label className="toolbar__field toolbar__field--select">
+              <span className="sr-only">Filtrar agendamentos por status</span>
+              <select
+                className="toolbar__input toolbar__input--select"
+                name="schedule_status"
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+              >
+                <option value="">Todos</option>
+                <option value="agendado">Agendados</option>
+                <option value="cancelado">Cancelados</option>
+                <option value="faltou">Faltou</option>
+                <option value="reagendado">Reagendados</option>
+                <option value="retirado">Retirados</option>
+              </select>
+            </label>
 
             <button type="submit" className="button" disabled={isLoading}>
               {isLoading ? "Consultando..." : "Aplicar"}
@@ -282,16 +279,18 @@ export function DeliveriesPage() {
               Novo agendamento
             </Link>
           </form>
-        </div>
+          }
+        />
 
         {isLoading ? (
-          <p className="empty-state">Carregando agendamentos...</p>
+          <StateMessage variant="loading">
+            Carregando agendamentos...
+          </StateMessage>
         ) : schedules.length === 0 ? (
-          <p className="empty-state">Nenhum agendamento encontrado.</p>
+          <StateMessage>Nenhum agendamento encontrado.</StateMessage>
         ) : (
           <>
-            <div className="table-wrapper">
-              <table className="data-table">
+            <DataTable caption="Retiradas programadas">
                 <thead>
                   <tr>
                     <th>Familia</th>
@@ -318,6 +317,9 @@ export function DeliveriesPage() {
                             <input
                               className="table-input"
                               type="date"
+                              aria-label={`Data do agendamento da familia ${getFamilyCode(
+                                schedule.family_id
+                              )}`}
                               value={draft?.scheduled_date ?? schedule.scheduled_date}
                               onChange={(event) =>
                                 setScheduleDrafts((previous) => ({
@@ -341,6 +343,9 @@ export function DeliveriesPage() {
                           ) : (
                             <select
                               className="table-input"
+                              aria-label={`Status do agendamento da familia ${getFamilyCode(
+                                schedule.family_id
+                              )}`}
                               value={draft?.status ?? schedule.status}
                               onChange={(event) =>
                                 setScheduleDrafts((previous) => ({
@@ -369,6 +374,9 @@ export function DeliveriesPage() {
                           ) : (
                             <input
                               className="table-input table-input--wide"
+                              aria-label={`Observacao do agendamento da familia ${getFamilyCode(
+                                schedule.family_id
+                              )}`}
                               value={draft?.notes ?? schedule.notes ?? ""}
                               onChange={(event) =>
                                 setScheduleDrafts((previous) => ({
@@ -424,8 +432,7 @@ export function DeliveriesPage() {
                     );
                   })}
                 </tbody>
-              </table>
-            </div>
+            </DataTable>
 
             <PaginationControls
               total={totalSchedules}
@@ -439,20 +446,14 @@ export function DeliveriesPage() {
       </section>
 
       <section className="panel-card">
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Entregas</p>
-            <h3>Historico de entregas</h3>
-          </div>
-        </div>
+        <PanelHeader eyebrow="Entregas" title="Historico de entregas" />
 
         {isLoading ? (
-          <p className="empty-state">Carregando entregas...</p>
+          <StateMessage variant="loading">Carregando entregas...</StateMessage>
         ) : deliveries.length === 0 ? (
-          <p className="empty-state">Nenhuma entrega registrada.</p>
+          <StateMessage>Nenhuma entrega registrada.</StateMessage>
         ) : (
-          <div className="table-wrapper">
-            <table className="data-table">
+          <DataTable caption="Historico de entregas">
               <thead>
                 <tr>
                   <th>Familia</th>
@@ -475,8 +476,7 @@ export function DeliveriesPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </DataTable>
         )}
       </section>
     </div>

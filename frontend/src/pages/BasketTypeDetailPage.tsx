@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { DataTable } from "../components/DataTable";
+import { FormActions } from "../components/FormActions";
+import { FormSection } from "../components/FormSection";
+import { PageHeader } from "../components/PageHeader";
+import { PanelHeader } from "../components/PanelHeader";
+import { StateMessage } from "../components/StateMessage";
 import type {
   BasketAvailabilityResponse,
   BasketTypeDetailResponse,
@@ -194,7 +200,9 @@ export function BasketTypeDetailPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="empty-state">Carregando detalhe da cesta...</p>
+          <StateMessage variant="loading">
+            Carregando detalhe da cesta...
+          </StateMessage>
         </div>
       </div>
     );
@@ -204,14 +212,14 @@ export function BasketTypeDetailPage() {
     return (
       <div className="page-stack">
         <div className="panel-card">
-          <p className="status-error" role="alert" aria-live="polite">
+          <StateMessage variant="error">
             {error || "Nao foi possivel carregar a cesta."}
-          </p>
-          <div className="panel-actions">
+          </StateMessage>
+          <FormActions>
             <Link to="/basket-types" className="button button--secondary">
               Voltar
             </Link>
-          </div>
+          </FormActions>
         </div>
       </div>
     );
@@ -219,41 +227,31 @@ export function BasketTypeDetailPage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Detalhe da cesta</p>
-          <h2>{basketType.name}</h2>
-          <p className="hero-card__description">
-            {basketType.notes || "Sem observacoes adicionais para este tipo de cesta."}
-          </p>
-        </div>
-
-        <div className="hero-badges">
+      <PageHeader
+        eyebrow="Detalhe da cesta"
+        title={basketType.name}
+        description={
+          basketType.notes || "Sem observacoes adicionais para este tipo de cesta."
+        }
+        meta={
+          <div className="hero-badges">
           <span className="hero-badge">
             Cestas possiveis: {availability.possible_baskets}
           </span>
           <span className="hero-badge">
             Status: {basketType.is_active ? "Ativa" : "Inativa"}
           </span>
-        </div>
-      </section>
+          </div>
+        }
+      />
 
       {successMessage ? (
-        <p className="status-success" role="status" aria-live="polite">
-          {successMessage}
-        </p>
+        <StateMessage variant="success">{successMessage}</StateMessage>
       ) : null}
 
       <section className="content-grid">
         <form onSubmit={handleSaveBasketType} className="panel-card form-panel">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Cadastro</p>
-              <h3>Editar tipo de cesta</h3>
-            </div>
-          </div>
-
-          <div className="form-grid">
+          <FormSection eyebrow="Cadastro" title="Editar tipo de cesta">
             <label className="form__group">
               <span>Nome</span>
               <input
@@ -295,24 +293,17 @@ export function BasketTypeDetailPage() {
                 rows={3}
               />
             </label>
-          </div>
+          </FormSection>
 
-          <div className="panel-actions">
+          <FormActions>
             <button type="submit" className="button" disabled={isSavingBasket}>
               {isSavingBasket ? "Salvando..." : "Salvar tipo"}
             </button>
-          </div>
+          </FormActions>
         </form>
 
         <form onSubmit={handleAddRecipeItem} className="panel-card form-panel">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Receita</p>
-              <h3>Adicionar item</h3>
-            </div>
-          </div>
-
-          <div className="form-grid">
+          <FormSection eyebrow="Receita" title="Adicionar item">
             <label className="form__group form__group--wide">
               <span>Item disponivel</span>
               <select
@@ -349,21 +340,19 @@ export function BasketTypeDetailPage() {
                 required
               />
             </label>
-          </div>
+          </FormSection>
 
           {availableItemsToAdd.length === 0 ? (
-            <p className="empty-state">
+            <StateMessage>
               Todos os itens cadastrados ja estao presentes nesta receita.
-            </p>
+            </StateMessage>
           ) : null}
 
           {recipeError ? (
-            <p className="status-error" role="alert" aria-live="polite">
-              {recipeError}
-            </p>
+            <StateMessage variant="error">{recipeError}</StateMessage>
           ) : null}
 
-          <div className="panel-actions">
+          <FormActions>
             <button
               type="submit"
               className="button"
@@ -371,24 +360,18 @@ export function BasketTypeDetailPage() {
             >
               {isSubmittingRecipe ? "Salvando..." : "Adicionar a receita"}
             </button>
-          </div>
+          </FormActions>
         </form>
       </section>
 
       <section className="content-grid">
         <article className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Receita</p>
-              <h3>Composicao da cesta</h3>
-            </div>
-          </div>
+          <PanelHeader eyebrow="Receita" title="Composicao da cesta" />
 
           {basketType.basket_items.length === 0 ? (
-            <p className="empty-state">Nenhum item cadastrado nesta receita.</p>
+            <StateMessage>Nenhum item cadastrado nesta receita.</StateMessage>
           ) : (
-            <div className="table-wrapper">
-              <table className="data-table">
+            <DataTable caption="Composicao da cesta">
                 <thead>
                   <tr>
                     <th>Item</th>
@@ -439,23 +422,17 @@ export function BasketTypeDetailPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
+            </DataTable>
           )}
         </article>
 
         <article className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Limite atual</p>
-              <h3>Itens limitantes</h3>
-            </div>
-          </div>
+          <PanelHeader eyebrow="Limite atual" title="Itens limitantes" />
 
           {limitingItems.length === 0 ? (
-            <p className="empty-state">
+            <StateMessage>
               Nenhum item limitante identificado no momento.
-            </p>
+            </StateMessage>
           ) : (
             <div className="stack-list">
               {limitingItems.map((item) => (
@@ -479,15 +456,12 @@ export function BasketTypeDetailPage() {
 
       <section className="content-grid content-grid--single">
         <article className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Disponibilidade por item</p>
-              <h3>Capacidade de montagem</h3>
-            </div>
-          </div>
+          <PanelHeader
+            eyebrow="Disponibilidade por item"
+            title="Capacidade de montagem"
+          />
 
-          <div className="table-wrapper">
-            <table className="data-table">
+          <DataTable caption="Capacidade de montagem por item">
               <thead>
                 <tr>
                   <th>Item</th>
@@ -512,16 +486,15 @@ export function BasketTypeDetailPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </DataTable>
         </article>
       </section>
 
-      <div className="panel-actions">
+      <FormActions>
         <Link to="/basket-types" className="button button--secondary">
           Voltar para cestas
         </Link>
-      </div>
+      </FormActions>
     </div>
   );
 }

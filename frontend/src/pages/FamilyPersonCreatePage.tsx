@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { FormActions } from "../components/FormActions";
+import { FormSection } from "../components/FormSection";
+import { PageHeader } from "../components/PageHeader";
+import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
 import type { FamilyPersonCreatePayload, FamilyPersonResponse } from "../types/family";
 
@@ -100,25 +104,14 @@ export function FamilyPersonCreatePage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Composicao familiar</p>
-          <h2>Novo membro</h2>
-          <p className="hero-card__description">
-            Cadastre individualmente os membros da familia para enriquecer o perfil social.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Composicao familiar"
+        title="Novo membro"
+        description="Cadastre individualmente os membros da familia para enriquecer o perfil social."
+      />
 
       <form onSubmit={handleSubmit} className="panel-card form-panel">
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Pessoa</p>
-            <h3>Dados individuais</h3>
-          </div>
-        </div>
-
-        <div className="form-grid">
+        <FormSection eyebrow="Pessoa" title="Dados individuais">
           <label className="form__group form__group--wide">
             <span>Nome completo</span>
             <input
@@ -223,16 +216,13 @@ export function FamilyPersonCreatePage() {
               rows={4}
             />
           </label>
-        </div>
+        </FormSection>
 
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Condicao</p>
-            <h3>Situacao individual</h3>
-          </div>
-        </div>
-
-        <div className="checkbox-grid">
+        <FormSection
+          eyebrow="Condicao"
+          title="Situacao individual"
+          gridClassName="checkbox-grid"
+        >
           <label className="checkbox-card">
             <input
               type="checkbox"
@@ -302,15 +292,13 @@ export function FamilyPersonCreatePage() {
             />
             <span>Lactante</span>
           </label>
-        </div>
+        </FormSection>
 
         {error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : null}
 
-        <div className="panel-actions">
+        <FormActions>
           <Link
             to={`/families/${familyId}`}
             className="button button--secondary button--link"
@@ -321,7 +309,7 @@ export function FamilyPersonCreatePage() {
           <button type="submit" className="button" disabled={isSubmitting}>
             {isSubmitting ? "Salvando..." : "Cadastrar membro"}
           </button>
-        </div>
+        </FormActions>
       </form>
     </div>
   );

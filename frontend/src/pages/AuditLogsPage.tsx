@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
+import { DataTable } from "../components/DataTable";
+import { FormActions } from "../components/FormActions";
+import { PageHeader } from "../components/PageHeader";
+import { PanelHeader } from "../components/PanelHeader";
+import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateTime } from "../utils/format";
 import type { AuditLogItemResponse, AuditLogListResponse } from "../types/audit";
@@ -115,33 +120,28 @@ export function AuditLogsPage() {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Auditoria</p>
-          <h2>Trilha operacional</h2>
-          <p className="hero-card__description">
-            Consulte quem executou cada acao critica, em qual entidade e com qual request.
-          </p>
-        </div>
-
-        <div className="hero-badges">
-          <span className="hero-badge">Registros: {total}</span>
-          <span className="hero-badge">Pagina: {Math.floor(offset / limit) + 1}</span>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Auditoria"
+        title="Trilha operacional"
+        description="Consulte quem executou cada acao critica, em qual entidade e com qual request."
+        meta={
+          <div className="hero-badges">
+            <span className="hero-badge">Registros: {total}</span>
+            <span className="hero-badge">
+              Pagina: {Math.floor(offset / limit) + 1}
+            </span>
+          </div>
+        }
+      />
 
       <form onSubmit={handleApplyFilters} className="panel-card form-panel">
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Filtros</p>
-            <h3>Refinar consulta</h3>
-          </div>
-        </div>
+        <PanelHeader eyebrow="Filtros" title="Refinar consulta" />
 
         <div className="form-grid">
           <label className="form__group">
             <span>Evento</span>
             <input
+              name="event_type"
               value={filters.event_type}
               onChange={(event) =>
                 setFilters((previous) => ({
@@ -150,12 +150,16 @@ export function AuditLogsPage() {
                 }))
               }
               placeholder="Ex.: auth.login_succeeded"
+              autoComplete="off"
+              spellCheck={false}
             />
           </label>
 
           <label className="form__group">
             <span>Email do ator</span>
             <input
+              type="email"
+              name="actor_email"
               value={filters.actor_email}
               onChange={(event) =>
                 setFilters((previous) => ({
@@ -164,12 +168,15 @@ export function AuditLogsPage() {
                 }))
               }
               placeholder="usuario@dominio.com"
+              autoComplete="off"
+              spellCheck={false}
             />
           </label>
 
           <label className="form__group">
             <span>Tipo de entidade</span>
             <input
+              name="entity_type"
               value={filters.entity_type}
               onChange={(event) =>
                 setFilters((previous) => ({
@@ -178,11 +185,13 @@ export function AuditLogsPage() {
                 }))
               }
               placeholder="Ex.: family, user, delivery"
+              autoComplete="off"
+              spellCheck={false}
             />
           </label>
         </div>
 
-        <div className="panel-actions panel-actions--spread">
+        <FormActions spread>
           <button
             type="button"
             className="button button--secondary"
@@ -194,17 +203,15 @@ export function AuditLogsPage() {
           <button type="submit" className="button" disabled={isLoading}>
             {isLoading ? "Consultando..." : "Aplicar filtros"}
           </button>
-        </div>
+        </FormActions>
       </form>
 
       <section className="panel-card">
-        <div className="panel-card__header panel-card__header--actions">
-          <div>
-            <p className="eyebrow">Historico</p>
-            <h3>Eventos recentes</h3>
-          </div>
-
-          <div className="inline-actions">
+        <PanelHeader
+          eyebrow="Historico"
+          title="Eventos recentes"
+          actions={
+            <div className="inline-actions">
             <button
               type="button"
               className="button button--secondary button--small"
@@ -230,21 +237,23 @@ export function AuditLogsPage() {
               Proxima
             </button>
           </div>
-        </div>
+          }
+        />
 
         {error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+          <StateMessage variant="error">{error}</StateMessage>
         ) : null}
 
         {isLoading ? (
-          <p className="empty-state">Carregando trilha de auditoria...</p>
+          <StateMessage variant="loading">
+            Carregando trilha de auditoria...
+          </StateMessage>
         ) : logs.length === 0 ? (
-          <p className="empty-state">Nenhum registro encontrado para os filtros atuais.</p>
+          <StateMessage>
+            Nenhum registro encontrado para os filtros atuais.
+          </StateMessage>
         ) : (
-          <div className="table-wrapper">
-            <table className="data-table">
+          <DataTable caption="Eventos recentes da trilha de auditoria">
               <thead>
                 <tr>
                   <th>Quando</th>
@@ -271,8 +280,7 @@ export function AuditLogsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </DataTable>
         )}
       </section>
     </div>
