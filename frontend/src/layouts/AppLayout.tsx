@@ -195,6 +195,7 @@ export function AppLayout() {
                 key={item.path}
                 to={item.path}
                 title={isSidebarCollapsed ? item.label : undefined}
+                aria-current={isActive(item.path) ? "page" : undefined}
                 className={
                   isActive(item.path)
                     ? "sidebar__link sidebar__link--active"
@@ -247,8 +248,9 @@ export function AppLayout() {
             </div>
 
             <button
-              className="button button--secondary button--icon"
+              className="button button--secondary button--icon topbar__logout"
               type="button"
+              title="Encerrar sessao"
               onClick={logout}
             >
               <AppIcon name="logout" className="button__icon" />

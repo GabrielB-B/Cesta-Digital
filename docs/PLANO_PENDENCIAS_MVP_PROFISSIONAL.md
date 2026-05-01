@@ -172,3 +172,21 @@ Concluido nesta rodada:
 Proximo foco:
 
 - Rodada fina de design premium no frontend, focada em microdetalhes visuais sem refatorar toda a interface.
+
+## Rodada Microdesign Premium Em 2026-05-01
+
+Concluido nesta rodada:
+
+- Menu lateral recebeu indicador ativo mais claro, `aria-current` na rota atual e refinamento do gancho de recolher/expandir.
+- Botao de sair recebeu tratamento visual especifico sem alterar a identidade da topbar.
+- Tabelas receberam moldura, cabecalho mais definido, hover com indicador lateral e links com sublinhado refinado.
+- Listas, cards de checkbox, empty states e mensagens de feedback ganharam microestados de hover/foco mais consistentes.
+- Inputs, selects, textareas e campos de tabela receberam foco com sombra sutil e `caret-color` alinhado a paleta.
+- Estados de movimento reduzido atualizados para cobrir os novos microefeitos.
+
+Validacao executada nesta rodada:
+
+- Frontend lint: OK.
+- Frontend build: OK.
+- `git diff --check`: OK.
+- Frontend local respondeu HTTP 200 em `http://127.0.0.1:5173`.

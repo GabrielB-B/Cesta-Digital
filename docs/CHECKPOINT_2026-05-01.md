@@ -94,3 +94,14 @@ Fluxos principais prontos para validacao:
 
 - Rodada fina de design premium no frontend, sem refatorar tudo: microinteracoes, estados hover/focus, icones, hierarquia visual, densidade de tabelas, empty states e polimento do menu lateral.
 - Depois disso, criar smoke/e2e minimo para proteger os fluxos principais.
+
+## Atualizacao - Microdesign Premium
+
+Rodada executada depois do checkpoint principal, ainda em 2026-05-01:
+
+- Menu lateral refinado com indicador ativo, `aria-current` e gancho de recolhimento com detalhe visual mais proprio.
+- Botao de sair recebeu classe especifica para microinteracao do icone.
+- Tabelas ganharam moldura, cabecalho mais legivel, hover com indicador lateral e links mais polidos.
+- Empty states, mensagens de erro/sucesso, stack items e cards de checkbox receberam estados visuais mais intencionais.
+- Campos de formulario e tabela ganharam foco mais visivel, sombra sutil e cursor alinhado a paleta.
+- Validado com `npm run lint`, `npm run build`, `git diff --check` e HTTP 200 no frontend local.
