@@ -159,3 +159,16 @@ Validacao executada nesta rodada:
 - Frontend lint: OK.
 - Frontend build: OK.
 - Frontend local respondeu HTTP 200 em `http://127.0.0.1:5173`.
+
+## Rodada Documentacao E GitHub Em 2026-05-01
+
+Concluido nesta rodada:
+
+- README principal refeito para apresentar o projeto no GitHub com status, recursos, stack, comandos locais, validacoes e links de documentacao.
+- Checkpoint tecnico de 2026-05-01 criado em `docs/CHECKPOINT_2026-05-01.md`.
+- Indice de documentacao atualizado em `docs/README.md`.
+- Manual do programador complementado com orientacao para encerrar backend preso na porta `8000`.
+
+Proximo foco:
+
+- Rodada fina de design premium no frontend, focada em microdetalhes visuais sem refatorar toda a interface.
