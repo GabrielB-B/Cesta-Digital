@@ -21,6 +21,26 @@ python scripts\seed_initial_data.py
 uvicorn app.main:app --reload
 ```
 
+Se aparecer erro de soquete ou porta ocupada no `uvicorn`, primeiro confira se o backend ja esta rodando:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8000/health/db
+```
+
+Se responder `{"database":"ok"}`, nao precisa subir outro backend. Para reiniciar do zero, pare o processo que usa a porta `8000` e rode o `uvicorn` novamente:
+
+```powershell
+Get-NetTCPConnection -LocalPort 8000 -State Listen
+Stop-Process -Id <OwningProcess>
+uvicorn app.main:app --reload
+```
+
+Se quiser manter o processo atual rodando e abrir outro temporariamente, use outra porta:
+
+```powershell
+uvicorn app.main:app --reload --port 8001
+```
+
 URLs:
 
 - API: `http://127.0.0.1:8000`
@@ -172,6 +192,12 @@ localStorage.removeItem("cesta_digital_token")
 - Confirme se a API esta em `http://127.0.0.1:8000`.
 - Confirme `frontend/.env`.
 - Reinicie `npm run dev` depois de mudar `.env`.
+
+### Backend nao sobe por porta ou soquete
+
+- Confira se ja existe backend rodando em `http://127.0.0.1:8000/health/db`.
+- Se a porta `8000` estiver ocupada, pare o processo antigo com `Stop-Process -Id <OwningProcess>`.
+- Se nao quiser parar o processo antigo, rode temporariamente com `uvicorn app.main:app --reload --port 8001`.
 
 ## Comandos rapidos para iniciar localmente
 
