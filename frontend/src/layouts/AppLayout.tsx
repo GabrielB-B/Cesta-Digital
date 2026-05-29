@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+  ChevronDown,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  UserRound,
+  X,
+} from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { AppIcon } from "../components/AppIcon";
 import { BrandLockup } from "../components/BrandLockup";
@@ -51,6 +58,27 @@ function formatRole(role: string): string {
   return "Usuario";
 }
 
+function getInitials(name?: string | null): string {
+  if (!name) {
+    return "U";
+  }
+
+  const parts = name
+    .split(" ")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length === 0) {
+    return "U";
+  }
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
 export function AppLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -60,6 +88,8 @@ export function AppLayout() {
   const [dismissedFlashKey, setDismissedFlashKey] = useState<string | null>(
     null
   );
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const routeState = location.state as RouteState | null;
   const routeFlash =
     routeState?.flash?.message && dismissedFlashKey !== location.key
@@ -171,106 +201,192 @@ export function AppLayout() {
     });
   }
 
+  async function handleLogout() {
+    setIsAccountMenuOpen(false);
+    setIsMobileMenuOpen(false);
+    await logout();
+  }
+
+  const shellClasses = [
+    "app-shell",
+    isSidebarCollapsed ? "app-shell--sidebar-collapsed" : null,
+    isMobileMenuOpen ? "app-shell--mobile-menu-open" : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const accountInitials = getInitials(user?.name);
+
   return (
     <>
       <a className="skip-link" href="#conteudo-principal">
         Pular para o conteudo
       </a>
 
-      <div
-        className={
-          isSidebarCollapsed
-            ? "app-shell app-shell--sidebar-collapsed"
-            : "app-shell"
-        }
-      >
-      <aside className="sidebar">
-        <div className="sidebar__overlay" />
+      <div className={shellClasses}>
+        <aside className="sidebar" aria-label="Navegacao principal">
+          <div className="sidebar__overlay" />
 
-        <div className="sidebar__content">
-          <div className="sidebar__brand-row">
-            <div className="sidebar__brand">
-              <BrandLockup
-                variant="sidebar"
-                title="Cesta Digital"
-                subtitle="UPG | Gestao social e operacional"
-              />
+          <div className="sidebar__content">
+            <div className="sidebar__brand-row">
+              <div className="sidebar__brand">
+                <BrandLockup
+                  variant="sidebar"
+                  title="Cesta Digital"
+                  subtitle="UPG | Gestao social e operacional"
+                />
+              </div>
+
+              <button
+                className="sidebar__mobile-close"
+                type="button"
+                aria-label="Fechar menu"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <X size={20} aria-hidden="true" />
+              </button>
+            </div>
+
+            <nav className="sidebar__nav">
+              {visibleMenuItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  title={isSidebarCollapsed ? item.label : undefined}
+                  aria-current={isActive(item.path) ? "page" : undefined}
+                  className={
+                    isActive(item.path)
+                      ? "sidebar__link sidebar__link--active"
+                      : "sidebar__link"
+                  }
+                >
+                  <span className="sidebar__link-icon">
+                    <AppIcon name={item.icon} />
+                  </span>
+                  <span className="sidebar__link-label">{item.label}</span>
+                </Link>
+              ))}
+            </nav>
+
+            <div className="sidebar__footer">
+              <span className="sidebar__footer-label">Sessao ativa</span>
+              <strong>{user?.name ?? "Usuario"}</strong>
+              <p>{primaryRole}</p>
+              <button
+                className="sidebar__footer-logout"
+                type="button"
+                onClick={handleLogout}
+              >
+                <AppIcon name="logout" className="button__icon" />
+                <span>Sair</span>
+              </button>
             </div>
           </div>
 
-          <nav className="sidebar__nav">
-            {visibleMenuItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                title={isSidebarCollapsed ? item.label : undefined}
-                aria-current={isActive(item.path) ? "page" : undefined}
-                className={
-                  isActive(item.path)
-                    ? "sidebar__link sidebar__link--active"
-                    : "sidebar__link"
-                }
-              >
-                <span className="sidebar__link-icon">
-                  <AppIcon name={item.icon} />
-                </span>
-                <span className="sidebar__link-label">{item.label}</span>
-              </Link>
-            ))}
-          </nav>
+          <button
+            className="sidebar__toggle"
+            type="button"
+            aria-expanded={!isSidebarCollapsed}
+            aria-label={
+              isSidebarCollapsed
+                ? "Expandir menu lateral"
+                : "Recolher menu lateral"
+            }
+            title={
+              isSidebarCollapsed
+                ? "Expandir menu lateral"
+                : "Recolher menu lateral"
+            }
+            onClick={toggleSidebar}
+          >
+            <SidebarToggleIcon
+              className="sidebar__toggle-icon"
+              aria-hidden="true"
+              strokeWidth={1.9}
+            />
+          </button>
+        </aside>
 
-          <div className="sidebar__footer">
-            <span className="sidebar__footer-label">Sessao ativa</span>
-            <strong>{user?.name ?? "Usuario"}</strong>
-            <p>{primaryRole}</p>
-          </div>
-        </div>
-
-        <button
-          className="sidebar__toggle"
-          type="button"
-          aria-expanded={!isSidebarCollapsed}
-          aria-label={
-            isSidebarCollapsed
-              ? "Expandir menu lateral"
-              : "Recolher menu lateral"
-          }
-          title={
-            isSidebarCollapsed
-              ? "Expandir menu lateral"
-              : "Recolher menu lateral"
-          }
-          onClick={toggleSidebar}
-        >
-          <SidebarToggleIcon
-            className="sidebar__toggle-icon"
-            aria-hidden="true"
-            strokeWidth={1.9}
-          />
-        </button>
-      </aside>
+      <button
+        className="mobile-drawer-backdrop"
+        type="button"
+        aria-label="Fechar menu"
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
 
       <main id="conteudo-principal" className="content">
         <header className="topbar">
-          <span className="topbar__section">{currentSection.label}</span>
+          <div className="topbar__identity">
+            <button
+              className="topbar__menu"
+              type="button"
+              aria-label="Abrir menu"
+              aria-expanded={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={21} aria-hidden="true" />
+            </button>
 
-          <div className="topbar__actions">
-            <div className="topbar__welcome">
-              <strong>{user?.name ?? "Usuario"}</strong>
-              <span className="topbar__email">
-                {user?.login_name ? `@${user.login_name}` : "Sessao ativa"}
-              </span>
+            <div className="topbar__brand">
+              <BrandLockup variant="compact" title="Cesta Digital" subtitle="" />
             </div>
 
-            <button
-              className="button button--secondary button--icon topbar__logout"
-              type="button"
-              title="Encerrar sessao"
-              onClick={logout}
-            >
-              <AppIcon name="logout" className="button__icon" />
-              <span>Sair</span>
-            </button>
+            <span className="topbar__section">{currentSection.label}</span>
+          </div>
+
+          <div className="topbar__actions">
+            <div className="topbar__account">
+              <button
+                className="topbar__account-button"
+                type="button"
+                aria-label={`Conta de ${user?.name ?? "Usuario"}`}
+                aria-haspopup="menu"
+                aria-expanded={isAccountMenuOpen}
+                onClick={() => setIsAccountMenuOpen((current) => !current)}
+              >
+                <span className="topbar__avatar" aria-hidden="true">
+                  {accountInitials}
+                </span>
+                <span className="topbar__account-text">
+                  <strong>{user?.name ?? "Usuario"}</strong>
+                  <span>
+                    {user?.login_name ? `@${user.login_name}` : "Sessao ativa"}
+                  </span>
+                </span>
+                <ChevronDown
+                  className="topbar__account-chevron"
+                  size={17}
+                  aria-hidden="true"
+                />
+              </button>
+
+              {isAccountMenuOpen ? (
+                <div className="topbar__account-menu" role="menu">
+                  <div className="topbar__account-menu-header">
+                    <UserRound size={17} aria-hidden="true" />
+                    <div>
+                      <strong>{primaryRole}</strong>
+                      <span>
+                        {user?.login_name
+                          ? `@${user.login_name}`
+                          : "Sessao ativa"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    className="topbar__account-menu-item"
+                    type="button"
+                    role="menuitem"
+                    onClick={handleLogout}
+                  >
+                    <AppIcon name="logout" className="button__icon" />
+                    <span>Sair</span>
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </header>
 

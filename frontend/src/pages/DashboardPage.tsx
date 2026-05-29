@@ -9,9 +9,6 @@ import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateOnly } from "../utils/format";
 import type { DashboardOverviewResponse } from "../types/dashboard";
 
-/**
- * Tela inicial do sistema com indicadores reais do backend.
- */
 export function DashboardPage() {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardOverviewResponse | null>(null);
@@ -38,7 +35,7 @@ export function DashboardPage() {
           setError(
             getApiErrorMessage(
               err,
-              "Não foi possível carregar os indicadores do dashboard."
+              "Nao foi possivel carregar os indicadores do dashboard."
             )
           );
         }
@@ -63,47 +60,59 @@ export function DashboardPage() {
 
     return [
       {
-        title: "Famílias ativas",
+        title: "Familias acompanhadas",
         value: data.active_families,
-        description: `${data.total_families} famílias registradas no total.`,
+        description:
+          data.total_families > 0
+            ? `${data.total_families} familias registradas no total.`
+            : "Nenhuma familia cadastrada ainda.",
         tone: "social",
-        emphasis: true,
-      },
-      {
-        title: "Aptas recorrentes",
-        value: data.recurring_eligible_families,
-        description: "Acompanhamento social contínuo.",
-        tone: "social",
+        emphasis: data.active_families > 0,
       },
       {
         title: "Itens em alerta",
         value: data.items_below_minimum_count,
-        description: "Abaixo do estoque mínimo.",
+        description:
+          data.items_below_minimum_count > 0
+            ? "Entrada de alimentos precisa de atencao."
+            : "Nenhum item em alerta.",
         tone: data.items_below_minimum_count > 0 ? "attention" : "stock",
         emphasis: data.items_below_minimum_count > 0,
       },
       {
-        title: "Agendamentos pendentes",
+        title: "Retiradas pendentes",
         value: data.pending_schedules,
-        description: "Retiradas ainda não concluídas.",
-        tone: "delivery",
+        description:
+          data.pending_schedules > 0
+            ? "Agendamentos ainda nao concluidos."
+            : "Nenhuma retirada pendente.",
+        tone: data.pending_schedules > 0 ? "delivery" : "neutral",
       },
       {
-        title: "Entregas no mês",
+        title: "Entregas no mes",
         value: data.deliveries_this_month,
-        description: "Baixas concluídas no mês atual.",
+        description:
+          data.deliveries_this_month > 0
+            ? "Baixas concluidas no mes atual."
+            : "Nenhuma entrega registrada neste mes.",
         tone: "delivery",
       },
       {
-        title: "Aptas emergenciais",
-        value: data.emergency_eligible_families,
-        description: "Apoio emergencial em aberto.",
-        tone: "attention",
+        title: "Aptas recorrentes",
+        value: data.recurring_eligible_families,
+        description:
+          data.recurring_eligible_families > 0
+            ? "Acompanhamento social continuo."
+            : "Nenhuma familia recorrente no momento.",
+        tone: "social",
       },
       {
-        title: "Em análise",
+        title: "Em analise",
         value: data.under_review_families,
-        description: "Famílias aguardando decisão.",
+        description:
+          data.under_review_families > 0
+            ? "Familias aguardando decisao."
+            : "Nenhuma familia aguardando analise.",
         tone: "neutral",
       },
     ];
@@ -118,7 +127,10 @@ export function DashboardPage() {
       {
         label: "Social",
         value: data.active_families,
-        detail: "famílias ativas",
+        detail:
+          data.active_families > 0
+            ? "familias ativas"
+            : "comece pelo cadastro",
         tone: "social",
       },
       {
@@ -126,14 +138,17 @@ export function DashboardPage() {
         value: data.items_below_minimum_count,
         detail:
           data.items_below_minimum_count > 0
-            ? "itens pedem reposição"
-            : "sem alerta crítico",
+            ? "itens pedem reposicao"
+            : "sem alerta critico",
         tone: data.items_below_minimum_count > 0 ? "attention" : "stock",
       },
       {
         label: "Entregas",
         value: data.pending_schedules,
-        detail: "retiradas pendentes",
+        detail:
+          data.pending_schedules > 0
+            ? "retiradas pendentes"
+            : "agenda em dia",
         tone: "delivery",
       },
     ];
@@ -153,21 +168,25 @@ export function DashboardPage() {
     }> = [];
 
     if (roles.some((role) => role === "admin" || role === "lider_social")) {
-      actions.push({ to: "/families", label: "Abrir famílias", icon: "families" });
+      actions.push({
+        to: "/families",
+        label: "Familias",
+        icon: "families",
+      });
     }
 
     if (roles.some((role) => role === "admin" || role === "operador")) {
-      actions.push({ to: "/items", label: "Ver estoque", icon: "items" });
-      actions.push({ to: "/basket-types", label: "Montar cestas", icon: "baskets" });
+      actions.push({ to: "/items", label: "Estoque", icon: "items" });
+      actions.push({ to: "/basket-types", label: "Cestas", icon: "baskets" });
       actions.push({
         to: "/deliveries",
-        label: "Planejar entregas",
+        label: "Entregas",
         icon: "deliveries",
       });
     }
 
     if (roles.includes("admin")) {
-      actions.push({ to: "/users", label: "Gerir usuários", icon: "users" });
+      actions.push({ to: "/users", label: "Usuarios", icon: "users" });
     }
 
     return actions.slice(0, 4);
@@ -190,7 +209,7 @@ export function DashboardPage() {
         <div className="hero-card">
           <h2>Dashboard</h2>
           <p className="status-error" role="alert" aria-live="polite">
-            {error || "Não foi possível montar o dashboard."}
+            {error || "Nao foi possivel montar o dashboard."}
           </p>
         </div>
       </div>
@@ -201,11 +220,11 @@ export function DashboardPage() {
     <div className="dashboard-page">
       <section className="hero-card hero-card--dashboard">
         <div className="hero-card__main">
-          <p className="eyebrow">Visão geral</p>
+          <p className="eyebrow">Visao geral</p>
           <h2>Dashboard do Cesta Digital</h2>
           <p className="hero-card__description">
-            Acompanhe famílias, entregas, estoque e capacidade de montagem de
-            cestas em tempo real.
+            Acompanhe familias, estoque de alimentos e entregas de cestas em
+            tempo real.
           </p>
 
           <div className="hero-actions">
@@ -224,13 +243,13 @@ export function DashboardPage() {
 
         <div className="hero-card__side">
           <div className="hero-status-card">
-            <p className="eyebrow">Ritmo da operação</p>
+            <p className="eyebrow">Acompanhamento do mes</p>
             <strong className="hero-status-card__value">
-              {data.deliveries_this_month} entregas no mês
+              {data.deliveries_this_month} entregas
             </strong>
             <p className="hero-status-card__text">
-              Use os atalhos abaixo para seguir com atendimento social, estoque
-              e logística.
+              O painel destaca onde agir primeiro: familias, estoque ou
+              retiradas.
             </p>
           </div>
 
@@ -246,12 +265,6 @@ export function DashboardPage() {
               </div>
             ))}
           </div>
-
-          <div className="operation-flow" aria-label="Fluxo operacional">
-            <span>Atendimento</span>
-            <span>Estoque</span>
-            <span>Entrega</span>
-          </div>
         </div>
       </section>
 
@@ -262,8 +275,8 @@ export function DashboardPage() {
             <h3 id="dashboard-prioridades">Prioridades do dia</h3>
           </div>
           <p>
-            Reúne os sinais que ajudam a equipe a decidir onde agir primeiro:
-            acompanhamento social, estoque e agenda de retirada.
+            Sinais simples para orientar atendimento social, estoque e agenda de
+            retirada.
           </p>
         </div>
 
@@ -275,13 +288,13 @@ export function DashboardPage() {
           <div className="panel-card__header">
             <div>
               <p className="eyebrow">Cestas</p>
-              <h3>Cestas possíveis por tipo</h3>
+              <h3>Cestas possiveis por tipo</h3>
             </div>
           </div>
 
           {data.basket_summaries.length === 0 ? (
             <p className="empty-state">
-              Nenhum tipo de cesta ativo encontrado.
+              Nenhum tipo de cesta ativo. Comece configurando uma cesta padrao.
             </p>
           ) : (
             <div className="stack-list">
@@ -295,7 +308,7 @@ export function DashboardPage() {
                   </div>
 
                   <span className="pill pill--primary">
-                    {basket.possible_baskets} possíveis
+                    {basket.possible_baskets} possiveis
                   </span>
                 </div>
               ))}
@@ -306,14 +319,14 @@ export function DashboardPage() {
         <article className="panel-card">
           <div className="panel-card__header">
             <div>
-              <p className="eyebrow">Reavaliações</p>
-              <h3>Próximas reavaliações</h3>
+              <p className="eyebrow">Reavaliacoes</p>
+              <h3>Proximas reavaliacoes</h3>
             </div>
           </div>
 
           {data.upcoming_revaluations.length === 0 ? (
             <p className="empty-state">
-              Nenhuma reavaliação próxima encontrada.
+              Nenhuma reavaliacao proxima. O acompanhamento esta em dia.
             </p>
           ) : (
             <div className="stack-list">
@@ -341,34 +354,35 @@ export function DashboardPage() {
           <div className="panel-card__header">
             <div>
               <p className="eyebrow">Estoque</p>
-              <h3>Itens abaixo do mínimo</h3>
+              <h3>Itens abaixo do minimo</h3>
             </div>
           </div>
 
           {data.stock_alerts.length === 0 ? (
             <p className="empty-state">
-              Nenhum item está abaixo do mínimo no momento.
+              Nenhum item em alerta. O estoque esta dentro dos limites
+              cadastrados.
             </p>
           ) : (
             <DataTable caption="Itens abaixo do minimo">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Categoria</th>
-                    <th>Quantidade</th>
-                    <th>Mínimo</th>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Categoria</th>
+                  <th>Quantidade</th>
+                  <th>Minimo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.stock_alerts.map((alert) => (
+                  <tr key={alert.item_id}>
+                    <td>{alert.item_name}</td>
+                    <td>{alert.category_name}</td>
+                    <td>{alert.total_quantity}</td>
+                    <td>{alert.minimum_stock_alert}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {data.stock_alerts.map((alert) => (
-                    <tr key={alert.item_id}>
-                      <td>{alert.item_name}</td>
-                      <td>{alert.category_name}</td>
-                      <td>{alert.total_quantity}</td>
-                      <td>{alert.minimum_stock_alert}</td>
-                    </tr>
-                  ))}
-                </tbody>
+                ))}
+              </tbody>
             </DataTable>
           )}
         </article>

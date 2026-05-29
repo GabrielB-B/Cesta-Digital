@@ -31,7 +31,7 @@ export function BrandLockup({
       <div className="brand-lockup__content">
         {eyebrow ? <span className="brand-lockup__eyebrow">{eyebrow}</span> : null}
         <strong className="brand-lockup__title">{title}</strong>
-        <p className="brand-lockup__subtitle">{subtitle}</p>
+        {subtitle ? <p className="brand-lockup__subtitle">{subtitle}</p> : null}
       </div>
     </div>
   );

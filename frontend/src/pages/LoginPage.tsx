@@ -48,6 +48,17 @@ function normalizeLoginError(detail: unknown) {
   return "";
 }
 
+function waitForLoginReveal(startedAt: number, minimumDurationMs = 720) {
+  const elapsed = window.performance.now() - startedAt;
+  const remaining = minimumDurationMs - elapsed;
+
+  if (remaining <= 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => window.setTimeout(resolve, remaining));
+}
+
 export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -85,9 +96,11 @@ export function LoginPage() {
     }
 
     setIsSubmitting(true);
+    const startedAt = window.performance.now();
 
     try {
       await login(normalizedLoginName, normalizedPassword);
+      await waitForLoginReveal(startedAt);
       navigate("/");
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -135,20 +148,12 @@ export function LoginPage() {
 
   return (
     <div className="login-page">
-      <div className={`login-card${isSubmitting ? " login-card--submitting" : ""}`}>
+      <div
+        className={`login-card${isSubmitting ? " login-card--submitting" : ""}`}
+        aria-busy={isSubmitting}
+      >
         <div className="login-card__brand" aria-label="Cesta Digital">
-          <BrandLockup
-            variant="login"
-            eyebrow="UPG"
-            subtitle="Gestao social, estoque e entregas"
-          />
-        </div>
-
-        <div className="login-card__intro">
-          <p className="login-card__lead">Acesse sua conta</p>
-          <p className="login-card__support">
-            Use seu nome de login. O email fica reservado para recuperacao.
-          </p>
+          <BrandLockup variant="login" title="Cesta Digital" subtitle="" />
         </div>
 
         <form onSubmit={handleSubmit} className="form login-form">
@@ -270,6 +275,13 @@ export function LoginPage() {
               {isRecoverySubmitting ? "Enviando..." : "Solicitar recuperacao"}
             </button>
           </form>
+        ) : null}
+
+        {isSubmitting ? (
+          <div className="login-loading" role="status" aria-live="polite">
+            <BrandLockup variant="compact" title="Cesta Digital" subtitle="" />
+            <span>Entrando...</span>
+          </div>
         ) : null}
       </div>
     </div>

@@ -212,15 +212,17 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
     page.locator("#conteudo-principal").getByText("Admin Homologacao")
   ).toBeVisible();
 
-  await page.getByRole("link", { name: /Familias/i }).click();
+  const mainNav = page.getByLabel("Navegacao principal");
+
+  await mainNav.getByRole("link", { name: /Familias/i }).click();
   await expect(page.getByRole("heading", { name: "Familias", exact: true })).toBeVisible();
   await expect(page.getByText("FAM-0001")).toBeVisible();
 
-  await page.getByRole("link", { name: /^Itens$/i }).click();
+  await mainNav.getByRole("link", { name: /^Itens$/i }).click();
   await expect(page.getByRole("heading", { name: "Itens", exact: true })).toBeVisible();
   await expect(page.getByText("Arroz 1kg")).toBeVisible();
 
-  await page.getByRole("link", { name: /Entregas/i }).click();
+  await mainNav.getByRole("link", { name: /Entregas/i }).click();
   await expect(page.getByRole("heading", { name: "Agendamentos e entregas" })).toBeVisible();
   await expect(page.getByLabel(/Observacao do agendamento/i)).toHaveValue(
     "Retirada pela manha"
@@ -235,6 +237,28 @@ test("delivery confirmation shows success feedback", async ({ page }) => {
   await expect(
     page.getByText("Entrega confirmada e estoque baixado automaticamente.")
   ).toBeVisible();
+});
+
+test("mobile shell opens drawer navigation and compact account menu", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/login");
+
+  await page.getByLabel("Nome de login").fill("admin");
+  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByRole("button", { name: "Entrar" }).click();
+
+  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+
+  await page.getByRole("button", { name: "Abrir menu" }).click();
+  await page
+    .getByLabel("Navegacao principal")
+    .getByRole("link", { name: /Familias/i })
+    .click();
+
+  await expect(page.getByRole("heading", { name: "Familias", exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: /Conta de Admin Homologacao/i }).click();
+  await expect(page.getByRole("menuitem", { name: "Sair" })).toBeVisible();
 });
 
 test("password recovery request shows safe feedback", async ({ page }) => {
