@@ -65,6 +65,8 @@ Na criacao do Blueprint, preencher os campos marcados como secretos:
 - `DB_NAME`: nome do banco.
 - `DB_USER`: usuario do banco.
 - `DB_PASSWORD`: senha do banco.
+- `DB_SSL_REQUIRED`: `true` quando usar Aiven MySQL.
+- `DB_SSL_CA`: opcional; deixe vazio para `ssl-mode=REQUIRED`.
 - `FIRST_ADMIN_EMAIL`: email de recuperacao do primeiro admin.
 - `FIRST_ADMIN_PASSWORD`: senha inicial forte do primeiro admin.
 

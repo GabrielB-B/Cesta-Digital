@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     db_name: str
     db_user: str
     db_password: str
+    db_ssl_required: bool = False
+    db_ssl_ca: str | None = None
 
     first_admin_name: str
     first_admin_login_name: str = "admin"
