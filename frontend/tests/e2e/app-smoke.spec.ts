@@ -130,6 +130,11 @@ async function mockApi(page: Page) {
   await page.route("**/auth/logout", async (route) => {
     await route.fulfill({ status: 204 });
   });
+  await page.route("**/auth/password-recovery", async (route) =>
+    fulfillJson(route, {
+      message: "Se o email estiver cadastrado, a equipe podera redefinir sua senha.",
+    })
+  );
   await page.route("**/dashboard/overview", async (route) => fulfillJson(route, {
     total_families: 1,
     active_families: 1,
@@ -229,5 +234,17 @@ test("delivery confirmation shows success feedback", async ({ page }) => {
 
   await expect(
     page.getByText("Entrega confirmada e estoque baixado automaticamente.")
+  ).toBeVisible();
+});
+
+test("password recovery request shows safe feedback", async ({ page }) => {
+  await page.goto("/login");
+
+  await page.getByRole("button", { name: "Esqueci minha senha" }).click();
+  await page.getByLabel("Email de recuperacao").fill("admin@cestadigital.app");
+  await page.getByRole("button", { name: "Solicitar recuperacao" }).click();
+
+  await expect(
+    page.getByText("Se o email estiver cadastrado, a equipe podera redefinir sua senha.")
   ).toBeVisible();
 });

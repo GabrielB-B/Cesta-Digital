@@ -1,6 +1,8 @@
 import axios from "axios";
 import { useState } from "react";
+import { LogIn, Mail, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { api } from "../api/client";
 import { BrandLockup } from "../components/BrandLockup";
 import { useAuth } from "../contexts/useAuth";
 import { getApiErrorMessage } from "../utils/api-error";
@@ -46,9 +48,6 @@ function normalizeLoginError(detail: unknown) {
   return "";
 }
 
-/**
- * Tela inicial de autenticação.
- */
 export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -56,7 +55,12 @@ export function LoginPage() {
   const [loginName, setLoginName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoveryMessage, setRecoveryMessage] = useState("");
+  const [recoveryError, setRecoveryError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
+  const [isRecoverySubmitting, setIsRecoverySubmitting] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -103,30 +107,55 @@ export function LoginPage() {
     }
   }
 
+  async function handleRecoverySubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setRecoveryMessage("");
+    setRecoveryError("");
+
+    const normalizedEmail = recoveryEmail.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setRecoveryError("Informe o email de recuperacao cadastrado.");
+      return;
+    }
+
+    setIsRecoverySubmitting(true);
+
+    try {
+      const response = await api.post<{ message: string }>("/auth/password-recovery", {
+        email: normalizedEmail,
+      });
+      setRecoveryMessage(response.data.message);
+    } catch (err) {
+      setRecoveryError(getApiErrorMessage(err, "Nao foi possivel solicitar a recuperacao."));
+    } finally {
+      setIsRecoverySubmitting(false);
+    }
+  }
+
   return (
     <div className="login-page">
-      <div className="login-card">
-        <div className="login-card__brand">
+      <div className={`login-card${isSubmitting ? " login-card--submitting" : ""}`}>
+        <div className="login-card__brand" aria-label="Cesta Digital">
           <BrandLockup
             variant="login"
-            eyebrow="Plataforma oficial"
-            subtitle="Acesso centralizado para atendimento social, estoque e entregas."
+            eyebrow="UPG"
+            subtitle="Gestao social, estoque e entregas"
           />
         </div>
 
         <div className="login-card__intro">
-          <p className="login-card__lead">
-            Entre com suas credenciais para continuar.
-          </p>
+          <p className="login-card__lead">Acesse sua conta</p>
           <p className="login-card__support">
-            Use seu nome de login. O email fica reservado para recuperação de acesso.
+            Use seu nome de login. O email fica reservado para recuperacao.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="form">
-          <label className="form__group">
-            <span>Nome de login</span>
+        <form onSubmit={handleSubmit} className="form login-form">
+          <div className="form__group">
+            <label htmlFor="login-name">Nome de login</label>
             <input
+              id="login-name"
               type="text"
               name="login_name"
               value={loginName}
@@ -142,11 +171,25 @@ export function LoginPage() {
               spellCheck={false}
               required
             />
-          </label>
+          </div>
 
-          <label className="form__group">
-            <span>Senha</span>
+          <div className="form__group form__group--password">
+            <div className="login-form__label-row">
+              <label htmlFor="login-password">Senha</label>
+              <button
+                type="button"
+                className="login-card__forgot"
+                onClick={() => {
+                  setIsRecoveryOpen((current) => !current);
+                  setRecoveryError("");
+                  setRecoveryMessage("");
+                }}
+              >
+                Esqueci minha senha
+              </button>
+            </div>
             <input
+              id="login-password"
               type="password"
               name="password"
               value={password}
@@ -160,7 +203,7 @@ export function LoginPage() {
               autoComplete="current-password"
               required
             />
-          </label>
+          </div>
 
           {error ? (
             <p className="form__error" role="alert" aria-live="polite">
@@ -168,10 +211,66 @@ export function LoginPage() {
             </p>
           ) : null}
 
-          <button type="submit" className="button" disabled={isSubmitting}>
+          <button type="submit" className="button login-card__submit" disabled={isSubmitting}>
+            <LogIn size={18} aria-hidden="true" />
             {isSubmitting ? "Entrando..." : "Entrar"}
           </button>
         </form>
+
+        {isRecoveryOpen ? (
+          <form
+            className="login-card__recovery"
+            onSubmit={handleRecoverySubmit}
+            aria-label="Solicitar recuperacao de senha"
+          >
+            <div className="login-card__recovery-heading">
+              <ShieldCheck size={18} aria-hidden="true" />
+              <div>
+                <strong>Recuperar acesso</strong>
+                <p>Informe o email cadastrado para a equipe redefinir sua senha.</p>
+              </div>
+            </div>
+
+            <div className="form__group">
+              <label htmlFor="recovery-email">Email de recuperacao</label>
+              <input
+                id="recovery-email"
+                type="email"
+                name="recovery_email"
+                value={recoveryEmail}
+                onChange={(event) => {
+                  setRecoveryEmail(event.target.value);
+                  setRecoveryError("");
+                  setRecoveryMessage("");
+                }}
+                placeholder="seu@email.com"
+                autoComplete="email"
+                required
+              />
+            </div>
+
+            {recoveryError ? (
+              <p className="form__error" role="alert" aria-live="polite">
+                {recoveryError}
+              </p>
+            ) : null}
+
+            {recoveryMessage ? (
+              <p className="status-success" role="status" aria-live="polite">
+                {recoveryMessage}
+              </p>
+            ) : null}
+
+            <button
+              type="submit"
+              className="button button--secondary login-card__recovery-button"
+              disabled={isRecoverySubmitting}
+            >
+              <Mail size={17} aria-hidden="true" />
+              {isRecoverySubmitting ? "Enviando..." : "Solicitar recuperacao"}
+            </button>
+          </form>
+        ) : null}
       </div>
     </div>
   );

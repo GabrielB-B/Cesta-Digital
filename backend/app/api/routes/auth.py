@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user
@@ -12,7 +13,12 @@ from app.core.logging import log_backend_event
 from app.core.security import create_access_token
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.auth import CurrentUserResponse, LoginResponse
+from app.schemas.auth import (
+    CurrentUserResponse,
+    LoginResponse,
+    PasswordRecoveryRequest,
+    PasswordRecoveryResponse,
+)
 from app.services.audit_log_service import record_audit_log
 from app.services.auth_rate_limit_service import (
     is_login_allowed,
@@ -214,6 +220,48 @@ def logout(response: Response):
     _clear_auth_cookie(response)
     response.status_code = status.HTTP_204_NO_CONTENT
     return None
+
+
+@router.post("/password-recovery", response_model=PasswordRecoveryResponse)
+def request_password_recovery(
+    request: Request,
+    payload: PasswordRecoveryRequest,
+    db: Annotated[Session, Depends(get_db)],
+):
+    normalized_email = payload.email.strip().lower()
+    user = db.scalar(select(User).where(User.email == normalized_email))
+
+    if user is not None:
+        record_audit_log(
+            db,
+            event_type="auth.password_recovery_requested",
+            actor_email=user.email,
+            entity_type="user",
+            entity_id=user.id,
+            details={
+                "login_name": user.login_name,
+                "recovery_channel": "admin_password_reset",
+            },
+        )
+    else:
+        record_audit_log(
+            db,
+            event_type="auth.password_recovery_requested",
+            details={"recovery_channel": "admin_password_reset"},
+        )
+
+    db.commit()
+    log_backend_event(
+        logger,
+        "auth_password_recovery_requested",
+        client_ip=request.client.host if request.client is not None else None,
+    )
+
+    return PasswordRecoveryResponse(
+        message=(
+            "Se o email estiver cadastrado, a equipe podera redefinir sua senha."
+        )
+    )
 
 
 @router.get("/me", response_model=CurrentUserResponse)

@@ -21,3 +21,11 @@ class CurrentUserResponse(BaseModel):
     email: EmailStr
     is_active: bool
     roles: list[str]
+
+
+class PasswordRecoveryRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordRecoveryResponse(BaseModel):
+    message: str

@@ -101,3 +101,29 @@ class AuthApiIntegrationTests(ApiIntegrationTestCase):
         event_types = [item["event_type"] for item in payload["items"]]
         self.assertIn("auth.login_failed", event_types)
         self.assertIn("auth.login_succeeded", event_types)
+
+    def test_password_recovery_request_returns_generic_message_and_audits(self):
+        response = self.client.post(
+            "/auth/password-recovery",
+            json={"email": "admin@example.com"},
+        )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertIn("Se o email estiver cadastrado", response.json()["message"])
+
+        headers = self.login_and_get_headers("admin", "Admin@12345")
+        audit_response = self.client.get(
+            "/audit-logs",
+            headers=headers,
+            params={"event_type": "auth.password_recovery_requested"},
+        )
+        self.assertEqual(audit_response.status_code, 200, audit_response.text)
+        self.assertEqual(audit_response.json()["total"], 1)
+
+        unknown_response = self.client.post(
+            "/auth/password-recovery",
+            json={"email": "desconhecido@example.com"},
+        )
+
+        self.assertEqual(unknown_response.status_code, 200, unknown_response.text)
+        self.assertEqual(unknown_response.json()["message"], response.json()["message"])
