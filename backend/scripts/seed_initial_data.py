@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -25,6 +25,10 @@ DEFAULT_ITEM_CATEGORIES = [
 ]
 
 
+def normalize_login_name(login_name):
+    return login_name.strip().lower()
+
+
 def seed_roles(db):
     existing_roles = db.scalars(select(Role)).all()
     existing_role_names = {role.name for role in existing_roles}
@@ -41,12 +45,19 @@ def seed_first_admin(db):
         print("Bootstrap de admin desabilitado por ambiente.")
         return
 
+    admin_login_name = normalize_login_name(settings.first_admin_login_name)
+    admin_email = settings.first_admin_email.strip().lower()
     existing_admin = db.scalar(
-        select(User).where(User.email == settings.first_admin_email)
+        select(User).where(
+            or_(
+                User.login_name == admin_login_name,
+                User.email == admin_email,
+            )
+        )
     )
 
     if existing_admin:
-        print(f"Usuario admin ja existe: {existing_admin.email}")
+        print(f"Usuario admin ja existe: {existing_admin.login_name}")
         return
 
     admin_password = validate_password_strength(settings.first_admin_password)
@@ -57,7 +68,8 @@ def seed_first_admin(db):
 
     admin_user = User(
         name=settings.first_admin_name,
-        email=settings.first_admin_email,
+        login_name=admin_login_name,
+        email=admin_email,
         password_hash=get_password_hash(admin_password),
         is_active=True,
     )
@@ -76,7 +88,7 @@ def seed_first_admin(db):
     )
 
     db.commit()
-    print(f"Usuario admin criado com email: {admin_user.email}")
+    print(f"Usuario admin criado com login: {admin_user.login_name}")
 
 
 def seed_item_categories(db):

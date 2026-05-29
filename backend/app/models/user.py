@@ -12,6 +12,7 @@ class User(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(150), nullable=False)
+    login_name: Mapped[str] = mapped_column(String(80), nullable=False, unique=True, index=True)
     email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)

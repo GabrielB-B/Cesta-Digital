@@ -78,7 +78,7 @@ class FamilyAssessmentResponse(BaseModel):
 
 
 class FamilyCreate(BaseModel):
-    internal_code: str
+    internal_code: str | None = None
     status: str
 
     registration_date: date
@@ -134,11 +134,12 @@ class FamilyCreate(BaseModel):
 
     @field_validator("internal_code")
     @classmethod
-    def validate_internal_code(cls, value: str) -> str:
+    def validate_internal_code(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+
         value = value.strip()
-        if not value:
-            raise ValueError("O código interno da família é obrigatório.")
-        return value
+        return value or None
 
     @field_validator("status")
     @classmethod

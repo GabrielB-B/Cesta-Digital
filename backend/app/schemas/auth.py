@@ -9,6 +9,7 @@ class Token(BaseModel):
 class LoginResponse(Token):
     user_id: int
     name: str
+    login_name: str
     email: EmailStr
     roles: list[str]
 
@@ -16,6 +17,7 @@ class LoginResponse(Token):
 class CurrentUserResponse(BaseModel):
     id: int
     name: str
+    login_name: str
     email: EmailStr
     is_active: bool
     roles: list[str]

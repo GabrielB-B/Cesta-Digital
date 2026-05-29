@@ -8,7 +8,11 @@ from app.schemas.item_category import ItemCategoryCreate, ItemCategoryUpdate
 from app.services.audit_log_service import record_audit_log
 
 
-def create_item_category(db: Session, payload: ItemCategoryCreate) -> ItemCategory:
+def create_item_category(
+    db: Session,
+    payload: ItemCategoryCreate,
+    current_user: User,
+) -> ItemCategory:
     """Cria uma categoria de item, evitando duplicidade por nome."""
     existing_category = db.scalar(
         select(ItemCategory).where(ItemCategory.name == payload.name)
@@ -26,6 +30,18 @@ def create_item_category(db: Session, payload: ItemCategoryCreate) -> ItemCatego
     )
 
     db.add(category)
+    db.flush()
+    record_audit_log(
+        db,
+        event_type="item_category.created",
+        actor_user=current_user,
+        entity_type="item_category",
+        entity_id=category.id,
+        details={
+            "name": category.name,
+            "is_active": category.is_active,
+        },
+    )
     db.commit()
     db.refresh(category)
     return category

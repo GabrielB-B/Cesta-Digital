@@ -1,6 +1,7 @@
 import os
 import unittest
 
+from fastapi import HTTPException
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -11,6 +12,7 @@ os.environ.setdefault("DB_NAME", "cesta_digital_test")
 os.environ.setdefault("DB_USER", "root")
 os.environ.setdefault("DB_PASSWORD", "test")
 os.environ.setdefault("FIRST_ADMIN_NAME", "Admin")
+os.environ.setdefault("FIRST_ADMIN_LOGIN_NAME", "admin")
 os.environ.setdefault("FIRST_ADMIN_EMAIL", "admin@example.com")
 os.environ.setdefault("FIRST_ADMIN_PASSWORD", "Admin@12345")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-with-32-plus-chars")
@@ -43,6 +45,7 @@ class UserAdminServiceTests(unittest.TestCase):
 
         self.admin_user = User(
             name="Administrador",
+            login_name="admin",
             email="admin@example.com",
             password_hash=get_password_hash("Admin@12345"),
             is_active=True,
@@ -60,6 +63,7 @@ class UserAdminServiceTests(unittest.TestCase):
     def test_create_user_persists_roles_hashes_password_and_audit(self):
         payload = UserCreate(
             name="Maria Silva",
+            login_name="maria",
             email="maria@example.com",
             password="Senha@Segura123",
             is_active=True,
@@ -69,9 +73,10 @@ class UserAdminServiceTests(unittest.TestCase):
         result = create_user(self.db, payload, self.admin_user)
 
         self.assertEqual(result["email"], "maria@example.com")
+        self.assertEqual(result["login_name"], "maria")
         self.assertEqual(sorted(result["roles"]), ["admin", "operador"])
 
-        user = self.db.scalar(select(User).where(User.email == "maria@example.com"))
+        user = self.db.scalar(select(User).where(User.login_name == "maria"))
         self.assertIsNotNone(user)
         self.assertTrue(verify_password("Senha@Segura123", user.password_hash))
 
@@ -89,6 +94,7 @@ class UserAdminServiceTests(unittest.TestCase):
             self.db,
             UserCreate(
                 name="Joao",
+                login_name="joao",
                 email="joao@example.com",
                 password="Senha@Segura123",
                 is_active=True,
@@ -102,6 +108,7 @@ class UserAdminServiceTests(unittest.TestCase):
             created["id"],
             UserUpdate(
                 name="Joao Atualizado",
+                login_name="joao.atualizado",
                 email="joao.atualizado@example.com",
                 is_active=False,
                 roles=["lider_social"],
@@ -110,6 +117,7 @@ class UserAdminServiceTests(unittest.TestCase):
         )
 
         self.assertEqual(updated["name"], "Joao Atualizado")
+        self.assertEqual(updated["login_name"], "joao.atualizado")
         self.assertEqual(updated["email"], "joao.atualizado@example.com")
         self.assertFalse(updated["is_active"])
         self.assertEqual(updated["roles"], ["lider_social"])
@@ -123,6 +131,7 @@ class UserAdminServiceTests(unittest.TestCase):
             self.db,
             UserCreate(
                 name="Ana",
+                login_name="ana",
                 email="ana@example.com",
                 password="Senha@Inicial123",
                 is_active=True,
@@ -147,3 +156,67 @@ class UserAdminServiceTests(unittest.TestCase):
         )
         self.assertIsNotNone(audit)
         self.assertEqual(audit.entity_id, str(created["id"]))
+
+    def test_update_user_prevents_admin_from_disabling_self(self):
+        with self.assertRaises(HTTPException) as context:
+            update_user(
+                self.db,
+                self.admin_user.id,
+                UserUpdate(
+                    name="Administrador",
+                    login_name="admin",
+                    email="admin@example.com",
+                    is_active=False,
+                    roles=["admin"],
+                ),
+                self.admin_user,
+            )
+
+        self.assertEqual(context.exception.status_code, 400)
+        self.assertIn("proprio usuario", context.exception.detail)
+
+    def test_update_user_prevents_removing_last_active_admin(self):
+        created = create_user(
+            self.db,
+            UserCreate(
+                name="Segundo Admin",
+                login_name="segundo.admin",
+                email="segundo.admin@example.com",
+                password="Senha@Inicial123",
+                is_active=True,
+                roles=["admin"],
+            ),
+            self.admin_user,
+        )
+        second_admin = self.db.get(User, created["id"])
+        self.assertIsNotNone(second_admin)
+
+        update_user(
+            self.db,
+            self.admin_user.id,
+            UserUpdate(
+                name="Administrador",
+                login_name="admin",
+                email="admin@example.com",
+                is_active=False,
+                roles=["admin"],
+            ),
+            second_admin,
+        )
+
+        with self.assertRaises(HTTPException) as context:
+            update_user(
+                self.db,
+                created["id"],
+                UserUpdate(
+                    name="Segundo Admin",
+                    login_name="segundo.admin",
+                    email="segundo.admin@example.com",
+                    is_active=False,
+                    roles=["admin"],
+                ),
+                self.admin_user,
+            )
+
+        self.assertEqual(context.exception.status_code, 400)
+        self.assertIn("administrador ativo", context.exception.detail)

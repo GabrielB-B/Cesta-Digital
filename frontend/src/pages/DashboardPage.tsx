@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { AppIcon } from "../components/AppIcon";
 import { DataTable } from "../components/DataTable";
-import { MetricGrid } from "../components/MetricGrid";
+import { MetricGrid, type MetricGridItem } from "../components/MetricGrid";
 import { useAuth } from "../contexts/useAuth";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateOnly } from "../utils/format";
@@ -56,51 +56,85 @@ export function DashboardPage() {
     };
   }, []);
 
-  const summaryCards = useMemo(() => {
+  const summaryCards = useMemo<MetricGridItem[]>(() => {
     if (!data) {
       return [];
     }
 
     return [
       {
-        title: "Famílias cadastradas",
-        value: data.total_families,
-        description: "Total geral de famílias registradas.",
-      },
-      {
         title: "Famílias ativas",
         value: data.active_families,
-        description: "Famílias em acompanhamento ativo.",
+        description: `${data.total_families} famílias registradas no total.`,
+        tone: "social",
+        emphasis: true,
       },
       {
         title: "Aptas recorrentes",
         value: data.recurring_eligible_families,
-        description: "Famílias com apoio recorrente.",
+        description: "Acompanhamento social contínuo.",
+        tone: "social",
       },
       {
-        title: "Aptas emergenciais",
-        value: data.emergency_eligible_families,
-        description: "Famílias com apoio emergencial.",
-      },
-      {
-        title: "Em análise",
-        value: data.under_review_families,
-        description: "Famílias aguardando decisão.",
-      },
-      {
-        title: "Entregas no mês",
-        value: data.deliveries_this_month,
-        description: "Entregas concluídas no mês atual.",
+        title: "Itens em alerta",
+        value: data.items_below_minimum_count,
+        description: "Abaixo do estoque mínimo.",
+        tone: data.items_below_minimum_count > 0 ? "attention" : "stock",
+        emphasis: data.items_below_minimum_count > 0,
       },
       {
         title: "Agendamentos pendentes",
         value: data.pending_schedules,
         description: "Retiradas ainda não concluídas.",
+        tone: "delivery",
       },
       {
-        title: "Itens em alerta",
+        title: "Entregas no mês",
+        value: data.deliveries_this_month,
+        description: "Baixas concluídas no mês atual.",
+        tone: "delivery",
+      },
+      {
+        title: "Aptas emergenciais",
+        value: data.emergency_eligible_families,
+        description: "Apoio emergencial em aberto.",
+        tone: "attention",
+      },
+      {
+        title: "Em análise",
+        value: data.under_review_families,
+        description: "Famílias aguardando decisão.",
+        tone: "neutral",
+      },
+    ];
+  }, [data]);
+
+  const dashboardSignals = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return [
+      {
+        label: "Social",
+        value: data.active_families,
+        detail: "famílias ativas",
+        tone: "social",
+      },
+      {
+        label: "Estoque",
         value: data.items_below_minimum_count,
-        description: "Itens abaixo do estoque mínimo.",
+        detail:
+          data.items_below_minimum_count > 0
+            ? "itens pedem reposição"
+            : "sem alerta crítico",
+        tone: data.items_below_minimum_count > 0 ? "attention" : "stock",
+      },
+      {
+        label: "Entregas",
+        value: data.pending_schedules,
+        detail: "retiradas pendentes",
+        tone: "delivery",
       },
     ];
   }, [data]);
@@ -200,13 +234,17 @@ export function DashboardPage() {
             </p>
           </div>
 
-          <div className="hero-badges">
-            <span className="hero-badge">
-              Reavaliações próximas: {data.upcoming_revaluations_count}
-            </span>
-            <span className="hero-badge">
-              Famílias inativas: {data.inactive_families}
-            </span>
+          <div className="dashboard-signal-grid" aria-label="Sinais principais">
+            {dashboardSignals.map((signal) => (
+              <div
+                key={signal.label}
+                className={`dashboard-signal dashboard-signal--${signal.tone}`}
+              >
+                <span>{signal.label}</span>
+                <strong>{signal.value}</strong>
+                <p>{signal.detail}</p>
+              </div>
+            ))}
           </div>
 
           <div className="operation-flow" aria-label="Fluxo operacional">
@@ -217,7 +255,20 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <MetricGrid items={summaryCards} />
+      <section className="dashboard-section" aria-labelledby="dashboard-prioridades">
+        <div className="dashboard-section__header">
+          <div>
+            <p className="eyebrow">Leitura operacional</p>
+            <h3 id="dashboard-prioridades">Prioridades do dia</h3>
+          </div>
+          <p>
+            Reúne os sinais que ajudam a equipe a decidir onde agir primeiro:
+            acompanhamento social, estoque e agenda de retirada.
+          </p>
+        </div>
+
+        <MetricGrid items={summaryCards} className="stats-grid--dashboard" />
+      </section>
 
       <section className="content-grid">
         <article className="panel-card">

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, require_any_role
@@ -27,8 +27,19 @@ def create_stock_batch_endpoint(
 
 @router.get("/stock-batches", response_model=list[StockBatchResponse])
 def list_stock_batches_endpoint(
+    response: Response,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
+    item_id: int | None = Query(default=None, ge=1),
+    limit: int | None = Query(default=None, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
 ):
     """Lista os lotes cadastrados no estoque."""
-    return list_stock_batches(db)
+    batches, total = list_stock_batches(
+        db,
+        item_id=item_id,
+        limit=limit,
+        offset=offset,
+    )
+    response.headers["X-Total-Count"] = str(total)
+    return batches

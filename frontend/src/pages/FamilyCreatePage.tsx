@@ -20,7 +20,6 @@ export function FamilyCreatePage() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    internal_code: "",
     status: "em_analise",
     registration_date: formatTodayForInput(),
     monthly_income_total: 0,
@@ -114,7 +113,6 @@ export function FamilyCreatePage() {
 
     try {
       const payload: FamilyCreatePayload = {
-        internal_code: formData.internal_code.trim(),
         status: formData.status,
         registration_date: formData.registration_date,
         last_evaluation_date: null,
@@ -201,21 +199,15 @@ export function FamilyCreatePage() {
       <PageHeader
         eyebrow="Novo cadastro"
         title="Cadastrar família"
-        description="Registre os dados iniciais da família para começar o acompanhamento social no sistema."
+        description="Registre os dados iniciais da família. O código interno será gerado automaticamente ao salvar."
       />
 
       <form onSubmit={handleSubmit} className="panel-card form-panel">
         <FormSection eyebrow="Dados iniciais" title="Identificação e endereço">
-          <label className="form__group">
+          <div className="detail-item detail-item--form">
             <span>Código interno</span>
-            <input
-              name="internal_code"
-              value={formData.internal_code}
-              onChange={handleInputChange}
-              placeholder="Ex.: FAM-0002"
-              required
-            />
-          </label>
+            <strong>Gerado pelo sistema</strong>
+          </div>
 
           <label className="form__group">
             <span>Status inicial</span>

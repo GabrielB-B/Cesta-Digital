@@ -20,6 +20,9 @@ node_modules/
 dist/
 build/
 coverage/
+playwright-report/
+test-results/
+.vercel/
 
 # VS Code
 .vscode/
@@ -34,3 +37,4 @@ Thumbs.db
 # local uploads / temp
 uploads/
 temp/
+backups/

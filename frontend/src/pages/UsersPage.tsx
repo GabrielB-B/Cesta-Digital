@@ -13,6 +13,7 @@ import type {
 
 const initialFormState = {
   name: "",
+  login_name: "",
   email: "",
   password: "",
   is_active: true,
@@ -81,6 +82,7 @@ export function UsersPage() {
     setPasswordReset("");
     setFormData({
       name: user.name,
+      login_name: user.login_name,
       email: user.email,
       password: "",
       is_active: user.is_active,
@@ -92,8 +94,8 @@ export function UsersPage() {
     event.preventDefault();
     setError("");
 
-    if (!formData.name.trim() || !formData.email.trim()) {
-      setError("Nome e email sao obrigatorios.");
+    if (!formData.name.trim() || !formData.login_name.trim() || !formData.email.trim()) {
+      setError("Nome, login e email sao obrigatorios.");
       return;
     }
 
@@ -113,6 +115,7 @@ export function UsersPage() {
       if (editingUserId) {
         const payload: UserUpdatePayload = {
           name: formData.name.trim(),
+          login_name: formData.login_name.trim().toLowerCase(),
           email: formData.email.trim(),
           is_active: formData.is_active,
           roles: formData.roles,
@@ -122,6 +125,7 @@ export function UsersPage() {
       } else {
         const payload: UserCreatePayload = {
           name: formData.name.trim(),
+          login_name: formData.login_name.trim().toLowerCase(),
           email: formData.email.trim(),
           password: formData.password.trim(),
           is_active: formData.is_active,
@@ -207,7 +211,25 @@ export function UsersPage() {
             </label>
 
             <label className="form__group">
-              <span>Email</span>
+              <span>Nome de login</span>
+              <input
+                value={formData.login_name}
+                onChange={(event) =>
+                  setFormData((previous) => ({
+                    ...previous,
+                    login_name: event.target.value,
+                  }))
+                }
+                autoComplete="username"
+                placeholder="Ex.: admin"
+                pattern="[a-z0-9._-]{3,80}"
+                spellCheck={false}
+                required
+              />
+            </label>
+
+            <label className="form__group">
+              <span>Email de recuperacao</span>
               <input
                 type="email"
                 value={formData.email}
@@ -348,6 +370,7 @@ export function UsersPage() {
                 <thead>
                   <tr>
                     <th>Nome</th>
+                    <th>Login</th>
                     <th>Email</th>
                     <th>Perfis</th>
                     <th>Status</th>
@@ -359,6 +382,7 @@ export function UsersPage() {
                   {users.map((user) => (
                     <tr key={user.id}>
                       <td>{user.name}</td>
+                      <td>{user.login_name}</td>
                       <td>{user.email}</td>
                       <td>{user.roles.join(", ")}</td>
                       <td>

@@ -60,6 +60,24 @@ FAMILY_EDITABLE_FIELDS = (
 )
 
 
+def generate_family_internal_code(db: Session) -> str:
+    """Gera o proximo codigo operacional legivel para uma familia."""
+    next_number = int(db.scalar(select(func.max(Family.id))) or 0) + 1
+
+    for number in range(next_number, next_number + 1000):
+        code = f"FAM-{number:04d}"
+        existing_family = db.scalar(
+            select(Family.id).where(Family.internal_code == code)
+        )
+        if existing_family is None:
+            return code
+
+    raise HTTPException(
+        status_code=500,
+        detail="Nao foi possivel gerar um codigo automatico para a familia.",
+    )
+
+
 def calculate_age(birth_date: date) -> int:
     today = date.today()
     age = today.year - birth_date.year
@@ -140,8 +158,9 @@ def recalculate_family_summary(db: Session, family: Family) -> None:
 
 
 def create_family(db: Session, payload: FamilyCreate, current_user: User) -> Family:
+    internal_code = payload.internal_code or generate_family_internal_code(db)
     existing_family = db.scalar(
-        select(Family).where(Family.internal_code == payload.internal_code)
+        select(Family).where(Family.internal_code == internal_code)
     )
     if existing_family is not None:
         raise HTTPException(
@@ -150,7 +169,7 @@ def create_family(db: Session, payload: FamilyCreate, current_user: User) -> Fam
         )
 
     family = Family(
-        internal_code=payload.internal_code,
+        internal_code=internal_code,
         status=payload.status,
         registration_date=payload.registration_date,
         last_evaluation_date=payload.last_evaluation_date,
@@ -304,10 +323,11 @@ def update_family(
     current_user: User,
 ) -> Family:
     family = get_family_detail(db, family_id)
+    internal_code = payload.internal_code or family.internal_code
 
     existing_family = db.scalar(
         select(Family).where(
-            Family.internal_code == payload.internal_code,
+            Family.internal_code == internal_code,
             Family.id != family_id,
         )
     )
@@ -317,14 +337,19 @@ def update_family(
             detail="Ja existe uma familia cadastrada com esse codigo interno.",
         )
 
+    def next_value(field: str):
+        if field == "internal_code":
+            return internal_code
+        return getattr(payload, field)
+
     changed_fields = [
         field
         for field in FAMILY_EDITABLE_FIELDS
-        if getattr(family, field) != getattr(payload, field)
+        if getattr(family, field) != next_value(field)
     ]
 
     for field in FAMILY_EDITABLE_FIELDS:
-        setattr(family, field, getattr(payload, field))
+        setattr(family, field, next_value(field))
 
     family.updated_by_user_id = current_user.id
     family.contacts.clear()

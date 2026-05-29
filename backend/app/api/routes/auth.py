@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -19,14 +19,18 @@ from app.services.auth_rate_limit_service import (
     record_failed_login,
     reset_login_rate_limit,
 )
-from app.services.auth_service import authenticate_user, get_user_roles
+from app.services.auth_service import (
+    authenticate_user,
+    get_user_by_login_name,
+    get_user_roles,
+)
 
 router = APIRouter(prefix="/auth", tags=["Autenticacao"])
 logger = logging.getLogger(__name__)
 
 
-def _normalize_email(email: str) -> str:
-    return email.strip().lower()
+def _normalize_login_name(login_name: str) -> str:
+    return login_name.strip().lower()
 
 
 def _build_retry_message(retry_after_seconds: int) -> str:
@@ -37,22 +41,48 @@ def _build_retry_message(retry_after_seconds: int) -> str:
     )
 
 
+def _set_auth_cookie(response: Response, access_token: str) -> None:
+    response.set_cookie(
+        key=settings.auth_cookie_name,
+        value=access_token,
+        httponly=True,
+        secure=settings.auth_cookie_secure,
+        samesite=settings.auth_cookie_samesite.lower(),
+        max_age=settings.access_token_expire_minutes * 60,
+        path="/",
+    )
+
+
+def _clear_auth_cookie(response: Response) -> None:
+    response.delete_cookie(
+        key=settings.auth_cookie_name,
+        secure=settings.auth_cookie_secure,
+        samesite=settings.auth_cookie_samesite.lower(),
+        path="/",
+    )
+
+
 @router.post("/login", response_model=LoginResponse)
 def login(
     request: Request,
+    response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)],
 ):
-    normalized_email = _normalize_email(form_data.username)
+    normalized_login_name = _normalize_login_name(form_data.username)
     client_ip = request.client.host if request.client is not None else None
 
-    is_allowed, retry_after_seconds = is_login_allowed(normalized_email, client_ip)
+    is_allowed, retry_after_seconds = is_login_allowed(
+        db,
+        normalized_login_name,
+        client_ip,
+    )
     if not is_allowed and retry_after_seconds is not None:
         record_audit_log(
             db,
             event_type="auth.login_blocked",
-            actor_email=normalized_email,
             details={
+                "login_name": normalized_login_name,
                 "reason": "rate_limited",
                 "retry_after_seconds": retry_after_seconds,
             },
@@ -62,7 +92,7 @@ def login(
             logger,
             "auth_login_blocked",
             level=logging.WARNING,
-            actor_email=normalized_email,
+            login_name=normalized_login_name,
             retry_after_seconds=retry_after_seconds,
         )
         raise HTTPException(
@@ -71,22 +101,28 @@ def login(
             headers={"Retry-After": str(retry_after_seconds)},
         )
 
-    user = authenticate_user(db, form_data.username, form_data.password)
+    user = authenticate_user(db, normalized_login_name, form_data.password)
 
     if user is None:
-        retry_after_seconds = record_failed_login(normalized_email, client_ip)
+        retry_after_seconds = record_failed_login(db, normalized_login_name, client_ip)
+        failed_user = get_user_by_login_name(db, normalized_login_name)
         record_audit_log(
             db,
             event_type="auth.login_failed",
-            actor_email=normalized_email,
-            details={"reason": "invalid_credentials"},
+            actor_email=failed_user.email if failed_user is not None else None,
+            entity_type="user" if failed_user is not None else None,
+            entity_id=failed_user.id if failed_user is not None else None,
+            details={
+                "login_name": normalized_login_name,
+                "reason": "invalid_credentials",
+            },
         )
         db.commit()
         log_backend_event(
             logger,
             "auth_login_failed",
             level=logging.WARNING,
-            actor_email=normalized_email,
+            login_name=normalized_login_name,
             reason="invalid_credentials",
             retry_after_seconds=retry_after_seconds,
         )
@@ -100,12 +136,12 @@ def login(
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou senha invalidos.",
+            detail="Nome de login ou senha invalidos.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
     if not user.is_active:
-        retry_after_seconds = record_failed_login(normalized_email, client_ip)
+        retry_after_seconds = record_failed_login(db, normalized_login_name, client_ip)
         record_audit_log(
             db,
             event_type="auth.login_failed",
@@ -113,7 +149,10 @@ def login(
             actor_email=user.email,
             entity_type="user",
             entity_id=user.id,
-            details={"reason": "inactive_user"},
+            details={
+                "login_name": user.login_name,
+                "reason": "inactive_user",
+            },
         )
         db.commit()
         log_backend_event(
@@ -122,6 +161,7 @@ def login(
             level=logging.WARNING,
             actor_user_id=user.id,
             actor_email=user.email,
+            login_name=user.login_name,
             reason="inactive_user",
             retry_after_seconds=retry_after_seconds,
         )
@@ -130,7 +170,7 @@ def login(
             detail="Usuario inativo.",
         )
 
-    reset_login_rate_limit(normalized_email, client_ip)
+    reset_login_rate_limit(db, normalized_login_name, client_ip)
     roles = get_user_roles(db, user.id)
     user.last_login_at = datetime.now(timezone.utc).replace(tzinfo=None)
     record_audit_log(
@@ -139,7 +179,7 @@ def login(
         actor_user=user,
         entity_type="user",
         entity_id=user.id,
-        details={"roles": roles},
+        details={"login_name": user.login_name, "roles": roles},
     )
     db.commit()
     db.refresh(user)
@@ -148,6 +188,7 @@ def login(
         "auth_login_succeeded",
         actor_user_id=user.id,
         actor_email=user.email,
+        login_name=user.login_name,
         roles=roles,
     )
 
@@ -155,15 +196,24 @@ def login(
         subject=str(user.id),
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes),
     )
+    _set_auth_cookie(response, access_token)
 
     return LoginResponse(
         access_token=access_token,
         token_type="bearer",
         user_id=user.id,
         name=user.name,
+        login_name=user.login_name,
         email=user.email,
         roles=roles,
     )
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(response: Response):
+    _clear_auth_cookie(response)
+    response.status_code = status.HTTP_204_NO_CONTENT
+    return None
 
 
 @router.get("/me", response_model=CurrentUserResponse)
@@ -176,6 +226,7 @@ def read_me(
     return CurrentUserResponse(
         id=current_user.id,
         name=current_user.name,
+        login_name=current_user.login_name,
         email=current_user.email,
         is_active=current_user.is_active,
         roles=roles,

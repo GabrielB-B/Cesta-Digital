@@ -10,7 +10,7 @@ class DeliveriesApiIntegrationTests(ApiIntegrationTestCase):
             password="Admin@12345",
             roles=("admin", "operador", "lider_social"),
         )
-        self.headers = self.login_and_get_headers("admin@example.com", "Admin@12345")
+        self.headers = self.login_and_get_headers("admin", "Admin@12345")
 
     def test_delivery_confirmation_consumes_stock_and_updates_schedule(self):
         family = self.create_family(self.headers)
@@ -73,6 +73,15 @@ class DeliveriesApiIntegrationTests(ApiIntegrationTestCase):
         schedules_response = self.client.get("/delivery-schedules", headers=self.headers)
         self.assertEqual(schedules_response.status_code, 200, schedules_response.text)
         self.assertEqual(schedules_response.json()[0]["status"], "retirado")
+
+        deliveries_response = self.client.get(
+            "/deliveries",
+            headers=self.headers,
+            params={"family_id": family["id"], "limit": 1, "offset": 0},
+        )
+        self.assertEqual(deliveries_response.status_code, 200, deliveries_response.text)
+        self.assertEqual(deliveries_response.headers["x-total-count"], "1")
+        self.assertEqual(deliveries_response.json()[0]["family_id"], family["id"])
 
         movements_response = self.client.get("/stock-movements", headers=self.headers)
         self.assertEqual(movements_response.status_code, 200, movements_response.text)

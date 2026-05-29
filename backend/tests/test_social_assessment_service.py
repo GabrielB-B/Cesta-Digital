@@ -13,6 +13,7 @@ os.environ.setdefault("DB_NAME", "cesta_digital_test")
 os.environ.setdefault("DB_USER", "root")
 os.environ.setdefault("DB_PASSWORD", "test")
 os.environ.setdefault("FIRST_ADMIN_NAME", "Admin")
+os.environ.setdefault("FIRST_ADMIN_LOGIN_NAME", "admin")
 os.environ.setdefault("FIRST_ADMIN_EMAIL", "admin@example.com")
 os.environ.setdefault("FIRST_ADMIN_PASSWORD", "Admin@12345")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-with-32-plus-chars")
@@ -43,6 +44,7 @@ class SocialAssessmentServiceTests(unittest.TestCase):
 
         self.user = User(
             name="Tecnica Social",
+            login_name="social",
             email="social@example.com",
             password_hash="hash",
             is_active=True,

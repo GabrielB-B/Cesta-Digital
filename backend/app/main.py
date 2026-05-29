@@ -35,6 +35,10 @@ def _apply_security_headers(response) -> None:
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["X-Request-ID"] = response.headers.get("X-Request-ID", "")
+    if settings.app_env in {"staging", "production"}:
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
 
 
 @app.middleware("http")

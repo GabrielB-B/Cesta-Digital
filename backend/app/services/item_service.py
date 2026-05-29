@@ -9,7 +9,7 @@ from app.schemas.item import ItemCreate, ItemUpdate
 from app.services.audit_log_service import record_audit_log
 
 
-def create_item(db: Session, payload: ItemCreate) -> Item:
+def create_item(db: Session, payload: ItemCreate, current_user: User) -> Item:
     """Cria um item vinculado a uma categoria existente."""
     category = db.get(ItemCategory, payload.category_id)
     if category is None:
@@ -42,6 +42,21 @@ def create_item(db: Session, payload: ItemCreate) -> Item:
     )
 
     db.add(item)
+    db.flush()
+    record_audit_log(
+        db,
+        event_type="item.created",
+        actor_user=current_user,
+        entity_type="item",
+        entity_id=item.id,
+        details={
+            "category_id": item.category_id,
+            "name": item.name,
+            "unit_measure": item.unit_measure,
+            "is_active": item.is_active,
+            "tracks_expiration": item.tracks_expiration,
+        },
+    )
     db.commit()
     db.refresh(item)
     return get_item_detail(db, item.id)

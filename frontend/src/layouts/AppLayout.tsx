@@ -257,7 +257,9 @@ export function AppLayout() {
           <div className="topbar__actions">
             <div className="topbar__welcome">
               <strong>{user?.name ?? "Usuario"}</strong>
-              <span className="topbar__email">{user?.email}</span>
+              <span className="topbar__email">
+                {user?.login_name ? `@${user.login_name}` : "Sessao ativa"}
+              </span>
             </div>
 
             <button

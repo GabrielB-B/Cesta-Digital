@@ -7,8 +7,8 @@ from app.models.user import User
 from app.models.user_role import UserRole
 
 
-def get_user_by_email(db: Session, email: str) -> User | None:
-    return db.scalar(select(User).where(User.email == email))
+def get_user_by_login_name(db: Session, login_name: str) -> User | None:
+    return db.scalar(select(User).where(User.login_name == login_name))
 
 
 def get_user_roles(db: Session, user_id: int) -> list[str]:
@@ -20,8 +20,8 @@ def get_user_roles(db: Session, user_id: int) -> list[str]:
     return list(db.scalars(stmt).all())
 
 
-def authenticate_user(db: Session, email: str, password: str) -> User | None:
-    user = get_user_by_email(db, email)
+def authenticate_user(db: Session, login_name: str, password: str) -> User | None:
+    user = get_user_by_login_name(db, login_name)
     if user is None:
         return None
 

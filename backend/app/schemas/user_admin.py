@@ -1,6 +1,7 @@
 from datetime import datetime
+import re
 
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.core.security import validate_password_strength
 
@@ -13,6 +14,7 @@ class RoleOptionResponse(BaseModel):
 
 class UserAdminBase(BaseModel):
     name: str
+    login_name: str = Field(min_length=3, max_length=80)
     email: EmailStr
     is_active: bool = True
     roles: list[str]
@@ -23,6 +25,18 @@ class UserAdminBase(BaseModel):
         value = value.strip()
         if not value:
             raise ValueError("O nome do usuario e obrigatorio.")
+        return value
+
+    @field_validator("login_name")
+    @classmethod
+    def validate_login_name(cls, value: str) -> str:
+        value = value.strip().lower()
+        if not value:
+            raise ValueError("O nome de login e obrigatorio.")
+        if not re.fullmatch(r"[a-z0-9._-]{3,80}", value):
+            raise ValueError(
+                "Use 3 a 80 caracteres no login: letras, numeros, ponto, hifen ou sublinhado."
+            )
         return value
 
     @field_validator("roles")
@@ -66,6 +80,7 @@ class UserPasswordReset(BaseModel):
 class UserAdminResponse(BaseModel):
     id: int
     name: str
+    login_name: str
     email: EmailStr
     is_active: bool
     roles: list[str]

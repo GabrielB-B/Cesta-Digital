@@ -6,14 +6,15 @@ O projeto organiza o fluxo completo de atendimento: cadastro de familias, avalia
 
 ## Status do MVP
 
-MVP profissional em validacao local.
+MVP profissional em validacao local avancada.
 
-Ja possui backend, frontend, banco, migrations, seed inicial, CI, testes automatizados, auditoria, backup manual, controle de acesso por papel e acabamento visual premium inicial. Ainda nao deve ser tratado como producao final antes de staging real, observabilidade externa, smoke/e2e de frontend e checklist de homologacao.
+Ja possui backend, frontend, banco, migrations, seed inicial, CI, testes automatizados, auditoria, backup manual, controle de acesso por papel, cookie `HttpOnly` para sessao do frontend, rate limit persistido no banco, checklist LGPD, checklist de homologacao, e2e smoke de frontend e acabamento visual premium inicial. Ainda nao deve ser tratado como producao final antes de staging real, HTTPS/proxy final, observabilidade externa e homologacao funcional por perfil.
 
 ## Principais recursos
 
-- Login com JWT e controle de acesso por perfil.
-- Cadastro, consulta, edicao e inativacao de familias.
+- Login por nome de login com JWT e controle de acesso por perfil.
+- Sessao do frontend com cookie `HttpOnly`.
+- Cadastro, consulta, edicao e inativacao de familias com codigo interno automatico.
 - Cadastro de pessoas, beneficios e avaliacao social.
 - Sugestao de elegibilidade com validacoes de pontuacao e coaprovador.
 - Cadastro de categorias, itens, lotes e movimentacoes de estoque.
@@ -23,6 +24,7 @@ Ja possui backend, frontend, banco, migrations, seed inicial, CI, testes automat
 - Dashboard operacional.
 - Administracao de usuarios.
 - Auditoria administrativa com exportacao CSV.
+- Salvaguardas para nao deixar o sistema sem administrador ativo.
 - Feedback visual de sucesso/erro e estados acessiveis em fluxos principais.
 - Interface React com identidade visual refinada para o MVP.
 
@@ -51,6 +53,7 @@ Operacao e qualidade:
 - GitHub Actions
 - `pip-audit`
 - `npm audit`
+- Playwright
 - scripts de backup e restore MySQL
 
 ## Como rodar localmente
@@ -83,16 +86,15 @@ Se o backend ja estiver rodando na porta `8000`, o `uvicorn` pode retornar erro 
 
 ## Validacoes recentes
 
-Executado em 2026-05-01:
+Executado em 2026-05-28:
 
 - Backend compile: OK.
 - Backend testes automatizados: OK.
 - `pip-audit`: OK.
 - Frontend lint: OK.
 - Frontend build: OK.
-- `npm audit --audit-level=high`: OK.
-- Frontend local: HTTP 200.
-- Backend `/health/db`: OK.
+- `npm audit --audit-level=moderate`: OK.
+- Frontend e2e smoke com Playwright: OK.
 
 ## Documentacao
 
@@ -102,12 +104,12 @@ Executado em 2026-05-01:
 - [`docs/STACK_E_VERSOES.md`](docs/STACK_E_VERSOES.md): stack, arquitetura e versoes.
 - [`docs/PLANO_PENDENCIAS_MVP_PROFISSIONAL.md`](docs/PLANO_PENDENCIAS_MVP_PROFISSIONAL.md): plano de pendencias e fases do MVP.
 - [`docs/OPERACAO_STAGING_E_BACKUP.md`](docs/OPERACAO_STAGING_E_BACKUP.md): staging, backup, restore e release.
+- [`docs/LGPD_PRIVACIDADE.md`](docs/LGPD_PRIVACIDADE.md): diretrizes de privacidade e tratamento de dados.
+- [`docs/HOMOLOGACAO_MVP.md`](docs/HOMOLOGACAO_MVP.md): checklist de homologacao por perfil.
 - [`docs/CHECKPOINT_2026-05-01.md`](docs/CHECKPOINT_2026-05-01.md): checkpoint mais recente da rodada premium.
 
 ## Proximos passos recomendados
 
-- Rodada fina de design premium no frontend, focada em microdetalhes visuais.
-- Smoke/e2e de frontend para login, familias, estoque e entregas.
 - Staging acessivel por URL real.
 - Observabilidade externa para erros, metricas e logs.
 - Checklist de homologacao funcional por perfil.

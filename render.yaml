@@ -1,0 +1,61 @@
+services:
+  - type: web
+    name: cesta-digital-api
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    preDeployCommand: alembic upgrade head && python scripts/seed_initial_data.py
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: APP_ENV
+        value: staging
+      - key: LOG_LEVEL
+        value: INFO
+      - key: BOOTSTRAP_ADMIN_ENABLED
+        value: false
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 60
+      - key: AUTH_COOKIE_NAME
+        value: cesta_digital_session
+      - key: AUTH_COOKIE_SAMESITE
+        value: none
+      - key: LOGIN_RATE_LIMIT_ATTEMPTS
+        value: 5
+      - key: LOGIN_RATE_LIMIT_WINDOW_SECONDS
+        value: 300
+      - key: LOGIN_RATE_LIMIT_LOCKOUT_SECONDS
+        value: 900
+      - key: EXTREME_POVERTY_MAX_INCOME_PER_CAPITA
+        value: 109
+      - key: POVERTY_MAX_INCOME_PER_CAPITA
+        value: 218
+      - key: FIRST_ADMIN_NAME
+        value: Administrador
+      - key: FIRST_ADMIN_LOGIN_NAME
+        value: admin
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_CORS_ORIGINS
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: FIRST_ADMIN_EMAIL
+        sync: false
+      - key: FIRST_ADMIN_PASSWORD
+        sync: false

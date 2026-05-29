@@ -14,6 +14,7 @@ os.environ.setdefault("DB_NAME", "cesta_digital_test")
 os.environ.setdefault("DB_USER", "root")
 os.environ.setdefault("DB_PASSWORD", "test")
 os.environ.setdefault("FIRST_ADMIN_NAME", "Admin")
+os.environ.setdefault("FIRST_ADMIN_LOGIN_NAME", "admin")
 os.environ.setdefault("FIRST_ADMIN_EMAIL", "admin@example.com")
 os.environ.setdefault("FIRST_ADMIN_PASSWORD", "Admin@12345")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-with-32-plus-chars")
@@ -84,12 +85,14 @@ class ApiIntegrationTestCase(unittest.TestCase):
         email: str,
         password: str,
         roles: tuple[str, ...],
+        login_name: str | None = None,
         is_active: bool = True,
     ) -> int:
         db = self.session_factory()
         try:
             user = User(
                 name=name,
+                login_name=login_name or email.split("@", 1)[0].lower(),
                 email=email,
                 password_hash=get_password_hash(password),
                 is_active=is_active,
@@ -108,11 +111,11 @@ class ApiIntegrationTestCase(unittest.TestCase):
         finally:
             db.close()
 
-    def login_and_get_headers(self, email: str, password: str) -> dict[str, str]:
+    def login_and_get_headers(self, login_name: str, password: str) -> dict[str, str]:
         response = self.client.post(
             "/auth/login",
             data={
-                "username": email,
+                "username": login_name,
                 "password": password,
                 "grant_type": "password",
             },

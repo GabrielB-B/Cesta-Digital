@@ -15,7 +15,11 @@ from app.schemas.basket_type import (
 from app.services.audit_log_service import record_audit_log
 
 
-def create_basket_type(db: Session, payload: BasketTypeCreate) -> BasketType:
+def create_basket_type(
+    db: Session,
+    payload: BasketTypeCreate,
+    current_user: User,
+) -> BasketType:
     """Cria um tipo de cesta evitando duplicidade por nome."""
     existing_basket_type = db.scalar(
         select(BasketType).where(BasketType.name == payload.name)
@@ -33,6 +37,18 @@ def create_basket_type(db: Session, payload: BasketTypeCreate) -> BasketType:
     )
 
     db.add(basket_type)
+    db.flush()
+    record_audit_log(
+        db,
+        event_type="basket_type.created",
+        actor_user=current_user,
+        entity_type="basket_type",
+        entity_id=basket_type.id,
+        details={
+            "name": basket_type.name,
+            "is_active": basket_type.is_active,
+        },
+    )
     db.commit()
     db.refresh(basket_type)
     return get_basket_type_detail(db, basket_type.id)
@@ -137,6 +153,7 @@ def add_item_to_basket_type(
     db: Session,
     basket_type_id: int,
     payload: BasketTypeItemCreate,
+    current_user: User,
 ) -> BasketTypeItem:
     """Adiciona um item à receita de um tipo de cesta."""
     basket_type = db.get(BasketType, basket_type_id)
@@ -172,6 +189,19 @@ def add_item_to_basket_type(
     )
 
     db.add(basket_item)
+    db.flush()
+    record_audit_log(
+        db,
+        event_type="basket_type.recipe_item.created",
+        actor_user=current_user,
+        entity_type="basket_type_item",
+        entity_id=basket_item.id,
+        details={
+            "basket_type_id": basket_type_id,
+            "item_id": basket_item.item_id,
+            "required_quantity": basket_item.required_quantity,
+        },
+    )
     db.commit()
     db.refresh(basket_item)
     return basket_item

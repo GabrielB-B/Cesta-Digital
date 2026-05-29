@@ -117,7 +117,7 @@ export interface FamilyContactCreatePayload {
 }
 
 export interface FamilyCreatePayload {
-  internal_code: string;
+  internal_code?: string | null;
   status: string;
   registration_date: string;
   last_evaluation_date: string | null;

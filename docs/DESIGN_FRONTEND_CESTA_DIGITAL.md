@@ -108,8 +108,91 @@ Antes de declarar uma rodada visual como pronta:
 - `git diff --check`
 - Conferencia em desktop e mobile.
 - Verificacao de login, dashboard, familias, estoque e entregas.
-Concluí esta fase. Depois dela, faltam 2 fases:
 
-QA visual/responsivo tela por tela: conferir no navegador desktop/mobile, fluxo real de login, listagens, detalhes e formulários.
-Fechamento técnico: revisar diff final, organizar documentação, checklist de entrega e deixar pronto para commit/deploy.
-Nesta fase apliquei os padrões em:
+## Retomada do Ponto Exato
+
+Estado reconstruido a partir do commit `f5d0fa1`, com a rodada de identidade visual e componentizacao ja aplicada.
+
+Fase concluida nesta rodada:
+
+- Aplicacao dos padroes visuais e estruturais no frontend.
+- Criacao dos componentes de apoio: `PageHeader`, `MetricCard`, `MetricGrid`, `PanelHeader`, `StateMessage`, `DataTable`, `FormActions` e `FormSection`.
+- Ajuste de base visual em `global.css`, `index.html`, `BrandLockup` e `AppLayout`.
+- Login alinhado com a nova marca e com o componente `BrandLockup`.
+- Dashboard alinhado com `MetricGrid`, tabela acessivel e acoes rapidas.
+- Familias alinhadas em listagem, cadastro, edicao e manutencao de pessoas.
+- Estoque alinhado em listagem de itens, cadastro de item e detalhe/edicao de item.
+- Tipos de cesta alinhados em listagem, cadastro, detalhe, receita e disponibilidade.
+- Entregas alinhadas em agendamentos, historico e estados de feedback.
+- Auditoria alinhada com filtros, tabela responsiva e acoes.
+- Usuarios recebeu ajustes visuais pontuais para seguir a mesma identidade.
+
+Ordem restaurada das fases restantes:
+
+1. QA visual/responsivo tela por tela: conferir no navegador desktop/mobile o fluxo real de login, dashboard, familias, estoque, tipos de cesta, entregas, usuarios e auditoria; validar listagens, detalhes, formularios, estados de loading, vazio, erro e sucesso.
+2. Fechamento tecnico: revisar diff final, rodar validacoes, organizar documentacao, montar checklist de entrega e deixar o projeto pronto para commit/deploy.
+
+Checklist inicial para a proxima fase:
+
+- Desktop: conferir login, menu lateral, dashboard, familias, estoque, tipos de cesta e entregas.
+- Mobile: conferir responsividade do login, navegacao, tabelas com rolagem, formularios longos e acoes finais.
+- Fluxo real: entrar, navegar, abrir listagens, acessar detalhes, preencher formularios e validar feedbacks.
+- Tecnico: executar `npm run lint`, `npm run build` e `git diff --check` antes do fechamento.
+
+## QA Visual e Fechamento
+
+Fases restantes executadas em 2026-05-02.
+
+QA visual/responsivo executado:
+
+- Ambiente local validado com backend em `http://127.0.0.1:8000` e frontend em `http://127.0.0.1:5173`.
+- Login real conferido em desktop e mobile.
+- Conferidas 36 telas/estados entre desktop e mobile.
+- Fluxos conferidos: login, dashboard, familias, detalhe/edicao/cadastro de familia, itens, detalhe/cadastro de item, entrada de lote, tipos de cesta, detalhe/cadastro de tipo de cesta, entregas, novo agendamento, usuarios e auditoria.
+- Estados conferidos: listagens, detalhes, formularios, tabelas responsivas, menu lateral, loading inicial, vazio, erro visual e sucesso quando aplicavel.
+- Resultado final: sem erro de console, sem overlay do Vite, sem alerta inesperado e sem overflow horizontal de pagina.
+
+Ajuste aplicado durante o QA:
+
+- `frontend/src/styles/global.css`: grids, pilhas e paineis passaram a usar `min-width: 0`, e `table-wrapper` recebeu `max-width: 100%` para manter tabelas longas dentro da rolagem responsiva no mobile.
+
+Fechamento tecnico executado:
+
+- `npm run lint`: OK.
+- `npm run build`: OK.
+- `npm audit --audit-level=high`: OK.
+- `git diff --check`: OK, com apenas aviso esperado de LF/CRLF no Windows.
+- Backend `/health/db`: OK.
+- Frontend local HTTP 200: OK.
+
+Resultado:
+
+- Rodada visual pronta para commit.
+- Pronta para deploy de preview/local.
+- Ainda nao classificar como producao final sem staging real, observabilidade externa e homologacao por perfil.
+
+## Refinamento Frontend - Fases 1 e 2
+
+Fases implementadas em 2026-05-02, sem alteracao de backend, regras de negocio, rotas, payloads ou chamadas de API.
+
+Fase 1: reduzir peso visual sem perder identidade:
+
+- Painel hero, cards e paineis receberam sombras mais leves, brilho mais contido e camadas de fundo menos pesadas.
+- A identidade escura premium foi mantida com rosa/magenta, dourado, verde e detalhes quentes.
+- Hover e bordas ficaram mais discretos para melhorar leitura operacional.
+
+Fase 2: melhorar hierarquia operacional do dashboard:
+
+- Dashboard passou a destacar tres sinais principais: Social, Estoque e Entregas.
+- Indicadores receberam categorias visuais por tom: social, estoque, entrega, atencao e neutro.
+- `MetricCard` e `MetricGrid` passaram a aceitar `tone`, `emphasis` e `className`, mantendo compatibilidade com usos existentes.
+- Prioridades do dia ficaram agrupadas em uma secao propria com leitura mais direta.
+- Grid do dashboard foi ajustado para desktop e mobile, reduzindo vazios visuais e mantendo responsividade.
+
+Validacao desta rodada:
+
+- `npm run lint`: OK.
+- `npm run build`: OK.
+- `git diff --check`: OK, com apenas aviso esperado de LF/CRLF no Windows.
+- Login real + dashboard conferidos em Chrome/CDP no desktop 1440x1100 e mobile 390x844.
+- Resultado visual: sem erro de console, sem overlay do Vite, sem carregamento preso e sem overflow horizontal.

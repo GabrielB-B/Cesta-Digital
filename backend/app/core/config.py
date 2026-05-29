@@ -22,12 +22,15 @@ class Settings(BaseSettings):
     db_password: str
 
     first_admin_name: str
+    first_admin_login_name: str = "admin"
     first_admin_email: str
     first_admin_password: str
 
     secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
+    auth_cookie_name: str = "cesta_digital_session"
+    auth_cookie_samesite: str = "lax"
     login_rate_limit_attempts: int = 5
     login_rate_limit_window_seconds: int = 300
     login_rate_limit_lockout_seconds: int = 900
@@ -62,6 +65,14 @@ class Settings(BaseSettings):
             )
         return normalized
 
+    @field_validator("first_admin_login_name")
+    @classmethod
+    def validate_first_admin_login_name(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if len(normalized) < 3:
+            raise ValueError("FIRST_ADMIN_LOGIN_NAME deve ter pelo menos 3 caracteres.")
+        return normalized
+
     @model_validator(mode="after")
     def validate_security_runtime(self):
         if self.app_env in {"staging", "production"} and len(self.secret_key.strip()) < 32:
@@ -82,6 +93,9 @@ class Settings(BaseSettings):
                 "LOGIN_RATE_LIMIT_LOCKOUT_SECONDS deve ser maior que zero."
             )
 
+        if self.auth_cookie_samesite.lower() not in {"lax", "strict", "none"}:
+            raise ValueError("AUTH_COOKIE_SAMESITE deve ser lax, strict ou none.")
+
         return self
 
     @property
@@ -91,6 +105,10 @@ class Settings(BaseSettings):
             for origin in self.frontend_cors_origins.split(",")
             if origin.strip()
         ]
+
+    @property
+    def auth_cookie_secure(self) -> bool:
+        return self.app_env in {"staging", "production"}
 
 
 settings = Settings()

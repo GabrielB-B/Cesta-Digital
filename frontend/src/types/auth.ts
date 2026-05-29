@@ -3,6 +3,7 @@ export interface LoginResponse {
   token_type: string;
   user_id: number;
   name: string;
+  login_name: string;
   email: string;
   roles: string[];
 }
@@ -10,16 +11,18 @@ export interface LoginResponse {
 export interface CurrentUserResponse {
   id: number;
   name: string;
+  login_name: string;
   email: string;
   is_active: boolean;
   roles: string[];
 }
 
 export interface AuthContextData {
+  /** Mantido apenas por compatibilidade; a sessão real usa cookie HttpOnly. */
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   user: CurrentUserResponse | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  login: (loginName: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }

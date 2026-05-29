@@ -16,7 +16,12 @@ class FamiliesApiIntegrationTests(ApiIntegrationTestCase):
             password="Operador@123",
             roles=("operador",),
         )
-        self.headers = self.login_and_get_headers("admin@example.com", "Admin@12345")
+        self.headers = self.login_and_get_headers("admin", "Admin@12345")
+
+    def test_create_family_generates_internal_code_when_missing(self):
+        family = self.create_family(self.headers, internal_code=None)
+
+        self.assertRegex(family["internal_code"], r"^FAM-\d{4,}$")
 
     def test_create_family_and_prevent_duplicate_responsible_person(self):
         family = self.create_family(self.headers)
@@ -82,7 +87,7 @@ class FamiliesApiIntegrationTests(ApiIntegrationTestCase):
         self.assertTrue(family_detail["people"][0]["is_family_responsible"])
 
     def test_operator_cannot_create_family(self):
-        operator_headers = self.login_and_get_headers("operador@example.com", "Operador@123")
+        operator_headers = self.login_and_get_headers("operador", "Operador@123")
         response = self.client.post(
             "/families",
             json={

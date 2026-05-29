@@ -39,7 +39,7 @@ def create_basket_type_endpoint(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """Cria um novo tipo de cesta."""
-    return create_basket_type(db, payload)
+    return create_basket_type(db, payload, current_user)
 
 
 @router.get("/basket-types", response_model=list[BasketTypeResponse])
@@ -97,7 +97,7 @@ def add_item_to_basket_type_endpoint(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """Adiciona item a receita de um tipo de cesta."""
-    return add_item_to_basket_type(db, basket_type_id, payload)
+    return add_item_to_basket_type(db, basket_type_id, payload, current_user)
 
 
 @router.put(

@@ -85,8 +85,21 @@ def create_delivery_from_schedule_endpoint(
 
 @router.get("/deliveries", response_model=list[DeliveryResponse])
 def list_deliveries_endpoint(
+    response: Response,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
+    family_id: int | None = Query(default=None, ge=1),
+    status: str | None = Query(default=None),
+    limit: int | None = Query(default=None, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
 ):
     """Lista as entregas registradas."""
-    return list_deliveries(db)
+    deliveries, total = list_deliveries(
+        db,
+        family_id=family_id,
+        status=status,
+        limit=limit,
+        offset=offset,
+    )
+    response.headers["X-Total-Count"] = str(total)
+    return deliveries

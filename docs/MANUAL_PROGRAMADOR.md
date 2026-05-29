@@ -122,6 +122,16 @@ Frontend:
 cd frontend
 npm run lint
 npm run build
+npm run test:e2e
+npm audit --audit-level=high
+```
+
+Smoke local com backend e frontend ja rodando:
+
+```powershell
+.\scripts\smoke_local.ps1 `
+  -LoginName admin `
+  -Password "senha-do-admin-local"
 ```
 
 ## Como trabalhar com Git
@@ -155,6 +165,8 @@ Use mensagens de commit objetivas, por exemplo:
 - Se mudar contrato da API, atualize tipos do frontend.
 - Se criar acao critica, registre auditoria.
 - Se mexer em estoque ou entrega, pense em transacao e concorrencia.
+- Se mexer em dados de familias, pessoas, beneficios ou auditoria, confira [`docs/LGPD_PRIVACIDADE.md`](./LGPD_PRIVACIDADE.md).
+- Se preparar entrega para uso real, execute [`docs/HOMOLOGACAO_MVP.md`](./HOMOLOGACAO_MVP.md).
 
 ## Fluxo recomendado para nova feature
 
@@ -174,12 +186,9 @@ Use mensagens de commit objetivas, por exemplo:
 
 - Confirme se o backend esta rodando.
 - Confirme se o seed criou o admin.
+- Confirme se voce esta usando o nome de login, nao o email.
 - Confirme `VITE_API_URL` no frontend.
-- Limpe o token no navegador se necessario:
-
-```js
-localStorage.removeItem("cesta_digital_token")
-```
+- Use o botao `Sair` ou o endpoint `POST /auth/logout` para limpar o cookie de sessao.
 
 ### Migration falha
 

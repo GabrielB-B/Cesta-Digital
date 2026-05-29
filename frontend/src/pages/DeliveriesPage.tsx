@@ -19,6 +19,7 @@ import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateOnly, formatDateTime } from "../utils/format";
 
 const PAGE_SIZE = 25;
+const DELIVERY_PAGE_SIZE = 25;
 
 type ScheduleDraft = {
   scheduled_date: string;
@@ -36,7 +37,9 @@ export function DeliveriesPage() {
   );
   const [statusFilter, setStatusFilter] = useState("");
   const [totalSchedules, setTotalSchedules] = useState(0);
+  const [totalDeliveries, setTotalDeliveries] = useState(0);
   const [offset, setOffset] = useState(0);
+  const [deliveryOffset, setDeliveryOffset] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingScheduleId, setIsSubmittingScheduleId] = useState<number | null>(
     null
@@ -44,7 +47,11 @@ export function DeliveriesPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  async function loadData(nextOffset = offset, activeStatus = statusFilter) {
+  async function loadData(
+    nextOffset = offset,
+    activeStatus = statusFilter,
+    nextDeliveryOffset = deliveryOffset
+  ) {
     try {
       setIsLoading(true);
       setError("");
@@ -58,9 +65,18 @@ export function DeliveriesPage() {
               offset: nextOffset,
             },
           }),
-          api.get<DeliveryResponse[]>("/deliveries"),
-          api.get<FamilyListItemResponse[]>("/families"),
-          api.get<BasketTypeResponse[]>("/basket-types"),
+          api.get<DeliveryResponse[]>("/deliveries", {
+            params: {
+              limit: DELIVERY_PAGE_SIZE,
+              offset: nextDeliveryOffset,
+            },
+          }),
+          api.get<FamilyListItemResponse[]>("/families", {
+            params: { limit: 200 },
+          }),
+          api.get<BasketTypeResponse[]>("/basket-types", {
+            params: { limit: 200 },
+          }),
         ]);
 
       setSchedules(schedulesResponse.data);
@@ -70,7 +86,11 @@ export function DeliveriesPage() {
       setTotalSchedules(
         Number(schedulesResponse.headers["x-total-count"] ?? schedulesResponse.data.length)
       );
+      setTotalDeliveries(
+        Number(deliveriesResponse.headers["x-total-count"] ?? deliveriesResponse.data.length)
+      );
       setOffset(nextOffset);
+      setDeliveryOffset(nextDeliveryOffset);
       setScheduleDrafts(
         Object.fromEntries(
           schedulesResponse.data.map((schedule) => [
@@ -102,9 +122,9 @@ export function DeliveriesPage() {
         .length,
       completedSchedules: schedules.filter((schedule) => schedule.status === "retirado")
         .length,
-      totalDeliveries: deliveries.length,
+      totalDeliveries,
     };
-  }, [schedules, deliveries, totalSchedules]);
+  }, [schedules, totalSchedules, totalDeliveries]);
 
   function getFamilyCode(familyId: number): string {
     return (
@@ -134,7 +154,7 @@ export function DeliveriesPage() {
 
       await api.post(`/deliveries/from-schedule/${scheduleId}`, payload);
       setSuccessMessage("Entrega confirmada e estoque baixado automaticamente.");
-      await loadData(offset);
+      await loadData(offset, statusFilter, deliveryOffset);
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel confirmar a entrega."));
     } finally {
@@ -161,7 +181,7 @@ export function DeliveriesPage() {
 
       await api.put(`/delivery-schedules/${scheduleId}`, payload);
       setSuccessMessage("Agendamento atualizado com auditoria registrada.");
-      await loadData(offset);
+      await loadData(offset, statusFilter, deliveryOffset);
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel atualizar o agendamento."));
     } finally {
@@ -195,7 +215,7 @@ export function DeliveriesPage() {
         notes: schedule.notes ?? "Cancelado pela interface.",
       } satisfies DeliveryScheduleUpdatePayload);
       setSuccessMessage("Agendamento cancelado.");
-      await loadData(offset);
+      await loadData(offset, statusFilter, deliveryOffset);
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel cancelar o agendamento."));
     } finally {
@@ -205,7 +225,7 @@ export function DeliveriesPage() {
 
   async function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await loadData(0, statusFilter);
+    await loadData(0, statusFilter, deliveryOffset);
   }
 
   return (
@@ -453,7 +473,8 @@ export function DeliveriesPage() {
         ) : deliveries.length === 0 ? (
           <StateMessage>Nenhuma entrega registrada.</StateMessage>
         ) : (
-          <DataTable caption="Historico de entregas">
+          <>
+            <DataTable caption="Historico de entregas">
               <thead>
                 <tr>
                   <th>Familia</th>
@@ -476,7 +497,18 @@ export function DeliveriesPage() {
                   </tr>
                 ))}
               </tbody>
-          </DataTable>
+            </DataTable>
+
+            <PaginationControls
+              total={totalDeliveries}
+              offset={deliveryOffset}
+              limit={DELIVERY_PAGE_SIZE}
+              isLoading={isLoading}
+              onPageChange={(nextOffset) =>
+                void loadData(offset, statusFilter, nextOffset)
+              }
+            />
+          </>
         )}
       </section>
     </div>

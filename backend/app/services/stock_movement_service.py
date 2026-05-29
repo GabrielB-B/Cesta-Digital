@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -95,6 +95,30 @@ def create_stock_movement(
     return movement
 
 
-def list_stock_movements(db: Session) -> list[StockMovement]:
+def list_stock_movements(
+    db: Session,
+    *,
+    item_id: int | None = None,
+    batch_id: int | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[StockMovement], int]:
+    filters = []
+    if item_id is not None:
+        filters.append(StockMovement.item_id == item_id)
+    if batch_id is not None:
+        filters.append(StockMovement.batch_id == batch_id)
+
+    total_stmt = select(func.count(StockMovement.id))
     stmt = select(StockMovement).order_by(StockMovement.id.desc())
-    return list(db.scalars(stmt).all())
+
+    if filters:
+        total_stmt = total_stmt.where(*filters)
+        stmt = stmt.where(*filters)
+
+    total = db.scalar(total_stmt) or 0
+
+    if limit is not None:
+        stmt = stmt.offset(offset).limit(limit)
+
+    return list(db.scalars(stmt).all()), total

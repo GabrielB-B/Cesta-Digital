@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.item import Item
@@ -58,6 +58,27 @@ def create_stock_batch(
     return batch
 
 
-def list_stock_batches(db: Session) -> list[StockBatch]:
+def list_stock_batches(
+    db: Session,
+    *,
+    item_id: int | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[StockBatch], int]:
+    filters = []
+    if item_id is not None:
+        filters.append(StockBatch.item_id == item_id)
+
+    total_stmt = select(func.count(StockBatch.id))
     stmt = select(StockBatch).order_by(StockBatch.id.desc())
-    return list(db.scalars(stmt).all())
+
+    if filters:
+        total_stmt = total_stmt.where(*filters)
+        stmt = stmt.where(*filters)
+
+    total = db.scalar(total_stmt) or 0
+
+    if limit is not None:
+        stmt = stmt.offset(offset).limit(limit)
+
+    return list(db.scalars(stmt).all()), total

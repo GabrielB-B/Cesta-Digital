@@ -30,7 +30,7 @@ def create_item_category_endpoint(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """Cria uma nova categoria de item."""
-    return create_item_category(db, payload)
+    return create_item_category(db, payload, current_user)
 
 
 @router.get("/item-categories", response_model=list[ItemCategoryResponse])

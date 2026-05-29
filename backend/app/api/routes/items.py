@@ -27,7 +27,7 @@ def create_item_endpoint(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """Cria um novo item de estoque."""
-    return create_item(db, payload)
+    return create_item(db, payload, current_user)
 
 
 @router.get("/items", response_model=list[ItemResponse])

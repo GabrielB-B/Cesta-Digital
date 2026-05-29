@@ -32,6 +32,22 @@ def _require_user_id(current_user: User) -> int:
     return user_id
 
 
+def _validate_family_can_receive_delivery(family: Family) -> None:
+    if family.status in {"inativa", "inapta"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Familias inativas ou inaptas nao podem receber agendamentos.",
+        )
+
+
+def _validate_basket_type_can_be_scheduled(basket_type: BasketType) -> None:
+    if not basket_type.is_active:
+        raise HTTPException(
+            status_code=400,
+            detail="Tipos de cesta inativos nao podem ser agendados.",
+        )
+
+
 def create_delivery_schedule(
     db: Session,
     payload: DeliveryScheduleCreate,
@@ -42,10 +58,12 @@ def create_delivery_schedule(
     family = db.get(Family, payload.family_id)
     if family is None:
         raise HTTPException(status_code=404, detail="Familia nao encontrada.")
+    _validate_family_can_receive_delivery(family)
 
     basket_type = db.get(BasketType, payload.basket_type_id)
     if basket_type is None:
         raise HTTPException(status_code=404, detail="Tipo de cesta nao encontrado.")
+    _validate_basket_type_can_be_scheduled(basket_type)
 
     schedule = DeliverySchedule(
         family_id=payload.family_id,
@@ -106,9 +124,33 @@ def list_delivery_schedules(
     return list(db.scalars(stmt).all()), total
 
 
-def list_deliveries(db: Session) -> list[Delivery]:
+def list_deliveries(
+    db: Session,
+    *,
+    family_id: int | None = None,
+    status: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[Delivery], int]:
+    filters = []
+    if family_id is not None:
+        filters.append(Delivery.family_id == family_id)
+    if status:
+        filters.append(Delivery.status == status.strip().lower())
+
+    total_stmt = select(func.count(Delivery.id))
     stmt = select(Delivery).order_by(Delivery.id.desc())
-    return list(db.scalars(stmt).all())
+
+    if filters:
+        total_stmt = total_stmt.where(*filters)
+        stmt = stmt.where(*filters)
+
+    total = db.scalar(total_stmt) or 0
+
+    if limit is not None:
+        stmt = stmt.offset(offset).limit(limit)
+
+    return list(db.scalars(stmt).all()), total
 
 
 def update_delivery_schedule(
@@ -134,10 +176,13 @@ def update_delivery_schedule(
     family = db.get(Family, schedule.family_id)
     if family is None:
         raise HTTPException(status_code=404, detail="Familia nao encontrada.")
-
     basket_type = db.get(BasketType, schedule.basket_type_id)
     if basket_type is None:
         raise HTTPException(status_code=404, detail="Tipo de cesta nao encontrado.")
+
+    if payload.status in {"agendado", "reagendado"}:
+        _validate_family_can_receive_delivery(family)
+        _validate_basket_type_can_be_scheduled(basket_type)
 
     previous_state = {
         "scheduled_date": schedule.scheduled_date.isoformat(),
@@ -305,6 +350,16 @@ def create_delivery_from_schedule(
             )
 
         recipe_items = _get_recipe_items(db, schedule.basket_type_id)
+        family = db.get(Family, schedule.family_id)
+        if family is None:
+            raise HTTPException(status_code=404, detail="Familia nao encontrada.")
+        _validate_family_can_receive_delivery(family)
+
+        basket_type = db.get(BasketType, schedule.basket_type_id)
+        if basket_type is None:
+            raise HTTPException(status_code=404, detail="Tipo de cesta nao encontrado.")
+        _validate_basket_type_can_be_scheduled(basket_type)
+
         item_ids = [item["item_id"] for item in recipe_items]
         batches_by_item = _lock_batches_by_item(db, item_ids)
 

@@ -10,7 +10,7 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
             password="Admin@12345",
             roles=("admin", "operador", "lider_social"),
         )
-        self.headers = self.login_and_get_headers("admin@example.com", "Admin@12345")
+        self.headers = self.login_and_get_headers("admin", "Admin@12345")
 
     def test_family_status_update_and_paginated_list_headers(self):
         family = self.create_family(self.headers, internal_code="FAM-PHASE2")
@@ -182,6 +182,14 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
         )
         self.assertEqual(recipe_response.status_code, 201, recipe_response.text)
 
+        audit_response = self.client.get("/audit-logs", headers=self.headers)
+        self.assertEqual(audit_response.status_code, 200, audit_response.text)
+        event_types = [item["event_type"] for item in audit_response.json()["items"]]
+        self.assertIn("item_category.created", event_types)
+        self.assertIn("item.created", event_types)
+        self.assertIn("basket_type.created", event_types)
+        self.assertIn("basket_type.recipe_item.created", event_types)
+
         recipe_update_response = self.client.put(
             f"/basket-types/{basket_type['id']}/items/{item['id']}",
             json={"required_quantity": 4},
@@ -199,6 +207,55 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
             headers=self.headers,
         )
         self.assertEqual(recipe_delete_response.status_code, 204)
+
+    def test_delivery_schedule_rejects_inactive_family_or_basket_type(self):
+        inactive_family = self.create_family(
+            self.headers,
+            internal_code="FAM-INATIVA",
+            status="inativa",
+        )
+        active_family = self.create_family(
+            self.headers,
+            internal_code="FAM-ATIVA",
+            status="apta_recorrente",
+        )
+        active_basket_type = self.create_basket_type(
+            self.headers,
+            name="Cesta Ativa",
+        )
+        inactive_basket_type = self.create_basket_type(
+            self.headers,
+            name="Cesta Inativa",
+            is_active=False,
+        )
+
+        inactive_family_response = self.client.post(
+            "/delivery-schedules",
+            json={
+                "family_id": inactive_family["id"],
+                "basket_type_id": active_basket_type["id"],
+                "scheduled_date": "2026-04-20",
+                "status": "agendado",
+                "notes": None,
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(inactive_family_response.status_code, 400)
+        self.assertIn("inativas", inactive_family_response.json()["detail"])
+
+        inactive_basket_response = self.client.post(
+            "/delivery-schedules",
+            json={
+                "family_id": active_family["id"],
+                "basket_type_id": inactive_basket_type["id"],
+                "scheduled_date": "2026-04-20",
+                "status": "agendado",
+                "notes": None,
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(inactive_basket_response.status_code, 400)
+        self.assertIn("inativos", inactive_basket_response.json()["detail"])
 
     def test_delivery_schedule_update_and_audit_export(self):
         family = self.create_family(self.headers, internal_code="FAM-SCHEDULE")

@@ -10,7 +10,7 @@ class StockApiIntegrationTests(ApiIntegrationTestCase):
             password="Admin@12345",
             roles=("admin", "operador"),
         )
-        self.headers = self.login_and_get_headers("admin@example.com", "Admin@12345")
+        self.headers = self.login_and_get_headers("admin", "Admin@12345")
 
     def test_stock_batch_and_manual_movement_update_balance(self):
         batch = self.create_stock_batch(self.headers)
@@ -32,6 +32,14 @@ class StockApiIntegrationTests(ApiIntegrationTestCase):
         self.assertEqual(batches_response.status_code, 200, batches_response.text)
         persisted_batch = batches_response.json()[0]
         self.assertEqual(persisted_batch["current_quantity"], 6)
+
+        paginated_batches_response = self.client.get(
+            "/stock-batches",
+            headers=self.headers,
+            params={"item_id": batch["item_id"], "limit": 1, "offset": 0},
+        )
+        self.assertEqual(paginated_batches_response.status_code, 200)
+        self.assertEqual(paginated_batches_response.headers["x-total-count"], "1")
 
         summary_response = self.client.get("/stock-summary", headers=self.headers)
         self.assertEqual(summary_response.status_code, 200, summary_response.text)

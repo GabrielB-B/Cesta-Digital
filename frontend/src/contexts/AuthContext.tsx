@@ -7,11 +7,7 @@ import {
 } from "react";
 import { api } from "../api/client";
 import { AuthContext } from "./auth-context";
-import type {
-  AuthContextData,
-  CurrentUserResponse,
-  LoginResponse,
-} from "../types/auth";
+import type { AuthContextData, CurrentUserResponse } from "../types/auth";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -22,21 +18,11 @@ interface AuthProviderProps {
  * e carregamento do usuário atual.
  */
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("cesta_digital_token")
-  );
   const [user, setUser] = useState<CurrentUserResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(Boolean(token));
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-
-    if (!token) {
-      setIsLoading(false);
-      return () => {
-        isMounted = false;
-      };
-    }
 
     async function loadCurrentUser() {
       if (isMounted) {
@@ -50,10 +36,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(response.data);
         }
       } catch {
-        localStorage.removeItem("cesta_digital_token");
-
         if (isMounted) {
-          setToken(null);
           setUser(null);
         }
       } finally {
@@ -68,31 +51,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       isMounted = false;
     };
-  }, [token]);
+  }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (loginName: string, password: string) => {
     setIsLoading(true);
 
     const body = new URLSearchParams();
-    body.append("username", email);
+    body.append("username", loginName);
     body.append("password", password);
     body.append("grant_type", "password");
 
     try {
-      const response = await api.post<LoginResponse>("/auth/login", body, {
+      await api.post("/auth/login", body, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       });
 
-      localStorage.setItem("cesta_digital_token", response.data.access_token);
-      setToken(response.data.access_token);
-
-      const meResponse = await api.get<CurrentUserResponse>("/auth/me", {
-        headers: {
-          Authorization: `Bearer ${response.data.access_token}`,
-        },
-      });
+      const meResponse = await api.get<CurrentUserResponse>("/auth/me");
 
       setUser(meResponse.data);
     } finally {
@@ -100,23 +76,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("cesta_digital_token");
-    setToken(null);
-    setUser(null);
-    setIsLoading(false);
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      setUser(null);
+      setIsLoading(false);
+    }
   }, []);
+
+  const legacyToken = null;
 
   const value = useMemo<AuthContextData>(
     () => ({
-      token,
-      isAuthenticated: Boolean(token),
+      token: legacyToken,
+      isAuthenticated: Boolean(user),
       isLoading,
       user,
       login,
       logout,
     }),
-    [token, isLoading, user, login, logout]
+    [isLoading, user, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

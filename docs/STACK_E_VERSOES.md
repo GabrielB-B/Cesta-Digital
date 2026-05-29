@@ -3,7 +3,7 @@
 ## Estado de versao do produto
 
 - Backend app version: `0.1.0` em `backend/app/core/config.py`
-- Frontend package version: `0.0.0` em `frontend/package.json`
+- Frontend package version: `0.1.0` em `frontend/package.json`
 - Status real: ainda nao existe uma politica unica de versionamento de release para o produto completo
 
 ## Ambiente validado nesta analise
@@ -23,7 +23,8 @@
 - Pydantic Settings `2.13.1`
 - PyMySQL `1.1.2`
 - PyJWT `2.12.0`
-- python-multipart `0.0.26`
+- python-multipart `0.0.27`
+- Mako `1.3.12`
 - cryptography `46.0.7`
 - passlib `1.7.4`
 - bcrypt `4.0.1`
@@ -32,6 +33,8 @@
 ### Funcao do backend
 
 - autenticacao via JWT
+- sessao do frontend via cookie `HttpOnly`
+- rate limit de login persistido em banco
 - administracao de usuarios, perfis e redefinicao de senha
 - familias, pessoas e beneficios
 - avaliacao social e preview de elegibilidade
@@ -51,6 +54,7 @@
 - Vite `8.0.0`
 - TypeScript `5.9.3`
 - ESLint `9.39.4`
+- Playwright `1.59.1`
 
 ### Funcao do frontend
 
@@ -115,7 +119,6 @@
 
 ## Ferramentas que ainda faltam
 
-- cobertura de testes mais ampla
 - observabilidade
 - padrao de versionamento de release
 - deploy e rotina de rollback

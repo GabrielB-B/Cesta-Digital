@@ -21,7 +21,7 @@ class AuthApiIntegrationTests(ApiIntegrationTestCase):
         login_response = self.client.post(
             "/auth/login",
             data={
-                "username": "admin@example.com",
+                "username": "admin",
                 "password": "Admin@12345",
                 "grant_type": "password",
             },
@@ -30,9 +30,11 @@ class AuthApiIntegrationTests(ApiIntegrationTestCase):
         self.assertEqual(login_response.status_code, 200, login_response.text)
         body = login_response.json()
         self.assertIn("access_token", body)
+        self.assertEqual(body["login_name"], "admin")
         self.assertEqual(body["email"], "admin@example.com")
         self.assertEqual(body["roles"], ["admin"])
         self.assertTrue(login_response.headers.get("X-Request-ID"))
+        self.assertIn("cesta_digital_session", login_response.cookies)
 
         me_response = self.client.get(
             "/auth/me",
@@ -41,16 +43,24 @@ class AuthApiIntegrationTests(ApiIntegrationTestCase):
 
         self.assertEqual(me_response.status_code, 200, me_response.text)
         me_body = me_response.json()
+        self.assertEqual(me_body["login_name"], "admin")
         self.assertEqual(me_body["email"], "admin@example.com")
         self.assertTrue(me_body["is_active"])
         self.assertEqual(me_body["roles"], ["admin"])
+
+        cookie_me_response = self.client.get("/auth/me")
+        self.assertEqual(cookie_me_response.status_code, 200, cookie_me_response.text)
+        self.assertEqual(cookie_me_response.json()["email"], "admin@example.com")
+
+        logout_response = self.client.post("/auth/logout")
+        self.assertEqual(logout_response.status_code, 204, logout_response.text)
 
     def test_login_rejects_invalid_password_and_blocks_after_limit(self):
         for attempt in range(1, 5):
             response = self.client.post(
                 "/auth/login",
                 data={
-                    "username": "admin@example.com",
+                    "username": "admin",
                     "password": "senha-errada",
                     "grant_type": "password",
                 },
@@ -60,7 +70,7 @@ class AuthApiIntegrationTests(ApiIntegrationTestCase):
         locked_response = self.client.post(
             "/auth/login",
             data={
-                "username": "admin@example.com",
+                "username": "admin",
                 "password": "senha-errada",
                 "grant_type": "password",
             },
@@ -74,12 +84,12 @@ class AuthApiIntegrationTests(ApiIntegrationTestCase):
         self.client.post(
             "/auth/login",
             data={
-                "username": "admin@example.com",
+                "username": "admin",
                 "password": "senha-errada",
                 "grant_type": "password",
             },
         )
-        headers = self.login_and_get_headers("admin@example.com", "Admin@12345")
+        headers = self.login_and_get_headers("admin", "Admin@12345")
 
         audit_response = self.client.get(
             "/audit-logs",

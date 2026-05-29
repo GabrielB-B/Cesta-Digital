@@ -7,6 +7,7 @@ export interface RoleOptionResponse {
 export interface UserAdminResponse {
   id: number;
   name: string;
+  login_name: string;
   email: string;
   is_active: boolean;
   roles: string[];
@@ -17,6 +18,7 @@ export interface UserAdminResponse {
 
 export interface UserCreatePayload {
   name: string;
+  login_name: string;
   email: string;
   password: string;
   is_active: boolean;
@@ -25,6 +27,7 @@ export interface UserCreatePayload {
 
 export interface UserUpdatePayload {
   name: string;
+  login_name: string;
   email: string;
   is_active: boolean;
   roles: string[];

@@ -23,7 +23,7 @@ function normalizeLoginError(detail: unknown) {
         const field = issue.loc ? issue.loc[issue.loc.length - 1] : undefined;
 
         if (field === "username") {
-          return "email";
+          return "nome de login";
         }
 
         if (field === "password") {
@@ -32,10 +32,10 @@ function normalizeLoginError(detail: unknown) {
 
         return null;
       })
-      .filter((field): field is "email" | "senha" => field !== null);
+      .filter((field): field is "nome de login" | "senha" => field !== null);
 
     if (missingFields.length === 2) {
-      return "Informe email e senha para entrar.";
+      return "Informe nome de login e senha para entrar.";
     }
 
     if (missingFields.length === 1) {
@@ -53,7 +53,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [loginName, setLoginName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,16 +62,16 @@ export function LoginPage() {
     event.preventDefault();
     setError("");
 
-    const normalizedEmail = email.trim();
+    const normalizedLoginName = loginName.trim().toLowerCase();
     const normalizedPassword = password.trim();
 
-    if (!normalizedEmail && !normalizedPassword) {
-      setError("Informe email e senha para entrar.");
+    if (!normalizedLoginName && !normalizedPassword) {
+      setError("Informe nome de login e senha para entrar.");
       return;
     }
 
-    if (!normalizedEmail) {
-      setError("Informe o email para entrar.");
+    if (!normalizedLoginName) {
+      setError("Informe o nome de login para entrar.");
       return;
     }
 
@@ -83,7 +83,7 @@ export function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await login(normalizedEmail, normalizedPassword);
+      await login(normalizedLoginName, normalizedPassword);
       navigate("/");
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -119,25 +119,26 @@ export function LoginPage() {
             Entre com suas credenciais para continuar.
           </p>
           <p className="login-card__support">
-            Use o email cadastrado no sistema e confira se o backend está ativo.
+            Use seu nome de login. O email fica reservado para recuperação de acesso.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="form">
           <label className="form__group">
-            <span>Email</span>
+            <span>Nome de login</span>
             <input
-              type="email"
-              name="email"
-              value={email}
+              type="text"
+              name="login_name"
+              value={loginName}
               onChange={(event) => {
-                setEmail(event.target.value);
+                setLoginName(event.target.value);
                 if (error) {
                   setError("");
                 }
               }}
-              placeholder="Digite seu email"
-              autoComplete="email"
+              placeholder="Ex.: admin"
+              autoComplete="username"
+              pattern="[a-z0-9._-]{3,80}"
               spellCheck={false}
               required
             />

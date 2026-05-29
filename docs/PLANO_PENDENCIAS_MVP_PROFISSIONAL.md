@@ -4,9 +4,9 @@ Este plano organiza as pendencias encontradas na varredura tecnica e divide a ex
 
 ## Estado Atual
 
-O Cesta Digital ja e um MVP funcional: autentica usuarios, protege rotas por perfil, registra familias, calcula elegibilidade, controla estoque por lote, monta cestas, confirma entregas com baixa automatica, registra auditoria, possui CI inicial, backup manual e documentacao tecnica.
+O Cesta Digital ja e um MVP funcional: autentica usuarios, protege rotas por perfil, registra familias, calcula elegibilidade, controla estoque por lote, monta cestas, confirma entregas com baixa automatica, registra auditoria, possui CI inicial, backup manual, documentacao tecnica, checklist de LGPD e checklist de homologacao por perfil.
 
-Ainda nao deve ser tratado como pronto para producao final enquanto os itens de Fase 0 e Fase 1 nao estiverem fechados.
+Ainda nao deve ser tratado como producao final sem staging real, observabilidade externa, HTTPS/proxy final e homologacao funcional por perfil.
 
 ## Fase 0 - Bloqueios de Pronto
 
@@ -49,17 +49,17 @@ Prioridade: antes de publicar para uso amplo.
 
 - Validar staging acessivel por URL real.
 - Testar restore de backup em ambiente limpo.
-- Migrar rate limit de login de memoria para Redis ou servico equivalente.
+- Validar comportamento do rate limit persistido em staging com banco real.
 - Ligar observabilidade externa: erros, metricas e logs centralizados.
 - Adicionar politica de release, rollback, tags e versao unica do produto.
 - Definir CSP, HSTS e configuracao final de proxy/HTTPS.
-- Avaliar migracao de token em `localStorage` para cookie `HttpOnly` em producao.
+- Validar politica final de cookie, dominio e SameSite em staging real.
 
 ## Fase 4 - Qualidade Continua
 
 Prioridade: evolucao sustentavel.
 
-- Adicionar smoke/e2e de frontend para login, familias, estoque e entregas.
+- Ampliar e2e de frontend com fluxos completos de escrita em ambiente de teste integrado.
 - Aumentar cobertura de testes de services criticos e falhas operacionais.
 - Documentar ADRs curtos para decisoes de seguranca e arquitetura.
 - Criar checklist de homologacao funcional por papel.
@@ -191,3 +191,55 @@ Validacao executada nesta rodada:
 - Frontend build: OK.
 - `git diff --check`: OK.
 - Frontend local respondeu HTTP 200 em `http://127.0.0.1:5173`.
+
+## Rodada Hardening MVP Em 2026-05-04
+
+Concluido nesta rodada:
+
+- Auditoria adicionada para criacao de categorias, itens, tipos de cesta e itens de receita.
+- Historicos secundarios de lotes, movimentacoes e entregas passaram a aceitar filtros, limite, offset e header `X-Total-Count`.
+- Frontend ajustado para consultar historicos recentes por pagina e evitar carregamento integral em telas operacionais.
+- Agendamento passou a bloquear familias inativas/inaptas e tipos de cesta inativos.
+- Confirmacao de entrega passou a revalidar familia e tipo de cesta antes da baixa.
+- Administracao de usuarios ganhou salvaguardas para impedir desativar o proprio admin, remover o proprio perfil admin ou deixar o sistema sem administrador ativo.
+- Engine SQLAlchemy recebeu `pool_pre_ping` e `pool_recycle` para reduzir falhas por conexao MySQL ociosa.
+- Header HSTS ativado automaticamente em `staging` e `production`.
+- Documentos `LGPD_PRIVACIDADE.md` e `HOMOLOGACAO_MVP.md` adicionados.
+- Smoke local `scripts/smoke_local.ps1` adicionado para validar frontend, API, login autenticado e dashboard sem instalar dependencias novas.
+
+Ainda pendente apos esta rodada:
+
+- Observabilidade externa.
+- Staging real com HTTPS/proxy final.
+- Homologacao funcional por perfil com evidencia.
+
+## Rodada Hardening Producao Em 2026-05-11
+
+Concluido nesta rodada:
+
+- Dependencias Python vulneraveis atualizadas: `Mako` para `1.3.12` e `python-multipart` para `0.0.27`.
+- `pip-audit` voltou a passar sem vulnerabilidades conhecidas.
+- Frontend deixou de persistir token JWT em `localStorage` e passou a usar cookie `HttpOnly` emitido pelo backend.
+- Backend passou a aceitar autenticacao por cookie `HttpOnly` ou Bearer token, preservando compatibilidade com Swagger e scripts.
+- Endpoint `POST /auth/logout` adicionado para encerrar sessao e remover o cookie.
+- Rate limit de login migrado de memoria para a tabela `login_rate_limits`.
+- Migration Alembic criada para persistencia do rate limit.
+- E2E smoke com Playwright adicionado para login, dashboard, familias, itens e entregas.
+- CI atualizado para rodar `npm audit`, instalar Chromium do Playwright e executar `npm run test:e2e`.
+
+Validacao executada nesta rodada:
+
+- Backend compile: OK.
+- Backend testes automatizados: OK, 22 testes.
+- Backend `pip-audit`: OK.
+- Frontend lint: OK.
+- Frontend build: OK.
+- Frontend `npm audit --audit-level=high`: OK.
+- Frontend `npm run test:e2e`: OK, 2 testes.
+
+Ainda pendente para producao final:
+
+- Subir staging real com HTTPS/proxy final.
+- Executar `docs/HOMOLOGACAO_MVP.md` por perfil e registrar evidencias.
+- Ligar observabilidade externa de erros, metricas e logs.
+- Definir politica de release/tag/rollback.

@@ -32,9 +32,12 @@ Campos obrigatorios:
 - `DB_USER`
 - `DB_PASSWORD`
 - `FIRST_ADMIN_NAME`
+- `FIRST_ADMIN_LOGIN_NAME`
 - `FIRST_ADMIN_EMAIL`
 - `FIRST_ADMIN_PASSWORD`
 - `SECRET_KEY`
+- `AUTH_COOKIE_NAME`
+- `AUTH_COOKIE_SAMESITE`
 
 ### Instalar dependencias
 
@@ -111,7 +114,7 @@ URL esperada:
 
 1. Suba backend e frontend.
 2. Entre com o usuario admin criado no seed.
-3. O login usa JWT e protege as rotas internas.
+3. O backend emite JWT e o frontend usa cookie `HttpOnly` para proteger as rotas internas.
 
 ### Operacao social
 
@@ -136,7 +139,7 @@ URL esperada:
 
 ### Administracao
 
-1. Entre com um usuario `admin`.
+1. Entre com um usuario `admin` usando o nome de login cadastrado.
 2. Abra `Usuarios` no menu lateral.
 3. Cadastre usuarios, perfis e status.
 4. Use a tela para redefinir senhas quando necessario.
@@ -144,10 +147,9 @@ URL esperada:
 
 ## 4. Limitacoes atuais de uso
 
-- A auditoria ainda nao possui exportacao pela interface.
-- O rate limit de login e em memoria; em producao com multiplas instancias, deve migrar para Redis ou equivalente.
 - Ainda falta ligar observabilidade externa de producao.
-- O frontend ainda esta entrando em uma rodada de refinamento visual.
+- Ainda falta staging real com HTTPS/proxy final e homologacao por perfil.
+- A entrega real deve passar pelo checklist de LGPD e homologacao por perfil.
 
 ## 5. Comandos de validacao
 
@@ -155,10 +157,13 @@ URL esperada:
 cd C:\Users\Gabriel\Documents\cesta-digital\frontend
 npm run lint
 npm run build
+npm run test:e2e
+npm audit --audit-level=high
 
 cd C:\Users\Gabriel\Documents\cesta-digital\backend
 .venv\Scripts\python.exe -m compileall app scripts tests
 .venv\Scripts\python.exe -m unittest discover -s tests -v
+.venv\Scripts\python.exe -m pip_audit -r requirements.txt
 ```
 
 ## 6. Comandos rapidos para iniciar

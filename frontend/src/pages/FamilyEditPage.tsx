@@ -343,11 +343,11 @@ export function FamilyEditPage() {
       <form onSubmit={handleSubmit} className="panel-card form-panel">
         <FormSection eyebrow="Identificação" title="Dados principais e endereço">
           <label className="form__group">
-            <span>Código interno</span>
+            <span>Código interno automático</span>
             <input
               name="internal_code"
               value={formData.internal_code}
-              onChange={handleInputChange}
+              readOnly
               required
             />
           </label>

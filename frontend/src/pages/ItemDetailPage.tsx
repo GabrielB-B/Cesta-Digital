@@ -47,6 +47,7 @@ export function ItemDetailPage() {
       try {
         setIsLoading(true);
         setError("");
+        const parsedItemId = Number(itemId);
 
         const [
           itemResponse,
@@ -56,9 +57,15 @@ export function ItemDetailPage() {
           categoriesResponse,
         ] = await Promise.all([
           api.get<ItemDetailResponse>(`/items/${itemId}`),
-          api.get<StockSummaryResponse[]>("/stock-summary"),
-          api.get<StockBatchResponse[]>("/stock-batches"),
-          api.get<StockMovementResponse[]>("/stock-movements"),
+          api.get<StockSummaryResponse[]>("/stock-summary", {
+            params: { limit: 200 },
+          }),
+          api.get<StockBatchResponse[]>("/stock-batches", {
+            params: { item_id: parsedItemId, limit: 100 },
+          }),
+          api.get<StockMovementResponse[]>("/stock-movements", {
+            params: { item_id: parsedItemId, limit: 100 },
+          }),
           api.get<ItemCategoryResponse[]>("/item-categories"),
         ]);
 
@@ -66,7 +73,6 @@ export function ItemDetailPage() {
           return;
         }
 
-        const parsedItemId = Number(itemId);
         const loadedItem = itemResponse.data;
 
         setItem(loadedItem);
@@ -74,14 +80,8 @@ export function ItemDetailPage() {
           summaryResponse.data.find((entry) => entry.item_id === parsedItemId) ??
             null
         );
-        setBatches(
-          batchesResponse.data.filter((batch) => batch.item_id === parsedItemId)
-        );
-        setMovements(
-          movementsResponse.data.filter(
-            (movement) => movement.item_id === parsedItemId
-          )
-        );
+        setBatches(batchesResponse.data);
+        setMovements(movementsResponse.data);
         setCategories(categoriesResponse.data);
         setEditForm({
           category_id: String(loadedItem.category_id),
