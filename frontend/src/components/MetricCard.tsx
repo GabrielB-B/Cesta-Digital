@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 export type MetricCardTone =
   | "neutral"
@@ -13,6 +14,8 @@ interface MetricCardProps {
   description: ReactNode;
   tone?: MetricCardTone;
   emphasis?: boolean;
+  actionTo?: string;
+  actionLabel?: string;
 }
 
 export function MetricCard({
@@ -21,6 +24,8 @@ export function MetricCard({
   description,
   tone = "neutral",
   emphasis = false,
+  actionTo,
+  actionLabel,
 }: MetricCardProps) {
   const className = [
     "stat-card",
@@ -35,6 +40,11 @@ export function MetricCard({
       <p className="stat-card__title">{title}</p>
       <strong className="stat-card__value">{value}</strong>
       <span className="stat-card__description">{description}</span>
+      {actionTo && actionLabel ? (
+        <Link className="stat-card__action" to={actionTo}>
+          {actionLabel}
+        </Link>
+      ) : null}
     </article>
   );
 }

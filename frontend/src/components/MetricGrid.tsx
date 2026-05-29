@@ -7,6 +7,8 @@ export interface MetricGridItem {
   description: ReactNode;
   tone?: MetricCardTone;
   emphasis?: boolean;
+  actionTo?: string;
+  actionLabel?: string;
 }
 
 interface MetricGridProps {
@@ -27,6 +29,8 @@ export function MetricGrid({ items, className }: MetricGridProps) {
           description={item.description}
           tone={item.tone}
           emphasis={item.emphasis}
+          actionTo={item.actionTo}
+          actionLabel={item.actionLabel}
         />
       ))}
     </section>

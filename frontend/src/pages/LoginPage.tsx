@@ -279,8 +279,8 @@ export function LoginPage() {
 
         {isSubmitting ? (
           <div className="login-loading" role="status" aria-live="polite">
-            <BrandLockup variant="compact" title="Cesta Digital" subtitle="" />
-            <span>Entrando...</span>
+            <BrandLockup variant="compact" title="Cesta Digital" subtitle="" markOnly />
+            <span className="sr-only">Entrando...</span>
           </div>
         ) : null}
       </div>

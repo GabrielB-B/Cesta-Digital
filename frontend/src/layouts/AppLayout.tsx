@@ -245,6 +245,29 @@ export function AppLayout() {
               >
                 <X size={20} aria-hidden="true" />
               </button>
+
+              <button
+                className="sidebar__toggle"
+                type="button"
+                aria-expanded={!isSidebarCollapsed}
+                aria-label={
+                  isSidebarCollapsed
+                    ? "Expandir menu lateral"
+                    : "Recolher menu lateral"
+                }
+                title={
+                  isSidebarCollapsed
+                    ? "Expandir menu lateral"
+                    : "Recolher menu lateral"
+                }
+                onClick={toggleSidebar}
+              >
+                <SidebarToggleIcon
+                  className="sidebar__toggle-icon"
+                  aria-hidden="true"
+                  strokeWidth={1.9}
+                />
+              </button>
             </div>
 
             <nav className="sidebar__nav">
@@ -284,28 +307,6 @@ export function AppLayout() {
             </div>
           </div>
 
-          <button
-            className="sidebar__toggle"
-            type="button"
-            aria-expanded={!isSidebarCollapsed}
-            aria-label={
-              isSidebarCollapsed
-                ? "Expandir menu lateral"
-                : "Recolher menu lateral"
-            }
-            title={
-              isSidebarCollapsed
-                ? "Expandir menu lateral"
-                : "Recolher menu lateral"
-            }
-            onClick={toggleSidebar}
-          >
-            <SidebarToggleIcon
-              className="sidebar__toggle-icon"
-              aria-hidden="true"
-              strokeWidth={1.9}
-            />
-          </button>
         </aside>
 
       <button

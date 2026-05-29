@@ -68,6 +68,8 @@ export function DashboardPage() {
             : "Nenhuma familia cadastrada ainda.",
         tone: "social",
         emphasis: data.active_families > 0,
+        actionTo: data.total_families === 0 ? "/families/new" : undefined,
+        actionLabel: data.total_families === 0 ? "Cadastrar familia" : undefined,
       },
       {
         title: "Itens em alerta",
@@ -78,6 +80,8 @@ export function DashboardPage() {
             : "Nenhum item em alerta.",
         tone: data.items_below_minimum_count > 0 ? "attention" : "stock",
         emphasis: data.items_below_minimum_count > 0,
+        actionTo: "/items",
+        actionLabel: "Ver estoque",
       },
       {
         title: "Retiradas pendentes",
@@ -87,6 +91,9 @@ export function DashboardPage() {
             ? "Agendamentos ainda nao concluidos."
             : "Nenhuma retirada pendente.",
         tone: data.pending_schedules > 0 ? "delivery" : "neutral",
+        actionTo: data.pending_schedules === 0 ? "/deliveries" : undefined,
+        actionLabel:
+          data.pending_schedules === 0 ? "Planejar entrega" : undefined,
       },
       {
         title: "Entregas no mes",
@@ -293,9 +300,14 @@ export function DashboardPage() {
           </div>
 
           {data.basket_summaries.length === 0 ? (
-            <p className="empty-state">
-              Nenhum tipo de cesta ativo. Comece configurando uma cesta padrao.
-            </p>
+            <div className="empty-state empty-state--with-action">
+              <span>
+                Nenhum tipo de cesta ativo. Comece configurando uma cesta padrao.
+              </span>
+              <Link className="empty-state__action" to="/basket-types">
+                Montar cestas
+              </Link>
+            </div>
           ) : (
             <div className="stack-list">
               {data.basket_summaries.map((basket) => (
@@ -325,9 +337,9 @@ export function DashboardPage() {
           </div>
 
           {data.upcoming_revaluations.length === 0 ? (
-            <p className="empty-state">
+            <div className="empty-state">
               Nenhuma reavaliacao proxima. O acompanhamento esta em dia.
-            </p>
+            </div>
           ) : (
             <div className="stack-list">
               {data.upcoming_revaluations.map((item) => (
@@ -359,10 +371,15 @@ export function DashboardPage() {
           </div>
 
           {data.stock_alerts.length === 0 ? (
-            <p className="empty-state">
-              Nenhum item em alerta. O estoque esta dentro dos limites
-              cadastrados.
-            </p>
+            <div className="empty-state empty-state--with-action">
+              <span>
+                Nenhum item em alerta. O estoque esta dentro dos limites
+                cadastrados.
+              </span>
+              <Link className="empty-state__action" to="/items">
+                Ver estoque
+              </Link>
+            </div>
           ) : (
             <DataTable caption="Itens abaixo do minimo">
               <thead>

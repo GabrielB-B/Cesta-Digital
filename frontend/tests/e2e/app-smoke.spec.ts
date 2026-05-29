@@ -261,6 +261,28 @@ test("mobile shell opens drawer navigation and compact account menu", async ({ p
   await expect(page.getByRole("menuitem", { name: "Sair" })).toBeVisible();
 });
 
+test("desktop sidebar collapses and account logout returns to login", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/login");
+
+  await page.getByLabel("Nome de login").fill("admin");
+  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByRole("button", { name: "Entrar" }).click();
+
+  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+
+  await page.getByRole("button", { name: "Recolher menu lateral" }).click();
+  await expect(page.getByRole("button", { name: "Expandir menu lateral" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Expandir menu lateral" }).click();
+  await expect(page.getByRole("button", { name: "Recolher menu lateral" })).toBeVisible();
+
+  await page.getByRole("button", { name: /Conta de Admin Homologacao/i }).click();
+  await page.getByRole("menuitem", { name: "Sair" }).click();
+
+  await expect(page.getByLabel("Nome de login")).toBeVisible();
+});
+
 test("password recovery request shows safe feedback", async ({ page }) => {
   await page.goto("/login");
 

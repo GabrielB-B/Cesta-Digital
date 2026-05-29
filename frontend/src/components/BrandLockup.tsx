@@ -7,6 +7,7 @@ interface BrandLockupProps {
   eyebrow?: string;
   title?: string;
   subtitle?: string;
+  markOnly?: boolean;
 }
 
 export function BrandLockup({
@@ -14,9 +15,18 @@ export function BrandLockup({
   eyebrow,
   title = "Cesta Digital",
   subtitle = "UPG | Gestao social e operacional",
+  markOnly = false,
 }: BrandLockupProps) {
+  const className = [
+    "brand-lockup",
+    `brand-lockup--${variant}`,
+    markOnly ? "brand-lockup--mark-only" : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={`brand-lockup brand-lockup--${variant}`} translate="no">
+    <div className={className} translate="no">
       <div className="brand-lockup__mark-shell" aria-hidden="true">
         <img
           className="brand-lockup__mark"
@@ -28,11 +38,13 @@ export function BrandLockup({
         />
       </div>
 
-      <div className="brand-lockup__content">
-        {eyebrow ? <span className="brand-lockup__eyebrow">{eyebrow}</span> : null}
-        <strong className="brand-lockup__title">{title}</strong>
-        {subtitle ? <p className="brand-lockup__subtitle">{subtitle}</p> : null}
-      </div>
+      {markOnly ? null : (
+        <div className="brand-lockup__content">
+          {eyebrow ? <span className="brand-lockup__eyebrow">{eyebrow}</span> : null}
+          <strong className="brand-lockup__title">{title}</strong>
+          {subtitle ? <p className="brand-lockup__subtitle">{subtitle}</p> : null}
+        </div>
+      )}
     </div>
   );
 }
