@@ -54,7 +54,7 @@ function formatRole(role: string): string {
   }
 
   if (role === "lider_social") {
-    return "Lider social";
+    return "Lideranca social";
   }
 
   if (role === "operador") {

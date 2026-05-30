@@ -165,6 +165,46 @@ Decisoes aplicadas:
 - O estado colapsado continua persistido em `localStorage`.
 - O mobile foi preservado: em telas pequenas, o mesmo botao abre o menu lateral temporario.
 
+## Rodada Administrativa - Auditoria e Usuarios - 2026-05-29
+
+Foco desta rodada:
+
+- Tornar a Auditoria compreensivel para administradores nao tecnicos.
+- Reforcar visualmente que Usuarios e Auditoria sao areas administrativas.
+- Melhorar legibilidade do dark theme em telas densas de tabela.
+- Corrigir tabelas e botoes para nao quebrarem visualmente.
+
+Controle de acesso confirmado:
+
+- Menu lateral/mobile mostra `Usuarios` e `Auditoria` apenas para perfil `admin`.
+- Rotas frontend `/users` e `/audit-logs` usam `RoleRoute allowedRoles={["admin"]}`.
+- Backend protege `/users`, `/users/roles`, `/audit-logs` e `/audit-logs/export` com `require_any_role("admin")`.
+- Usuario sem perfil admin recebe tela amigavel de `Acesso restrito`.
+
+Ajustes aplicados em Auditoria:
+
+- Eventos tecnicos passaram a ter rotulos humanos na tabela principal, como `Login realizado`, `Tentativa de login falhou`, `Usuario alterado` e `Entrega concluida`.
+- Codigos tecnicos, request id, IP e JSON original sairam da tabela principal e ficaram em `Ver detalhes`.
+- Tabela principal passou a responder: quando, acao, usuario, area, resultado e detalhes.
+- Foram adicionados badges de area/resultado com cores contidas para sucesso, atencao, falha e alteracao.
+- Mobile passou a usar cards de eventos em vez de depender da tabela larga.
+- Filtros ficaram em linguagem administrativa: usuario, tipo de acao, area e periodo.
+
+Ajustes aplicados em Usuarios:
+
+- Tela passou a se chamar `Usuarios e permissoes`.
+- Perfis tecnicos sao exibidos como `Administrador`, `Lideranca social` e `Operador`.
+- Formulario ganhou explicacao clara das permissoes sem alterar valores internos (`admin`, `lider_social`, `operador`).
+- Tabela ganhou largura melhor, badges de permissao/status, email/login sem quebra feia e botao `Editar` sem quebrar linha.
+
+Validacao desta rodada:
+
+- `npm run lint`: OK.
+- `npm run build`: OK.
+- `npm run test:e2e`: OK, 9 testes.
+- `backend/.venv/Scripts/python.exe -m pytest`: OK, 26 testes.
+- Screenshots Playwright conferidos em Auditoria desktop, Auditoria mobile e Usuarios desktop.
+
 ## Retomada do Ponto Exato
 
 Estado reconstruido a partir do commit `f5d0fa1`, com a rodada de identidade visual e componentizacao ja aplicada.

@@ -2,6 +2,7 @@ from typing import Annotated
 import csv
 import io
 import json
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
@@ -25,6 +26,8 @@ def list_audit_logs_endpoint(
     event_type: str | None = Query(default=None),
     actor_email: str | None = Query(default=None),
     entity_type: str | None = Query(default=None),
+    created_from: datetime | None = Query(default=None),
+    created_to: datetime | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ):
@@ -33,6 +36,8 @@ def list_audit_logs_endpoint(
         event_type=event_type,
         actor_email=actor_email,
         entity_type=entity_type,
+        created_from=created_from,
+        created_to=created_to,
         limit=limit,
         offset=offset,
     )
@@ -45,6 +50,8 @@ def export_audit_logs_endpoint(
     event_type: str | None = Query(default=None),
     actor_email: str | None = Query(default=None),
     entity_type: str | None = Query(default=None),
+    created_from: datetime | None = Query(default=None),
+    created_to: datetime | None = Query(default=None),
     limit: int = Query(default=5000, ge=1, le=10000),
 ):
     rows = export_audit_logs(
@@ -52,6 +59,8 @@ def export_audit_logs_endpoint(
         event_type=event_type,
         actor_email=actor_email,
         entity_type=entity_type,
+        created_from=created_from,
+        created_to=created_to,
         limit=limit,
     )
     buffer = io.StringIO()

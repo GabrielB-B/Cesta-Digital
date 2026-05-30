@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -13,6 +14,8 @@ def _build_audit_filters(
     event_type: str | None = None,
     actor_email: str | None = None,
     entity_type: str | None = None,
+    created_from: datetime | None = None,
+    created_to: datetime | None = None,
 ):
     filters = []
 
@@ -24,6 +27,12 @@ def _build_audit_filters(
 
     if entity_type:
         filters.append(AuditLog.entity_type == entity_type.strip())
+
+    if created_from:
+        filters.append(AuditLog.created_at >= created_from)
+
+    if created_to:
+        filters.append(AuditLog.created_at <= created_to)
 
     return filters
 
@@ -62,6 +71,8 @@ def list_audit_logs(
     event_type: str | None = None,
     actor_email: str | None = None,
     entity_type: str | None = None,
+    created_from: datetime | None = None,
+    created_to: datetime | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> dict[str, object]:
@@ -69,6 +80,8 @@ def list_audit_logs(
         event_type=event_type,
         actor_email=actor_email,
         entity_type=entity_type,
+        created_from=created_from,
+        created_to=created_to,
     )
 
     total_stmt = select(func.count(AuditLog.id))
@@ -95,12 +108,16 @@ def export_audit_logs(
     event_type: str | None = None,
     actor_email: str | None = None,
     entity_type: str | None = None,
+    created_from: datetime | None = None,
+    created_to: datetime | None = None,
     limit: int = 5000,
 ) -> list[AuditLog]:
     filters = _build_audit_filters(
         event_type=event_type,
         actor_email=actor_email,
         entity_type=entity_type,
+        created_from=created_from,
+        created_to=created_to,
     )
     stmt = select(AuditLog).order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
 

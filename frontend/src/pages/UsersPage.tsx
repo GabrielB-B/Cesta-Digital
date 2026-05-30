@@ -1,5 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { api } from "../api/client";
+import { DataTable } from "../components/DataTable";
+import { PageHeader } from "../components/PageHeader";
+import { PanelHeader } from "../components/PanelHeader";
+import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateTime } from "../utils/format";
 import { isStrongPassword, PASSWORD_POLICY_HINT } from "../utils/password";
@@ -19,6 +23,34 @@ const initialFormState = {
   is_active: true,
   roles: [] as string[],
 };
+
+const roleLabels: Record<string, string> = {
+  admin: "Administrador",
+  lider_social: "Lideranca social",
+  operador: "Operador",
+};
+
+const roleDescriptions: Record<string, string> = {
+  admin: "Acesso completo a usuarios, auditoria e configuracoes administrativas.",
+  lider_social: "Acompanha familias, beneficios, avaliacoes sociais e financeiro.",
+  operador: "Cuida de estoque, tipos de cesta, agendamentos e entregas.",
+};
+
+function formatRole(role: string): string {
+  return roleLabels[role] ?? role;
+}
+
+function formatRoleDescription(role: string, fallback?: string | null): string {
+  return roleDescriptions[role] ?? fallback ?? "Permissao operacional do sistema.";
+}
+
+function formatLastLogin(value: string | null): string {
+  if (!value) {
+    return "Nunca entrou";
+  }
+
+  return formatDateTime(value);
+}
 
 export function UsersPage() {
   const [users, setUsers] = useState<UserAdminResponse[]>([]);
@@ -44,7 +76,7 @@ export function UsersPage() {
       setUsers(usersResponse.data);
       setRoles(rolesResponse.data);
     } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel carregar os dados de usuarios."));
+      setError(getApiErrorMessage(err, "Nao foi possivel carregar os usuarios."));
     } finally {
       setIsLoading(false);
     }
@@ -57,6 +89,15 @@ export function UsersPage() {
   const editingUser = useMemo(() => {
     return users.find((user) => user.id === editingUserId) ?? null;
   }, [editingUserId, users]);
+
+  const summary = useMemo(() => {
+    return {
+      total: users.length,
+      active: users.filter((user) => user.is_active).length,
+      admins: users.filter((user) => user.roles.includes("admin")).length,
+      inactive: users.filter((user) => !user.is_active).length,
+    };
+  }, [users]);
 
   function resetForm() {
     setEditingUserId(null);
@@ -88,19 +129,21 @@ export function UsersPage() {
       is_active: user.is_active,
       roles: user.roles,
     });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
     if (!formData.name.trim() || !formData.login_name.trim() || !formData.email.trim()) {
-      setError("Nome, login e email sao obrigatorios.");
+      setError("Nome, login e email de recuperacao sao obrigatorios.");
       return;
     }
 
     if (formData.roles.length === 0) {
-      setError("Selecione pelo menos um perfil.");
+      setError("Selecione pelo menos uma permissao de acesso.");
       return;
     }
 
@@ -174,30 +217,43 @@ export function UsersPage() {
   }
 
   return (
-    <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Administracao</p>
-          <h2>Usuarios e perfis</h2>
-          <p className="hero-card__description">
-            Gerencie acessos, perfis e status de operadores, lideranca social e
-            administradores do sistema.
-          </p>
-        </div>
-      </section>
-
-      <section className="content-grid">
-        <form onSubmit={handleSubmit} className="panel-card form-panel">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">{editingUser ? "Edicao" : "Novo usuario"}</p>
-              <h3>{editingUser ? "Editar usuario" : "Cadastrar usuario"}</h3>
+    <div className="page-stack users-page">
+      <PageHeader
+        eyebrow="Administracao"
+        title="Usuarios e permissoes"
+        description="Gerencie quem pode acessar o sistema e quais funcoes cada pessoa pode usar."
+        meta={
+          <div className="audit-summary-grid" aria-label="Resumo de usuarios">
+            <div className="audit-summary-card">
+              <span>Usuarios</span>
+              <strong>{summary.total}</strong>
+            </div>
+            <div className="audit-summary-card">
+              <span>Ativos</span>
+              <strong>{summary.active}</strong>
+            </div>
+            <div className="audit-summary-card">
+              <span>Administradores</span>
+              <strong>{summary.admins}</strong>
+            </div>
+            <div className="audit-summary-card">
+              <span>Inativos</span>
+              <strong>{summary.inactive}</strong>
             </div>
           </div>
+        }
+      />
+
+      <section className="content-grid users-admin-grid">
+        <form onSubmit={handleSubmit} className="panel-card form-panel users-form-panel">
+          <PanelHeader
+            eyebrow={editingUser ? "Edicao" : "Novo acesso"}
+            title={editingUser ? "Editar usuario" : "Cadastrar usuario"}
+          />
 
           <div className="form-grid">
             <label className="form__group">
-              <span>Nome</span>
+              <span>Nome da pessoa</span>
               <input
                 value={formData.name}
                 onChange={(event) =>
@@ -206,12 +262,13 @@ export function UsersPage() {
                     name: event.target.value,
                   }))
                 }
+                placeholder="Ex.: Maria Souza"
                 required
               />
             </label>
 
             <label className="form__group">
-              <span>Nome de login</span>
+              <span>Login de acesso</span>
               <input
                 value={formData.login_name}
                 onChange={(event) =>
@@ -221,7 +278,7 @@ export function UsersPage() {
                   }))
                 }
                 autoComplete="username"
-                placeholder="Ex.: admin"
+                placeholder="Ex.: maria.souza"
                 pattern="[a-z0-9._-]{3,80}"
                 spellCheck={false}
                 required
@@ -239,6 +296,7 @@ export function UsersPage() {
                     email: event.target.value,
                   }))
                 }
+                placeholder="nome@dominio.com"
                 required
               />
             </label>
@@ -255,6 +313,7 @@ export function UsersPage() {
                       password: event.target.value,
                     }))
                   }
+                  autoComplete="new-password"
                   required
                 />
               </label>
@@ -263,41 +322,49 @@ export function UsersPage() {
 
           <p className="table-muted">{PASSWORD_POLICY_HINT}</p>
 
-          <div className="checkbox-grid">
-            <label className="checkbox-card">
-              <input
-                type="checkbox"
-                checked={formData.is_active}
-                onChange={(event) =>
-                  setFormData((previous) => ({
-                    ...previous,
-                    is_active: event.target.checked,
-                  }))
-                }
-              />
-              <span>Usuario ativo</span>
-            </label>
+          <div className="users-permission-block">
+            <div>
+              <p className="eyebrow">Permissoes</p>
+              <h3>Funcoes liberadas</h3>
+            </div>
 
-            {roles.map((role) => (
-              <label key={role.id} className="checkbox-card">
+            <div className="checkbox-grid role-choice-grid">
+              <label className="checkbox-card role-choice">
                 <input
                   type="checkbox"
-                  checked={formData.roles.includes(role.name)}
-                  onChange={() => toggleRole(role.name)}
+                  checked={formData.is_active}
+                  onChange={(event) =>
+                    setFormData((previous) => ({
+                      ...previous,
+                      is_active: event.target.checked,
+                    }))
+                  }
                 />
-                <span>{role.name}</span>
+                <span>
+                  <strong>Usuario ativo</strong>
+                  <small>Pode entrar no sistema enquanto estiver ativo.</small>
+                </span>
               </label>
-            ))}
+
+              {roles.map((role) => (
+                <label key={role.id} className="checkbox-card role-choice">
+                  <input
+                    type="checkbox"
+                    checked={formData.roles.includes(role.name)}
+                    onChange={() => toggleRole(role.name)}
+                  />
+                  <span>
+                    <strong>{formatRole(role.name)}</strong>
+                    <small>{formatRoleDescription(role.name, role.description)}</small>
+                  </span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {editingUser ? (
             <div className="inline-panel">
-              <div className="panel-card__header">
-                <div>
-                  <p className="eyebrow">Senha</p>
-                  <h3>Redefinir senha</h3>
-                </div>
-              </div>
+              <PanelHeader eyebrow="Seguranca" title="Redefinir senha" />
 
               <p className="table-muted">{PASSWORD_POLICY_HINT}</p>
 
@@ -327,11 +394,7 @@ export function UsersPage() {
             </div>
           ) : null}
 
-          {error ? (
-            <p className="status-error" role="alert" aria-live="polite">
-              {error}
-            </p>
-          ) : null}
+          {error ? <StateMessage variant="error">{error}</StateMessage> : null}
 
           <div className="panel-actions panel-actions--spread">
             <button
@@ -352,48 +415,59 @@ export function UsersPage() {
           </div>
         </form>
 
-        <section className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Consulta</p>
-              <h3>Usuarios cadastrados</h3>
-            </div>
-          </div>
+        <section className="panel-card users-table-panel">
+          <PanelHeader eyebrow="Permissoes" title="Pessoas com acesso" />
 
           {isLoading ? (
-            <p className="empty-state">Carregando usuarios...</p>
+            <StateMessage variant="loading">Carregando usuarios...</StateMessage>
           ) : users.length === 0 ? (
-            <p className="empty-state">Nenhum usuario cadastrado.</p>
+            <StateMessage>Nenhum usuario cadastrado ainda.</StateMessage>
           ) : (
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Login</th>
-                    <th>Email</th>
-                    <th>Perfis</th>
-                    <th>Status</th>
-                    <th>Ultimo login</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td>{user.name}</td>
-                      <td>{user.login_name}</td>
-                      <td>{user.email}</td>
-                      <td>{user.roles.join(", ")}</td>
-                      <td>
-                        {user.is_active ? (
-                          <span className="pill pill--success">Ativo</span>
-                        ) : (
-                          <span className="pill pill--danger">Inativo</span>
-                        )}
-                      </td>
-                      <td>{formatDateTime(user.last_login_at)}</td>
-                      <td>
+            <DataTable caption="Usuarios e permissoes cadastrados">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Login</th>
+                  <th>Email</th>
+                  <th>Permissoes</th>
+                  <th>Status</th>
+                  <th>Ultima entrada</th>
+                  <th>Acoes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td className="table-cell--truncate" title={user.name}>
+                      <strong>{user.name}</strong>
+                    </td>
+                    <td className="table-cell--nowrap" title={user.login_name}>
+                      <span className="inline-code">@{user.login_name}</span>
+                    </td>
+                    <td className="table-cell--truncate" title={user.email}>
+                      {user.email}
+                    </td>
+                    <td>
+                      <div className="role-badge-list">
+                        {user.roles.map((role) => (
+                          <span className="role-badge" key={`${user.id}-${role}`}>
+                            {formatRole(role)}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td>
+                      {user.is_active ? (
+                        <span className="audit-status audit-status--success">Ativo</span>
+                      ) : (
+                        <span className="audit-status audit-status--danger">Inativo</span>
+                      )}
+                    </td>
+                    <td className="table-cell--nowrap">
+                      {formatLastLogin(user.last_login_at)}
+                    </td>
+                    <td>
+                      <div className="table-actions">
                         <button
                           type="button"
                           className="button button--secondary button--small"
@@ -401,12 +475,12 @@ export function UsersPage() {
                         >
                           Editar
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </DataTable>
           )}
         </section>
       </section>

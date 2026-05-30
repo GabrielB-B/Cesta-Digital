@@ -9,6 +9,15 @@ const currentUser = {
   roles: ["admin", "lider_social", "operador"],
 };
 
+const operatorUser = {
+  id: 2,
+  name: "Operador Homologacao",
+  login_name: "operador",
+  email: "operador@cestadigital.app",
+  is_active: true,
+  roles: ["operador"],
+};
+
 const family = {
   id: 1,
   internal_code: "FAM-0001",
@@ -107,6 +116,54 @@ const delivery = {
   notes: "Entrega anterior",
 };
 
+const users = [
+  {
+    ...currentUser,
+    last_login_at: "2026-05-10T09:00:00",
+    created_at: "2026-05-01T08:00:00",
+    updated_at: "2026-05-01T08:00:00",
+  },
+  {
+    ...operatorUser,
+    last_login_at: null,
+    created_at: "2026-05-01T08:00:00",
+    updated_at: "2026-05-01T08:00:00",
+  },
+];
+
+const roleOptions = [
+  { id: 1, name: "admin", description: "Administrador" },
+  { id: 2, name: "lider_social", description: "Lideranca social" },
+  { id: 3, name: "operador", description: "Operador" },
+];
+
+const auditLogs = [
+  {
+    id: 1,
+    event_type: "auth.login_succeeded",
+    entity_type: "user",
+    entity_id: "1",
+    actor_user_id: 1,
+    actor_email: "admin@cestadigital.app",
+    request_id: "c543188e-0000-4000-9000-1111111127ff",
+    ip_address: "127.0.0.1",
+    details: { roles: ["admin"], login_name: "admin" },
+    created_at: "2026-05-30T03:51:00",
+  },
+  {
+    id: 2,
+    event_type: "auth.login_failed",
+    entity_type: "user",
+    entity_id: "2",
+    actor_user_id: null,
+    actor_email: "operador@cestadigital.app",
+    request_id: "d621188e-0000-4000-9000-2222222238aa",
+    ip_address: "127.0.0.1",
+    details: { reason: "invalid_password", login_name: "operador" },
+    created_at: "2026-05-30T03:50:00",
+  },
+];
+
 async function fulfillJson(route: Route, body: unknown, headers = {}) {
   await route.fulfill({
     status: 200,
@@ -116,16 +173,16 @@ async function fulfillJson(route: Route, body: unknown, headers = {}) {
   });
 }
 
-async function mockApi(page: Page) {
-  await page.route("**/auth/me", async (route) => fulfillJson(route, currentUser));
+async function mockApi(page: Page, user = currentUser) {
+  await page.route("**/auth/me", async (route) => fulfillJson(route, user));
   await page.route("**/auth/login", async (route) => fulfillJson(route, {
     access_token: "test-token",
     token_type: "bearer",
-    user_id: currentUser.id,
-    name: currentUser.name,
-    login_name: currentUser.login_name,
-    email: currentUser.email,
-    roles: currentUser.roles,
+    user_id: user.id,
+    name: user.name,
+    login_name: user.login_name,
+    email: user.email,
+    roles: user.roles,
   }));
   await page.route("**/auth/logout", async (route) => {
     await route.fulfill({ status: 204 });
@@ -194,6 +251,37 @@ async function mockApi(page: Page) {
       body: JSON.stringify({ ...delivery, id: 2 }),
     });
   });
+  await page.route("**/users/roles", async (route) =>
+    fulfillJson(route, roleOptions)
+  );
+  await page.route("**/users", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+
+    if (route.request().method() === "GET") {
+      await fulfillJson(route, users);
+      return;
+    }
+
+    await fulfillJson(route, users[0]);
+  });
+  await page.route("**/audit-logs/export**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "text/csv",
+      body: "id,event_type\n1,auth.login_succeeded\n",
+    });
+  });
+  await page.route("**/audit-logs?**", async (route) =>
+    fulfillJson(route, {
+      total: auditLogs.length,
+      limit: 25,
+      offset: 0,
+      items: auditLogs,
+    })
+  );
 }
 
 test.beforeEach(async ({ page }) => {
@@ -336,6 +424,47 @@ test("desktop sidebar collapses and account logout returns to login", async ({ p
   await page.getByRole("menuitem", { name: "Sair" }).click();
 
   await expect(page.getByLabel("Nome de login")).toBeVisible();
+});
+
+test("admin pages stay restricted for non-admin users", async ({ page }) => {
+  await page.unroute("**/auth/me");
+  await page.route("**/auth/me", async (route) => fulfillJson(route, operatorUser));
+
+  await page.goto("/");
+
+  const mainNav = page.getByLabel("Navegacao principal");
+  await expect(mainNav.getByRole("link", { name: /Usuarios/i })).toHaveCount(0);
+  await expect(mainNav.getByRole("link", { name: /Auditoria/i })).toHaveCount(0);
+
+  await page.goto("/users");
+  await expect(page.getByRole("heading", { name: "Acesso restrito" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Voltar ao painel" })).toBeVisible();
+
+  await page.goto("/audit-logs");
+  await expect(page.getByRole("heading", { name: "Acesso restrito" })).toBeVisible();
+});
+
+test("audit page uses administrative language with technical details on demand", async ({ page }) => {
+  await page.goto("/audit-logs");
+
+  await expect(page.getByRole("heading", { name: "Auditoria do sistema" })).toBeVisible();
+  const auditTable = page.getByRole("table", {
+    name: "Eventos recentes da auditoria do sistema",
+  });
+  await expect(auditTable.getByText("Login realizado", { exact: true })).toBeVisible();
+  await expect(auditTable.getByText("Tentativa de login falhou", { exact: true })).toBeVisible();
+  await expect(auditTable.getByText("Sucesso", { exact: true })).toBeVisible();
+  await expect(page.locator(".audit-panel .table-wrapper")).not.toContainText("auth.login_succeeded");
+  await expect(page.locator(".audit-panel .table-wrapper")).not.toContainText('{"roles"');
+
+  await page.getByRole("button", { name: "Ver detalhes" }).first().click();
+
+  const detailsDialog = page.getByRole("dialog", { name: "Login realizado" });
+  await expect(detailsDialog).toBeVisible();
+  await expect(page.getByText("Codigo tecnico")).toBeVisible();
+  await expect(detailsDialog.getByText("auth.login_succeeded", { exact: true })).toBeVisible();
+  await expect(detailsDialog.getByText("Perfis", { exact: true })).toBeVisible();
+  await expect(detailsDialog.getByText("Administrador", { exact: true })).toBeVisible();
 });
 
 test("password recovery request shows safe feedback", async ({ page }) => {

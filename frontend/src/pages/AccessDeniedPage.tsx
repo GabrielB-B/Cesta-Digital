@@ -10,7 +10,7 @@ function formatRole(role: string): string {
   }
 
   if (role === "lider_social") {
-    return "Lider social";
+    return "Lideranca social";
   }
 
   if (role === "operador") {
@@ -28,9 +28,9 @@ export function AccessDeniedPage({ allowedRoles = [] }: AccessDeniedPageProps) {
       <section className="hero-card">
         <div>
           <p className="eyebrow">Acesso restrito</p>
-          <h2>Sem permissao para este modulo</h2>
+          <h2>Acesso restrito</h2>
           <p className="hero-card__description">
-            Seu perfil atual nao possui acesso a esta area do Cesta Digital.
+            Esta area e exclusiva para administradores do sistema.
             {requiredRoles ? ` Perfis autorizados: ${requiredRoles}.` : ""}
           </p>
         </div>
@@ -38,7 +38,7 @@ export function AccessDeniedPage({ allowedRoles = [] }: AccessDeniedPageProps) {
 
       <div className="panel-actions">
         <Link to="/" className="button button--secondary button--link">
-          Voltar ao dashboard
+          Voltar ao painel
         </Link>
       </div>
     </div>
