@@ -665,11 +665,7 @@ export function FamilyEditPage() {
           </label>
         </FormSection>
 
-        <FormSection
-          id="vinculo-igreja"
-          eyebrow="Renda e vinculo"
-          title="Igreja, UPG e participacao"
-        >
+        <FormSection eyebrow="Condicao economica" title="Renda e despesas">
           <label className="form__group">
             <span>Renda mensal total</span>
             <CurrencyInput
@@ -689,7 +685,13 @@ export function FamilyEditPage() {
               onBlur={handleCurrencyBlur}
             />
           </label>
+        </FormSection>
 
+        <FormSection
+          id="vinculo-igreja"
+          eyebrow="Vinculo com a igreja"
+          title="Igreja, UPG e participacao"
+        >
           <label className="checkbox-card">
             <input
               type="checkbox"
@@ -720,7 +722,12 @@ export function FamilyEditPage() {
               placeholder="Ex.: membro, visitante, lider, voluntario, familia acompanhada..."
             />
           </label>
+        </FormSection>
 
+        <FormSection
+          eyebrow="Acesso digital"
+          title="Escolaridade e recursos disponiveis"
+        >
           <label className="form__group">
             <span>Escolaridade do responsavel</span>
             <input
@@ -730,13 +737,7 @@ export function FamilyEditPage() {
               placeholder="Opcional"
             />
           </label>
-        </FormSection>
 
-        <FormSection
-          eyebrow="Acesso digital"
-          title="Comunicação e recursos disponíveis"
-          gridClassName="checkbox-grid"
-        >
           <label className="checkbox-card">
             <input
               type="checkbox"

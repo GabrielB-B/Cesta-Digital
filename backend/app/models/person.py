@@ -26,6 +26,10 @@ class Person(TimestampMixin, Base):
     occupation: Mapped[str | None] = mapped_column(String(100), nullable=True)
     individual_income: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
 
+    attends_church: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    church_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    church_role: Mapped[str | None] = mapped_column(String(120), nullable=True)
+
     has_disability: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     has_chronic_illness: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_pregnant: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

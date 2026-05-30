@@ -39,6 +39,9 @@ class FamilyPersonResponse(BaseModel):
     is_currently_working: bool
     occupation: str | None
     individual_income: Decimal
+    attends_church: bool
+    church_name: str | None
+    church_role: str | None
     has_disability: bool
     has_chronic_illness: bool
     is_pregnant: bool

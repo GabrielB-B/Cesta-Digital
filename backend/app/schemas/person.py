@@ -19,6 +19,9 @@ class PersonBase(BaseModel):
     is_currently_working: bool = False
     occupation: str | None = None
     individual_income: Decimal = Decimal("0.00")
+    attends_church: bool = False
+    church_name: str | None = None
+    church_role: str | None = None
 
     has_disability: bool = False
     has_chronic_illness: bool = False
@@ -50,12 +53,22 @@ class PersonBase(BaseModel):
         if value > date.today():
             raise ValueError("A data de nascimento não pode estar no futuro.")
         return value
+
     @field_validator("individual_income")
     @classmethod
     def validate_individual_income(cls, value: Decimal) -> Decimal:
         if value < 0:
             raise ValueError("A renda individual nao pode ser negativa.")
         return value.quantize(MONEY_QUANTIZER)
+
+    @field_validator("church_name", "church_role")
+    @classmethod
+    def normalize_optional_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+
+        value = value.strip()
+        return value or None
 
 
 class PersonCreate(PersonBase):
@@ -83,6 +96,9 @@ class PersonResponse(BaseModel):
     is_currently_working: bool
     occupation: str | None
     individual_income: Decimal
+    attends_church: bool
+    church_name: str | None
+    church_role: str | None
 
     has_disability: bool
     has_chronic_illness: bool

@@ -30,6 +30,9 @@ class FamiliesApiIntegrationTests(ApiIntegrationTestCase):
             "is_currently_working": True,
             "occupation": "Autonoma",
             "individual_income": 0,
+            "attends_church": False,
+            "church_name": None,
+            "church_role": None,
             "has_disability": False,
             "has_chronic_illness": False,
             "is_pregnant": False,
@@ -176,6 +179,41 @@ class FamiliesApiIntegrationTests(ApiIntegrationTestCase):
         family_detail = family_detail_response.json()
         self.assertEqual(family_detail["monthly_income_total"], "1200.00")
         self.assertEqual(family_detail["income_per_capita"], "600.00")
+
+    def test_person_can_store_individual_church_link(self):
+        family = self.create_family(
+            self.headers,
+            internal_code="FAM-VINCULO-MEMBRO",
+        )
+
+        response = self.client.post(
+            f"/families/{family['id']}/people",
+            json=self._person_payload(
+                full_name="Rita Regina",
+                individual_income=0,
+                attends_church=True,
+                church_name="UPG Central",
+                church_role="Voluntaria do acolhimento",
+                is_family_responsible=False,
+            ),
+            headers=self.headers,
+        )
+
+        self.assertEqual(response.status_code, 201, response.text)
+        payload = response.json()
+        self.assertTrue(payload["attends_church"])
+        self.assertEqual(payload["church_name"], "UPG Central")
+        self.assertEqual(payload["church_role"], "Voluntaria do acolhimento")
+
+        family_detail_response = self.client.get(
+            f"/families/{family['id']}",
+            headers=self.headers,
+        )
+        self.assertEqual(family_detail_response.status_code, 200, family_detail_response.text)
+        person = family_detail_response.json()["people"][0]
+        self.assertTrue(person["attends_church"])
+        self.assertEqual(person["church_name"], "UPG Central")
+        self.assertEqual(person["church_role"], "Voluntaria do acolhimento")
 
     def test_operator_cannot_create_family(self):
         operator_headers = self.login_and_get_headers("operador", "Operador@123")

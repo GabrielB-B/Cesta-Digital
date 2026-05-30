@@ -501,6 +501,7 @@ export function FamilyDetailPage() {
                     <th>Parentesco</th>
                     <th>Ocupacao</th>
                     <th>Renda</th>
+                    <th>Igreja/UPG</th>
                     <th>Responsavel</th>
                     <th>Acoes</th>
                   </tr>
@@ -512,6 +513,11 @@ export function FamilyDetailPage() {
                       <td>{person.kinship}</td>
                       <td>{person.occupation ?? "Nao informado"}</td>
                       <td>{formatCurrency(person.individual_income)}</td>
+                      <td>
+                        {person.attends_church
+                          ? person.church_role || person.church_name || "Sim"
+                          : "Nao informado"}
+                      </td>
                       <td>{person.is_family_responsible ? "Sim" : "Nao"}</td>
                       <td>
                         <div className="table-actions">

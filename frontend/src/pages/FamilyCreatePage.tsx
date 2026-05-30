@@ -561,6 +561,12 @@ export function FamilyCreatePage() {
             />
           </label>
 
+        </FormSection>
+
+        <FormSection
+          eyebrow="Acesso digital"
+          title="Escolaridade e recursos disponiveis"
+        >
           <label className="form__group">
             <span>Escolaridade do responsavel</span>
             <input
@@ -569,6 +575,36 @@ export function FamilyCreatePage() {
               onChange={handleInputChange}
               placeholder="Opcional"
             />
+          </label>
+
+          <label className="checkbox-card">
+            <input
+              type="checkbox"
+              name="has_internet_access"
+              checked={formData.has_internet_access}
+              onChange={handleInputChange}
+            />
+            <span>Tem internet</span>
+          </label>
+
+          <label className="checkbox-card">
+            <input
+              type="checkbox"
+              name="has_mobile_phone"
+              checked={formData.has_mobile_phone}
+              onChange={handleInputChange}
+            />
+            <span>Tem celular</span>
+          </label>
+
+          <label className="checkbox-card">
+            <input
+              type="checkbox"
+              name="has_computer"
+              checked={formData.has_computer}
+              onChange={handleInputChange}
+            />
+            <span>Tem computador</span>
           </label>
         </FormSection>
 

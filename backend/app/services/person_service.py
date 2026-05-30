@@ -66,6 +66,9 @@ def create_person_for_family(
         is_currently_working=payload.is_currently_working,
         occupation=payload.occupation,
         individual_income=payload.individual_income,
+        attends_church=payload.attends_church,
+        church_name=payload.church_name,
+        church_role=payload.church_role,
         has_disability=payload.has_disability,
         has_chronic_illness=payload.has_chronic_illness,
         is_pregnant=payload.is_pregnant,
@@ -147,6 +150,9 @@ def update_person(
     person.is_currently_working = payload.is_currently_working
     person.occupation = payload.occupation
     person.individual_income = payload.individual_income
+    person.attends_church = payload.attends_church
+    person.church_name = payload.church_name
+    person.church_role = payload.church_role
     person.has_disability = payload.has_disability
     person.has_chronic_illness = payload.has_chronic_illness
     person.is_pregnant = payload.is_pregnant

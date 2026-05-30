@@ -19,6 +19,9 @@ export interface FamilyPersonResponse {
   is_currently_working: boolean;
   occupation: string | null;
   individual_income: string;
+  attends_church: boolean;
+  church_name: string | null;
+  church_role: string | null;
   has_disability: boolean;
   has_chronic_illness: boolean;
   is_pregnant: boolean;
@@ -175,6 +178,9 @@ export interface FamilyPersonCreatePayload {
   is_currently_working: boolean;
   occupation: string | null;
   individual_income: number;
+  attends_church: boolean;
+  church_name: string | null;
+  church_role: string | null;
   has_disability: boolean;
   has_chronic_illness: boolean;
   is_pregnant: boolean;

@@ -25,6 +25,9 @@ export function FamilyPersonCreatePage() {
     is_currently_working: false,
     occupation: "",
     individual_income: 0,
+    attends_church: false,
+    church_name: "",
+    church_role: "",
     has_disability: false,
     has_chronic_illness: false,
     is_pregnant: false,
@@ -86,6 +89,9 @@ export function FamilyPersonCreatePage() {
         is_currently_working: formData.is_currently_working,
         occupation: formData.occupation.trim() || null,
         individual_income: Number(formData.individual_income),
+        attends_church: formData.attends_church,
+        church_name: formData.church_name.trim() || null,
+        church_role: formData.church_role.trim() || null,
         has_disability: formData.has_disability,
         has_chronic_illness: formData.has_chronic_illness,
         is_pregnant: formData.is_pregnant,
@@ -222,6 +228,41 @@ export function FamilyPersonCreatePage() {
               value={formData.notes}
               onChange={handleInputChange}
               rows={4}
+            />
+          </label>
+        </FormSection>
+
+        <FormSection
+          eyebrow="Vinculo com igreja"
+          title="Igreja, UPG e participacao do membro"
+        >
+          <label className="checkbox-card">
+            <input
+              type="checkbox"
+              name="attends_church"
+              checked={formData.attends_church}
+              onChange={handleInputChange}
+            />
+            <span>Frequenta igreja ou UPG</span>
+          </label>
+
+          <label className="form__group">
+            <span>Igreja ou UPG</span>
+            <input
+              name="church_name"
+              value={formData.church_name}
+              onChange={handleInputChange}
+              placeholder="Ex.: Sede, congregacao, UPG..."
+            />
+          </label>
+
+          <label className="form__group form__group--wide">
+            <span>Cargo, funcao ou vinculo</span>
+            <input
+              name="church_role"
+              value={formData.church_role}
+              onChange={handleInputChange}
+              placeholder="Ex.: membro, visitante, lider, voluntario, diacono..."
             />
           </label>
         </FormSection>

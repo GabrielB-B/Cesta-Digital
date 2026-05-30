@@ -1148,13 +1148,13 @@ textarea {
   isolation: isolate;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 42%, rgba(223, 87, 157, 0.28), transparent 29%),
-    radial-gradient(circle at 56% 58%, rgba(232, 184, 74, 0.09), transparent 28%),
-    radial-gradient(circle at 74% 72%, rgba(95, 203, 138, 0.1), transparent 36%),
-    linear-gradient(180deg, #0e1411 0%, #121815 54%, #171116 100%);
+    radial-gradient(circle at 50% 48%, rgba(223, 87, 157, 0.32), transparent 34%),
+    radial-gradient(circle at 48% 54%, rgba(232, 184, 74, 0.1), transparent 30%),
+    radial-gradient(circle at 74% 72%, rgba(95, 203, 138, 0.12), transparent 40%),
+    linear-gradient(145deg, #0e1411 0%, #131912 48%, #171116 100%);
   color: var(--text);
   pointer-events: auto;
-  animation: login-success-overlay 1150ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: login-success-overlay 1450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .login-success-overlay::before,
@@ -1180,12 +1180,27 @@ textarea {
 .login-success-overlay__mark {
   position: relative;
   z-index: 1;
-  width: clamp(96px, 10vw, 136px);
-  height: clamp(96px, 10vw, 136px);
+  width: clamp(140px, 14vw, 220px);
+  height: clamp(140px, 14vw, 220px);
   display: grid;
   place-items: center;
   user-select: none;
-  animation: login-success-mark 1150ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  will-change: transform, opacity, filter;
+  animation: login-success-mark 1450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay__mark::before {
+  content: "";
+  position: absolute;
+  inset: -42%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(223, 87, 157, 0.34), transparent 48%),
+    radial-gradient(circle, rgba(232, 184, 74, 0.14), transparent 64%);
+  opacity: 0;
+  transform: scale(0.72);
+  pointer-events: none;
+  animation: login-success-halo 1450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .login-success-overlay__mark .brand-lockup,
@@ -1198,15 +1213,15 @@ textarea {
   pointer-events: none;
   -webkit-user-drag: none;
   filter:
-    drop-shadow(0 18px 30px rgba(0, 0, 0, 0.3))
-    drop-shadow(0 0 24px rgba(223, 87, 157, 0.28))
-    drop-shadow(0 0 12px rgba(232, 184, 74, 0.12));
+    drop-shadow(0 24px 42px rgba(0, 0, 0, 0.36))
+    drop-shadow(0 0 34px rgba(223, 87, 157, 0.36))
+    drop-shadow(0 0 18px rgba(232, 184, 74, 0.15));
 }
 
 .login-success-overlay__mark::after {
   content: "";
   position: absolute;
-  inset: -24%;
+  inset: -28%;
   background: linear-gradient(
     105deg,
     transparent 20%,
@@ -1219,7 +1234,7 @@ textarea {
   mix-blend-mode: screen;
   transform: translateX(-62%) rotate(14deg);
   pointer-events: none;
-  animation: login-success-shine 1150ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: login-success-shine 1450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 @keyframes login-card-enter {
@@ -1299,8 +1314,8 @@ textarea {
     opacity: 0;
   }
 
-  14%,
-  78% {
+  12%,
+  80% {
     opacity: 1;
   }
 
@@ -1312,36 +1327,72 @@ textarea {
 @keyframes login-success-mark {
   0% {
     opacity: 0;
-    transform: scale(0.92);
+    transform: scale(0.82);
+    filter: blur(8px);
   }
 
-  22%,
-  72% {
+  26% {
     opacity: 1;
     transform: scale(1);
+    filter: blur(0);
+  }
+
+  58% {
+    opacity: 1;
+    transform: scale(1.035);
+    filter: blur(0);
+  }
+
+  78% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
   }
 
   100% {
     opacity: 0;
-    transform: scale(1.02);
+    transform: scale(0.96);
+    filter: blur(2px);
   }
 }
 
 @keyframes login-success-shine {
   0%,
-  24% {
+  26% {
     opacity: 0;
     transform: translateX(-62%) rotate(14deg);
   }
 
-  42% {
-    opacity: 0.42;
+  44% {
+    opacity: 0.5;
   }
 
-  58%,
+  62%,
   100% {
     opacity: 0;
     transform: translateX(62%) rotate(14deg);
+  }
+}
+
+@keyframes login-success-halo {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  20% {
+    opacity: 0.84;
+    transform: scale(0.96);
+  }
+
+  62% {
+    opacity: 0.38;
+    transform: scale(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.24);
   }
 }
 
@@ -3204,6 +3255,7 @@ textarea::placeholder {
   }
 
   .login-success-overlay::before,
+  .login-success-overlay__mark::before,
   .login-success-overlay__mark::after {
     display: none;
   }
@@ -3631,8 +3683,8 @@ textarea::placeholder {
   }
 
   .login-success-overlay__mark {
-    width: clamp(76px, 26vw, 104px);
-    height: clamp(76px, 26vw, 104px);
+    width: clamp(112px, 32vw, 144px);
+    height: clamp(112px, 32vw, 144px);
   }
 
   .login-form__label-row {

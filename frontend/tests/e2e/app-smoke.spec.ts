@@ -89,6 +89,9 @@ const familyDetail = {
       is_currently_working: true,
       occupation: "Autonoma",
       individual_income: "600.00",
+      attends_church: true,
+      church_name: "UPG Central",
+      church_role: "Voluntaria",
       has_disability: false,
       has_chronic_illness: false,
       is_pregnant: false,
@@ -390,7 +393,10 @@ test("login brand and loading remain polished on desktop and mobile", async ({ p
   await page.getByLabel("Senha").fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
-  await expect(page.locator(".login-success-overlay .brand-lockup--mark-only")).toBeVisible();
+  const mobileSplashMark = page.locator(".login-success-overlay .brand-lockup--mark-only");
+  await expect(mobileSplashMark).toBeVisible();
+  const mobileSplashBox = await mobileSplashMark.boundingBox();
+  expect(mobileSplashBox?.width ?? 0).toBeGreaterThanOrEqual(96);
   await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
 });
 
@@ -441,6 +447,10 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
   await page.getByLabel("Senha").fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
+  const desktopSplashMark = page.locator(".login-success-overlay .brand-lockup--mark-only");
+  await expect(desktopSplashMark).toBeVisible();
+  const desktopSplashBox = await desktopSplashMark.boundingBox();
+  expect(desktopSplashBox?.width ?? 0).toBeGreaterThanOrEqual(140);
   await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
   await expect(
     page.locator("#conteudo-principal").getByText("Admin Homologacao")
@@ -505,6 +515,22 @@ test("family detail highlights system suggestion and church shortcut", async ({ 
   await expect(page.getByText("Ultima decisao registrada")).toBeVisible();
   await expect(page.getByRole("link", { name: "Igreja/UPG" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Registrar avaliacao" })).toBeVisible();
+});
+
+test("family member edit has its own church link separate from income", async ({ page }) => {
+  await page.goto("/families/1/people/1/edit");
+
+  await expect(
+    page.getByRole("heading", { name: "Igreja, UPG e participacao do membro" })
+  ).toBeVisible();
+  await expect(page.getByRole("spinbutton", { name: "Renda individual" })).toBeVisible();
+  await expect(page.getByLabel("Frequenta igreja ou UPG")).toBeChecked();
+  await expect(page.getByRole("textbox", { name: "Igreja ou UPG" })).toHaveValue(
+    "UPG Central"
+  );
+  await expect(page.getByRole("textbox", { name: "Cargo, funcao ou vinculo" })).toHaveValue(
+    "Voluntaria"
+  );
 });
 
 test("mobile shell opens drawer navigation and compact account menu", async ({ page }) => {
