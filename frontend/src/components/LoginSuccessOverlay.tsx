@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { BrandLockup } from "./BrandLockup";
 
-const SPLASH_VIDEO_START_SECONDS = 2.82;
-const SPLASH_VIDEO_END_SECONDS = 5.4;
+const SPLASH_VIDEO_START_SECONDS = 3.05;
+const SPLASH_VIDEO_END_SECONDS = 6.28;
+const SPLASH_VIDEO_PLAYBACK_RATE = 1.28;
 
 export function LoginSuccessOverlay() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -50,6 +51,7 @@ export function LoginSuccessOverlay() {
     hasStartedVideoRef.current = true;
 
     try {
+      video.playbackRate = SPLASH_VIDEO_PLAYBACK_RATE;
       video.currentTime = SPLASH_VIDEO_START_SECONDS;
     } catch {
       setHasVideoFailed(true);
