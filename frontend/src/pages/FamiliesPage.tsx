@@ -9,6 +9,7 @@ import { PaginationControls } from "../components/PaginationControls";
 import { StateMessage } from "../components/StateMessage";
 import type { FamilyListItemResponse } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
+import { formatCurrency } from "../utils/format";
 
 const PAGE_SIZE = 25;
 
@@ -20,13 +21,6 @@ const familyStatusOptions = [
   { value: "inapta", label: "Inapta" },
   { value: "inativa", label: "Inativa" },
 ];
-
-function formatCurrency(value: string): string {
-  return Number(value).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
 
 function formatStatus(status: string): string {
   return (

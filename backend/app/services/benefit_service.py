@@ -41,6 +41,7 @@ def create_benefit(
     current_user: User,
 ) -> Benefit:
     family = _validate_family_and_person(db, family_id, payload.person_id)
+    previous_income_total = family.monthly_income_total
 
     benefit = Benefit(
         family_id=family_id,
@@ -57,7 +58,11 @@ def create_benefit(
     db.add(benefit)
     db.flush()
 
-    recalculate_family_summary(db, family)
+    recalculate_family_summary(
+        db,
+        family,
+        minimum_income_total=previous_income_total,
+    )
     family.updated_by_user_id = current_user.id
     record_audit_log(
         db,

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { getApiErrorMessage } from "../utils/api-error";
-import { formatTodayForInput } from "../utils/format";
+import { formatCurrency, formatTodayForInput } from "../utils/format";
 import type {
   EligibilityPreviewResponse,
   FamilyAssessmentCreatePayload,
@@ -153,13 +153,6 @@ export function FamilyAssessmentCreatePage() {
     } finally {
       setIsSubmitting(false);
     }
-  }
-
-  function formatCurrency(value: string): string {
-    return Number(value).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
   }
 
   return (

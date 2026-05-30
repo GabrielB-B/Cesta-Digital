@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
+MONEY_QUANTIZER = Decimal("0.01")
+
 
 class PersonBase(BaseModel):
     full_name: str
@@ -48,6 +50,12 @@ class PersonBase(BaseModel):
         if value > date.today():
             raise ValueError("A data de nascimento não pode estar no futuro.")
         return value
+    @field_validator("individual_income")
+    @classmethod
+    def validate_individual_income(cls, value: Decimal) -> Decimal:
+        if value < 0:
+            raise ValueError("A renda individual nao pode ser negativa.")
+        return value.quantize(MONEY_QUANTIZER)
 
 
 class PersonCreate(PersonBase):

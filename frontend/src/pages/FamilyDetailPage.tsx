@@ -2,12 +2,64 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { getApiErrorMessage } from "../utils/api-error";
-import { formatDateOnly } from "../utils/format";
-import type { FamilyDetailResponse } from "../types/family";
+import { formatCurrency, formatDateOnly } from "../utils/format";
+import type {
+  EligibilityPreviewResponse,
+  FamilyAssessmentResponse,
+  FamilyDetailResponse,
+} from "../types/family";
+
+const familyStatusLabels: Record<string, string> = {
+  apta_recorrente: "Apta recorrente",
+  apta_emergencial: "Apta emergencial",
+  em_analise: "Em analise",
+  inapta: "Inapta",
+  inativa: "Inativa",
+};
+
+const priorityLabels: Record<string, string> = {
+  alta: "Alta",
+  media: "Media",
+  baixa: "Baixa",
+};
+
+function formatFamilyStatus(status: string | null | undefined): string {
+  if (!status) {
+    return "Nao informado";
+  }
+
+  return familyStatusLabels[status] ?? status;
+}
+
+function formatPriority(priority: string | null | undefined): string {
+  if (!priority) {
+    return "Nao informado";
+  }
+
+  return priorityLabels[priority] ?? priority;
+}
+
+function getLatestAssessment(
+  assessments: FamilyAssessmentResponse[]
+): FamilyAssessmentResponse | null {
+  return [...assessments].sort((first, second) => {
+    const dateDiff =
+      new Date(second.assessment_date).getTime() -
+      new Date(first.assessment_date).getTime();
+
+    if (dateDiff !== 0) {
+      return dateDiff;
+    }
+
+    return second.id - first.id;
+  })[0] ?? null;
+}
 
 export function FamilyDetailPage() {
   const { familyId } = useParams();
   const [family, setFamily] = useState<FamilyDetailResponse | null>(null);
+  const [eligibilityPreview, setEligibilityPreview] =
+    useState<EligibilityPreviewResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [error, setError] = useState("");
@@ -22,15 +74,25 @@ export function FamilyDetailPage() {
       setIsLoading(true);
       setError("");
 
-      const response = await api.get<FamilyDetailResponse>(
-        `/families/${familyId}`
-      );
+      const [familyResult, previewResult] = await Promise.allSettled([
+        api.get<FamilyDetailResponse>(`/families/${familyId}`),
+        api.get<EligibilityPreviewResponse>(
+          `/families/${familyId}/eligibility-preview`
+        ),
+      ]);
+
+      if (familyResult.status === "rejected") {
+        throw familyResult.reason;
+      }
 
       if (isMounted) {
-        setFamily(response.data);
+        setFamily(familyResult.value.data);
+        setEligibilityPreview(
+          previewResult.status === "fulfilled" ? previewResult.value.data : null
+        );
         setStatusForm({
-          status: response.data.status,
-          internal_notes: response.data.internal_notes ?? "",
+          status: familyResult.value.data.status,
+          internal_notes: familyResult.value.data.internal_notes ?? "",
         });
       }
     } catch (err) {
@@ -100,12 +162,13 @@ export function FamilyDetailPage() {
     return `${family.street}, ${family.number} - ${family.neighborhood}, ${family.city}/${family.state}`;
   }, [family]);
 
-  function formatCurrency(value: string): string {
-    return Number(value).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
+  const latestAssessment = useMemo(() => {
+    if (!family) {
+      return null;
+    }
+
+    return getLatestAssessment(family.assessments);
+  }, [family]);
 
   if (isLoading) {
     return (
@@ -144,16 +207,91 @@ export function FamilyDetailPage() {
         </div>
 
         <div className="hero-badges">
-          <span className="hero-badge">Status: {family.status}</span>
+          <span className="hero-badge">
+            Status: {formatFamilyStatus(family.status)}
+          </span>
           <span className="hero-badge">
             Renda per capita: {formatCurrency(family.income_per_capita)}
           </span>
+          {eligibilityPreview ? (
+            <span className="hero-badge">
+              Sugestao: {formatFamilyStatus(eligibilityPreview.system_suggestion)}
+            </span>
+          ) : null}
+          <Link
+            to={`/families/${family.id}/edit#vinculo-igreja`}
+            className="button button--secondary button--link"
+          >
+            Igreja/UPG
+          </Link>
           <Link
             to={`/families/${family.id}/edit`}
             className="button button--secondary button--link"
           >
             Editar cadastro
           </Link>
+        </div>
+      </section>
+
+      <section className="panel-card">
+        <div className="panel-card__header panel-card__header--actions">
+          <div>
+            <p className="eyebrow">Decisao social</p>
+            <h3>Sugestao do sistema e decisao da lideranca</h3>
+          </div>
+
+          <Link
+            to={`/families/${family.id}/assessments/new`}
+            className="button button--secondary button--link"
+          >
+            Registrar avaliacao
+          </Link>
+        </div>
+
+        <div className="detail-grid">
+          <div className="detail-item">
+            <span>Status atual</span>
+            <strong>{formatFamilyStatus(family.status)}</strong>
+          </div>
+          <div className="detail-item">
+            <span>Sugestao automatica</span>
+            <strong>
+              {eligibilityPreview
+                ? formatFamilyStatus(eligibilityPreview.system_suggestion)
+                : "Nao calculada"}
+            </strong>
+          </div>
+          <div className="detail-item">
+            <span>Prioridade social</span>
+            <strong>
+              {eligibilityPreview
+                ? formatPriority(eligibilityPreview.priority_level)
+                : "Nao informada"}
+            </strong>
+          </div>
+          <div className="detail-item">
+            <span>Ultima decisao registrada</span>
+            <strong>
+              {latestAssessment
+                ? formatFamilyStatus(latestAssessment.final_decision)
+                : "Sem avaliacao"}
+            </strong>
+          </div>
+          <div className="detail-item">
+            <span>Renda total</span>
+            <strong>{formatCurrency(family.monthly_income_total)}</strong>
+          </div>
+          <div className="detail-item">
+            <span>Renda per capita</span>
+            <strong>{formatCurrency(family.income_per_capita)}</strong>
+          </div>
+          <div className="detail-item form__group--wide">
+            <span>Leitura do sistema</span>
+            <strong>
+              {eligibilityPreview?.economic_reason ??
+                "Registre uma avaliacao para consolidar a decisao social."}
+            </strong>
+          </div>
         </div>
       </section>
 
@@ -477,8 +615,8 @@ export function FamilyDetailPage() {
                       <td>
                         {formatDateOnly(assessment.assessment_date)}
                       </td>
-                      <td>{assessment.system_suggestion}</td>
-                      <td>{assessment.final_decision}</td>
+                      <td>{formatFamilyStatus(assessment.system_suggestion)}</td>
+                      <td>{formatFamilyStatus(assessment.final_decision)}</td>
                       <td>{assessment.vulnerability_score}</td>
                     </tr>
                   ))}

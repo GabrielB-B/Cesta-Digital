@@ -1394,6 +1394,30 @@ textarea {
   background: rgba(248, 245, 237, 0.06);
 }
 
+.currency-input {
+  position: relative;
+  min-width: 0;
+}
+
+.currency-input__prefix {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  z-index: 1;
+  color: var(--brand-gold);
+  font-size: 0.86rem;
+  font-weight: 800;
+  transform: translateY(-50%);
+  pointer-events: none;
+  user-select: none;
+}
+
+.currency-input input {
+  width: 100%;
+  padding-left: 44px;
+  font-variant-numeric: tabular-nums;
+}
+
 .login-card .form__group span,
 .login-card .form__group > label,
 .login-card .login-form__label-row label {

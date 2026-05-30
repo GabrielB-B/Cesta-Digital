@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { CurrencyInput } from "../components/CurrencyInput";
 import { FormActions } from "../components/FormActions";
 import { FormSection } from "../components/FormSection";
 import { PageHeader } from "../components/PageHeader";
 import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
-import { formatTodayForInput } from "../utils/format";
+import { formatDecimalInputValue, formatTodayForInput } from "../utils/format";
 import type {
   FamilyCreatePayload,
   FamilyListItemResponse,
@@ -97,6 +98,14 @@ export function FamilyCreatePage() {
     setFormData((previous) => ({
       ...previous,
       [name]: value,
+    }));
+  }
+
+  function handleCurrencyBlur(event: React.FocusEvent<HTMLInputElement>) {
+    const { name, value } = event.target;
+    setFormData((previous) => ({
+      ...previous,
+      [name]: formatDecimalInputValue(value),
     }));
   }
 
@@ -497,25 +506,21 @@ export function FamilyCreatePage() {
         <FormSection eyebrow="Condição econômica" title="Renda e despesas">
           <label className="form__group">
             <span>Renda mensal total</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
+            <CurrencyInput
               name="monthly_income_total"
               value={formData.monthly_income_total}
               onChange={handleInputChange}
+              onBlur={handleCurrencyBlur}
             />
           </label>
 
           <label className="form__group">
             <span>Despesas essenciais</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
+            <CurrencyInput
               name="monthly_essential_expenses"
               value={formData.monthly_essential_expenses}
               onChange={handleInputChange}
+              onBlur={handleCurrencyBlur}
             />
           </label>
         </FormSection>

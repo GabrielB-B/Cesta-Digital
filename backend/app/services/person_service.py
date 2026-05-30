@@ -52,6 +52,7 @@ def create_person_for_family(
         family_id,
         payload.is_family_responsible,
     )
+    previous_income_total = family.monthly_income_total
 
     person = Person(
         family_id=family_id,
@@ -76,7 +77,11 @@ def create_person_for_family(
     db.add(person)
     db.flush()
 
-    recalculate_family_summary(db, family)
+    recalculate_family_summary(
+        db,
+        family,
+        minimum_income_total=previous_income_total,
+    )
     family.updated_by_user_id = current_user.id
     record_audit_log(
         db,

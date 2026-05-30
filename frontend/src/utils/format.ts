@@ -33,3 +33,22 @@ export function formatTodayForInput(date = new Date()): string {
 
   return `${year}-${month}-${day}`;
 }
+
+export function formatCurrency(value: string | number | null | undefined): string {
+  const numericValue =
+    typeof value === "number" ? value : Number(String(value ?? "0").replace(",", "."));
+
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(Number.isFinite(numericValue) ? numericValue : 0);
+}
+
+export function formatDecimalInputValue(
+  value: string | number | null | undefined
+): string {
+  const numericValue =
+    typeof value === "number" ? value : Number(String(value ?? "0").replace(",", "."));
+
+  return (Number.isFinite(numericValue) ? numericValue : 0).toFixed(2);
+}

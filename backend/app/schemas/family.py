@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+MONEY_QUANTIZER = Decimal("0.01")
+
 
 class FamilyContactCreate(BaseModel):
     contact_name: str | None = None
@@ -154,6 +156,17 @@ class FamilyCreate(BaseModel):
         if value not in allowed:
             raise ValueError("Status de família inválido.")
         return value
+
+    @field_validator(
+        "monthly_income_total",
+        "monthly_essential_expenses",
+        "income_per_capita",
+    )
+    @classmethod
+    def validate_money_fields(cls, value: Decimal) -> Decimal:
+        if value < 0:
+            raise ValueError("Valores financeiros nao podem ser negativos.")
+        return value.quantize(MONEY_QUANTIZER)
 
     @field_validator("state")
     @classmethod

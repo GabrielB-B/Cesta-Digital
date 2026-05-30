@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
+MONEY_QUANTIZER = Decimal("0.01")
+
 
 class BenefitBase(BaseModel):
     """Schema base para criação e atualização de benefícios."""
@@ -29,7 +31,7 @@ class BenefitBase(BaseModel):
     def validate_monthly_amount(cls, value: Decimal) -> Decimal:
         if value < 0:
             raise ValueError("O valor mensal não pode ser negativo.")
-        return value
+        return value.quantize(MONEY_QUANTIZER)
 
     @model_validator(mode="after")
     def validate_dates(self):

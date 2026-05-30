@@ -74,6 +74,49 @@ const family = {
   ],
 };
 
+const familyDetail = {
+  ...family,
+  people: [
+    {
+      id: 1,
+      full_name: "Maria Silva",
+      birth_date: "1988-05-10",
+      kinship: "responsavel",
+      gender: "feminino",
+      phone: "79999990000",
+      education_level: "medio",
+      is_currently_studying: false,
+      is_currently_working: true,
+      occupation: "Autonoma",
+      individual_income: "600.00",
+      has_disability: false,
+      has_chronic_illness: false,
+      is_pregnant: false,
+      is_nursing_mother: false,
+      notes: null,
+      is_family_responsible: true,
+    },
+  ],
+  benefits: [],
+  assessments: [
+    {
+      id: 1,
+      assessment_date: "2026-05-15",
+      monthly_income_total_at_time: "600.00",
+      income_per_capita_at_time: "200.00",
+      vulnerability_score: 4,
+      system_suggestion: "apta_recorrente",
+      final_decision: "apta_recorrente",
+      decision_reason: "Dentro do criterio social.",
+      exception_reason: null,
+      approved_by_user_id: 1,
+      co_approved_by_user_id: null,
+      next_revaluation_date: "2026-08-15",
+      technical_notes: null,
+    },
+  ],
+};
+
 const item = {
   item_id: 1,
   item_name: "Arroz 1kg",
@@ -232,6 +275,34 @@ async function mockApi(page: Page, user = currentUser) {
   await page.route("**/families?**", async (route) =>
     fulfillJson(route, [family], { "X-Total-Count": "1" })
   );
+  await page.route("**/families/*/eligibility-preview", async (route) =>
+    fulfillJson(route, {
+      family_id: family.id,
+      internal_code: family.internal_code,
+      income_per_capita: family.income_per_capita,
+      extreme_poverty_limit: "109.00",
+      poverty_limit: "218.00",
+      system_suggestion: "apta_recorrente",
+      poverty_band: "extrema_pobreza",
+      economic_reason: "Renda per capita dentro da faixa de extrema pobreza.",
+      social_weight_score: 4,
+      social_aggravating_factors: ["2 crianca(s) (+2)", "Ha desemprego na familia (+2)"],
+      priority_level: "media",
+    })
+  );
+  await page.route("**/families/*", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+
+    if (route.request().method() === "GET") {
+      await fulfillJson(route, familyDetail);
+      return;
+    }
+
+    await route.fallback();
+  });
   await page.route("**/stock-summary?**", async (route) =>
     fulfillJson(route, [item], { "X-Total-Count": "1" })
   );
@@ -408,16 +479,32 @@ test("family creation makes church and UPG relationship easy to fill", async ({ 
   await expect(page.getByRole("heading", { name: "Igreja, UPG e participacao" })).toBeVisible();
   await expect(page.getByText("Frequenta igreja ou UPG")).toBeVisible();
 
+  const incomeField = page.getByRole("spinbutton", { name: "Renda mensal total" });
   const churchNameField = page.getByRole("textbox", { name: "Igreja ou UPG" });
   const communityRelationshipField = page.getByRole("textbox", {
     name: "O que faz ou qual vinculo possui",
   });
 
+  await incomeField.fill("850");
+  await incomeField.blur();
   await churchNameField.fill("UPG Central");
   await communityRelationshipField.fill("Voluntaria no acolhimento");
 
+  await expect(incomeField).toHaveValue("850.00");
   await expect(churchNameField).toHaveValue("UPG Central");
   await expect(communityRelationshipField).toHaveValue("Voluntaria no acolhimento");
+});
+
+test("family detail highlights system suggestion and church shortcut", async ({ page }) => {
+  await page.goto("/families/1");
+
+  await expect(
+    page.getByRole("heading", { name: "Sugestao do sistema e decisao da lideranca" })
+  ).toBeVisible();
+  await expect(page.getByText("Sugestao: Apta recorrente")).toBeVisible();
+  await expect(page.getByText("Ultima decisao registrada")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Igreja/UPG" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Registrar avaliacao" })).toBeVisible();
 });
 
 test("mobile shell opens drawer navigation and compact account menu", async ({ page }) => {

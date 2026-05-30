@@ -18,6 +18,28 @@ class FamiliesApiIntegrationTests(ApiIntegrationTestCase):
         )
         self.headers = self.login_and_get_headers("admin", "Admin@12345")
 
+    def _person_payload(self, **overrides):
+        payload = {
+            "full_name": "Maria da Silva",
+            "birth_date": "1988-05-10",
+            "kinship": "responsavel",
+            "gender": "feminino",
+            "phone": "79999999999",
+            "education_level": "medio",
+            "is_currently_studying": False,
+            "is_currently_working": True,
+            "occupation": "Autonoma",
+            "individual_income": 0,
+            "has_disability": False,
+            "has_chronic_illness": False,
+            "is_pregnant": False,
+            "is_nursing_mother": False,
+            "notes": None,
+            "is_family_responsible": False,
+        }
+        payload.update(overrides)
+        return payload
+
     def test_create_family_generates_internal_code_when_missing(self):
         family = self.create_family(self.headers, internal_code=None)
 
@@ -85,6 +107,75 @@ class FamiliesApiIntegrationTests(ApiIntegrationTestCase):
         family_detail = family_detail_response.json()
         self.assertEqual(len(family_detail["people"]), 1)
         self.assertTrue(family_detail["people"][0]["is_family_responsible"])
+
+    def test_adding_person_does_not_erase_declared_family_income(self):
+        family = self.create_family(
+            self.headers,
+            internal_code="FAM-RENDA-DECLARADA",
+            monthly_income_total=850,
+            income_per_capita=850,
+        )
+
+        response = self.client.post(
+            f"/families/{family['id']}/people",
+            json=self._person_payload(
+                full_name="Ana Souza",
+                individual_income=0,
+                is_family_responsible=True,
+            ),
+            headers=self.headers,
+        )
+
+        self.assertEqual(response.status_code, 201, response.text)
+
+        family_detail_response = self.client.get(
+            f"/families/{family['id']}",
+            headers=self.headers,
+        )
+        self.assertEqual(family_detail_response.status_code, 200, family_detail_response.text)
+        family_detail = family_detail_response.json()
+        self.assertEqual(family_detail["monthly_income_total"], "850.00")
+        self.assertEqual(family_detail["income_per_capita"], "850.00")
+
+    def test_family_income_summary_accumulates_member_income(self):
+        family = self.create_family(
+            self.headers,
+            internal_code="FAM-RENDA-MEMBROS",
+        )
+
+        first_response = self.client.post(
+            f"/families/{family['id']}/people",
+            json=self._person_payload(
+                full_name="Maria da Silva",
+                individual_income=500,
+                is_family_responsible=True,
+            ),
+            headers=self.headers,
+        )
+        self.assertEqual(first_response.status_code, 201, first_response.text)
+
+        second_response = self.client.post(
+            f"/families/{family['id']}/people",
+            json=self._person_payload(
+                full_name="Jose da Silva",
+                birth_date="1986-01-20",
+                kinship="conjuge",
+                gender="masculino",
+                individual_income=700,
+                is_family_responsible=False,
+            ),
+            headers=self.headers,
+        )
+        self.assertEqual(second_response.status_code, 201, second_response.text)
+
+        family_detail_response = self.client.get(
+            f"/families/{family['id']}",
+            headers=self.headers,
+        )
+        self.assertEqual(family_detail_response.status_code, 200, family_detail_response.text)
+        family_detail = family_detail_response.json()
+        self.assertEqual(family_detail["monthly_income_total"], "1200.00")
+        self.assertEqual(family_detail["income_per_capita"], "600.00")
 
     def test_operator_cannot_create_family(self):
         operator_headers = self.login_and_get_headers("operador", "Operador@123")

@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { FinancialSummaryResponse } from "../types/financial";
 import { getApiErrorMessage } from "../utils/api-error";
-
-function formatCurrency(value: string): string {
-  return Number(value).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
+import { formatCurrency } from "../utils/format";
 
 /**
  * Painel financeiro estimado para prestação de contas.

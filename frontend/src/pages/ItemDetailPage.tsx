@@ -16,7 +16,7 @@ import type {
   StockSummaryResponse,
 } from "../types/item";
 import { getApiErrorMessage } from "../utils/api-error";
-import { formatDateOnly } from "../utils/format";
+import { formatCurrency, formatDateOnly } from "../utils/format";
 
 export function ItemDetailPage() {
   const { itemId } = useParams();
@@ -116,13 +116,6 @@ export function ItemDetailPage() {
   const totalCurrentQuantity = useMemo(() => {
     return batches.reduce((acc, batch) => acc + batch.current_quantity, 0);
   }, [batches]);
-
-  function formatCurrency(value: string): string {
-    return Number(value).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
 
   function formatDate(value: string | null): string {
     if (!value) {

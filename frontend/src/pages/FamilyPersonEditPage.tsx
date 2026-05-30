@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { CurrencyInput } from "../components/CurrencyInput";
 import { FormActions } from "../components/FormActions";
 import { FormSection } from "../components/FormSection";
 import { PageHeader } from "../components/PageHeader";
 import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
+import { formatDecimalInputValue } from "../utils/format";
 import type {
   FamilyDetailResponse,
   FamilyPersonResponse,
@@ -116,6 +118,14 @@ export function FamilyPersonEditPage() {
     setFormData((previous) => ({
       ...previous,
       [name]: value,
+    }));
+  }
+
+  function handleCurrencyBlur(event: React.FocusEvent<HTMLInputElement>) {
+    const { name, value } = event.target;
+    setFormData((previous) => ({
+      ...previous,
+      [name]: formatDecimalInputValue(value),
     }));
   }
 
@@ -317,13 +327,11 @@ export function FamilyPersonEditPage() {
 
           <label className="form__group">
             <span>Renda individual</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
+            <CurrencyInput
               name="individual_income"
               value={formData.individual_income}
               onChange={handleInputChange}
+              onBlur={handleCurrencyBlur}
             />
           </label>
 

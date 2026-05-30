@@ -14,6 +14,8 @@ from app.models.user import User
 from app.schemas.family import FamilyCreate, FamilyStatusUpdate, FamilyUpdate
 from app.services.audit_log_service import record_audit_log
 
+MONEY_QUANTIZER = Decimal("0.01")
+
 FAMILY_EDITABLE_FIELDS = (
     "internal_code",
     "status",
@@ -86,7 +88,16 @@ def calculate_age(birth_date: date) -> int:
     return age
 
 
-def recalculate_family_summary(db: Session, family: Family) -> None:
+def _money(value: Decimal | int | str | None) -> Decimal:
+    return Decimal(value or 0).quantize(MONEY_QUANTIZER)
+
+
+def recalculate_family_summary(
+    db: Session,
+    family: Family,
+    *,
+    minimum_income_total: Decimal | None = None,
+) -> None:
     people_stmt = select(Person).where(Person.family_id == family.id)
     people = list(db.scalars(people_stmt).all())
 
@@ -121,7 +132,7 @@ def recalculate_family_summary(db: Session, family: Family) -> None:
         else:
             total_adults += 1
 
-        monthly_income_total += Decimal(person.individual_income or 0)
+        monthly_income_total += _money(person.individual_income)
 
         if person.has_disability:
             has_disabled_member = True
@@ -136,7 +147,10 @@ def recalculate_family_summary(db: Session, family: Family) -> None:
             has_unemployed_member = True
 
     for benefit in benefits:
-        monthly_income_total += Decimal(benefit.monthly_amount or 0)
+        monthly_income_total += _money(benefit.monthly_amount)
+
+    if minimum_income_total is not None:
+        monthly_income_total = max(monthly_income_total, _money(minimum_income_total))
 
     family.total_residents = total_residents if total_residents > 0 else 1
     family.total_adults = total_adults
@@ -144,9 +158,9 @@ def recalculate_family_summary(db: Session, family: Family) -> None:
     family.total_elderly = total_elderly
     family.total_babies = total_babies
 
-    family.monthly_income_total = monthly_income_total
+    family.monthly_income_total = _money(monthly_income_total)
     family.income_per_capita = (
-        monthly_income_total / family.total_residents
+        _money(monthly_income_total / family.total_residents)
         if family.total_residents > 0
         else Decimal("0.00")
     )

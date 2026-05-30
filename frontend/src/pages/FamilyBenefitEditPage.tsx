@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { CurrencyInput } from "../components/CurrencyInput";
 import { getApiErrorMessage } from "../utils/api-error";
+import { formatDecimalInputValue } from "../utils/format";
 import type {
   FamilyBenefitResponse,
   FamilyBenefitUpdatePayload,
@@ -98,6 +100,14 @@ export function FamilyBenefitEditPage() {
     setFormData((previous) => ({
       ...previous,
       [name]: value,
+    }));
+  }
+
+  function handleCurrencyBlur(event: React.FocusEvent<HTMLInputElement>) {
+    const { name, value } = event.target;
+    setFormData((previous) => ({
+      ...previous,
+      [name]: formatDecimalInputValue(value),
     }));
   }
 
@@ -246,13 +256,11 @@ export function FamilyBenefitEditPage() {
 
           <label className="form__group">
             <span>Valor mensal</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
+            <CurrencyInput
               name="monthly_amount"
               value={formData.monthly_amount}
               onChange={handleInputChange}
+              onBlur={handleCurrencyBlur}
               required
             />
           </label>
