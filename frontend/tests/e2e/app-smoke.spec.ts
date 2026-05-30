@@ -201,8 +201,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function expectLoginBrandSeparated(page: Page) {
-  const mark = page.locator(".login-card__brand .brand-lockup__mark").first();
-  const title = page.locator(".login-card__brand .brand-lockup__title").first();
+  const brand = page
+    .locator(".login-page .brand-lockup--login:visible")
+    .filter({ hasText: "Cesta Digital" })
+    .first();
+  const mark = brand.locator(".brand-lockup__mark");
+  const title = brand.locator(".brand-lockup__title");
 
   await expect(mark).toBeVisible();
   await expect(title).toHaveText("Cesta Digital");

@@ -1,4 +1,4 @@
-import brandLogo from "../../img/IMG_1909.PNG";
+import brandLogo from "../assets/logoupg.png";
 
 type BrandLockupVariant = "login" | "sidebar" | "compact";
 
@@ -32,9 +32,10 @@ export function BrandLockup({
           className="brand-lockup__mark"
           src={brandLogo}
           alt=""
-          width="1365"
-          height="2048"
+          width="1254"
+          height="1254"
           decoding="async"
+          draggable={false}
         />
       </div>
 

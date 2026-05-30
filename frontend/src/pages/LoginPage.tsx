@@ -149,133 +149,159 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <div
-        className={`login-card${isSubmitting ? " login-card--submitting" : ""}`}
+        className={`login-shell${isSubmitting ? " login-shell--submitting" : ""}`}
         aria-busy={isSubmitting}
       >
-        <div className="login-card__brand" aria-label="Cesta Digital">
-          <BrandLockup variant="login" title="Cesta Digital" subtitle="" />
-        </div>
+        <aside className="login-brand-panel" aria-label="Cesta Digital">
+          <BrandLockup
+            variant="login"
+            title="Cesta Digital"
+            subtitle="Tecnologia simples para cuidado social."
+          />
 
-        <form onSubmit={handleSubmit} className="form login-form">
-          <div className="form__group">
-            <label htmlFor="login-name">Nome de login</label>
-            <input
-              id="login-name"
-              type="text"
-              name="login_name"
-              value={loginName}
-              onChange={(event) => {
-                setLoginName(event.target.value);
-                if (error) {
-                  setError("");
-                }
-              }}
-              placeholder="Ex.: admin"
-              autoComplete="username"
-              pattern="[a-z0-9._-]{3,80}"
-              spellCheck={false}
-              required
+          <div className="login-brand-panel__signals" aria-label="Modulos principais">
+            <span>Familias</span>
+            <span>Estoque</span>
+            <span>Entregas</span>
+          </div>
+        </aside>
+
+        <section className="login-card" aria-label="Entrar no Cesta Digital">
+          <div className="login-card__brand" aria-label="Cesta Digital">
+            <BrandLockup
+              variant="login"
+              title="Cesta Digital"
+              subtitle="Tecnologia simples para cuidado social."
             />
           </div>
 
-          <div className="form__group form__group--password">
-            <div className="login-form__label-row">
-              <label htmlFor="login-password">Senha</label>
-              <button
-                type="button"
-                className="login-card__forgot"
-                onClick={() => {
-                  setIsRecoveryOpen((current) => !current);
-                  setRecoveryError("");
-                  setRecoveryMessage("");
-                }}
-              >
-                Esqueci minha senha
-              </button>
-            </div>
-            <input
-              id="login-password"
-              type="password"
-              name="password"
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value);
-                if (error) {
-                  setError("");
-                }
-              }}
-              placeholder="Digite sua senha"
-              autoComplete="current-password"
-              required
-            />
+          <div className="login-card__heading">
+            <p className="eyebrow">Acesso seguro</p>
+            <h1>Entrar no sistema</h1>
+            <p>Use seu nome de login para acessar a operacao.</p>
           </div>
 
-          {error ? (
-            <p className="form__error" role="alert" aria-live="polite">
-              {error}
-            </p>
-          ) : null}
-
-          <button type="submit" className="button login-card__submit" disabled={isSubmitting}>
-            <LogIn size={18} aria-hidden="true" />
-            {isSubmitting ? "Entrando..." : "Entrar"}
-          </button>
-        </form>
-
-        {isRecoveryOpen ? (
-          <form
-            className="login-card__recovery"
-            onSubmit={handleRecoverySubmit}
-            aria-label="Solicitar recuperacao de senha"
-          >
-            <div className="login-card__recovery-heading">
-              <ShieldCheck size={18} aria-hidden="true" />
-              <div>
-                <strong>Recuperar acesso</strong>
-                <p>Informe o email cadastrado para a equipe redefinir sua senha.</p>
-              </div>
-            </div>
-
+          <form onSubmit={handleSubmit} className="form login-form">
             <div className="form__group">
-              <label htmlFor="recovery-email">Email de recuperacao</label>
+              <label htmlFor="login-name">Nome de login</label>
               <input
-                id="recovery-email"
-                type="email"
-                name="recovery_email"
-                value={recoveryEmail}
+                id="login-name"
+                type="text"
+                name="login_name"
+                value={loginName}
                 onChange={(event) => {
-                  setRecoveryEmail(event.target.value);
-                  setRecoveryError("");
-                  setRecoveryMessage("");
+                  setLoginName(event.target.value);
+                  if (error) {
+                    setError("");
+                  }
                 }}
-                placeholder="seu@email.com"
-                autoComplete="email"
+                placeholder="Ex.: admin"
+                autoComplete="username"
+                pattern="[a-z0-9._-]{3,80}"
+                spellCheck={false}
                 required
               />
             </div>
 
-            {recoveryError ? (
+            <div className="form__group form__group--password">
+              <div className="login-form__label-row">
+                <label htmlFor="login-password">Senha</label>
+                <button
+                  type="button"
+                  className="login-card__forgot"
+                  onClick={() => {
+                    setIsRecoveryOpen((current) => !current);
+                    setRecoveryError("");
+                    setRecoveryMessage("");
+                  }}
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
+              <input
+                id="login-password"
+                type="password"
+                name="password"
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  if (error) {
+                    setError("");
+                  }
+                }}
+                placeholder="Digite sua senha"
+                autoComplete="current-password"
+                required
+              />
+            </div>
+
+            {error ? (
               <p className="form__error" role="alert" aria-live="polite">
-                {recoveryError}
+                {error}
               </p>
             ) : null}
 
-            {recoveryMessage ? (
-              <p className="status-success" role="status" aria-live="polite">
-                {recoveryMessage}
-              </p>
-            ) : null}
-
-            <button
-              type="submit"
-              className="button button--secondary login-card__recovery-button"
-              disabled={isRecoverySubmitting}
-            >
-              <Mail size={17} aria-hidden="true" />
-              {isRecoverySubmitting ? "Enviando..." : "Solicitar recuperacao"}
+            <button type="submit" className="button login-card__submit" disabled={isSubmitting}>
+              <LogIn size={18} aria-hidden="true" />
+              {isSubmitting ? "Entrando..." : "Entrar"}
             </button>
           </form>
-        ) : null}
+
+          {isRecoveryOpen ? (
+            <form
+              className="login-card__recovery"
+              onSubmit={handleRecoverySubmit}
+              aria-label="Solicitar recuperacao de senha"
+            >
+              <div className="login-card__recovery-heading">
+                <ShieldCheck size={18} aria-hidden="true" />
+                <div>
+                  <strong>Recuperar acesso</strong>
+                  <p>Informe o email cadastrado para a equipe redefinir sua senha.</p>
+                </div>
+              </div>
+
+              <div className="form__group">
+                <label htmlFor="recovery-email">Email de recuperacao</label>
+                <input
+                  id="recovery-email"
+                  type="email"
+                  name="recovery_email"
+                  value={recoveryEmail}
+                  onChange={(event) => {
+                    setRecoveryEmail(event.target.value);
+                    setRecoveryError("");
+                    setRecoveryMessage("");
+                  }}
+                  placeholder="seu@email.com"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+
+              {recoveryError ? (
+                <p className="form__error" role="alert" aria-live="polite">
+                  {recoveryError}
+                </p>
+              ) : null}
+
+              {recoveryMessage ? (
+                <p className="status-success" role="status" aria-live="polite">
+                  {recoveryMessage}
+                </p>
+              ) : null}
+
+              <button
+                type="submit"
+                className="button button--secondary login-card__recovery-button"
+                disabled={isRecoverySubmitting}
+              >
+                <Mail size={17} aria-hidden="true" />
+                {isRecoverySubmitting ? "Enviando..." : "Solicitar recuperacao"}
+              </button>
+            </form>
+          ) : null}
+        </section>
 
         {isSubmitting ? (
           <div className="login-loading" role="status" aria-live="polite">

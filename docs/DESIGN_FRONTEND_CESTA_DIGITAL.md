@@ -136,6 +136,18 @@ Validacao automatizada adicionada:
 - Menu de conta e logout.
 - Rotas operacionais principais com chamadas mockadas no Playwright.
 
+## Rodada de Marca e Login Split - 2026-05-29
+
+Complemento aplicado apos a publicacao inicial:
+
+- A marca passou a usar `frontend/src/assets/logoupg.png`, derivada do arquivo `logoupg.png` enviado por Gabriel.
+- O asset foi tratado para fundo transparente real, evitando o quadriculado claro sobre o dark theme.
+- Foi gerado `frontend/public/logo-symbol.png` para favicon/app icon.
+- `BrandLockup` bloqueia selecao/drag apenas na area de marca, preservando selecao normal de textos, inputs e tabelas.
+- Login desktop passou para composicao em dois paineis: painel institucional da marca e painel de acesso.
+- Login mobile manteve composicao empilhada propria, com marca, nome, subtitulo e formulario.
+- A identidade dark premium foi preservada, com magenta, dourado, verde escuro e textura sutil.
+
 ## Retomada do Ponto Exato
 
 Estado reconstruido a partir do commit `f5d0fa1`, com a rodada de identidade visual e componentizacao ja aplicada.

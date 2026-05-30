@@ -156,6 +156,27 @@ Use mensagens de commit objetivas, por exemplo:
 - `fix: corrige baixa transacional de estoque`
 - `docs: adiciona checkpoint do MVP`
 
+## Publicacao online oficial
+
+O Cesta Digital ja esta publicado:
+
+- Frontend: `https://cesta-digital.vercel.app`
+- Backend/API: `https://cesta-digital-api.onrender.com`
+- Healthcheck DB: `https://cesta-digital-api.onrender.com/health/db`
+- GitHub: `https://github.com/GabrielB-B/Cesta-Digital`
+
+A rota oficial de publicacao e simples:
+
+```powershell
+git push origin main
+```
+
+A Vercel publica o frontend automaticamente a partir da branch `main`. O Render usa o mesmo repositorio para o backend.
+
+Antes de publicar, rode as validacoes adequadas. Depois do push, confirme que o status `Vercel` no GitHub ficou `success` e que o healthcheck da API continua respondendo.
+
+Guia completo: [`docs/ROTA_PUBLICACAO_SEGURA.md`](./ROTA_PUBLICACAO_SEGURA.md).
+
 ## Cuidados importantes
 
 - Nao coloque `.env` real no Git.

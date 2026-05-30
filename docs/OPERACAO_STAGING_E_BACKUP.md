@@ -4,6 +4,19 @@ Este guia resume o fluxo minimo para publicar o MVP em homologacao com seguranca
 
 ## Ambientes
 
+## Estado atual online
+
+O ambiente publico do Cesta Digital ja esta criado e ativo:
+
+- Frontend Vercel: `https://cesta-digital.vercel.app`
+- Backend Render: `https://cesta-digital-api.onrender.com`
+- Healthcheck DB: `https://cesta-digital-api.onrender.com/health/db`
+- Swagger/API docs: `https://cesta-digital-api.onrender.com/docs`
+- GitHub: `https://github.com/GabrielB-B/Cesta-Digital`
+- Branch de publicacao: `main`
+
+A rotina normal de publicacao e `git push origin main`, apos validacoes. Ver tambem [`ROTA_PUBLICACAO_SEGURA.md`](./ROTA_PUBLICACAO_SEGURA.md).
+
 ## Rota gratuita recomendada para homologacao
 
 Para teste real em rede, sem custo inicial, a composicao mais adequada para este stack e:
