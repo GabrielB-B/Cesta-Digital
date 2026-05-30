@@ -156,14 +156,8 @@ export function LoginPage() {
           <BrandLockup
             variant="login"
             title="Cesta Digital"
-            subtitle="Tecnologia simples para cuidado social."
+            subtitle=""
           />
-
-          <div className="login-brand-panel__signals" aria-label="Modulos principais">
-            <span>Familias</span>
-            <span>Estoque</span>
-            <span>Entregas</span>
-          </div>
         </aside>
 
         <section className="login-card" aria-label="Entrar no Cesta Digital">
@@ -171,7 +165,7 @@ export function LoginPage() {
             <BrandLockup
               variant="login"
               title="Cesta Digital"
-              subtitle="Tecnologia simples para cuidado social."
+              subtitle=""
             />
           </div>
 

@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import {
   ChevronDown,
   Menu,
-  PanelLeftClose,
-  PanelLeftOpen,
   UserRound,
   X,
 } from "lucide-react";
@@ -40,6 +38,14 @@ function getInitialSidebarState(): boolean {
   }
 
   return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+}
+
+function getInitialMobileViewport(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.matchMedia("(max-width: 900px)").matches;
 }
 
 function formatRole(role: string): string {
@@ -90,6 +96,7 @@ export function AppLayout() {
   );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(getInitialMobileViewport);
   const routeState = location.state as RouteState | null;
   const routeFlash =
     routeState?.flash?.message && dismissedFlashKey !== location.key
@@ -107,6 +114,26 @@ export function AppLayout() {
 
     return () => window.clearTimeout(timeoutId);
   }, [location.key, routeState?.flash?.message]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(max-width: 900px)");
+    const handleViewportChange = () => {
+      setIsMobileViewport(mediaQuery.matches);
+
+      if (!mediaQuery.matches) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    handleViewportChange();
+    mediaQuery.addEventListener("change", handleViewportChange);
+
+    return () => mediaQuery.removeEventListener("change", handleViewportChange);
+  }, []);
 
   function hasAnyRole(...roles: string[]): boolean {
     return roles.some((role) => userRoles.includes(role));
@@ -177,9 +204,6 @@ export function AppLayout() {
     ) ?? visibleMenuItems[0];
 
   const primaryRole = formatRole(userRoles[0] ?? "");
-  const SidebarToggleIcon = isSidebarCollapsed
-    ? PanelLeftOpen
-    : PanelLeftClose;
 
   function isActive(path: string): boolean {
     if (path === "/") {
@@ -207,6 +231,15 @@ export function AppLayout() {
     await logout();
   }
 
+  function handleNavigationToggle() {
+    if (isMobileViewport) {
+      setIsMobileMenuOpen(true);
+      return;
+    }
+
+    toggleSidebar();
+  }
+
   const shellClasses = [
     "app-shell",
     isSidebarCollapsed ? "app-shell--sidebar-collapsed" : null,
@@ -216,6 +249,11 @@ export function AppLayout() {
     .join(" ");
 
   const accountInitials = getInitials(user?.name);
+  const navigationToggleLabel = isMobileViewport
+    ? "Abrir menu"
+    : isSidebarCollapsed
+      ? "Expandir menu lateral"
+      : "Recolher menu lateral";
 
   return (
     <>
@@ -244,29 +282,6 @@ export function AppLayout() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <X size={20} aria-hidden="true" />
-              </button>
-
-              <button
-                className="sidebar__toggle"
-                type="button"
-                aria-expanded={!isSidebarCollapsed}
-                aria-label={
-                  isSidebarCollapsed
-                    ? "Expandir menu lateral"
-                    : "Recolher menu lateral"
-                }
-                title={
-                  isSidebarCollapsed
-                    ? "Expandir menu lateral"
-                    : "Recolher menu lateral"
-                }
-                onClick={toggleSidebar}
-              >
-                <SidebarToggleIcon
-                  className="sidebar__toggle-icon"
-                  aria-hidden="true"
-                  strokeWidth={1.9}
-                />
               </button>
             </div>
 
@@ -324,9 +339,10 @@ export function AppLayout() {
             <button
               className="topbar__menu"
               type="button"
-              aria-label="Abrir menu"
-              aria-expanded={isMobileMenuOpen}
-              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label={navigationToggleLabel}
+              aria-expanded={isMobileViewport ? isMobileMenuOpen : !isSidebarCollapsed}
+              title={navigationToggleLabel}
+              onClick={handleNavigationToggle}
             >
               <Menu size={21} aria-hidden="true" />
             </button>

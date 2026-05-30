@@ -123,7 +123,8 @@ Ajustes aplicados:
 - A imagem da marca passou a respeitar a caixa visual da composicao, evitando colisao entre simbolo e titulo.
 - O loading de autenticacao usa apenas o simbolo da marca com microanimacao sutil.
 - Estados internos de loading usam o simbolo da marca em vez de parecerem mensagens soltas.
-- Sidebar desktop recebeu trigger de colapso integrado na borda, tooltips visuais no estado colapsado e proporcoes mais consistentes da marca.
+- Sidebar desktop recebeu colapso via botao hamburguer integrado ao header; o controle preso na borda foi removido.
+- Estado colapsado da sidebar mantem apenas icones, item ativo visivel e `title` nos links para identificacao.
 - Header/menu de conta recebeu refinamento de alinhamento, hover, dropdown e truncamento seguro.
 - Tabelas e botoes de acao receberam protecoes contra quebra de texto, overflow e compressao visual.
 
@@ -147,6 +148,22 @@ Complemento aplicado apos a publicacao inicial:
 - Login desktop passou para composicao em dois paineis: painel institucional da marca e painel de acesso.
 - Login mobile manteve composicao empilhada propria, com marca, nome, subtitulo e formulario.
 - A identidade dark premium foi preservada, com magenta, dourado, verde escuro e textura sutil.
+
+## Rodada de Ajuste Desktop Sidebar/Header - 2026-05-29
+
+Pedido especifico desta rodada:
+
+- Centralizar a marca no desktop e reduzir texto no login.
+- Melhorar a divisao visual do login em dois paineis sem descaracterizar a marca.
+- Substituir o botao quadrado preso na lateral da sidebar por um botao hamburguer limpo no header.
+
+Decisoes aplicadas:
+
+- O botao `.sidebar__toggle` foi removido.
+- O botao `.topbar__menu` passou a controlar a sidebar no desktop e a abrir o menu no mobile.
+- A sidebar expandida continua exibindo marca, nome e labels; a colapsada exibe apenas icones alinhados.
+- O estado colapsado continua persistido em `localStorage`.
+- O mobile foi preservado: em telas pequenas, o mesmo botao abre o menu lateral temporario.
 
 ## Retomada do Ponto Exato
 

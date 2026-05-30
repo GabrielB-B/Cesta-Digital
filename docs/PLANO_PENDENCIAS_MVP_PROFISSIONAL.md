@@ -178,7 +178,7 @@ Proximo foco:
 Concluido nesta rodada:
 
 - Menu lateral recebeu indicador ativo mais claro, `aria-current` na rota atual e refinamento do gancho de recolher/expandir.
-- Controle de recolher/expandir do menu passou a usar icones vetoriais prontos `PanelLeftClose` e `PanelLeftOpen` de `lucide-react`, removendo o desenho manual anterior.
+- Controle de recolher/expandir do menu desktop passou para um botao hamburguer integrado ao header, removendo o controle pequeno preso na borda da sidebar.
 - Botao de sair recebeu tratamento visual especifico sem alterar a identidade da topbar.
 - Tabelas receberam moldura, cabecalho mais definido, hover com indicador lateral e links com sublinhado refinado.
 - Listas, cards de checkbox, empty states e mensagens de feedback ganharam microestados de hover/foco mais consistentes.
