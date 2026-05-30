@@ -200,6 +200,57 @@ test.beforeEach(async ({ page }) => {
   await mockApi(page);
 });
 
+async function expectLoginBrandSeparated(page: Page) {
+  const mark = page.locator(".login-card__brand .brand-lockup__mark").first();
+  const title = page.locator(".login-card__brand .brand-lockup__title").first();
+
+  await expect(mark).toBeVisible();
+  await expect(title).toHaveText("Cesta Digital");
+
+  const markBox = await mark.boundingBox();
+  const titleBox = await title.boundingBox();
+
+  expect(markBox).not.toBeNull();
+  expect(titleBox).not.toBeNull();
+  expect(markBox!.y + markBox!.height).toBeLessThanOrEqual(titleBox!.y - 4);
+}
+
+test("login brand and loading remain polished on desktop and mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 1365, height: 768 });
+  await page.goto("/login");
+  await expectLoginBrandSeparated(page);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expectLoginBrandSeparated(page);
+
+  await page.getByLabel("Nome de login").fill("admin");
+  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByRole("button", { name: "Entrar" }).click();
+
+  await expect(page.locator(".login-loading .brand-lockup--mark-only")).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+});
+
+test("auth loading uses the brand symbol on desktop and mobile", async ({ page }) => {
+  await page.unroute("**/auth/me");
+  await page.route("**/auth/me", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await fulfillJson(route, currentUser);
+  });
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  await expect(page.locator(".app-loading .brand-lockup--mark-only")).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+
+  await expect(page.locator(".app-loading .brand-lockup--mark-only")).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+});
+
 test("login, dashboard and core operational routes render", async ({ page }) => {
   await page.goto("/login");
 

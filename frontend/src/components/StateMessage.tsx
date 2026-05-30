@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BrandLockup } from "./BrandLockup";
 
 type StateMessageVariant = "empty" | "loading" | "error" | "success";
 
@@ -11,6 +12,15 @@ export function StateMessage({
   children,
   variant = "empty",
 }: StateMessageProps) {
+  if (variant === "loading") {
+    return (
+      <div className="empty-state empty-state--loading" role="status" aria-live="polite">
+        <BrandLockup variant="compact" title="Cesta Digital" subtitle="" markOnly />
+        <span>{children}</span>
+      </div>
+    );
+  }
+
   let className = "empty-state";
 
   if (variant === "error") {

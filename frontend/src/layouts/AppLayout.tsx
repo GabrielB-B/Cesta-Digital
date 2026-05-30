@@ -276,6 +276,8 @@ export function AppLayout() {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
+                  data-label={item.label}
+                  aria-label={isSidebarCollapsed ? item.label : undefined}
                   title={isSidebarCollapsed ? item.label : undefined}
                   aria-current={isActive(item.path) ? "page" : undefined}
                   className={
@@ -344,6 +346,7 @@ export function AppLayout() {
                 aria-label={`Conta de ${user?.name ?? "Usuario"}`}
                 aria-haspopup="menu"
                 aria-expanded={isAccountMenuOpen}
+                title={user?.login_name ? `${user.name} (@${user.login_name})` : user?.name ?? "Usuario"}
                 onClick={() => setIsAccountMenuOpen((current) => !current)}
               >
                 <span className="topbar__avatar" aria-hidden="true">

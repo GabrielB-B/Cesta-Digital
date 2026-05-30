@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AppLoading } from "../components/AppLoading";
 import { useAuth } from "../contexts/useAuth";
 import { AccessDeniedPage } from "../pages/AccessDeniedPage";
 
@@ -11,14 +12,7 @@ export function RoleRoute({ allowedRoles, children }: RoleRouteProps) {
   const { isLoading, user } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="login-page">
-        <div className="login-card">
-          <h1>Cesta Digital</h1>
-          <p>Carregando permissões...</p>
-        </div>
-      </div>
-    );
+    return <AppLoading label="Carregando permissoes..." />;
   }
 
   const userRoles = user?.roles ?? [];

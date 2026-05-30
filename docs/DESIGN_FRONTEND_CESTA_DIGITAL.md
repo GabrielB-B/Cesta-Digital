@@ -109,6 +109,33 @@ Antes de declarar uma rodada visual como pronta:
 - Conferencia em desktop e mobile.
 - Verificacao de login, dashboard, familias, estoque e entregas.
 
+## Rodada de Lapidacao Premium - 2026-05-29
+
+Objetivo da rodada:
+
+- Preservar a identidade dark premium com rosa, ouro e verde escuro.
+- Corrigir o uso da marca no login, loading, sidebar e headers.
+- Refinar sidebar desktop expandida/colapsada, menu de conta e estados de carregamento.
+- Reforcar responsividade e evitar que botoes/tabelas quebrem visualmente.
+
+Ajustes aplicados:
+
+- A imagem da marca passou a respeitar a caixa visual da composicao, evitando colisao entre simbolo e titulo.
+- O loading de autenticacao usa apenas o simbolo da marca com microanimacao sutil.
+- Estados internos de loading usam o simbolo da marca em vez de parecerem mensagens soltas.
+- Sidebar desktop recebeu trigger de colapso integrado na borda, tooltips visuais no estado colapsado e proporcoes mais consistentes da marca.
+- Header/menu de conta recebeu refinamento de alinhamento, hover, dropdown e truncamento seguro.
+- Tabelas e botoes de acao receberam protecoes contra quebra de texto, overflow e compressao visual.
+
+Validacao automatizada adicionada:
+
+- Login desktop e mobile com verificacao de separacao entre simbolo e texto `Cesta Digital`.
+- Loading de login com simbolo da marca.
+- Loading de autenticacao em desktop e mobile.
+- Sidebar desktop expandida/colapsada.
+- Menu de conta e logout.
+- Rotas operacionais principais com chamadas mockadas no Playwright.
+
 ## Retomada do Ponto Exato
 
 Estado reconstruido a partir do commit `f5d0fa1`, com a rodada de identidade visual e componentizacao ja aplicada.
