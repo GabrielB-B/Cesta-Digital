@@ -1140,7 +1140,7 @@ textarea {
 }
 
 .login-success-overlay {
-  --login-success-duration: 2600ms;
+  --login-success-duration: 2900ms;
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -1182,6 +1182,95 @@ textarea {
     radial-gradient(circle, transparent 0 34%, rgba(0, 0, 0, 0.2) 72%),
     linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 38%, rgba(0, 0, 0, 0.22));
   opacity: 0.9;
+}
+
+.login-success-overlay--video {
+  background:
+    radial-gradient(circle at 50% 52%, rgba(223, 87, 157, 0.18), transparent 34%),
+    radial-gradient(circle at 72% 76%, rgba(95, 203, 138, 0.1), transparent 44%),
+    linear-gradient(145deg, #070d0b 0%, #101411 52%, #150d14 100%);
+}
+
+.login-success-overlay--video::before {
+  z-index: 1;
+  background:
+    radial-gradient(ellipse at 36% 55%, rgba(248, 245, 237, 0.05), transparent 28%),
+    radial-gradient(ellipse at 66% 45%, rgba(223, 87, 157, 0.12), transparent 32%),
+    linear-gradient(120deg, rgba(95, 203, 138, 0.08), transparent 38%, rgba(232, 184, 74, 0.04));
+  mix-blend-mode: screen;
+  opacity: 0.52;
+  animation: login-success-video-atmosphere var(--login-success-duration) ease both;
+}
+
+.login-success-overlay--video::after {
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 98% 88%, #030505 0 8%, rgba(3, 5, 5, 0.96) 12%, rgba(3, 5, 5, 0.72) 17%, transparent 24%),
+    radial-gradient(ellipse at 50% 52%, transparent 0 37%, rgba(0, 0, 0, 0.3) 76%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent 42%, rgba(0, 0, 0, 0.42)),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.18), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.22));
+  opacity: 1;
+}
+
+.login-success-overlay__video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  filter: saturate(1.08) contrast(1.04) brightness(0.9);
+  transform: scale(1.015);
+  transform-origin: center;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  transition:
+    opacity 180ms ease,
+    filter 260ms ease,
+    transform 260ms ease;
+  will-change: opacity, transform, filter;
+}
+
+.login-success-overlay--video-ready .login-success-overlay__video {
+  opacity: 1;
+  animation: login-success-video-drift var(--login-success-duration) ease both;
+}
+
+.login-success-overlay--video-finished .login-success-overlay__video {
+  opacity: 0.36;
+  filter: saturate(0.86) contrast(1.02) brightness(0.62);
+  transform: scale(1.028);
+}
+
+.login-success-overlay--video .login-success-overlay__mark {
+  z-index: 3;
+  width: clamp(150px, 19vw, 300px);
+  height: clamp(150px, 19vw, 300px);
+  animation: login-success-video-mark var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay--video .login-success-overlay__mark::before {
+  background:
+    radial-gradient(circle, rgba(223, 87, 157, 0.4), transparent 48%),
+    radial-gradient(circle, rgba(232, 184, 74, 0.16), transparent 66%);
+  animation: login-success-video-halo var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay--video .login-success-overlay__mark-ring {
+  opacity: 0;
+  animation: login-success-video-ring var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay--video .login-success-overlay__mark .brand-lockup__mark {
+  clip-path: circle(16% at 50% 54%);
+  animation: login-success-video-symbol var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay--video .login-success-overlay__mark::after {
+  animation: login-success-video-shine var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .login-success-overlay__aura {
@@ -1638,6 +1727,37 @@ textarea {
   }
 }
 
+@keyframes login-success-video-atmosphere {
+  0% {
+    opacity: 0;
+    transform: translate3d(-1%, 1%, 0) scale(1.02);
+  }
+
+  12%,
+  78% {
+    opacity: 0.54;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(1%, -1%, 0) scale(1.06);
+  }
+}
+
+@keyframes login-success-video-drift {
+  0% {
+    transform: scale(1.015);
+  }
+
+  72% {
+    transform: scale(1.022);
+  }
+
+  100% {
+    transform: scale(1.032);
+  }
+}
+
 @keyframes login-success-aura {
   0% {
     opacity: 0;
@@ -1796,6 +1916,33 @@ textarea {
   }
 }
 
+@keyframes login-success-video-mark {
+  0%,
+  66% {
+    opacity: 0;
+    transform: scale(0.82);
+    filter: blur(10px);
+  }
+
+  76% {
+    opacity: 1;
+    transform: scale(1.06);
+    filter: blur(0);
+  }
+
+  87% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.98);
+    filter: blur(2px);
+  }
+}
+
 @keyframes login-success-symbol {
   0%,
   52% {
@@ -1824,6 +1971,33 @@ textarea {
   }
 }
 
+@keyframes login-success-video-symbol {
+  0%,
+  66% {
+    opacity: 0;
+    clip-path: circle(16% at 50% 54%);
+    transform: translateZ(0) scale(0.8) rotate(-1deg);
+  }
+
+  76% {
+    opacity: 1;
+    clip-path: circle(76% at 50% 54%);
+    transform: translateZ(0) scale(1.08) rotate(0);
+  }
+
+  87% {
+    opacity: 1;
+    clip-path: circle(76% at 50% 54%);
+    transform: translateZ(0) scale(1) rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+    clip-path: circle(76% at 50% 54%);
+    transform: translateZ(0) scale(0.98) rotate(0);
+  }
+}
+
 @keyframes login-success-ring {
   0%,
   48% {
@@ -1845,6 +2019,29 @@ textarea {
   100% {
     opacity: 0;
     transform: rotate(78deg) scale(1.1);
+  }
+}
+
+@keyframes login-success-video-ring {
+  0%,
+  62% {
+    opacity: 0;
+    transform: rotate(-38deg) scale(0.76);
+  }
+
+  75% {
+    opacity: 0.78;
+    transform: rotate(8deg) scale(1);
+  }
+
+  86% {
+    opacity: 0.28;
+    transform: rotate(42deg) scale(1.06);
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(76deg) scale(1.12);
   }
 }
 
@@ -1875,6 +2072,29 @@ textarea {
   }
 }
 
+@keyframes login-success-video-halo {
+  0%,
+  62% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  76% {
+    opacity: 0.76;
+    transform: scale(1);
+  }
+
+  88% {
+    opacity: 0.28;
+    transform: scale(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+}
+
 @keyframes login-success-shine {
   0%,
   66% {
@@ -1887,6 +2107,24 @@ textarea {
   }
 
   86%,
+  100% {
+    opacity: 0;
+    transform: translateX(72%) rotate(14deg);
+  }
+}
+
+@keyframes login-success-video-shine {
+  0%,
+  76% {
+    opacity: 0;
+    transform: translateX(-72%) rotate(14deg);
+  }
+
+  83% {
+    opacity: 0.42;
+  }
+
+  94%,
   100% {
     opacity: 0;
     transform: translateX(72%) rotate(14deg);
@@ -3776,6 +4014,7 @@ textarea::placeholder {
   .login-success-overlay::after,
   .login-success-overlay__aura,
   .login-success-overlay__smoke,
+  .login-success-overlay__video,
   .login-success-overlay__infinity,
   .login-success-overlay__trails,
   .login-success-overlay__mark::before,
@@ -3792,12 +4031,17 @@ textarea::placeholder {
   }
 
   @keyframes login-success-reduced-fade {
-    from {
+    0% {
       opacity: 0;
     }
 
-    to {
+    18%,
+    82% {
       opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
     }
   }
 }
@@ -4216,6 +4460,11 @@ textarea::placeholder {
   .login-success-overlay__mark {
     width: clamp(130px, 38vw, 160px);
     height: clamp(130px, 38vw, 160px);
+  }
+
+  .login-success-overlay--video .login-success-overlay__mark {
+    width: clamp(136px, 42vw, 170px);
+    height: clamp(136px, 42vw, 170px);
   }
 
   .login-success-overlay__infinity {

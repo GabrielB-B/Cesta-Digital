@@ -49,7 +49,7 @@ function normalizeLoginError(detail: unknown) {
   return "";
 }
 
-const LOGIN_SUCCESS_SPLASH_MS = 2600;
+const LOGIN_SUCCESS_SPLASH_MS = 2900;
 const LOGIN_SUCCESS_SPLASH_REDUCED_MS = 620;
 
 function getLoginSuccessSplashDuration() {
