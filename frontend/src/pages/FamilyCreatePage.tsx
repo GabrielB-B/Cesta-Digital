@@ -520,6 +520,53 @@ export function FamilyCreatePage() {
           </label>
         </FormSection>
 
+        <FormSection
+          id="vinculo-igreja"
+          eyebrow="Vinculo com a igreja"
+          title="Igreja, UPG e participacao"
+        >
+          <label className="checkbox-card">
+            <input
+              type="checkbox"
+              name="attends_church"
+              checked={formData.attends_church}
+              onChange={handleInputChange}
+            />
+            <span>Frequenta igreja ou UPG</span>
+          </label>
+
+          <label className="form__group">
+            <span>Igreja ou UPG</span>
+            <input
+              name="church_name"
+              value={formData.church_name}
+              onChange={handleInputChange}
+              placeholder="Ex.: Sede, congregacao, UPG..."
+            />
+          </label>
+
+          <label className="form__group form__group--wide">
+            <span>O que faz ou qual vinculo possui</span>
+            <textarea
+              name="community_relationship"
+              value={formData.community_relationship}
+              onChange={handleInputChange}
+              rows={3}
+              placeholder="Ex.: membro, visitante, lider, voluntario, familia acompanhada..."
+            />
+          </label>
+
+          <label className="form__group">
+            <span>Escolaridade do responsavel</span>
+            <input
+              name="responsible_education_level"
+              value={formData.responsible_education_level}
+              onChange={handleInputChange}
+              placeholder="Opcional"
+            />
+          </label>
+        </FormSection>
+
         <FormSection eyebrow="Contato principal" title="Contato inicial da família">
           <label className="form__group">
             <span>Nome do contato</span>

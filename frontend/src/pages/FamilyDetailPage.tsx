@@ -289,24 +289,31 @@ export function FamilyDetailPage() {
 
       <section className="content-grid">
         <article className="panel-card">
-          <div className="panel-card__header">
+          <div className="panel-card__header panel-card__header--actions">
             <div>
               <p className="eyebrow">Perfil social</p>
-              <h3>Vinculo comunitario e acesso</h3>
+              <h3>Igreja e vinculo comunitario</h3>
             </div>
+
+            <Link
+              to={`/families/${family.id}/edit#vinculo-igreja`}
+              className="button button--secondary button--small button--link"
+            >
+              Editar vinculo
+            </Link>
           </div>
 
           <div className="detail-grid">
             <div className="detail-item">
-              <span>Frequenta igreja</span>
+              <span>Frequenta igreja/UPG</span>
               <strong>{family.attends_church ? "Sim" : "Nao"}</strong>
             </div>
             <div className="detail-item">
-              <span>Igreja</span>
+              <span>Igreja ou UPG</span>
               <strong>{family.church_name || "Nao informado"}</strong>
             </div>
             <div className="detail-item">
-              <span>Relacao com a comunidade</span>
+              <span>O que faz ou vinculo</span>
               <strong>{family.community_relationship || "Nao informado"}</strong>
             </div>
             <div className="detail-item">

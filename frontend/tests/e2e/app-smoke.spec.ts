@@ -319,8 +319,28 @@ test("login brand and loading remain polished on desktop and mobile", async ({ p
   await page.getByLabel("Senha").fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
-  await expect(page.locator(".login-loading .brand-lockup--mark-only")).toBeVisible();
+  await expect(page.locator(".login-success-overlay .brand-lockup--mark-only")).toBeVisible();
   await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+});
+
+test("failed login keeps the user on login without success splash", async ({ page }) => {
+  await page.unroute("**/auth/login");
+  await page.route("**/auth/login", async (route) => {
+    await route.fulfill({
+      status: 401,
+      contentType: "application/json",
+      body: JSON.stringify({ detail: "Credenciais invalidas." }),
+    });
+  });
+
+  await page.goto("/login");
+  await page.getByLabel("Nome de login").fill("admin");
+  await page.getByLabel("Senha").fill("senha-errada");
+  await page.getByRole("button", { name: "Entrar" }).click();
+
+  await expect(page.getByText("Credenciais invalidas.")).toBeVisible();
+  await expect(page.locator(".login-success-overlay")).toHaveCount(0);
+  await expect(page.getByLabel("Nome de login")).toBeVisible();
 });
 
 test("auth loading uses the brand symbol on desktop and mobile", async ({ page }) => {
@@ -380,6 +400,24 @@ test("delivery confirmation shows success feedback", async ({ page }) => {
   await expect(
     page.getByText("Entrega confirmada e estoque baixado automaticamente.")
   ).toBeVisible();
+});
+
+test("family creation makes church and UPG relationship easy to fill", async ({ page }) => {
+  await page.goto("/families/new");
+
+  await expect(page.getByRole("heading", { name: "Igreja, UPG e participacao" })).toBeVisible();
+  await expect(page.getByText("Frequenta igreja ou UPG")).toBeVisible();
+
+  const churchNameField = page.getByRole("textbox", { name: "Igreja ou UPG" });
+  const communityRelationshipField = page.getByRole("textbox", {
+    name: "O que faz ou qual vinculo possui",
+  });
+
+  await churchNameField.fill("UPG Central");
+  await communityRelationshipField.fill("Voluntaria no acolhimento");
+
+  await expect(churchNameField).toHaveValue("UPG Central");
+  await expect(communityRelationshipField).toHaveValue("Voluntaria no acolhimento");
 });
 
 test("mobile shell opens drawer navigation and compact account menu", async ({ page }) => {

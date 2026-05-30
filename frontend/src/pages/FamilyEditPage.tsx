@@ -655,7 +655,11 @@ export function FamilyEditPage() {
           </label>
         </FormSection>
 
-        <FormSection eyebrow="Renda e vínculo" title="Dados sociais complementares">
+        <FormSection
+          id="vinculo-igreja"
+          eyebrow="Renda e vinculo"
+          title="Igreja, UPG e participacao"
+        >
           <label className="form__group">
             <span>Renda mensal total</span>
             <input
@@ -687,33 +691,37 @@ export function FamilyEditPage() {
               checked={formData.attends_church}
               onChange={handleInputChange}
             />
-            <span>Frequenta igreja</span>
+            <span>Frequenta igreja ou UPG</span>
           </label>
 
           <label className="form__group">
-            <span>Igreja</span>
+            <span>Igreja ou UPG</span>
             <input
               name="church_name"
               value={formData.church_name}
               onChange={handleInputChange}
+              placeholder="Ex.: Sede, congregacao, UPG..."
             />
           </label>
 
-          <label className="form__group">
-            <span>Vínculo comunitário</span>
-            <input
+          <label className="form__group form__group--wide">
+            <span>O que faz ou qual vinculo possui</span>
+            <textarea
               name="community_relationship"
               value={formData.community_relationship}
               onChange={handleInputChange}
+              rows={3}
+              placeholder="Ex.: membro, visitante, lider, voluntario, familia acompanhada..."
             />
           </label>
 
           <label className="form__group">
-            <span>Escolaridade do responsável</span>
+            <span>Escolaridade do responsavel</span>
             <input
               name="responsible_education_level"
               value={formData.responsible_education_level}
               onChange={handleInputChange}
+              placeholder="Opcional"
             />
           </label>
         </FormSection>

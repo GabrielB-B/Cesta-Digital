@@ -4,6 +4,7 @@ import { LogIn, Mail, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { BrandLockup } from "../components/BrandLockup";
+import { LoginSuccessOverlay } from "../components/LoginSuccessOverlay";
 import { useAuth } from "../contexts/useAuth";
 import { getApiErrorMessage } from "../utils/api-error";
 
@@ -48,15 +49,22 @@ function normalizeLoginError(detail: unknown) {
   return "";
 }
 
-function waitForLoginReveal(startedAt: number, minimumDurationMs = 720) {
-  const elapsed = window.performance.now() - startedAt;
-  const remaining = minimumDurationMs - elapsed;
+const LOGIN_SUCCESS_SPLASH_MS = 1150;
+const LOGIN_SUCCESS_SPLASH_REDUCED_MS = 450;
 
-  if (remaining <= 0) {
-    return Promise.resolve();
+function getLoginSuccessSplashDuration() {
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    return LOGIN_SUCCESS_SPLASH_REDUCED_MS;
   }
 
-  return new Promise((resolve) => window.setTimeout(resolve, remaining));
+  return LOGIN_SUCCESS_SPLASH_MS;
+}
+
+function waitForLoginReveal(durationMs: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, durationMs));
 }
 
 export function LoginPage() {
@@ -70,6 +78,7 @@ export function LoginPage() {
   const [recoveryMessage, setRecoveryMessage] = useState("");
   const [recoveryError, setRecoveryError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccessSplashVisible, setIsSuccessSplashVisible] = useState(false);
   const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
   const [isRecoverySubmitting, setIsRecoverySubmitting] = useState(false);
 
@@ -96,13 +105,16 @@ export function LoginPage() {
     }
 
     setIsSubmitting(true);
-    const startedAt = window.performance.now();
+    setIsSuccessSplashVisible(false);
 
     try {
       await login(normalizedLoginName, normalizedPassword);
-      await waitForLoginReveal(startedAt);
-      navigate("/");
+      setIsSuccessSplashVisible(true);
+      await waitForLoginReveal(getLoginSuccessSplashDuration());
+      navigate("/", { replace: true });
     } catch (err) {
+      setIsSuccessSplashVisible(false);
+
       if (axios.isAxiosError(err)) {
         const backendDetail = err.response?.data?.detail;
         const normalizedError = normalizeLoginError(backendDetail);
@@ -150,13 +162,13 @@ export function LoginPage() {
     <div className="login-page">
       <div
         className={`login-shell${isSubmitting ? " login-shell--submitting" : ""}`}
-        aria-busy={isSubmitting}
+        aria-busy={isSubmitting || isSuccessSplashVisible}
       >
         <aside className="login-brand-panel" aria-label="Cesta Digital">
           <BrandLockup
             variant="login"
             title="Cesta Digital"
-            subtitle=""
+            subtitle="Gestao social, estoque e entregas em um so lugar."
           />
         </aside>
 
@@ -165,7 +177,7 @@ export function LoginPage() {
             <BrandLockup
               variant="login"
               title="Cesta Digital"
-              subtitle=""
+              subtitle="Gestao social, estoque e entregas em um so lugar."
             />
           </div>
 
@@ -235,9 +247,13 @@ export function LoginPage() {
               </p>
             ) : null}
 
-            <button type="submit" className="button login-card__submit" disabled={isSubmitting}>
+            <button
+              type="submit"
+              className="button login-card__submit"
+              disabled={isSubmitting || isSuccessSplashVisible}
+            >
               <LogIn size={18} aria-hidden="true" />
-              {isSubmitting ? "Entrando..." : "Entrar"}
+              {isSubmitting || isSuccessSplashVisible ? "Entrando..." : "Entrar"}
             </button>
           </form>
 
@@ -297,13 +313,9 @@ export function LoginPage() {
           ) : null}
         </section>
 
-        {isSubmitting ? (
-          <div className="login-loading" role="status" aria-live="polite">
-            <BrandLockup variant="compact" title="Cesta Digital" subtitle="" markOnly />
-            <span className="sr-only">Entrando...</span>
-          </div>
-        ) : null}
       </div>
+
+      {isSuccessSplashVisible ? <LoginSuccessOverlay /> : null}
     </div>
   );
 }

@@ -1139,6 +1139,89 @@ textarea {
   animation: login-mark-loading 880ms ease-in-out infinite;
 }
 
+.login-success-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(223, 87, 157, 0.28), transparent 29%),
+    radial-gradient(circle at 56% 58%, rgba(232, 184, 74, 0.09), transparent 28%),
+    radial-gradient(circle at 74% 72%, rgba(95, 203, 138, 0.1), transparent 36%),
+    linear-gradient(180deg, #0e1411 0%, #121815 54%, #171116 100%);
+  color: var(--text);
+  pointer-events: auto;
+  animation: login-success-overlay 1150ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay::before,
+.login-success-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.login-success-overlay::before {
+  background:
+    repeating-linear-gradient(135deg, rgba(248, 245, 237, 0.026) 0 1px, transparent 1px 24px),
+    linear-gradient(120deg, rgba(141, 47, 105, 0.13), transparent 48%, rgba(232, 184, 74, 0.035));
+  opacity: 0.54;
+}
+
+.login-success-overlay::after {
+  background: radial-gradient(circle, transparent 0 34%, rgba(0, 0, 0, 0.18) 72%);
+  opacity: 0.85;
+}
+
+.login-success-overlay__mark {
+  position: relative;
+  z-index: 1;
+  width: clamp(96px, 10vw, 136px);
+  height: clamp(96px, 10vw, 136px);
+  display: grid;
+  place-items: center;
+  user-select: none;
+  animation: login-success-mark 1150ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay__mark .brand-lockup,
+.login-success-overlay__mark .brand-lockup__mark-shell {
+  width: 100%;
+  height: 100%;
+}
+
+.login-success-overlay__mark .brand-lockup__mark {
+  pointer-events: none;
+  -webkit-user-drag: none;
+  filter:
+    drop-shadow(0 18px 30px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 0 24px rgba(223, 87, 157, 0.28))
+    drop-shadow(0 0 12px rgba(232, 184, 74, 0.12));
+}
+
+.login-success-overlay__mark::after {
+  content: "";
+  position: absolute;
+  inset: -24%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.38) 42%,
+    rgba(232, 184, 74, 0.22) 48%,
+    transparent 66%
+  );
+  border-radius: 999px;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform: translateX(-62%) rotate(14deg);
+  pointer-events: none;
+  animation: login-success-shine 1150ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
 @keyframes login-card-enter {
   from {
     opacity: 0;
@@ -1208,6 +1291,57 @@ textarea {
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes login-success-overlay {
+  0% {
+    opacity: 0;
+  }
+
+  14%,
+  78% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes login-success-mark {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  22%,
+  72% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes login-success-shine {
+  0%,
+  24% {
+    opacity: 0;
+    transform: translateX(-62%) rotate(14deg);
+  }
+
+  42% {
+    opacity: 0.42;
+  }
+
+  58%,
+  100% {
+    opacity: 0;
+    transform: translateX(62%) rotate(14deg);
   }
 }
 
@@ -2286,6 +2420,10 @@ textarea {
   min-width: 0;
 }
 
+.form-section[id] {
+  scroll-margin-top: 92px;
+}
+
 .form-panel > .panel-card__header:not(:first-child) {
   margin-top: 8px;
   padding-top: 22px;
@@ -3026,6 +3164,35 @@ textarea::placeholder {
   .topbar__account-menu-item:hover .button__icon {
     transform: none;
   }
+
+  .login-success-overlay__mark,
+  .login-success-overlay__mark .brand-lockup__mark {
+    transform: none !important;
+  }
+
+  .login-success-overlay {
+    animation: login-success-reduced-fade 420ms ease both !important;
+  }
+
+  .login-success-overlay__mark {
+    opacity: 1;
+    animation: none !important;
+  }
+
+  .login-success-overlay::before,
+  .login-success-overlay__mark::after {
+    display: none;
+  }
+
+  @keyframes login-success-reduced-fade {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
 }
 
 @media (max-width: 1200px) {
@@ -3437,6 +3604,11 @@ textarea::placeholder {
 
   .brand-lockup--login {
     gap: 18px;
+  }
+
+  .login-success-overlay__mark {
+    width: clamp(76px, 26vw, 104px);
+    height: clamp(76px, 26vw, 104px);
   }
 
   .login-form__label-row {

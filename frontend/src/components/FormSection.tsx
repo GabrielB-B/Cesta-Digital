@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { PanelHeader } from "./PanelHeader";
 
 interface FormSectionProps {
+  id?: string;
   eyebrow: string;
   title: string;
   children: ReactNode;
@@ -9,13 +10,14 @@ interface FormSectionProps {
 }
 
 export function FormSection({
+  id,
   eyebrow,
   title,
   children,
   gridClassName = "form-grid",
 }: FormSectionProps) {
   return (
-    <section className="form-section">
+    <section id={id} className="form-section">
       <PanelHeader eyebrow={eyebrow} title={title} />
       <div className={gridClassName}>{children}</div>
     </section>
