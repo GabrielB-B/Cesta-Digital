@@ -1140,6 +1140,7 @@ textarea {
 }
 
 .login-success-overlay {
+  --login-success-duration: 2600ms;
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -1148,13 +1149,13 @@ textarea {
   isolation: isolate;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 48%, rgba(223, 87, 157, 0.32), transparent 34%),
-    radial-gradient(circle at 48% 54%, rgba(232, 184, 74, 0.1), transparent 30%),
-    radial-gradient(circle at 74% 72%, rgba(95, 203, 138, 0.12), transparent 40%),
-    linear-gradient(145deg, #0e1411 0%, #131912 48%, #171116 100%);
+    radial-gradient(circle at 50% 50%, rgba(223, 87, 157, 0.24), transparent 31%),
+    radial-gradient(circle at 42% 58%, rgba(168, 78, 228, 0.16), transparent 34%),
+    radial-gradient(circle at 72% 72%, rgba(95, 203, 138, 0.11), transparent 42%),
+    linear-gradient(145deg, #08100d 0%, #101612 52%, #171016 100%);
   color: var(--text);
   pointer-events: auto;
-  animation: login-success-overlay 1450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: login-success-overlay var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .login-success-overlay::before,
@@ -1167,26 +1168,185 @@ textarea {
 
 .login-success-overlay::before {
   background:
-    repeating-linear-gradient(135deg, rgba(248, 245, 237, 0.026) 0 1px, transparent 1px 24px),
-    linear-gradient(120deg, rgba(141, 47, 105, 0.13), transparent 48%, rgba(232, 184, 74, 0.035));
-  opacity: 0.54;
+    radial-gradient(ellipse at 34% 54%, rgba(248, 245, 237, 0.052), transparent 24%),
+    radial-gradient(ellipse at 67% 43%, rgba(223, 87, 157, 0.11), transparent 30%),
+    repeating-linear-gradient(135deg, rgba(248, 245, 237, 0.024) 0 1px, transparent 1px 24px),
+    linear-gradient(120deg, rgba(141, 47, 105, 0.12), transparent 48%, rgba(232, 184, 74, 0.034));
+  opacity: 0.6;
+  transform: translate3d(-1.5%, 1%, 0) scale(1.03);
+  animation: login-success-smoke var(--login-success-duration) ease both;
 }
 
 .login-success-overlay::after {
-  background: radial-gradient(circle, transparent 0 34%, rgba(0, 0, 0, 0.18) 72%);
-  opacity: 0.85;
+  background:
+    radial-gradient(circle, transparent 0 34%, rgba(0, 0, 0, 0.2) 72%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 38%, rgba(0, 0, 0, 0.22));
+  opacity: 0.9;
+}
+
+.login-success-overlay__aura {
+  position: absolute;
+  z-index: 0;
+  width: clamp(260px, 38vw, 620px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(223, 87, 157, 0.34), transparent 43%),
+    radial-gradient(circle, rgba(232, 184, 74, 0.12), transparent 60%);
+  filter: blur(12px);
+  opacity: 0;
+  transform: scale(0.78);
+  pointer-events: none;
+  animation: login-success-aura var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay__smoke {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.login-success-overlay__smoke span {
+  position: absolute;
+  width: clamp(260px, 40vw, 620px);
+  height: clamp(130px, 20vw, 300px);
+  border-radius: 999px;
+  background:
+    radial-gradient(ellipse at 28% 50%, rgba(218, 226, 229, 0.36), transparent 58%),
+    radial-gradient(ellipse at 62% 40%, rgba(126, 137, 145, 0.24), transparent 66%);
+  filter: blur(16px);
+  mix-blend-mode: screen;
+  opacity: 0.56;
+  transform: translate3d(0, 0, 0);
+  animation: login-success-smoke-bank var(--login-success-duration) ease both;
+}
+
+.login-success-overlay__smoke span:nth-child(1) {
+  left: -9%;
+  bottom: 13%;
+}
+
+.login-success-overlay__smoke span:nth-child(2) {
+  right: -8%;
+  bottom: 15%;
+  animation-delay: 80ms;
+}
+
+.login-success-overlay__smoke span:nth-child(3) {
+  left: 32%;
+  bottom: 9%;
+  width: clamp(200px, 27vw, 430px);
+  opacity: 0.22;
+  animation-delay: 160ms;
+}
+
+.login-success-overlay__infinity {
+  position: absolute;
+  z-index: 1;
+  width: clamp(520px, 72vw, 980px);
+  max-width: calc(100vw - 28px);
+  height: auto;
+  overflow: visible;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 3vh, 0) scale(0.92);
+  transform-origin: center;
+  animation: login-success-infinity-stage var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay__energy-line {
+  --energy-dash: 1700;
+  fill: none;
+  stroke: url(#login-success-infinity);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: var(--energy-dash);
+  stroke-dashoffset: var(--energy-dash);
+  filter: url(#login-success-infinity-glow);
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+  animation: login-success-energy-draw 1320ms cubic-bezier(0.16, 0.86, 0.22, 1) both;
+}
+
+.login-success-overlay__energy-line--main {
+  stroke-width: 6;
+  animation-delay: 230ms;
+}
+
+.login-success-overlay__energy-line--violet {
+  --energy-dash: 1500;
+  stroke-width: 4.2;
+  opacity: 0;
+  animation-delay: 330ms;
+}
+
+.login-success-overlay__energy-line--rose {
+  --energy-dash: 1460;
+  stroke-width: 3.6;
+  animation-delay: 420ms;
+}
+
+.login-success-overlay__energy-line--spark {
+  --energy-dash: 650;
+  stroke-width: 2.6;
+  animation-delay: 520ms;
+}
+
+.login-success-overlay__trails {
+  position: absolute;
+  z-index: 1;
+  width: clamp(250px, 30vw, 500px);
+  height: auto;
+  overflow: visible;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0) rotate(-8deg) scale(0.92);
+  animation: login-success-mark-trails-stage var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay__trail {
+  fill: none;
+  stroke: url(#login-success-trail);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 620;
+  stroke-dashoffset: 620;
+  filter: url(#login-success-glow);
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+  animation: login-success-trail-draw 980ms cubic-bezier(0.18, 0.84, 0.22, 1) both;
+}
+
+.login-success-overlay__trail--outer {
+  animation-delay: 1040ms;
+}
+
+.login-success-overlay__trail--inner {
+  stroke-width: 3.8;
+  animation-delay: 1140ms;
+}
+
+.login-success-overlay__trail--stem {
+  stroke-width: 4.2;
+  animation-delay: 1240ms;
 }
 
 .login-success-overlay__mark {
   position: relative;
-  z-index: 1;
-  width: clamp(140px, 14vw, 220px);
-  height: clamp(140px, 14vw, 220px);
+  z-index: 2;
+  width: clamp(130px, 18vw, 280px);
+  height: clamp(130px, 18vw, 280px);
   display: grid;
   place-items: center;
+  pointer-events: none;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
   will-change: transform, opacity, filter;
-  animation: login-success-mark 1450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: login-success-mark var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .login-success-overlay__mark::before {
@@ -1200,7 +1360,22 @@ textarea {
   opacity: 0;
   transform: scale(0.72);
   pointer-events: none;
-  animation: login-success-halo 1450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: login-success-halo var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay__mark-ring {
+  position: absolute;
+  inset: -20%;
+  border-radius: 999px;
+  background:
+    conic-gradient(from -90deg, transparent 0 18%, rgba(168, 78, 228, 0.82) 31%, rgba(255, 76, 166, 0.9) 54%, rgba(232, 184, 74, 0.58) 67%, transparent 82%),
+    radial-gradient(circle, rgba(223, 87, 157, 0.18), transparent 58%);
+  opacity: 0;
+  transform: rotate(-36deg) scale(0.76);
+  pointer-events: none;
+  -webkit-mask: radial-gradient(circle, transparent 56%, #000 58%, #000 63%, transparent 66%);
+  mask: radial-gradient(circle, transparent 56%, #000 58%, #000 63%, transparent 66%);
+  animation: login-success-ring var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .login-success-overlay__mark .brand-lockup,
@@ -1209,13 +1384,23 @@ textarea {
   height: 100%;
 }
 
+.login-success-overlay__mark .brand-lockup.brand-lockup--compact,
+.login-success-overlay__mark .brand-lockup--compact .brand-lockup__mark-shell {
+  width: 100%;
+  height: 100%;
+}
+
 .login-success-overlay__mark .brand-lockup__mark {
   pointer-events: none;
   -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
   filter:
     drop-shadow(0 24px 42px rgba(0, 0, 0, 0.36))
     drop-shadow(0 0 34px rgba(223, 87, 157, 0.36))
     drop-shadow(0 0 18px rgba(232, 184, 74, 0.15));
+  clip-path: circle(18% at 50% 54%);
+  animation: login-success-symbol var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .login-success-overlay__mark::after {
@@ -1234,7 +1419,115 @@ textarea {
   mix-blend-mode: screen;
   transform: translateX(-62%) rotate(14deg);
   pointer-events: none;
-  animation: login-success-shine 1450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: login-success-shine var(--login-success-duration) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay__particles {
+  position: absolute;
+  inset: -16%;
+  pointer-events: none;
+}
+
+.login-success-overlay__particles span {
+  --particle-x: 0px;
+  --particle-y: 0px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 217, 238, 0.92);
+  box-shadow:
+    0 0 10px rgba(255, 76, 166, 0.48),
+    0 0 18px rgba(232, 184, 74, 0.18);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.55);
+  animation: login-success-particle 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-success-overlay__particles span:nth-child(1) {
+  --particle-x: -78px;
+  --particle-y: -36px;
+  animation-delay: 1720ms;
+}
+
+.login-success-overlay__particles span:nth-child(2) {
+  --particle-x: 74px;
+  --particle-y: -42px;
+  animation-delay: 1760ms;
+}
+
+.login-success-overlay__particles span:nth-child(3) {
+  --particle-x: 88px;
+  --particle-y: 28px;
+  animation-delay: 1820ms;
+}
+
+.login-success-overlay__particles span:nth-child(4) {
+  --particle-x: -62px;
+  --particle-y: 62px;
+  animation-delay: 1840ms;
+}
+
+.login-success-overlay__particles span:nth-child(5) {
+  --particle-x: 28px;
+  --particle-y: -78px;
+  animation-delay: 1780ms;
+}
+
+.login-success-overlay__particles span:nth-child(6) {
+  --particle-x: -96px;
+  --particle-y: 8px;
+  animation-delay: 1880ms;
+}
+
+.login-success-overlay__particles span:nth-child(7) {
+  --particle-x: 48px;
+  --particle-y: 76px;
+  animation-delay: 1900ms;
+}
+
+.login-success-overlay__particles span:nth-child(8) {
+  --particle-x: -18px;
+  --particle-y: -92px;
+  animation-delay: 1800ms;
+}
+
+.login-success-overlay__particles span:nth-child(9) {
+  --particle-x: 112px;
+  --particle-y: -8px;
+  animation-delay: 1860ms;
+}
+
+.login-success-overlay__particles span:nth-child(10) {
+  --particle-x: -108px;
+  --particle-y: -24px;
+  animation-delay: 1810ms;
+}
+
+.login-success-overlay__particles span:nth-child(11) {
+  --particle-x: 6px;
+  --particle-y: 106px;
+  animation-delay: 1920ms;
+}
+
+.login-success-overlay__particles span:nth-child(12) {
+  --particle-x: 92px;
+  --particle-y: 56px;
+  animation-delay: 1890ms;
+}
+
+.login-success-overlay__particles span:nth-child(13) {
+  --particle-x: -84px;
+  --particle-y: 84px;
+  animation-delay: 1940ms;
+}
+
+.login-success-overlay__particles span:nth-child(14) {
+  --particle-x: 64px;
+  --particle-y: -94px;
+  animation-delay: 1830ms;
 }
 
 @keyframes login-card-enter {
@@ -1314,36 +1607,183 @@ textarea {
     opacity: 0;
   }
 
-  12%,
-  80% {
+  9%,
+  86% {
     opacity: 1;
   }
 
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes login-success-smoke {
+  0% {
+    opacity: 0;
+    transform: translate3d(-2%, 1%, 0) scale(1.02);
+  }
+
+  12% {
+    opacity: 0.58;
+  }
+
+  72% {
+    opacity: 0.62;
+    transform: translate3d(1%, -1%, 0) scale(1.05);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(1.5%, -1.5%, 0) scale(1.08);
+  }
+}
+
+@keyframes login-success-aura {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  16% {
+    opacity: 0.54;
+    transform: scale(0.96);
+  }
+
+  58% {
+    opacity: 0.68;
+    transform: scale(1.08);
+  }
+
+  82% {
+    opacity: 0.34;
+    transform: scale(1.16);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.24);
+  }
+}
+
+@keyframes login-success-smoke-bank {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8%, 0) scale(0.92);
+  }
+
+  16%,
+  70% {
+    opacity: 0.56;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(4%, -2%, 0) scale(1.08);
+  }
+}
+
+@keyframes login-success-infinity-stage {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translate3d(0, 4vh, 0) scale(0.9);
+  }
+
+  18%,
+  44% {
+    opacity: 1;
+    transform: translate3d(0, 2vh, 0) scale(1);
+  }
+
+  58% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.38) rotate(76deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.34) rotate(82deg);
+  }
+}
+
+@keyframes login-success-energy-draw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: var(--energy-dash);
+  }
+
+  15% {
+    opacity: 0.95;
+  }
+
+  76% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -260;
+  }
+}
+
+@keyframes login-success-mark-trails-stage {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(-16deg) scale(0.86);
+  }
+
+  50%,
+  66% {
+    opacity: 0.96;
+    transform: translate3d(0, 0, 0) rotate(-8deg) scale(1);
+  }
+
+  78%,
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(2deg) scale(0.9);
+  }
+}
+
+@keyframes login-success-trail-draw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 620;
+  }
+
+  14% {
+    opacity: 0.92;
+  }
+
+  70% {
+    opacity: 0.9;
+    stroke-dashoffset: 0;
+  }
+
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -110;
   }
 }
 
 @keyframes login-success-mark {
-  0% {
+  0%,
+  52% {
     opacity: 0;
-    transform: scale(0.82);
-    filter: blur(8px);
+    transform: scale(0.78);
+    filter: blur(10px);
   }
 
-  26% {
+  64% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1.045);
     filter: blur(0);
   }
 
-  58% {
-    opacity: 1;
-    transform: scale(1.035);
-    filter: blur(0);
-  }
-
-  78% {
+  78%,
+  88% {
     opacity: 1;
     transform: scale(1);
     filter: blur(0);
@@ -1351,26 +1791,60 @@ textarea {
 
   100% {
     opacity: 0;
-    transform: scale(0.96);
+    transform: scale(0.98);
     filter: blur(2px);
   }
 }
 
-@keyframes login-success-shine {
+@keyframes login-success-symbol {
   0%,
-  26% {
+  52% {
     opacity: 0;
-    transform: translateX(-62%) rotate(14deg);
+    clip-path: circle(18% at 50% 54%);
+    transform: translateZ(0) scale(0.74) rotate(-2deg);
   }
 
-  44% {
-    opacity: 0.5;
+  64% {
+    opacity: 1;
+    clip-path: circle(75% at 50% 54%);
+    transform: translateZ(0) scale(1.08) rotate(0);
   }
 
-  62%,
+  78%,
+  88% {
+    opacity: 1;
+    clip-path: circle(75% at 50% 54%);
+    transform: translateZ(0) scale(1) rotate(0);
+  }
+
   100% {
     opacity: 0;
-    transform: translateX(62%) rotate(14deg);
+    clip-path: circle(75% at 50% 54%);
+    transform: translateZ(0) scale(0.98) rotate(0);
+  }
+}
+
+@keyframes login-success-ring {
+  0%,
+  48% {
+    opacity: 0;
+    transform: rotate(-40deg) scale(0.74);
+  }
+
+  62% {
+    opacity: 0.86;
+    transform: rotate(8deg) scale(1);
+  }
+
+  76% {
+    opacity: 0.42;
+    transform: rotate(44deg) scale(1.05);
+  }
+
+  88%,
+  100% {
+    opacity: 0;
+    transform: rotate(78deg) scale(1.1);
   }
 }
 
@@ -1380,19 +1854,58 @@ textarea {
     transform: scale(0.72);
   }
 
-  20% {
-    opacity: 0.84;
-    transform: scale(0.96);
+  50% {
+    opacity: 0;
+    transform: scale(0.82);
   }
 
-  62% {
-    opacity: 0.38;
-    transform: scale(1.12);
+  64% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+
+  82% {
+    opacity: 0.34;
+    transform: scale(1.14);
   }
 
   100% {
     opacity: 0;
     transform: scale(1.24);
+  }
+}
+
+@keyframes login-success-shine {
+  0%,
+  66% {
+    opacity: 0;
+    transform: translateX(-72%) rotate(14deg);
+  }
+
+  74% {
+    opacity: 0.46;
+  }
+
+  86%,
+  100% {
+    opacity: 0;
+    transform: translateX(72%) rotate(14deg);
+  }
+}
+
+@keyframes login-success-particle {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.55);
+  }
+
+  32% {
+    opacity: 0.82;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--particle-x)), calc(-50% + var(--particle-y))) scale(0.14);
   }
 }
 
@@ -3246,18 +3759,36 @@ textarea::placeholder {
   }
 
   .login-success-overlay {
-    animation: login-success-reduced-fade 420ms ease both !important;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(223, 87, 157, 0.18), transparent 32%),
+      linear-gradient(145deg, #08100d 0%, #101612 54%, #171016 100%);
+    animation: login-success-reduced-fade 520ms ease both !important;
   }
 
   .login-success-overlay__mark {
     opacity: 1;
+    width: clamp(130px, 18vw, 280px);
+    height: clamp(130px, 18vw, 280px);
     animation: none !important;
   }
 
   .login-success-overlay::before,
+  .login-success-overlay::after,
+  .login-success-overlay__aura,
+  .login-success-overlay__smoke,
+  .login-success-overlay__infinity,
+  .login-success-overlay__trails,
   .login-success-overlay__mark::before,
-  .login-success-overlay__mark::after {
+  .login-success-overlay__mark::after,
+  .login-success-overlay__mark-ring,
+  .login-success-overlay__particles {
     display: none;
+  }
+
+  .login-success-overlay__mark .brand-lockup__mark {
+    opacity: 1;
+    clip-path: none;
+    animation: none !important;
   }
 
   @keyframes login-success-reduced-fade {
@@ -3683,8 +4214,16 @@ textarea::placeholder {
   }
 
   .login-success-overlay__mark {
-    width: clamp(112px, 32vw, 144px);
-    height: clamp(112px, 32vw, 144px);
+    width: clamp(130px, 38vw, 160px);
+    height: clamp(130px, 38vw, 160px);
+  }
+
+  .login-success-overlay__infinity {
+    width: clamp(380px, 128vw, 560px);
+  }
+
+  .login-success-overlay__trails {
+    width: clamp(210px, 68vw, 300px);
   }
 
   .login-form__label-row {

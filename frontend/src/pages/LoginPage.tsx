@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogIn, Mail, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
@@ -49,8 +49,8 @@ function normalizeLoginError(detail: unknown) {
   return "";
 }
 
-const LOGIN_SUCCESS_SPLASH_MS = 1450;
-const LOGIN_SUCCESS_SPLASH_REDUCED_MS = 520;
+const LOGIN_SUCCESS_SPLASH_MS = 2600;
+const LOGIN_SUCCESS_SPLASH_REDUCED_MS = 620;
 
 function getLoginSuccessSplashDuration() {
   if (
@@ -61,10 +61,6 @@ function getLoginSuccessSplashDuration() {
   }
 
   return LOGIN_SUCCESS_SPLASH_MS;
-}
-
-function waitForLoginReveal(durationMs: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, durationMs));
 }
 
 export function LoginPage() {
@@ -81,9 +77,36 @@ export function LoginPage() {
   const [isSuccessSplashVisible, setIsSuccessSplashVisible] = useState(false);
   const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
   const [isRecoverySubmitting, setIsRecoverySubmitting] = useState(false);
+  const loginRevealTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (loginRevealTimeoutRef.current !== null) {
+        window.clearTimeout(loginRevealTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  function waitForLoginReveal(durationMs: number) {
+    if (loginRevealTimeoutRef.current !== null) {
+      window.clearTimeout(loginRevealTimeoutRef.current);
+    }
+
+    return new Promise<void>((resolve) => {
+      loginRevealTimeoutRef.current = window.setTimeout(() => {
+        loginRevealTimeoutRef.current = null;
+        resolve();
+      }, durationMs);
+    });
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (isSubmitting || isSuccessSplashVisible) {
+      return;
+    }
+
     setError("");
 
     const normalizedLoginName = loginName.trim().toLowerCase();
