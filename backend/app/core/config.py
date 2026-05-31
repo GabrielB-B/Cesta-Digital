@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     db_password: str
     db_ssl_required: bool = False
     db_ssl_ca: str | None = None
+    db_connect_timeout_seconds: int = 10
+    db_read_timeout_seconds: int = 30
+    db_write_timeout_seconds: int = 30
 
     first_admin_name: str
     first_admin_login_name: str = "admin"
@@ -97,6 +100,15 @@ class Settings(BaseSettings):
 
         if self.auth_cookie_samesite.lower() not in {"lax", "strict", "none"}:
             raise ValueError("AUTH_COOKIE_SAMESITE deve ser lax, strict ou none.")
+
+        if self.db_connect_timeout_seconds < 1:
+            raise ValueError("DB_CONNECT_TIMEOUT_SECONDS deve ser maior que zero.")
+
+        if self.db_read_timeout_seconds < 1:
+            raise ValueError("DB_READ_TIMEOUT_SECONDS deve ser maior que zero.")
+
+        if self.db_write_timeout_seconds < 1:
+            raise ValueError("DB_WRITE_TIMEOUT_SECONDS deve ser maior que zero.")
 
         return self
 

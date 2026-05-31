@@ -73,10 +73,10 @@ O servico esperado e:
 Na criacao do Blueprint, preencher os campos marcados como secretos:
 
 - `FRONTEND_CORS_ORIGINS`: URL final da Vercel, por exemplo `https://cesta-digital.vercel.app`.
-- `DB_HOST`: host do MySQL.
-- `DB_PORT`: porta do MySQL, normalmente `3306`.
-- `DB_NAME`: nome do banco.
-- `DB_USER`: usuario do banco.
+- `DB_HOST`: host do MySQL, por exemplo `cesta-digital-mysql-staging-cestadigitalupgpn.d.aivencloud.com`.
+- `DB_PORT`: porta do MySQL, por exemplo `10009` na Aiven.
+- `DB_NAME`: nome do banco, por exemplo `defaultdb`.
+- `DB_USER`: usuario do banco, por exemplo `avnadmin`.
 - `DB_PASSWORD`: senha do banco.
 - `DB_SSL_REQUIRED`: `true` quando usar Aiven MySQL.
 - `DB_SSL_CA`: opcional; deixe vazio para `ssl-mode=REQUIRED`.
@@ -84,6 +84,15 @@ Na criacao do Blueprint, preencher os campos marcados como secretos:
 - `FIRST_ADMIN_PASSWORD`: senha inicial forte do primeiro admin.
 
 O `SECRET_KEY` e gerado automaticamente pelo Blueprint.
+
+Antes de rodar deploy no Render, confirme na Aiven que o MySQL esta com status `RUNNING`. Se o banco estiver `POWERED OFF`, o pre-deploy do Render falha em `alembic upgrade head` com erro de DNS/conexao antes da aplicacao iniciar.
+
+Para reduzir recorrencia:
+
+- nao desligue manualmente o servico MySQL da Aiven;
+- mantenha o projeto Aiven com billing/plano compativel com uso continuo;
+- monitore notificacoes da Aiven sobre servicos ociosos, creditos ou trial;
+- rode o workflow `Production Healthcheck` no GitHub para verificar `https://cesta-digital-api.onrender.com/health/db` a cada 30 minutos.
 
 ### 3. Frontend na Vercel
 

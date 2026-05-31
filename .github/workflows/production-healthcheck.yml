@@ -1,0 +1,38 @@
+name: Production Healthcheck
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: production-healthcheck
+  cancel-in-progress: true
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check frontend login
+        run: |
+          curl --fail --silent --show-error --location \
+            --retry 2 \
+            --retry-delay 10 \
+            --connect-timeout 15 \
+            --max-time 45 \
+            https://cesta-digital.vercel.app/login \
+            --output /dev/null
+
+      - name: Check backend database
+        run: |
+          response="$(curl --fail --silent --show-error --location \
+            --retry 2 \
+            --retry-delay 10 \
+            --connect-timeout 15 \
+            --max-time 60 \
+            https://cesta-digital-api.onrender.com/health/db)"
+
+          echo "$response"
+          test "$response" = '{"database":"ok"}'

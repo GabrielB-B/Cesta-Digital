@@ -2,8 +2,9 @@ import logging
 from time import perf_counter
 from uuid import uuid4
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.router import api_router
 from app.core.config import settings
@@ -89,5 +90,11 @@ def read_root():
 
 @app.get("/health/db")
 def health_db():
-    test_db_connection()
+    try:
+        test_db_connection()
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Banco de dados indisponivel.",
+        ) from exc
     return {"database": "ok"}

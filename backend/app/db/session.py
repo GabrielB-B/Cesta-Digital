@@ -15,7 +15,11 @@ database_url = URL.create(
     database=settings.db_name,
 )
 
-database_connect_args = {}
+database_connect_args = {
+    "connect_timeout": settings.db_connect_timeout_seconds,
+    "read_timeout": settings.db_read_timeout_seconds,
+    "write_timeout": settings.db_write_timeout_seconds,
+}
 if settings.db_ssl_required:
     database_connect_args["ssl"] = {"verify_mode": "none"}
     if settings.db_ssl_ca:
@@ -27,6 +31,7 @@ engine = create_engine(
     echo=False,
     pool_pre_ping=True,
     pool_recycle=1800,
+    pool_timeout=settings.db_connect_timeout_seconds,
     connect_args=database_connect_args,
 )
 

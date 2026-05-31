@@ -59,6 +59,12 @@ services:
         value: true
       - key: DB_SSL_CA
         sync: false
+      - key: DB_CONNECT_TIMEOUT_SECONDS
+        value: 10
+      - key: DB_READ_TIMEOUT_SECONDS
+        value: 30
+      - key: DB_WRITE_TIMEOUT_SECONDS
+        value: 30
       - key: FIRST_ADMIN_EMAIL
         sync: false
       - key: FIRST_ADMIN_PASSWORD
