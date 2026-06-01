@@ -397,6 +397,7 @@ test("login brand and loading remain polished on desktop and mobile", async ({ p
   await expect(successOverlay).toHaveClass(/login-success-overlay--video/);
   await expect(page.locator(".login-success-overlay__video")).toHaveCount(1);
   await expect(successOverlay.locator(".brand-lockup--mark-only")).toHaveCount(0);
+  await expect(successOverlay).toHaveCSS("animation-name", "login-success-overlay-video");
   await page.waitForTimeout(3400);
   await expect(successOverlay).toBeVisible();
   await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toHaveCount(0);
@@ -452,6 +453,7 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
 
   const desktopSuccessOverlay = page.locator(".login-success-overlay");
   await expect(desktopSuccessOverlay).toHaveClass(/login-success-overlay--video/);
+  await expect(desktopSuccessOverlay).toHaveCSS("animation-name", "login-success-overlay-video");
   await expect(page.locator(".login-success-overlay__video")).toHaveCount(1);
   await expect(page.locator(".login-success-overlay__infinity, .login-success-overlay__trails")).toHaveCount(0);
   await expect(desktopSuccessOverlay.locator(".brand-lockup--mark-only")).toHaveCount(0);

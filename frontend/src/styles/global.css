@@ -1193,6 +1193,7 @@ textarea {
     radial-gradient(circle at 50% 52%, rgba(223, 87, 157, 0.18), transparent 34%),
     radial-gradient(circle at 72% 76%, rgba(95, 203, 138, 0.1), transparent 44%),
     linear-gradient(145deg, #070d0b 0%, #101411 52%, #150d14 100%);
+  animation-name: login-success-overlay-video;
 }
 
 .login-success-overlay--video::before {
@@ -1707,6 +1708,17 @@ textarea {
 
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes login-success-overlay-video {
+  0% {
+    opacity: 0;
+  }
+
+  9%,
+  100% {
+    opacity: 1;
   }
 }
 
