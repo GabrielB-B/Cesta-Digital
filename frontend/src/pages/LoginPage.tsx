@@ -1,10 +1,14 @@
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { LogIn, Mail, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { BrandLockup } from "../components/BrandLockup";
-import { LoginSuccessOverlay } from "../components/LoginSuccessOverlay";
+import {
+  LOGIN_SUCCESS_SPLASH_REDUCED_TIMEOUT_MS,
+  LOGIN_SUCCESS_SPLASH_TIMEOUT_MS,
+  LoginSuccessOverlay,
+} from "../components/LoginSuccessOverlay";
 import { useAuth } from "../contexts/useAuth";
 import { getApiErrorMessage } from "../utils/api-error";
 
@@ -49,18 +53,15 @@ function normalizeLoginError(detail: unknown) {
   return "";
 }
 
-const LOGIN_SUCCESS_SPLASH_MS = 3000;
-const LOGIN_SUCCESS_SPLASH_REDUCED_MS = 620;
-
 function getLoginSuccessSplashDuration() {
   if (
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches
   ) {
-    return LOGIN_SUCCESS_SPLASH_REDUCED_MS;
+    return LOGIN_SUCCESS_SPLASH_REDUCED_TIMEOUT_MS;
   }
 
-  return LOGIN_SUCCESS_SPLASH_MS;
+  return LOGIN_SUCCESS_SPLASH_TIMEOUT_MS;
 }
 
 export function LoginPage() {
@@ -78,24 +79,46 @@ export function LoginPage() {
   const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
   const [isRecoverySubmitting, setIsRecoverySubmitting] = useState(false);
   const loginRevealTimeoutRef = useRef<number | null>(null);
+  const loginRevealResolveRef = useRef<(() => void) | null>(null);
+
+  const resolveLoginReveal = useCallback(() => {
+    if (loginRevealTimeoutRef.current !== null) {
+      window.clearTimeout(loginRevealTimeoutRef.current);
+      loginRevealTimeoutRef.current = null;
+    }
+
+    if (loginRevealResolveRef.current !== null) {
+      const resolve = loginRevealResolveRef.current;
+      loginRevealResolveRef.current = null;
+      resolve();
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
       if (loginRevealTimeoutRef.current !== null) {
         window.clearTimeout(loginRevealTimeoutRef.current);
+        loginRevealTimeoutRef.current = null;
       }
+      loginRevealResolveRef.current = null;
     };
   }, []);
 
   function waitForLoginReveal(durationMs: number) {
     if (loginRevealTimeoutRef.current !== null) {
       window.clearTimeout(loginRevealTimeoutRef.current);
+      loginRevealTimeoutRef.current = null;
+    }
+
+    if (loginRevealResolveRef.current !== null) {
+      loginRevealResolveRef.current();
+      loginRevealResolveRef.current = null;
     }
 
     return new Promise<void>((resolve) => {
+      loginRevealResolveRef.current = resolve;
       loginRevealTimeoutRef.current = window.setTimeout(() => {
-        loginRevealTimeoutRef.current = null;
-        resolve();
+        resolveLoginReveal();
       }, durationMs);
     });
   }
@@ -338,7 +361,7 @@ export function LoginPage() {
 
       </div>
 
-      {isSuccessSplashVisible ? <LoginSuccessOverlay /> : null}
+      {isSuccessSplashVisible ? <LoginSuccessOverlay onComplete={resolveLoginReveal} /> : null}
     </div>
   );
 }

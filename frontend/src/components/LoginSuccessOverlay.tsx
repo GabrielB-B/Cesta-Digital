@@ -1,17 +1,58 @@
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { BrandLockup } from "./BrandLockup";
 
 const SPLASH_VIDEO_START_SECONDS = 3.05;
-const SPLASH_VIDEO_END_SECONDS = 6.28;
-const SPLASH_VIDEO_PLAYBACK_RATE = 1.28;
+const SPLASH_VIDEO_END_SECONDS = 9.88;
+const SPLASH_VIDEO_PLAYBACK_RATE = 1;
+const LOGIN_SUCCESS_VIDEO_DURATION_MS = 7400;
+const LOGIN_SUCCESS_VIDEO_OUTRO_MS = 560;
+const LOGIN_SUCCESS_FALLBACK_MS = 4200;
 
-export function LoginSuccessOverlay() {
+export const LOGIN_SUCCESS_SPLASH_TIMEOUT_MS = 8500;
+export const LOGIN_SUCCESS_SPLASH_REDUCED_TIMEOUT_MS = 900;
+
+interface LoginSuccessOverlayProps {
+  onComplete?: () => void;
+}
+
+export function LoginSuccessOverlay({ onComplete }: LoginSuccessOverlayProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hasStartedVideoRef = useRef(false);
+  const hasCompletedRef = useRef(false);
+  const completionTimeoutRef = useRef<number | null>(null);
   const [hasVideoFailed, setHasVideoFailed] = useState(false);
   const [hasVideoFinished, setHasVideoFinished] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
+
+  const clearCompletionTimeout = useCallback(() => {
+    if (completionTimeoutRef.current !== null) {
+      window.clearTimeout(completionTimeoutRef.current);
+      completionTimeoutRef.current = null;
+    }
+  }, []);
+
+  const completeSplash = useCallback(() => {
+    if (hasCompletedRef.current) {
+      return;
+    }
+
+    hasCompletedRef.current = true;
+    clearCompletionTimeout();
+    onComplete?.();
+  }, [clearCompletionTimeout, onComplete]);
+
+  const completeSplashAfter = useCallback(
+    (delayMs: number) => {
+      if (hasCompletedRef.current) {
+        return;
+      }
+
+      clearCompletionTimeout();
+      completionTimeoutRef.current = window.setTimeout(completeSplash, delayMs);
+    },
+    [clearCompletionTimeout, completeSplash],
+  );
 
   useEffect(() => {
     if (!window.matchMedia) {
@@ -31,7 +72,13 @@ export function LoginSuccessOverlay() {
     };
   }, []);
 
-  const shouldUseVideo = !isReducedMotion && !hasVideoFailed;
+  const shouldUseVideo = !isReducedMotion;
+  const overlayDurationMs = shouldUseVideo && !hasVideoFailed
+    ? LOGIN_SUCCESS_VIDEO_DURATION_MS
+    : LOGIN_SUCCESS_FALLBACK_MS;
+  const overlayStyle = {
+    "--login-success-duration": `${overlayDurationMs}ms`,
+  } as CSSProperties;
   const className = [
     "login-success-overlay",
     shouldUseVideo ? "login-success-overlay--video" : null,
@@ -40,6 +87,34 @@ export function LoginSuccessOverlay() {
   ]
     .filter(Boolean)
     .join(" ");
+
+  useEffect(() => clearCompletionTimeout, [clearCompletionTimeout]);
+
+  useEffect(() => {
+    if (isReducedMotion) {
+      completeSplashAfter(LOGIN_SUCCESS_SPLASH_REDUCED_TIMEOUT_MS);
+      return;
+    }
+
+    if (hasVideoFailed) {
+      completeSplashAfter(LOGIN_SUCCESS_FALLBACK_MS);
+    }
+  }, [completeSplashAfter, hasVideoFailed, isReducedMotion]);
+
+  useEffect(() => {
+    if (shouldUseVideo && isVideoReady) {
+      completeSplashAfter(LOGIN_SUCCESS_VIDEO_DURATION_MS);
+    }
+  }, [completeSplashAfter, isVideoReady, shouldUseVideo]);
+
+  function finishSplashVideo() {
+    if (hasVideoFinished) {
+      return;
+    }
+
+    setHasVideoFinished(true);
+    completeSplashAfter(LOGIN_SUCCESS_VIDEO_OUTRO_MS);
+  }
 
   function playSplashVideo() {
     const video = videoRef.current;
@@ -84,8 +159,7 @@ export function LoginSuccessOverlay() {
       return;
     }
 
-    video.pause();
-    setHasVideoFinished(true);
+    finishSplashVideo();
   }
 
   return (
@@ -94,6 +168,7 @@ export function LoginSuccessOverlay() {
       role="status"
       aria-live="polite"
       aria-label="Entrada confirmada no Cesta Digital"
+      style={overlayStyle}
     >
       {shouldUseVideo ? (
         <video
@@ -106,7 +181,7 @@ export function LoginSuccessOverlay() {
           onCanPlay={handleVideoCanPlay}
           onSeeked={handleVideoSeeked}
           onTimeUpdate={handleVideoTimeUpdate}
-          onEnded={() => setHasVideoFinished(true)}
+          onEnded={finishSplashVideo}
           onError={() => setHasVideoFailed(true)}
           aria-hidden="true"
         >

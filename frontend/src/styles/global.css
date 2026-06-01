@@ -1141,6 +1141,10 @@ textarea {
 
 .login-success-overlay {
   --login-success-duration: 3000ms;
+  --login-success-video-scale-start: 1.18;
+  --login-success-video-scale-mid: 1.21;
+  --login-success-video-scale-end: 1.24;
+  --login-success-video-scale-finished: 1.26;
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -1221,7 +1225,7 @@ textarea {
   object-fit: cover;
   opacity: 0;
   filter: saturate(1.08) contrast(1.04) brightness(0.9);
-  transform: scale(1.015);
+  transform: scale(var(--login-success-video-scale-start));
   transform-origin: center;
   pointer-events: none;
   user-select: none;
@@ -1242,7 +1246,7 @@ textarea {
 .login-success-overlay--video-finished .login-success-overlay__video {
   opacity: 0.36;
   filter: saturate(0.86) contrast(1.02) brightness(0.62);
-  transform: scale(1.028);
+  transform: scale(var(--login-success-video-scale-finished));
 }
 
 .login-success-overlay--video .login-success-overlay__mark {
@@ -1746,15 +1750,15 @@ textarea {
 
 @keyframes login-success-video-drift {
   0% {
-    transform: scale(1.015);
+    transform: scale(var(--login-success-video-scale-start));
   }
 
   72% {
-    transform: scale(1.022);
+    transform: scale(var(--login-success-video-scale-mid));
   }
 
   100% {
-    transform: scale(1.032);
+    transform: scale(var(--login-success-video-scale-end));
   }
 }
 
@@ -4452,6 +4456,13 @@ textarea::placeholder {
 }
 
 @media (max-width: 640px) {
+  .login-success-overlay {
+    --login-success-video-scale-start: 1.015;
+    --login-success-video-scale-mid: 1.022;
+    --login-success-video-scale-end: 1.032;
+    --login-success-video-scale-finished: 1.028;
+  }
+
   .login-card {
     max-width: none;
     padding: 28px 18px;
