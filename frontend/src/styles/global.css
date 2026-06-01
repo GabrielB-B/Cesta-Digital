@@ -4033,6 +4033,10 @@ textarea::placeholder {
     animation: login-success-reduced-fade 520ms ease both !important;
   }
 
+  .login-success-overlay.login-success-overlay--video {
+    animation: login-success-overlay-video 520ms ease both !important;
+  }
+
   .login-success-overlay__mark {
     opacity: 1;
     width: clamp(130px, 18vw, 280px);
@@ -4044,7 +4048,6 @@ textarea::placeholder {
   .login-success-overlay::after,
   .login-success-overlay__aura,
   .login-success-overlay__smoke,
-  .login-success-overlay__video,
   .login-success-overlay__infinity,
   .login-success-overlay__trails,
   .login-success-overlay__mark::before,

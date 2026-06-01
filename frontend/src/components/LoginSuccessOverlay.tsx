@@ -9,7 +9,6 @@ const LOGIN_SUCCESS_VIDEO_OUTRO_MS = 560;
 const LOGIN_SUCCESS_FALLBACK_MS = 4200;
 
 export const LOGIN_SUCCESS_SPLASH_TIMEOUT_MS = 8500;
-export const LOGIN_SUCCESS_SPLASH_REDUCED_TIMEOUT_MS = 900;
 
 interface LoginSuccessOverlayProps {
   onComplete?: () => void;
@@ -23,7 +22,6 @@ export function LoginSuccessOverlay({ onComplete }: LoginSuccessOverlayProps) {
   const [hasVideoFailed, setHasVideoFailed] = useState(false);
   const [hasVideoFinished, setHasVideoFinished] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const [isReducedMotion, setIsReducedMotion] = useState(false);
 
   const clearCompletionTimeout = useCallback(() => {
     if (completionTimeoutRef.current !== null) {
@@ -54,29 +52,11 @@ export function LoginSuccessOverlay({ onComplete }: LoginSuccessOverlayProps) {
     [clearCompletionTimeout, completeSplash],
   );
 
-  useEffect(() => {
-    if (!window.matchMedia) {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const handleMotionChange = () => {
-      setIsReducedMotion(mediaQuery.matches);
-    };
-
-    handleMotionChange();
-    mediaQuery.addEventListener("change", handleMotionChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleMotionChange);
-    };
-  }, []);
-
-  const shouldUseVideo = !isReducedMotion;
-  const overlayDurationMs = shouldUseVideo && !hasVideoFailed
+  const shouldUseVideo = !hasVideoFailed;
+  const overlayDurationMs = shouldUseVideo
     ? LOGIN_SUCCESS_VIDEO_DURATION_MS
     : LOGIN_SUCCESS_FALLBACK_MS;
-  const shouldShowOverlayMark = !shouldUseVideo || hasVideoFailed;
+  const shouldShowOverlayMark = !shouldUseVideo;
   const overlayStyle = {
     "--login-success-duration": `${overlayDurationMs}ms`,
   } as CSSProperties;
@@ -92,15 +72,10 @@ export function LoginSuccessOverlay({ onComplete }: LoginSuccessOverlayProps) {
   useEffect(() => clearCompletionTimeout, [clearCompletionTimeout]);
 
   useEffect(() => {
-    if (isReducedMotion) {
-      completeSplashAfter(LOGIN_SUCCESS_SPLASH_REDUCED_TIMEOUT_MS);
-      return;
-    }
-
     if (hasVideoFailed) {
       completeSplashAfter(LOGIN_SUCCESS_FALLBACK_MS);
     }
-  }, [completeSplashAfter, hasVideoFailed, isReducedMotion]);
+  }, [completeSplashAfter, hasVideoFailed]);
 
   useEffect(() => {
     if (shouldUseVideo && isVideoReady) {

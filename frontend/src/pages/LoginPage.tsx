@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { BrandLockup } from "../components/BrandLockup";
 import {
-  LOGIN_SUCCESS_SPLASH_REDUCED_TIMEOUT_MS,
   LOGIN_SUCCESS_SPLASH_TIMEOUT_MS,
   LoginSuccessOverlay,
 } from "../components/LoginSuccessOverlay";
@@ -54,13 +53,6 @@ function normalizeLoginError(detail: unknown) {
 }
 
 function getLoginSuccessSplashDuration() {
-  if (
-    window.matchMedia &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  ) {
-    return LOGIN_SUCCESS_SPLASH_REDUCED_TIMEOUT_MS;
-  }
-
   return LOGIN_SUCCESS_SPLASH_TIMEOUT_MS;
 }
 

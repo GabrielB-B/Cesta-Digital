@@ -424,6 +424,28 @@ test("failed login keeps the user on login without success splash", async ({ pag
   await expect(page.getByLabel("Nome de login")).toBeVisible();
 });
 
+test("desktop login splash keeps video when reduced motion is active", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1365, height: 768 });
+  await page.goto("/login");
+
+  await page.getByLabel("Nome de login").fill("admin");
+  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByRole("button", { name: "Entrar" }).click();
+
+  const successOverlay = page.locator(".login-success-overlay");
+  await expect(successOverlay).toHaveClass(/login-success-overlay--video/);
+  await expect(successOverlay).toHaveCSS("animation-name", "login-success-overlay-video");
+  await expect(page.locator(".login-success-overlay__video")).toHaveCount(1);
+  await expect(page.locator(".login-success-overlay__infinity, .login-success-overlay__trails")).toHaveCount(0);
+  await expect(successOverlay.locator(".brand-lockup--mark-only")).toHaveCount(0);
+
+  await page.waitForTimeout(3400);
+  await expect(successOverlay).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+});
+
 test("auth loading uses the brand symbol on desktop and mobile", async ({ page }) => {
   await page.unroute("**/auth/me");
   await page.route("**/auth/me", async (route) => {
