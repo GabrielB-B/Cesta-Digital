@@ -394,10 +394,9 @@ test("login brand and loading remain polished on desktop and mobile", async ({ p
   await page.getByRole("button", { name: "Entrar" }).click();
 
   const successOverlay = page.locator(".login-success-overlay");
-  const mobileSplashMark = successOverlay.locator(".brand-lockup--mark-only");
-  await expect(mobileSplashMark).toBeVisible();
-  const mobileSplashBox = await mobileSplashMark.boundingBox();
-  expect(mobileSplashBox?.width ?? 0).toBeGreaterThanOrEqual(96);
+  await expect(successOverlay).toHaveClass(/login-success-overlay--video/);
+  await expect(page.locator(".login-success-overlay__video")).toHaveCount(1);
+  await expect(successOverlay.locator(".brand-lockup--mark-only")).toHaveCount(0);
   await page.waitForTimeout(3400);
   await expect(successOverlay).toBeVisible();
   await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toHaveCount(0);
@@ -455,11 +454,7 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
   await expect(desktopSuccessOverlay).toHaveClass(/login-success-overlay--video/);
   await expect(page.locator(".login-success-overlay__video")).toHaveCount(1);
   await expect(page.locator(".login-success-overlay__infinity, .login-success-overlay__trails")).toHaveCount(0);
-
-  const desktopSplashMark = desktopSuccessOverlay.locator(".brand-lockup--mark-only");
-  await expect(desktopSplashMark).toBeVisible();
-  const desktopSplashBox = await desktopSplashMark.boundingBox();
-  expect(desktopSplashBox?.width ?? 0).toBeGreaterThanOrEqual(140);
+  await expect(desktopSuccessOverlay.locator(".brand-lockup--mark-only")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
   await expect(
     page.locator("#conteudo-principal").getByText("Admin Homologacao")

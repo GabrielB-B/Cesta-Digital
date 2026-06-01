@@ -76,6 +76,7 @@ export function LoginSuccessOverlay({ onComplete }: LoginSuccessOverlayProps) {
   const overlayDurationMs = shouldUseVideo && !hasVideoFailed
     ? LOGIN_SUCCESS_VIDEO_DURATION_MS
     : LOGIN_SUCCESS_FALLBACK_MS;
+  const shouldShowOverlayMark = !shouldUseVideo || hasVideoFailed;
   const overlayStyle = {
     "--login-success-duration": `${overlayDurationMs}ms`,
   } as CSSProperties;
@@ -292,26 +293,28 @@ export function LoginSuccessOverlay({ onComplete }: LoginSuccessOverlayProps) {
         </>
       )}
 
-      <div className="login-success-overlay__mark" aria-hidden="true">
-        <span className="login-success-overlay__mark-ring" aria-hidden="true" />
-        <BrandLockup variant="compact" title="Cesta Digital" subtitle="" markOnly />
-        <span className="login-success-overlay__particles" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-        </span>
-      </div>
+      {shouldShowOverlayMark ? (
+        <div className="login-success-overlay__mark" aria-hidden="true">
+          <span className="login-success-overlay__mark-ring" aria-hidden="true" />
+          <BrandLockup variant="compact" title="Cesta Digital" subtitle="" markOnly />
+          <span className="login-success-overlay__particles" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 }
