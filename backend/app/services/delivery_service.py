@@ -25,6 +25,8 @@ from app.services.stock_availability_policy import (
     usable_stock_batch_condition,
 )
 
+ACTIVE_SCHEDULE_STATUSES = {"agendado", "reagendado"}
+
 
 def _require_user_id(current_user: User) -> int:
     user_id = getattr(current_user, "id", None)
@@ -52,6 +54,88 @@ def _validate_basket_type_can_be_scheduled(basket_type: BasketType) -> None:
         )
 
 
+def _status_reserves_stock(status: str) -> bool:
+    return (status or "").strip().lower() in ACTIVE_SCHEDULE_STATUSES
+
+
+def _count_active_schedules(
+    db: Session,
+    *,
+    basket_type_id: int,
+    exclude_schedule_id: int | None = None,
+) -> int:
+    stmt = select(func.count(DeliverySchedule.id)).where(
+        DeliverySchedule.basket_type_id == basket_type_id,
+        DeliverySchedule.status.in_(ACTIVE_SCHEDULE_STATUSES),
+    )
+    if exclude_schedule_id is not None:
+        stmt = stmt.where(DeliverySchedule.id != exclude_schedule_id)
+
+    return int(db.scalar(stmt) or 0)
+
+
+def _ensure_no_duplicate_active_schedule(
+    db: Session,
+    *,
+    family_id: int,
+    basket_type_id: int,
+    exclude_schedule_id: int | None = None,
+) -> None:
+    stmt = select(DeliverySchedule.id).where(
+        DeliverySchedule.family_id == family_id,
+        DeliverySchedule.basket_type_id == basket_type_id,
+        DeliverySchedule.status.in_(ACTIVE_SCHEDULE_STATUSES),
+    )
+    if exclude_schedule_id is not None:
+        stmt = stmt.where(DeliverySchedule.id != exclude_schedule_id)
+
+    existing_schedule_id = db.scalar(stmt.limit(1))
+    if existing_schedule_id is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Familia ja possui agendamento ativo para este tipo de cesta.",
+        )
+
+
+def _calculate_promisable_baskets(db: Session, basket_type_id: int) -> int:
+    recipe_items = _get_recipe_items(db, basket_type_id)
+    item_ids = [item["item_id"] for item in recipe_items]
+    batches_by_item = _lock_batches_by_item(db, item_ids)
+
+    possible_by_item = []
+    for recipe_item in recipe_items:
+        required_quantity = recipe_item["required_quantity"]
+        available_quantity = _sum_available_quantity(
+            batches_by_item.get(recipe_item["item_id"], [])
+        )
+        possible_by_item.append(available_quantity // required_quantity)
+
+    return min(possible_by_item) if possible_by_item else 0
+
+
+def _ensure_schedule_stock_capacity(
+    db: Session,
+    *,
+    basket_type_id: int,
+    exclude_schedule_id: int | None = None,
+) -> None:
+    promised_schedules = _count_active_schedules(
+        db,
+        basket_type_id=basket_type_id,
+        exclude_schedule_id=exclude_schedule_id,
+    )
+    promisable_baskets = _calculate_promisable_baskets(db, basket_type_id)
+
+    if promised_schedules >= promisable_baskets:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Estoque disponivel insuficiente para criar outro agendamento "
+                "ativo deste tipo de cesta."
+            ),
+        )
+
+
 def create_delivery_schedule(
     db: Session,
     payload: DeliveryScheduleCreate,
@@ -68,6 +152,17 @@ def create_delivery_schedule(
     if basket_type is None:
         raise HTTPException(status_code=404, detail="Tipo de cesta nao encontrado.")
     _validate_basket_type_can_be_scheduled(basket_type)
+
+    if _status_reserves_stock(payload.status):
+        _ensure_no_duplicate_active_schedule(
+            db,
+            family_id=payload.family_id,
+            basket_type_id=payload.basket_type_id,
+        )
+        _ensure_schedule_stock_capacity(
+            db,
+            basket_type_id=payload.basket_type_id,
+        )
 
     schedule = DeliverySchedule(
         family_id=payload.family_id,
@@ -187,6 +282,17 @@ def update_delivery_schedule(
     if payload.status in {"agendado", "reagendado"}:
         _validate_family_can_receive_delivery(family)
         _validate_basket_type_can_be_scheduled(basket_type)
+        _ensure_no_duplicate_active_schedule(
+            db,
+            family_id=schedule.family_id,
+            basket_type_id=schedule.basket_type_id,
+            exclude_schedule_id=schedule.id,
+        )
+        _ensure_schedule_stock_capacity(
+            db,
+            basket_type_id=schedule.basket_type_id,
+            exclude_schedule_id=schedule.id,
+        )
 
     previous_state = {
         "scheduled_date": schedule.scheduled_date.isoformat(),

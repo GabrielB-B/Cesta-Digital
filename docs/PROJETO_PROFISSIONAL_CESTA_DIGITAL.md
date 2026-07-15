@@ -153,7 +153,7 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 | DOM-002 | `kg`/`litro` aceitos, mas quantidades e receitas são inteiras | Quantidade decimal e apresentação explícita | Aberto |
 | DOM-003 | Agregados da família também são digitados nos membros e podem divergir com o tempo | Pessoas e rendas como fonte; agregados derivados | Aberto |
 | DOM-004 | Família pode ser marcada apta sem avaliação vinculada | Regra publicada na `main` em `77e7cbe`: cadastro/edição/status manual bloqueiam `apta_recorrente`, `apta_emergencial` e `inapta` sem avaliação social compatível; formulário orienta o caminho correto pela avaliação | Concluído |
-| DOM-005 | Agendamento não reserva estoque nem limita ciclo/duplicidade | Promessa de entrega confiável | Aberto |
+| DOM-005 | Agendamento não reserva estoque nem limita ciclo/duplicidade | Branch `feat/fase-2-distribuicao-regras`: agendamentos ativos passam a respeitar capacidade prometível do estoque utilizável e bloqueiam duplicidade ativa por família+cesta; formulário orienta a regra | Em homologação |
 | DOM-006 | API de entrega não expõe os itens e lotes efetivamente entregues | Rastreabilidade ponta a ponta | Aberto |
 | UX-001 | Navegação plana não representa Social, Estoque, Distribuição e Administração | Arquitetura de informação por tarefa | Aberto |
 | UX-002 | Tabelas usam `min-width: 720px`; quase todas dependem de rolagem horizontal no celular | Listas e ações mobile próprias | Aberto |
@@ -776,6 +776,7 @@ migrations.
 | 15/07/2026 | Publicação da Fase 1 | Branch `feat/fase-1-clareza-jornadas` promovida para `main` no commit `1afa178`; CI `main` verde; smoke público `/login` HTTP 200 e `/health/db` `{"database":"ok"}` |
 | 15/07/2026 | Início da Fase 2 | Branch `feat/fase-2-regras-funcionais` aberta; primeiro bloco governa status social da família por avaliação vinculada e remove ambiguidade do formulário inicial |
 | 15/07/2026 | Publicação do checkpoint da Fase 2 | Branch `feat/fase-2-regras-funcionais` promovida para `main` no commit `77e7cbed73e959dc9b5326412d09dcaa0e160cfd`; backend 54/54, frontend lint/build/E2E 25/25, CI `main` verde e smoke público `/login` + `/health/db` aprovado |
+| 15/07/2026 | Continuidade da Fase 2 | Branch `feat/fase-2-distribuicao-regras` aberta para tornar agendamento uma promessa confiável, evitando duplicidade ativa e excesso sobre estoque utilizável |
 
 Próxima entrada esperada: continuidade da Fase 2 nos próximos bloqueios de
 domínio, priorizando rastreabilidade de lote, agregados derivados da família ou

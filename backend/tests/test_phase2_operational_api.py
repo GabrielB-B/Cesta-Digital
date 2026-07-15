@@ -305,7 +305,28 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
 
     def test_delivery_schedule_update_and_audit_export(self):
         family = self.create_family(self.headers, internal_code="FAM-SCHEDULE")
+        item = self.create_item(self.headers, name="Macarrao")
+        batch_response = self.client.post(
+            "/stock-batches",
+            json={
+                "item_id": item["id"],
+                "source_type": "doacao_item",
+                "entry_quantity": 2,
+                "entry_date": "2026-04-10",
+                "expiration_date": None,
+                "estimated_unit_value": 8,
+                "notes": None,
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(batch_response.status_code, 201, batch_response.text)
         basket_type = self.create_basket_type(self.headers, name="Cesta Agenda")
+        recipe_response = self.client.post(
+            f"/basket-types/{basket_type['id']}/items",
+            json={"item_id": item["id"], "required_quantity": 1},
+            headers=self.headers,
+        )
+        self.assertEqual(recipe_response.status_code, 201, recipe_response.text)
 
         schedule_response = self.client.post(
             "/delivery-schedules",
@@ -337,3 +358,69 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
         self.assertEqual(export_response.status_code, 200, export_response.text)
         self.assertIn("text/csv", export_response.headers["content-type"])
         self.assertIn("delivery.schedule.updated", export_response.text)
+
+    def test_delivery_schedule_blocks_duplicate_and_overpromised_stock(self):
+        family = self.create_family(self.headers, internal_code="FAM-PROMESSA")
+        another_family = self.create_family(
+            self.headers,
+            internal_code="FAM-PROMESSA-2",
+        )
+        item = self.create_item(self.headers, name="Cafe")
+        batch_response = self.client.post(
+            "/stock-batches",
+            json={
+                "item_id": item["id"],
+                "source_type": "doacao_item",
+                "entry_quantity": 1,
+                "entry_date": "2026-04-10",
+                "expiration_date": None,
+                "estimated_unit_value": 8,
+                "notes": None,
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(batch_response.status_code, 201, batch_response.text)
+        basket_type = self.create_basket_type(self.headers, name="Cesta Prometida")
+        recipe_response = self.client.post(
+            f"/basket-types/{basket_type['id']}/items",
+            json={"item_id": item["id"], "required_quantity": 1},
+            headers=self.headers,
+        )
+        self.assertEqual(recipe_response.status_code, 201, recipe_response.text)
+
+        schedule_payload = {
+            "family_id": family["id"],
+            "basket_type_id": basket_type["id"],
+            "scheduled_date": "2026-04-20",
+            "status": "agendado",
+            "notes": None,
+        }
+        first_response = self.client.post(
+            "/delivery-schedules",
+            json=schedule_payload,
+            headers=self.headers,
+        )
+        self.assertEqual(first_response.status_code, 201, first_response.text)
+
+        duplicate_response = self.client.post(
+            "/delivery-schedules",
+            json={**schedule_payload, "scheduled_date": "2026-04-21"},
+            headers=self.headers,
+        )
+        self.assertEqual(duplicate_response.status_code, 409, duplicate_response.text)
+        self.assertIn("agendamento ativo", duplicate_response.json()["detail"])
+
+        overpromised_response = self.client.post(
+            "/delivery-schedules",
+            json={
+                **schedule_payload,
+                "family_id": another_family["id"],
+                "scheduled_date": "2026-04-22",
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(overpromised_response.status_code, 409)
+        self.assertIn(
+            "Estoque disponivel insuficiente",
+            overpromised_response.json()["detail"],
+        )

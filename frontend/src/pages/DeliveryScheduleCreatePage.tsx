@@ -160,6 +160,7 @@ export function DeliveryScheduleCreatePage() {
               name="basket_type_id"
               value={formData.basket_type_id}
               onChange={handleInputChange}
+              aria-describedby="basket-type-schedule-help"
               disabled={isLoading}
               required
             >
@@ -170,6 +171,11 @@ export function DeliveryScheduleCreatePage() {
                 </option>
               ))}
             </select>
+            <small id="basket-type-schedule-help" className="form__hint">
+              Tipos de cesta com agendamento ativo usam a capacidade do estoque
+              disponÃ­vel. Se nÃ£o houver receita ou itens suficientes, o sistema
+              bloqueia a promessa.
+            </small>
           </label>
 
           <label className="form__group">
@@ -191,8 +197,6 @@ export function DeliveryScheduleCreatePage() {
               onChange={handleInputChange}
             >
               <option value="agendado">Agendado</option>
-              <option value="reagendado">Reagendado</option>
-              <option value="faltou">Faltou</option>
               <option value="cancelado">Cancelado</option>
             </select>
           </label>
