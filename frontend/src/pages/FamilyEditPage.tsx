@@ -368,6 +368,7 @@ export function FamilyEditPage() {
               name="status"
               value={formData.status}
               onChange={handleInputChange}
+              aria-describedby="family-status-edit-help"
             >
               <option value="em_analise">Em análise</option>
               <option value="apta_recorrente">Apta recorrente</option>
@@ -375,6 +376,10 @@ export function FamilyEditPage() {
               <option value="inapta">Inapta</option>
               <option value="inativa">Inativa</option>
             </select>
+            <small id="family-status-edit-help" className="form__hint">
+              A alteração para apta ou inapta exige uma avaliação social com a
+              mesma decisão final.
+            </small>
           </label>
 
           <label className="form__group">

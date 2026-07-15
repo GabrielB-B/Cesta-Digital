@@ -152,7 +152,7 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 | DOM-001 | Lote sem código, status, quarentena, localização e correção auditada de metadados | Rastreabilidade física do lote | Aberto |
 | DOM-002 | `kg`/`litro` aceitos, mas quantidades e receitas são inteiras | Quantidade decimal e apresentação explícita | Aberto |
 | DOM-003 | Agregados da família também são digitados nos membros e podem divergir com o tempo | Pessoas e rendas como fonte; agregados derivados | Aberto |
-| DOM-004 | Família pode ser marcada apta sem avaliação vinculada | Transição de status governada e auditável | Aberto |
+| DOM-004 | Família pode ser marcada apta sem avaliação vinculada | Regra implementada na branch `feat/fase-2-regras-funcionais`: cadastro/edição/status manual bloqueiam `apta_recorrente`, `apta_emergencial` e `inapta` sem avaliação social compatível; formulário passou a orientar o caminho correto | Em homologação |
 | DOM-005 | Agendamento não reserva estoque nem limita ciclo/duplicidade | Promessa de entrega confiável | Aberto |
 | DOM-006 | API de entrega não expõe os itens e lotes efetivamente entregues | Rastreabilidade ponta a ponta | Aberto |
 | UX-001 | Navegação plana não representa Social, Estoque, Distribuição e Administração | Arquitetura de informação por tarefa | Aberto |
@@ -773,6 +773,9 @@ migrations.
 | 14/07/2026 | Checkpoint local da Fase 0 | Backend 53/53; frontend E2E 25/25 sem retry; lint/build/auditorias verdes; frontend e operações aprovados por revisões independentes para o gate remoto |
 | 15/07/2026 | Publicação da Fase 0 | Branch `feat/fase-0-seguranca-release` promovida por fast-forward para `main` no commit `374660b8337667137ed2557e4e41d9e4bd4ce5b7`; CI `main` concluído com sucesso; smoke público `/login` HTTP 200 e `/health/db` `{"database":"ok"}` |
 | 15/07/2026 | Início da Fase 1 | Branch `feat/fase-1-clareza-jornadas` aberta; primeiro bloco melhora ciclo de rota, título/foco, seção correta, menu por jornadas, filtros em URL, erros inline e proteção contra descarte nos cadastros de família/pessoa |
+| 15/07/2026 | Publicação da Fase 1 | Branch `feat/fase-1-clareza-jornadas` promovida para `main` no commit `1afa178`; CI `main` verde; smoke público `/login` HTTP 200 e `/health/db` `{"database":"ok"}` |
+| 15/07/2026 | Início da Fase 2 | Branch `feat/fase-2-regras-funcionais` aberta; primeiro bloco governa status social da família por avaliação vinculada e remove ambiguidade do formulário inicial |
 
-Próxima entrada esperada: evidências completas da Fase 1, incluindo E2E,
-QA visual mobile/desktop e decisão sobre rascunho retomável de cadastro social.
+Próxima entrada esperada: evidências completas da Fase 2, incluindo testes
+backend/frontend, CI remoto, smoke público e decisão sobre os próximos bloqueios
+de domínio.

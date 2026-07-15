@@ -277,13 +277,15 @@ export function FamilyCreatePage() {
               name="status"
               value={formData.status}
               onChange={handleInputChange}
+              aria-describedby="family-status-help"
             >
               <option value="em_analise">Em análise</option>
-              <option value="apta_recorrente">Apta recorrente</option>
-              <option value="apta_emergencial">Apta emergencial</option>
-              <option value="inapta">Inapta</option>
               <option value="inativa">Inativa</option>
             </select>
+            <small id="family-status-help" className="form__hint">
+              A decisão apta ou inapta nasce na avaliação social registrada
+              depois do cadastro.
+            </small>
           </label>
 
           <label className="form__group">

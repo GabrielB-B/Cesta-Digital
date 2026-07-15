@@ -319,6 +319,7 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
               <span>Status</span>
               <select
                 value={statusForm.status}
+                aria-describedby="family-status-management-help"
                 onChange={(event) =>
                   setStatusForm((previous) => ({
                     ...previous,
@@ -332,6 +333,10 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
                 <option value="inapta">Inapta</option>
                 <option value="inativa">Inativa</option>
               </select>
+              <small id="family-status-management-help" className="form__hint">
+                Status apto ou inapto só pode ser salvo quando existir uma
+                avaliação social com a mesma decisão final.
+              </small>
             </label>
 
             <label className="form__group form__group--wide">

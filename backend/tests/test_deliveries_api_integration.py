@@ -183,7 +183,6 @@ class DeliveriesApiIntegrationTests(ApiIntegrationTestCase):
         family = self.create_family(
             self.headers,
             internal_code="FAM-FEFO",
-            status="apta_recorrente",
         )
         item = self.create_item(self.headers, tracks_expiration=False)
 

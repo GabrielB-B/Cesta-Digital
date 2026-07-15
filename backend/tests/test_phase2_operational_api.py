@@ -53,7 +53,7 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
 
         payload = {
             "internal_code": "FAM-EDIT-UPDATED",
-            "status": "apta_emergencial",
+            "status": "em_analise",
             "registration_date": family["registration_date"],
             "last_evaluation_date": None,
             "next_revaluation_date": "2026-06-01",
@@ -114,7 +114,7 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
         self.assertEqual(update_response.status_code, 200, update_response.text)
         updated_family = update_response.json()
         self.assertEqual(updated_family["internal_code"], "FAM-EDIT-UPDATED")
-        self.assertEqual(updated_family["status"], "apta_emergencial")
+        self.assertEqual(updated_family["status"], "em_analise")
         self.assertEqual(updated_family["city"], "Aracaju")
         self.assertEqual(updated_family["contacts"][0]["phone"], "79888880000")
 
@@ -125,6 +125,53 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
         )
         self.assertEqual(audit_response.status_code, 200, audit_response.text)
         self.assertEqual(audit_response.json()["items"][0]["entity_id"], str(family["id"]))
+
+    def test_manual_family_status_requires_matching_social_assessment(self):
+        create_response = self.client.post(
+            "/families",
+            json=self.family_payload(
+                internal_code="FAM-SEM-AVALIACAO",
+                status="apta_recorrente",
+            ),
+            headers=self.headers,
+        )
+        self.assertEqual(create_response.status_code, 409, create_response.text)
+        self.assertIn("avaliacao social", create_response.json()["detail"])
+
+        family = self.create_family(
+            self.headers,
+            internal_code="FAM-STATUS-GOVERNADO",
+        )
+
+        rejected_response = self.client.patch(
+            f"/families/{family['id']}/status",
+            json={"status": "apta_recorrente"},
+            headers=self.headers,
+        )
+        self.assertEqual(rejected_response.status_code, 409, rejected_response.text)
+        self.assertIn("avaliacao social", rejected_response.json()["detail"])
+
+        assessment = self.create_social_assessment(
+            self.headers,
+            family["id"],
+            final_decision="apta_recorrente",
+        )
+        self.assertEqual(assessment["final_decision"], "apta_recorrente")
+
+        review_response = self.client.patch(
+            f"/families/{family['id']}/status",
+            json={"status": "em_analise"},
+            headers=self.headers,
+        )
+        self.assertEqual(review_response.status_code, 200, review_response.text)
+
+        approved_response = self.client.patch(
+            f"/families/{family['id']}/status",
+            json={"status": "apta_recorrente"},
+            headers=self.headers,
+        )
+        self.assertEqual(approved_response.status_code, 200, approved_response.text)
+        self.assertEqual(approved_response.json()["status"], "apta_recorrente")
 
     def test_item_category_item_and_basket_recipe_updates(self):
         category = self.create_item_category(self.headers)
@@ -217,7 +264,6 @@ class Phase2OperationalApiTests(ApiIntegrationTestCase):
         active_family = self.create_family(
             self.headers,
             internal_code="FAM-ATIVA",
-            status="apta_recorrente",
         )
         active_basket_type = self.create_basket_type(
             self.headers,

@@ -15,6 +15,11 @@ from app.schemas.family import FamilyCreate, FamilyStatusUpdate, FamilyUpdate
 from app.services.audit_log_service import record_audit_log
 
 MONEY_QUANTIZER = Decimal("0.01")
+ASSESSMENT_GOVERNED_STATUSES = {
+    "apta_recorrente",
+    "apta_emergencial",
+    "inapta",
+}
 
 FAMILY_EDITABLE_FIELDS = (
     "internal_code",
@@ -90,6 +95,41 @@ def calculate_age(birth_date: date) -> int:
 
 def _money(value: Decimal | int | str | None) -> Decimal:
     return Decimal(value or 0).quantize(MONEY_QUANTIZER)
+
+
+def _latest_assessment_decision(db: Session, family_id: int) -> str | None:
+    return db.scalar(
+        select(SocialAssessment.final_decision)
+        .where(SocialAssessment.family_id == family_id)
+        .order_by(SocialAssessment.assessment_date.desc(), SocialAssessment.id.desc())
+        .limit(1)
+    )
+
+
+def _ensure_manual_status_has_assessment(
+    db: Session,
+    *,
+    family_id: int | None,
+    next_status: str,
+) -> None:
+    if next_status not in ASSESSMENT_GOVERNED_STATUSES:
+        return
+
+    latest_decision = (
+        _latest_assessment_decision(db, family_id)
+        if family_id is not None
+        else None
+    )
+    if latest_decision == next_status:
+        return
+
+    raise HTTPException(
+        status_code=409,
+        detail=(
+            "Status apto ou inapto exige avaliacao social registrada com a "
+            "mesma decisao final."
+        ),
+    )
 
 
 def recalculate_family_summary(
@@ -172,6 +212,12 @@ def recalculate_family_summary(
 
 
 def create_family(db: Session, payload: FamilyCreate, current_user: User) -> Family:
+    _ensure_manual_status_has_assessment(
+        db,
+        family_id=None,
+        next_status=payload.status,
+    )
+
     internal_code = payload.internal_code or generate_family_internal_code(db)
     existing_family = db.scalar(
         select(Family).where(Family.internal_code == internal_code)
@@ -356,6 +402,13 @@ def update_family(
             return internal_code
         return getattr(payload, field)
 
+    if payload.status != family.status:
+        _ensure_manual_status_has_assessment(
+            db,
+            family_id=family.id,
+            next_status=payload.status,
+        )
+
     changed_fields = [
         field
         for field in FAMILY_EDITABLE_FIELDS
@@ -404,6 +457,13 @@ def update_family_status(
 ) -> Family:
     family = get_family_detail(db, family_id)
     previous_status = family.status
+
+    if payload.status != previous_status:
+        _ensure_manual_status_has_assessment(
+            db,
+            family_id=family.id,
+            next_status=payload.status,
+        )
 
     family.status = payload.status
     family.updated_by_user_id = current_user.id

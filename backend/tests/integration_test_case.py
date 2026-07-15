@@ -124,7 +124,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
         token = response.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}
 
-    def create_family(self, headers: dict[str, str], **overrides) -> dict:
+    def family_payload(self, **overrides) -> dict:
         payload = {
             "internal_code": "FAM-0001",
             "status": "em_analise",
@@ -171,8 +171,37 @@ class ApiIntegrationTestCase(unittest.TestCase):
             "contacts": [],
         }
         payload.update(overrides)
+        return payload
 
+    def create_family(self, headers: dict[str, str], **overrides) -> dict:
+        payload = self.family_payload(**overrides)
         response = self.client.post("/families", json=payload, headers=headers)
+        self.assertEqual(response.status_code, 201, response.text)
+        return response.json()
+
+    def create_social_assessment(
+        self,
+        headers: dict[str, str],
+        family_id: int,
+        **overrides,
+    ) -> dict:
+        payload = {
+            "assessment_date": "2026-04-15",
+            "vulnerability_score": 40,
+            "final_decision": "apta_recorrente",
+            "decision_reason": "Avaliacao social registrada no teste.",
+            "exception_reason": None,
+            "co_approved_by_user_id": None,
+            "next_revaluation_date": "2026-10-15",
+            "technical_notes": None,
+        }
+        payload.update(overrides)
+
+        response = self.client.post(
+            f"/families/{family_id}/assessments",
+            json=payload,
+            headers=headers,
+        )
         self.assertEqual(response.status_code, 201, response.text)
         return response.json()
 
