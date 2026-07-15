@@ -14,6 +14,9 @@ Motivos vigentes em 15/07/2026:
 - a Fase 2 publicou o primeiro bloqueio de domínio social no commit
   `77e7cbed73e959dc9b5326412d09dcaa0e160cfd`, impedindo marcação manual de
   família como apta/inapta sem avaliação social compatível;
+- o checkpoint de distribuição da Fase 2 foi publicado no commit
+  `88aa60bc355c3491ccc88cc1a431b29ba0af4891`, bloqueando duplicidade ativa de
+  agendamento e promessa acima do estoque utilizável;
 - backup/restore real e verificação do conteúdo do banco ainda não têm evidência
   suficiente;
 - os gates finais de domínio social, distribuição, UX/mobile, segurança, LGPD,
@@ -136,6 +139,25 @@ formal de `GO profissional`.
 
 Pendências mantidas: demais bloqueios de domínio, UX/mobile final, drill real de
 backup/restore, LGPD, observabilidade e decisão formal de `GO profissional`.
+
+### Checkpoint remoto de distribuição da Fase 2 — 15/07/2026
+
+| Evidência | Resultado |
+|---|---|
+| Commit publicado | `88aa60bc355c3491ccc88cc1a431b29ba0af4891` |
+| Promoção | `feat/fase-2-distribuicao-regras` → `main` por fast-forward |
+| Escopo | Agendamento ativo respeita capacidade prometível do estoque utilizável e bloqueia duplicidade ativa por família+cesta |
+| Backend local | `compileall` aprovado; suíte completa 55/55 testes aprovados |
+| Frontend local | lint aprovado; build aprovado; E2E 25/25 aprovado |
+| `git diff --check` | aprovado; somente avisos de normalização de fim de linha |
+| CI da branch | backend, frontend e operations aprovados |
+| CI da `main` | workflow `CI` público com status `Success`, duração 1m27s |
+| Smoke público frontend | `https://cesta-digital.vercel.app/login` HTTP 200 |
+| Smoke público backend | `https://cesta-digital-api.onrender.com/health/db` HTTP 200, `{"database":"ok"}` |
+
+Pendências mantidas: rastreabilidade detalhada item/lote entregue, lote com
+metadados físicos, quantidade decimal, agregados derivados, UX/mobile final,
+backup/restore real, LGPD, observabilidade e decisão formal de `GO profissional`.
 
 ## 3. Pré-condições
 
