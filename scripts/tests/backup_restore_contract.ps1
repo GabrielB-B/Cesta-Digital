@@ -194,8 +194,15 @@ if ($ClientArguments.Count -eq 1 -and $ClientArguments[0] -eq "--version") {
 if ($ClientArguments.Count -eq 0 -or -not $ClientArguments[0].StartsWith("--defaults-extra-file=")) {
     exit 31
 }
-$optionPath = $ClientArguments[0].Substring("--defaults-extra-file=".Length)
-if (-not (Test-Path -LiteralPath $optionPath -PathType Leaf)) { exit 32 }
+$credentialArgumentPrefix = "--defaults-extra-file="
+$optionPath = $ClientArguments[0].Substring($credentialArgumentPrefix.Length).Trim('"')
+$ClientArguments[0] = "$credentialArgumentPrefix$optionPath"
+if (-not (Test-Path -LiteralPath $optionPath -PathType Leaf)) {
+    $parentPath = Split-Path -Parent $optionPath
+    $parentExists = Test-Path -LiteralPath $parentPath -PathType Container -ErrorAction SilentlyContinue
+    Write-Error "Option file do contrato nao esta acessivel; parent_exists=$parentExists; path_length=$($optionPath.Length)." -ErrorAction Continue
+    exit 32
+}
 $optionDirectory = [IO.Directory]::GetParent([IO.Path]::GetFullPath($optionPath)).FullName
 if (-not (Test-Path -LiteralPath $optionDirectory -PathType Container)) { exit 33 }
 
