@@ -772,7 +772,7 @@ migrations.
 | 14/07/2026 | Aprovação do plano e início da execução por fases | Branch `feat/fase-0-seguranca-release` aberta; Fase 0 em implementação e revisão independente |
 | 14/07/2026 | Checkpoint local da Fase 0 | Backend 53/53; frontend E2E 25/25 sem retry; lint/build/auditorias verdes; frontend e operações aprovados por revisões independentes para o gate remoto |
 | 15/07/2026 | Publicação da Fase 0 | Branch `feat/fase-0-seguranca-release` promovida por fast-forward para `main` no commit `374660b8337667137ed2557e4e41d9e4bd4ce5b7`; CI `main` concluído com sucesso; smoke público `/login` HTTP 200 e `/health/db` `{"database":"ok"}` |
-| 15/07/2026 | Início da Fase 1 | Branch `feat/fase-1-clareza-jornadas` aberta; primeiro bloco melhora ciclo de rota, título/foco, seção correta, filtros em URL, erros inline e proteção contra descarte nos cadastros de família/pessoa |
+| 15/07/2026 | Início da Fase 1 | Branch `feat/fase-1-clareza-jornadas` aberta; primeiro bloco melhora ciclo de rota, título/foco, seção correta, menu por jornadas, filtros em URL, erros inline e proteção contra descarte nos cadastros de família/pessoa |
 
 Próxima entrada esperada: evidências completas da Fase 1, incluindo E2E,
 QA visual mobile/desktop e decisão sobre rascunho retomável de cadastro social.
