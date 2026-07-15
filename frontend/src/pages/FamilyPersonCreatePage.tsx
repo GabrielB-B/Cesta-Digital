@@ -2,13 +2,18 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { CurrencyInput } from "../components/CurrencyInput";
+import { FieldError } from "../components/FieldError";
 import { FormActions } from "../components/FormActions";
 import { FormSection } from "../components/FormSection";
 import { PageHeader } from "../components/PageHeader";
 import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
+import { focusFirstFieldError } from "../utils/form-errors";
 import { formatDecimalInputValue } from "../utils/format";
 import type { FamilyPersonCreatePayload, FamilyPersonResponse } from "../types/family";
+import type { FieldErrors } from "../utils/form-errors";
+
+type PersonFieldName = "full_name" | "birth_date" | "kinship";
 
 export function FamilyPersonCreatePage() {
   const navigate = useNavigate();
@@ -38,6 +43,9 @@ export function FamilyPersonCreatePage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<PersonFieldName>>(
+    {}
+  );
 
   function handleInputChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -69,9 +77,28 @@ export function FamilyPersonCreatePage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setFieldErrors({});
 
     if (!familyId) {
       setError("Familia nao identificada.");
+      return;
+    }
+
+    const nextFieldErrors: FieldErrors<PersonFieldName> = {};
+    if (!formData.full_name.trim()) {
+      nextFieldErrors.full_name = "Informe o nome completo do membro.";
+    }
+    if (!formData.birth_date) {
+      nextFieldErrors.birth_date = "Informe a data de nascimento.";
+    }
+    if (!formData.kinship.trim()) {
+      nextFieldErrors.kinship = "Informe o parentesco com a familia.";
+    }
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setError("Revise os campos destacados antes de continuar.");
+      focusFirstFieldError(nextFieldErrors);
       return;
     }
 
@@ -126,7 +153,7 @@ export function FamilyPersonCreatePage() {
         description="Cadastre individualmente os membros da familia para enriquecer o perfil social."
       />
 
-      <form onSubmit={handleSubmit} className="panel-card form-panel">
+      <form onSubmit={handleSubmit} className="panel-card form-panel" noValidate>
         <FormSection eyebrow="Pessoa" title="Dados individuais">
           <label className="form__group form__group--wide">
             <span>Nome completo</span>
@@ -134,8 +161,13 @@ export function FamilyPersonCreatePage() {
               name="full_name"
               value={formData.full_name}
               onChange={handleInputChange}
+              aria-invalid={fieldErrors.full_name ? true : undefined}
+              aria-describedby={
+                fieldErrors.full_name ? "full_name-error" : undefined
+              }
               required
             />
+            <FieldError id="full_name-error" message={fieldErrors.full_name} />
           </label>
 
           <label className="form__group">
@@ -145,8 +177,13 @@ export function FamilyPersonCreatePage() {
               name="birth_date"
               value={formData.birth_date}
               onChange={handleInputChange}
+              aria-invalid={fieldErrors.birth_date ? true : undefined}
+              aria-describedby={
+                fieldErrors.birth_date ? "birth_date-error" : undefined
+              }
               required
             />
+            <FieldError id="birth_date-error" message={fieldErrors.birth_date} />
           </label>
 
           <label className="form__group">
@@ -156,8 +193,13 @@ export function FamilyPersonCreatePage() {
               value={formData.kinship}
               onChange={handleInputChange}
               placeholder="Ex.: responsavel, filho, avo..."
+              aria-invalid={fieldErrors.kinship ? true : undefined}
+              aria-describedby={
+                fieldErrors.kinship ? "kinship-error" : undefined
+              }
               required
             />
+            <FieldError id="kinship-error" message={fieldErrors.kinship} />
           </label>
 
           <label className="form__group">

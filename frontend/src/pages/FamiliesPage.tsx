@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { DataTable } from "../components/DataTable";
 import { MetricGrid } from "../components/MetricGrid";
@@ -10,6 +10,11 @@ import { StateMessage } from "../components/StateMessage";
 import type { FamilyListItemResponse } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatCurrency } from "../utils/format";
+import {
+  buildListSearchParams,
+  getQueryOffset,
+  getQueryText,
+} from "../utils/list-query";
 
 const PAGE_SIZE = 25;
 
@@ -29,43 +34,16 @@ function formatStatus(status: string): string {
 }
 
 export function FamiliesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeSearch = getQueryText(searchParams, "q");
+  const activeStatus = getQueryText(searchParams, "status");
+  const activeOffset = getQueryOffset(searchParams);
   const [families, setFamilies] = useState<FamilyListItemResponse[]>([]);
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const [search, setSearch] = useState(activeSearch);
+  const [status, setStatus] = useState(activeStatus);
   const [total, setTotal] = useState(0);
-  const [offset, setOffset] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-
-  async function loadFamilies(
-    nextOffset = offset,
-    activeSearch = search,
-    activeStatus = status
-  ) {
-    try {
-      const response = await api.get<FamilyListItemResponse[]>("/families", {
-        params: {
-          q: activeSearch.trim() || undefined,
-          status: activeStatus || undefined,
-          limit: PAGE_SIZE,
-          offset: nextOffset,
-        },
-      });
-
-      setFamilies(response.data);
-      setTotal(Number(response.headers["x-total-count"] ?? response.data.length));
-      setOffset(nextOffset);
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel carregar as familias."));
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  function startFamilyLoad() {
-    setIsLoading(true);
-    setError("");
-  }
 
   useEffect(() => {
     let isCurrent = true;
@@ -73,8 +51,10 @@ export function FamiliesPage() {
     void api
       .get<FamilyListItemResponse[]>("/families", {
         params: {
+          q: activeSearch || undefined,
+          status: activeStatus || undefined,
           limit: PAGE_SIZE,
-          offset: 0,
+          offset: activeOffset,
         },
       })
       .then((response) => {
@@ -84,7 +64,6 @@ export function FamiliesPage() {
 
         setFamilies(response.data);
         setTotal(Number(response.headers["x-total-count"] ?? response.data.length));
-        setOffset(0);
       })
       .catch((err) => {
         if (isCurrent) {
@@ -102,7 +81,7 @@ export function FamiliesPage() {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [activeOffset, activeSearch, activeStatus]);
 
   const summary = useMemo(() => {
     return {
@@ -117,22 +96,39 @@ export function FamiliesPage() {
     };
   }, [families, total]);
 
-  async function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
+  function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    startFamilyLoad();
-    await loadFamilies(0);
+    setIsLoading(true);
+    setError("");
+    setSearchParams((currentParams) =>
+      buildListSearchParams(currentParams, {
+        q: search.trim(),
+        status,
+        offset: null,
+      })
+    );
   }
 
   function handleClearFilters() {
     setSearch("");
     setStatus("");
-    startFamilyLoad();
-    void loadFamilies(0, "", "");
+    setIsLoading(true);
+    setError("");
+    setSearchParams((currentParams) =>
+      buildListSearchParams(currentParams, {
+        q: null,
+        status: null,
+        offset: null,
+      })
+    );
   }
 
   function handlePageChange(nextOffset: number) {
-    startFamilyLoad();
-    void loadFamilies(nextOffset);
+    setIsLoading(true);
+    setError("");
+    setSearchParams((currentParams) =>
+      buildListSearchParams(currentParams, { offset: nextOffset || null })
+    );
   }
 
   return (
@@ -272,7 +268,7 @@ export function FamiliesPage() {
 
             <PaginationControls
               total={total}
-              offset={offset}
+              offset={activeOffset}
               limit={PAGE_SIZE}
               isLoading={isLoading}
               onPageChange={handlePageChange}

@@ -1,56 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { DataTable } from "../components/DataTable";
 import { MetricGrid } from "../components/MetricGrid";
 import { PageHeader } from "../components/PageHeader";
-import { PanelHeader } from "../components/PanelHeader";
 import { PaginationControls } from "../components/PaginationControls";
+import { PanelHeader } from "../components/PanelHeader";
 import { StateMessage } from "../components/StateMessage";
 import type { BasketTypeResponse } from "../types/basket";
 import { getApiErrorMessage } from "../utils/api-error";
+import {
+  buildListSearchParams,
+  getQueryOffset,
+  getQueryText,
+} from "../utils/list-query";
 
 const PAGE_SIZE = 25;
 
 export function BasketTypesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeSearch = getQueryText(searchParams, "q");
+  const activeFilter = getQueryText(searchParams, "active");
+  const activeOffset = getQueryOffset(searchParams);
   const [basketTypes, setBasketTypes] = useState<BasketTypeResponse[]>([]);
-  const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState("");
+  const [search, setSearch] = useState(activeSearch);
+  const [statusDraft, setStatusDraft] = useState(activeFilter);
   const [total, setTotal] = useState(0);
-  const [offset, setOffset] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-
-  async function loadBasketTypes(
-    nextOffset = offset,
-    activeSearch = search,
-    nextActiveFilter = activeFilter
-  ) {
-    try {
-      const response = await api.get<BasketTypeResponse[]>("/basket-types", {
-        params: {
-          q: activeSearch.trim() || undefined,
-          is_active:
-            nextActiveFilter === "" ? undefined : nextActiveFilter === "true",
-          limit: PAGE_SIZE,
-          offset: nextOffset,
-        },
-      });
-
-      setBasketTypes(response.data);
-      setTotal(Number(response.headers["x-total-count"] ?? response.data.length));
-      setOffset(nextOffset);
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel carregar os tipos de cesta."));
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  function startBasketTypeLoad() {
-    setIsLoading(true);
-    setError("");
-  }
 
   useEffect(() => {
     let isCurrent = true;
@@ -58,8 +35,10 @@ export function BasketTypesPage() {
     void api
       .get<BasketTypeResponse[]>("/basket-types", {
         params: {
+          q: activeSearch || undefined,
+          is_active: activeFilter === "" ? undefined : activeFilter === "true",
           limit: PAGE_SIZE,
-          offset: 0,
+          offset: activeOffset,
         },
       })
       .then((response) => {
@@ -69,7 +48,6 @@ export function BasketTypesPage() {
 
         setBasketTypes(response.data);
         setTotal(Number(response.headers["x-total-count"] ?? response.data.length));
-        setOffset(0);
       })
       .catch((err) => {
         if (isCurrent) {
@@ -90,7 +68,7 @@ export function BasketTypesPage() {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [activeFilter, activeOffset, activeSearch]);
 
   const summary = useMemo(() => {
     return {
@@ -100,22 +78,39 @@ export function BasketTypesPage() {
     };
   }, [basketTypes, total]);
 
-  async function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
+  function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    startBasketTypeLoad();
-    await loadBasketTypes(0);
+    setIsLoading(true);
+    setError("");
+    setSearchParams((currentParams) =>
+      buildListSearchParams(currentParams, {
+        q: search.trim(),
+        active: statusDraft,
+        offset: null,
+      })
+    );
   }
 
   function handleClearFilters() {
     setSearch("");
-    setActiveFilter("");
-    startBasketTypeLoad();
-    void loadBasketTypes(0, "", "");
+    setStatusDraft("");
+    setIsLoading(true);
+    setError("");
+    setSearchParams((currentParams) =>
+      buildListSearchParams(currentParams, {
+        q: null,
+        active: null,
+        offset: null,
+      })
+    );
   }
 
   function handlePageChange(nextOffset: number) {
-    startBasketTypeLoad();
-    void loadBasketTypes(nextOffset);
+    setIsLoading(true);
+    setError("");
+    setSearchParams((currentParams) =>
+      buildListSearchParams(currentParams, { offset: nextOffset || null })
+    );
   }
 
   return (
@@ -153,51 +148,51 @@ export function BasketTypesPage() {
           stacked
           actions={
             <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
-            <label className="toolbar__field">
-              <span className="sr-only">Buscar tipos de cesta</span>
-              <input
-                className="toolbar__input"
-                type="text"
-                name="basket_types_search"
-                placeholder="Buscar por nome ou observacao..."
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </label>
+              <label className="toolbar__field">
+                <span className="sr-only">Buscar tipos de cesta</span>
+                <input
+                  className="toolbar__input"
+                  type="text"
+                  name="basket_types_search"
+                  placeholder="Buscar por nome ou observacao..."
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </label>
 
-            <label className="toolbar__field toolbar__field--select">
-              <span className="sr-only">Filtrar tipos de cesta por status</span>
-              <select
-                className="toolbar__input toolbar__input--select"
-                name="basket_types_status"
-                value={activeFilter}
-                onChange={(event) => setActiveFilter(event.target.value)}
+              <label className="toolbar__field toolbar__field--select">
+                <span className="sr-only">Filtrar tipos de cesta por status</span>
+                <select
+                  className="toolbar__input toolbar__input--select"
+                  name="basket_types_status"
+                  value={statusDraft}
+                  onChange={(event) => setStatusDraft(event.target.value)}
+                >
+                  <option value="">Todos</option>
+                  <option value="true">Ativos</option>
+                  <option value="false">Inativos</option>
+                </select>
+              </label>
+
+              <button type="submit" className="button" disabled={isLoading}>
+                {isLoading ? "Consultando..." : "Aplicar"}
+              </button>
+
+              <button
+                type="button"
+                className="button button--secondary"
+                onClick={handleClearFilters}
+                disabled={isLoading}
               >
-                <option value="">Todos</option>
-                <option value="true">Ativos</option>
-                <option value="false">Inativos</option>
-              </select>
-            </label>
+                Limpar
+              </button>
 
-            <button type="submit" className="button" disabled={isLoading}>
-              {isLoading ? "Consultando..." : "Aplicar"}
-            </button>
-
-            <button
-              type="button"
-              className="button button--secondary"
-              onClick={handleClearFilters}
-              disabled={isLoading}
-            >
-              Limpar
-            </button>
-
-            <Link to="/basket-types/new" className="button button--link">
-              Novo tipo
-            </Link>
-          </form>
+              <Link to="/basket-types/new" className="button button--link">
+                Novo tipo
+              </Link>
+            </form>
           }
         />
 
@@ -249,7 +244,7 @@ export function BasketTypesPage() {
 
             <PaginationControls
               total={total}
-              offset={offset}
+              offset={activeOffset}
               limit={PAGE_SIZE}
               isLoading={isLoading}
               onPageChange={handlePageChange}

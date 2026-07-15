@@ -2,16 +2,28 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { CurrencyInput } from "../components/CurrencyInput";
+import { FieldError } from "../components/FieldError";
 import { FormActions } from "../components/FormActions";
 import { FormSection } from "../components/FormSection";
 import { PageHeader } from "../components/PageHeader";
 import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
+import { focusFirstFieldError } from "../utils/form-errors";
 import { formatDecimalInputValue, formatTodayForInput } from "../utils/format";
 import type {
   FamilyCreatePayload,
   FamilyListItemResponse,
 } from "../types/family";
+import type { FieldErrors } from "../utils/form-errors";
+
+type FamilyFieldName =
+  | "registration_date"
+  | "street"
+  | "number"
+  | "neighborhood"
+  | "city"
+  | "state"
+  | "total_adults";
 
 /**
  * Formulário inicial de cadastro de família.
@@ -67,6 +79,9 @@ export function FamilyCreatePage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<FamilyFieldName>>(
+    {}
+  );
 
   const totalResidents = useMemo(() => {
     return (
@@ -112,9 +127,36 @@ export function FamilyCreatePage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setFieldErrors({});
 
+    const nextFieldErrors: FieldErrors<FamilyFieldName> = {};
+    if (!formData.registration_date) {
+      nextFieldErrors.registration_date = "Informe a data de cadastro.";
+    }
+    if (!formData.street.trim()) {
+      nextFieldErrors.street = "Informe a rua da familia.";
+    }
+    if (!formData.number.trim()) {
+      nextFieldErrors.number = "Informe o numero ou marque S/N.";
+    }
+    if (!formData.neighborhood.trim()) {
+      nextFieldErrors.neighborhood = "Informe o bairro.";
+    }
+    if (!formData.city.trim()) {
+      nextFieldErrors.city = "Informe a cidade.";
+    }
+    if (formData.state.trim().length !== 2) {
+      nextFieldErrors.state = "Use a UF com 2 letras.";
+    }
     if (totalResidents < 1) {
-      setError("A família precisa ter pelo menos 1 morador.");
+      nextFieldErrors.total_adults =
+        "A familia precisa ter pelo menos 1 morador.";
+    }
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setError("Revise os campos destacados antes de continuar.");
+      focusFirstFieldError(nextFieldErrors);
       return;
     }
 
@@ -211,7 +253,7 @@ export function FamilyCreatePage() {
         description="Registre os dados iniciais da família. O código interno será gerado automaticamente ao salvar."
       />
 
-      <form onSubmit={handleSubmit} className="panel-card form-panel">
+      <form onSubmit={handleSubmit} className="panel-card form-panel" noValidate>
         <FormSection eyebrow="Dados iniciais" title="Identificação e endereço">
           <div className="detail-item detail-item--form">
             <span>Código interno</span>
@@ -240,7 +282,17 @@ export function FamilyCreatePage() {
               name="registration_date"
               value={formData.registration_date}
               onChange={handleInputChange}
+              aria-invalid={fieldErrors.registration_date ? true : undefined}
+              aria-describedby={
+                fieldErrors.registration_date
+                  ? "registration_date-error"
+                  : undefined
+              }
               required
+            />
+            <FieldError
+              id="registration_date-error"
+              message={fieldErrors.registration_date}
             />
           </label>
 
@@ -260,8 +312,11 @@ export function FamilyCreatePage() {
               name="street"
               value={formData.street}
               onChange={handleInputChange}
+              aria-invalid={fieldErrors.street ? true : undefined}
+              aria-describedby={fieldErrors.street ? "street-error" : undefined}
               required
             />
+            <FieldError id="street-error" message={fieldErrors.street} />
           </label>
 
           <label className="form__group">
@@ -270,8 +325,11 @@ export function FamilyCreatePage() {
               name="number"
               value={formData.number}
               onChange={handleInputChange}
+              aria-invalid={fieldErrors.number ? true : undefined}
+              aria-describedby={fieldErrors.number ? "number-error" : undefined}
               required
             />
+            <FieldError id="number-error" message={fieldErrors.number} />
           </label>
 
           <label className="form__group">
@@ -289,7 +347,15 @@ export function FamilyCreatePage() {
               name="neighborhood"
               value={formData.neighborhood}
               onChange={handleInputChange}
+              aria-invalid={fieldErrors.neighborhood ? true : undefined}
+              aria-describedby={
+                fieldErrors.neighborhood ? "neighborhood-error" : undefined
+              }
               required
+            />
+            <FieldError
+              id="neighborhood-error"
+              message={fieldErrors.neighborhood}
             />
           </label>
 
@@ -299,8 +365,11 @@ export function FamilyCreatePage() {
               name="city"
               value={formData.city}
               onChange={handleInputChange}
+              aria-invalid={fieldErrors.city ? true : undefined}
+              aria-describedby={fieldErrors.city ? "city-error" : undefined}
               required
             />
+            <FieldError id="city-error" message={fieldErrors.city} />
           </label>
 
           <label className="form__group">
@@ -310,8 +379,11 @@ export function FamilyCreatePage() {
               value={formData.state}
               onChange={handleInputChange}
               maxLength={2}
+              aria-invalid={fieldErrors.state ? true : undefined}
+              aria-describedby={fieldErrors.state ? "state-error" : undefined}
               required
             />
+            <FieldError id="state-error" message={fieldErrors.state} />
           </label>
 
           <label className="form__group form__group--wide">
@@ -333,6 +405,14 @@ export function FamilyCreatePage() {
               name="total_adults"
               value={formData.total_adults}
               onChange={handleInputChange}
+              aria-invalid={fieldErrors.total_adults ? true : undefined}
+              aria-describedby={
+                fieldErrors.total_adults ? "total_adults-error" : undefined
+              }
+            />
+            <FieldError
+              id="total_adults-error"
+              message={fieldErrors.total_adults}
             />
           </label>
 

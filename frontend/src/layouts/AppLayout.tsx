@@ -10,6 +10,7 @@ import { AppIcon } from "../components/AppIcon";
 import { BrandLockup } from "../components/BrandLockup";
 import { EnvironmentNotice } from "../components/EnvironmentNotice";
 import { useAuth } from "../contexts/useAuth";
+import { getRouteMeta } from "../routes/routeMeta";
 
 type MenuIconName =
   | "dashboard"
@@ -262,10 +263,13 @@ export function AppLayout() {
 
   const visibleMenuItems = menuItems.filter((item) => item.visible);
 
+  const routeMeta = getRouteMeta(location.pathname);
   const currentSection =
+    visibleMenuItems.find((item) => item.path === routeMeta.sectionPath) ??
     visibleMenuItems.find(
       (item) => item.path !== "/" && location.pathname.startsWith(item.path)
-    ) ?? visibleMenuItems[0];
+    ) ??
+    visibleMenuItems[0];
 
   const primaryRole = formatRole(userRoles[0] ?? "");
 
@@ -406,7 +410,7 @@ export function AppLayout() {
         />
       ) : null}
 
-      <main id="conteudo-principal" className="content">
+      <main id="conteudo-principal" className="content" tabIndex={-1}>
         <header className="topbar">
           <div className="topbar__identity">
             <button
@@ -426,7 +430,9 @@ export function AppLayout() {
               <BrandLockup variant="compact" title="Cesta Digital" subtitle="" />
             </div>
 
-            <span className="topbar__section">{currentSection.label}</span>
+            <span className="topbar__section">
+              {routeMeta.section || currentSection.label}
+            </span>
           </div>
 
           <div className="topbar__actions">

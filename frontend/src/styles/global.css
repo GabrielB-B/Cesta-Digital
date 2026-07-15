@@ -2258,6 +2258,13 @@ textarea {
   box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.1);
 }
 
+.field-error {
+  color: var(--danger-300);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .status-error:focus-visible {
   outline: 2px solid var(--danger);
   outline-offset: 3px;

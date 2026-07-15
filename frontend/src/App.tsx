@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { PageLifecycle } from "./components/PageLifecycle";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AppLayout } from "./layouts/AppLayout";
 import { BasketTypeCreatePage } from "./pages/BasketTypeCreatePage";
@@ -34,6 +35,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <PageLifecycle />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
 

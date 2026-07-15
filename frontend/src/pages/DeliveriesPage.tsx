@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { DataTable } from "../components/DataTable";
 import { MetricGrid } from "../components/MetricGrid";
@@ -17,6 +17,11 @@ import type {
 import type { FamilyListItemResponse } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateOnly, formatDateTime } from "../utils/format";
+import {
+  buildListSearchParams,
+  getQueryOffset,
+  getQueryText,
+} from "../utils/list-query";
 
 const PAGE_SIZE = 25;
 const DELIVERY_PAGE_SIZE = 25;
@@ -28,6 +33,14 @@ type ScheduleDraft = {
 };
 
 export function DeliveriesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeStatusFilter = getQueryText(searchParams, "status");
+  const activeScheduleOffset = getQueryOffset(searchParams);
+  const deliveryOffsetParam = Number(searchParams.get("deliveryOffset") ?? "0");
+  const activeDeliveryOffset =
+    Number.isFinite(deliveryOffsetParam) && deliveryOffsetParam > 0
+      ? Math.floor(deliveryOffsetParam)
+      : 0;
   const [schedules, setSchedules] = useState<DeliveryScheduleResponse[]>([]);
   const [deliveries, setDeliveries] = useState<DeliveryResponse[]>([]);
   const [families, setFamilies] = useState<FamilyListItemResponse[]>([]);
@@ -35,11 +48,9 @@ export function DeliveriesPage() {
   const [scheduleDrafts, setScheduleDrafts] = useState<Record<number, ScheduleDraft>>(
     {}
   );
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState(activeStatusFilter);
   const [totalSchedules, setTotalSchedules] = useState(0);
   const [totalDeliveries, setTotalDeliveries] = useState(0);
-  const [offset, setOffset] = useState(0);
-  const [deliveryOffset, setDeliveryOffset] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingScheduleId, setIsSubmittingScheduleId] = useState<number | null>(
     null
@@ -48,9 +59,9 @@ export function DeliveriesPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   async function loadData(
-    nextOffset = offset,
-    activeStatus = statusFilter,
-    nextDeliveryOffset = deliveryOffset
+    nextOffset = activeScheduleOffset,
+    activeStatus = activeStatusFilter,
+    nextDeliveryOffset = activeDeliveryOffset
   ) {
     try {
       const [schedulesResponse, deliveriesResponse, familiesResponse, basketTypesResponse] =
@@ -86,8 +97,6 @@ export function DeliveriesPage() {
       setTotalDeliveries(
         Number(deliveriesResponse.headers["x-total-count"] ?? deliveriesResponse.data.length)
       );
-      setOffset(nextOffset);
-      setDeliveryOffset(nextDeliveryOffset);
       setScheduleDrafts(
         Object.fromEntries(
           schedulesResponse.data.map((schedule) => [
@@ -118,14 +127,15 @@ export function DeliveriesPage() {
     void Promise.all([
       api.get<DeliveryScheduleResponse[]>("/delivery-schedules", {
         params: {
+          status: activeStatusFilter || undefined,
           limit: PAGE_SIZE,
-          offset: 0,
+          offset: activeScheduleOffset,
         },
       }),
       api.get<DeliveryResponse[]>("/deliveries", {
         params: {
           limit: DELIVERY_PAGE_SIZE,
-          offset: 0,
+          offset: activeDeliveryOffset,
         },
       }),
       api.get<FamilyListItemResponse[]>("/families", {
@@ -162,8 +172,6 @@ export function DeliveriesPage() {
                 deliveriesResponse.data.length
             )
           );
-          setOffset(0);
-          setDeliveryOffset(0);
           setScheduleDrafts(
             Object.fromEntries(
               schedulesResponse.data.map((schedule) => [
@@ -194,7 +202,7 @@ export function DeliveriesPage() {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [activeDeliveryOffset, activeScheduleOffset, activeStatusFilter]);
 
   const summary = useMemo(() => {
     return {
@@ -236,7 +244,7 @@ export function DeliveriesPage() {
       await api.post(`/deliveries/from-schedule/${scheduleId}`, payload);
       setSuccessMessage("Entrega confirmada e estoque baixado automaticamente.");
       startDataLoad();
-      await loadData(offset, statusFilter, deliveryOffset);
+      await loadData();
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel confirmar a entrega."));
     } finally {
@@ -264,7 +272,7 @@ export function DeliveriesPage() {
       await api.put(`/delivery-schedules/${scheduleId}`, payload);
       setSuccessMessage("Agendamento atualizado com auditoria registrada.");
       startDataLoad();
-      await loadData(offset, statusFilter, deliveryOffset);
+      await loadData();
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel atualizar o agendamento."));
     } finally {
@@ -299,7 +307,7 @@ export function DeliveriesPage() {
       } satisfies DeliveryScheduleUpdatePayload);
       setSuccessMessage("Agendamento cancelado.");
       startDataLoad();
-      await loadData(offset, statusFilter, deliveryOffset);
+      await loadData();
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel cancelar o agendamento."));
     } finally {
@@ -307,20 +315,31 @@ export function DeliveriesPage() {
     }
   }
 
-  async function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
+  function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     startDataLoad();
-    await loadData(0, statusFilter, deliveryOffset);
+    setSearchParams((currentParams) =>
+      buildListSearchParams(currentParams, {
+        status: statusFilter,
+        offset: null,
+      })
+    );
   }
 
   function handleSchedulePageChange(nextOffset: number) {
     startDataLoad();
-    void loadData(nextOffset);
+    setSearchParams((currentParams) =>
+      buildListSearchParams(currentParams, { offset: nextOffset || null })
+    );
   }
 
   function handleDeliveryPageChange(nextDeliveryOffset: number) {
     startDataLoad();
-    void loadData(offset, statusFilter, nextDeliveryOffset);
+    setSearchParams((currentParams) =>
+      buildListSearchParams(currentParams, {
+        deliveryOffset: nextDeliveryOffset || null,
+      })
+    );
   }
 
   return (
@@ -551,7 +570,7 @@ export function DeliveriesPage() {
 
             <PaginationControls
               total={totalSchedules}
-              offset={offset}
+              offset={activeScheduleOffset}
               limit={PAGE_SIZE}
               isLoading={isLoading}
               onPageChange={handleSchedulePageChange}
@@ -596,7 +615,7 @@ export function DeliveriesPage() {
 
             <PaginationControls
               total={totalDeliveries}
-              offset={deliveryOffset}
+              offset={activeDeliveryOffset}
               limit={DELIVERY_PAGE_SIZE}
               isLoading={isLoading}
               onPageChange={handleDeliveryPageChange}
