@@ -11,6 +11,9 @@ Motivos vigentes em 15/07/2026:
 - a Fase 0 foi publicada na `main` no commit
   `374660b8337667137ed2557e4e41d9e4bd4ce5b7`, com CI `main` verde e smoke
   público básico aprovado;
+- a Fase 2 publicou o primeiro bloqueio de domínio social no commit
+  `77e7cbed73e959dc9b5326412d09dcaa0e160cfd`, impedindo marcação manual de
+  família como apta/inapta sem avaliação social compatível;
 - backup/restore real e verificação do conteúdo do banco ainda não têm evidência
   suficiente;
 - os gates finais de domínio social, distribuição, UX/mobile, segurança, LGPD,
@@ -115,6 +118,24 @@ público foram comprovados no checkpoint remoto abaixo.
 Pendências mantidas: drill real de backup/restore, configuração efetiva da CA,
 inspeção/classificação da base, UX/mobile final, LGPD, observabilidade e decisão
 formal de `GO profissional`.
+
+### Checkpoint remoto da Fase 2 — 15/07/2026
+
+| Evidência | Resultado |
+|---|---|
+| Commit publicado | `77e7cbed73e959dc9b5326412d09dcaa0e160cfd` |
+| Promoção | `feat/fase-2-regras-funcionais` → `main` por fast-forward |
+| Escopo | Status social da família governado por avaliação social compatível; cadastro inicial não oferece `apta/inapta` fora do fluxo correto |
+| Backend local | `compileall` aprovado; suíte completa 54/54 testes aprovados |
+| Frontend local | lint aprovado; build aprovado; E2E 25/25 aprovado |
+| `git diff --check` | aprovado; somente avisos de normalização de fim de linha |
+| CI da branch | backend, frontend e operations aprovados |
+| CI da `main` | workflow `CI` concluído com sucesso |
+| Smoke público frontend | `https://cesta-digital.vercel.app/login` HTTP 200 |
+| Smoke público backend | `https://cesta-digital-api.onrender.com/health/db` HTTP 200, `{"database":"ok"}` |
+
+Pendências mantidas: demais bloqueios de domínio, UX/mobile final, drill real de
+backup/restore, LGPD, observabilidade e decisão formal de `GO profissional`.
 
 ## 3. Pré-condições
 
