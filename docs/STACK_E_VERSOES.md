@@ -1,16 +1,18 @@
-# Stack e Versoes
+# Stack e Versões
 
-## Estado de versao do produto
+## Estado de versão do produto
 
 - Backend app version: `0.1.0` em `backend/app/core/config.py`
 - Frontend package version: `0.1.0` em `frontend/package.json`
 - Status real: ainda nao existe uma politica unica de versionamento de release para o produto completo
 
-## Ambiente validado nesta analise
+## Ambiente validado nesta análise
 
 - Python `3.12.6`
 - Node.js `22.16.0`
 - npm `10.9.2`
+- Runtime Python fixado para o próximo deploy: `3.12.13` (release de segurança
+  da série 3.12)
 
 ## Backend
 
@@ -20,12 +22,12 @@
 - SQLAlchemy `2.0.48`
 - Alembic `1.18.4`
 - Pydantic `2.12.5`
-- Pydantic Settings `2.13.1`
+- Pydantic Settings `2.14.2`
 - PyMySQL `1.1.2`
-- PyJWT `2.12.0`
-- python-multipart `0.0.27`
+- PyJWT `2.13.0`
+- python-multipart `0.0.31`
 - Mako `1.3.12`
-- cryptography `46.0.7`
+- cryptography `48.0.1`
 - passlib `1.7.4`
 - bcrypt `4.0.1`
 - Uvicorn `0.42.0`
@@ -49,12 +51,12 @@
 
 - React `19.2.4`
 - React DOM `19.2.4`
-- React Router DOM `7.13.1`
-- Axios `1.13.6`
-- Vite `8.0.0`
+- React Router DOM `7.18.1`
+- Axios `1.18.1`
+- Vite `8.1.4`
 - TypeScript `5.9.3`
 - ESLint `9.39.4`
-- Playwright `1.59.1`
+- Playwright `1.61.1`
 
 ### Funcao do frontend
 
@@ -117,8 +119,17 @@
 | Resumo financeiro | pronto | pronto | operacional |
 | Usuarios e perfis | pronto | pronto | modulo admin inicial entregue |
 
-## Ferramentas que ainda faltam
+## Pendências de maturidade
 
-- observabilidade
-- padrao de versionamento de release
-- deploy e rotina de rollback
+- centralização de observabilidade e alertas;
+- padrão único de versionamento de release;
+- ensaio real documentado de backup, restore e rollback em banco isolado;
+- testes integrados com MySQL e Alembic fora dos mocks atuais.
+
+## Auditoria de dependências
+
+Em 14/07/2026, na branch da Fase 0:
+
+- `npm audit --audit-level=high`: nenhuma vulnerabilidade encontrada;
+- `pip-audit -r requirements.txt`: nenhuma vulnerabilidade encontrada;
+- `pip check`: nenhuma dependência quebrada.

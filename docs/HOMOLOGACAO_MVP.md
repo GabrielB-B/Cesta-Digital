@@ -6,14 +6,24 @@ Este é o roteiro executável de homologação do produto. A visão, regras, arq
 
 **NO-GO para ampliar o uso com dados e entregas reais.**
 
-Motivos confirmados em 14/07/2026:
+Motivos vigentes em 14/07/2026:
 
-- lote vencido ainda conta como disponível e pode ser selecionado para entrega;
-- a rota de entrada de lote/validade não tem link na interface;
-- o último CI do commit publicado está vermelho;
-- backup/restore e classificação do ambiente ainda não têm evidência suficiente.
+- as correções locais da Fase 0 ainda precisam ser comprovadas pelo CI remoto,
+  publicadas pelo mesmo SHA e validadas por smoke pós-deploy;
+- backup/restore real e verificação do conteúdo do banco ainda não têm evidência
+  suficiente;
+- os gates finais de domínio social, distribuição, UX/mobile, segurança, LGPD,
+  observabilidade e usabilidade permanecem abertos.
+
+Os defeitos de saldo vencido, FEFO e acesso à entrada de lote foram corrigidos e
+aprovados em testes locais na branch da Fase 0. Isso é evidência de implementação,
+não autorização para operação real antes dos gates remotos e finais.
 
 O ambiente público pode continuar somente como homologação controlada com dados sintéticos ou anonimizados até o fechamento dos gates obrigatórios. Enquanto `BLQ-005` estiver aberto, dados pessoais reais são proibidos; autorização informal não substitui classificação do ambiente e aprovação de privacidade/LGPD.
+
+Classificação operacional vigente do banco: **Banco destinado a homologação;
+conteúdo não verificado.** Isso não afirma que a base esteja vazia ou livre de
+dados reais; essa inspeção permanece pendente e bloqueia ampliação de uso.
 
 ## 1. Regra de aprovação
 
@@ -69,6 +79,24 @@ Preencher uma cópia desta tabela a cada execução.
 - defeito vinculado quando falhar.
 
 Não usar CPF, telefone, endereço, renda, condição de saúde, senha, cookie ou token real em evidências.
+
+### Checkpoint local da Fase 0 — 14/07/2026
+
+| Evidência | Resultado |
+|---|---|
+| Backend `compileall` + suíte completa | 53/53 testes aprovados |
+| Dependências backend | `pip check` e `pip-audit` aprovados |
+| Frontend lint e build | aprovados |
+| Frontend E2E em modo CI | 25/25, 1 worker, `retries=0` |
+| Dependências frontend | auditoria local sem vulnerabilidades conhecidas |
+| Contrato de backup/restore | aprovado com cenários de falha, inventário e checksums |
+| `git diff --check` | aprovado; somente avisos de normalização de fim de linha |
+| Revisão independente do frontend | aprovada para o escopo da Fase 0, sem P0/P1 bloqueante |
+| Revisão independente de release/operações | aprovada para o gate remoto, sem P0/P1 remanescente |
+| QA visual Chromium | login inspecionado em 1440 × 900 e 390 × 844; aviso de homologação visível e sem overflow documental |
+
+Pendências do checkpoint: CI remoto, deploy do mesmo SHA, smoke público, drill
+real de backup/restore, configuração efetiva da CA e inspeção da base.
 
 ## 3. Pré-condições
 
@@ -360,13 +388,31 @@ Simular 400, 401, 403, 409, 422, 500, timeout e perda de rede durante formulári
 
 **Esperado:** comandos validam exit code, arquivo não vazio e checksum; restore em banco limpo termina verde; aplicação abre e contagens conciliam.
 
-- [ ] Aprovado com evidência.
+- [x] Contrato automatizado rejeita exit code nativo, arquivo vazio, origem instável, adulteração de dump/manifesto, qualquer objeto prévio e restore sobre a origem.
+- [x] Backup v2 inventaria tabelas, views, rotinas, eventos, triggers e revisão Alembic; o checksum cobre dump e manifesto.
+- [x] Credencial usa option file como primeiro argumento, ACL exclusiva e limpeza em sucesso/falha, sem `MYSQL_PWD`.
+- [x] Restore v2 exige igualdade exata de inventário/revisão e registra evidência sem linhas pessoais; legado exige origem e switches explícitos.
+- [ ] Backup real de homologação executado com TLS verificado.
+- [ ] Restore real executado em banco isolado e limpo.
+- [ ] API temporária abre sobre a restauração e as contagens agregadas conciliam.
+- [ ] Responsável, criptografia, retenção e descarte do backup real registrados.
+- [ ] Aprovado com evidência sem anexar o SQL.
 
 ### HOM-OPS-002 — release e rollback
 
 **Esperado:** CI verde antes do deploy; release identificável; migration compatível; smoke pós-deploy; rollback da aplicação exercitado.
 
-- [ ] Aprovado.
+- [x] Workflow dispara nas branches de trabalho e em `main`.
+- [x] Blueprint do Render gratuito usa runner com `GET_LOCK`, Alembic condicional, verificação de head, seed idempotente e só então Uvicorn.
+- [x] Runner possui testes para banco atualizado/pendente, falha de upgrade, timeout/erro de lock e bloqueio do servidor em falha.
+- [x] Runbook restringe o startup automático a migrations aditivas/expand e bloqueia alterações destrutivas.
+- [x] CI fixa actions por SHA oficial e preserva relatório/traces do Playwright em falha.
+- [ ] `autoDeployTrigger: checksPass` e `/health/db` comprovados no serviço efetivo do Render.
+- [ ] Mesmo SHA da branch fica verde em `frontend`, `backend` e `operations` antes de `main`.
+- [ ] `npm audit --audit-level=high` e `pip-audit` terminam sem vulnerabilidade bloqueante.
+- [ ] Proteção/ruleset de `main` comprovado no GitHub.
+- [ ] Vercel e Render publicam o SHA aprovado; smoke pós-deploy passa.
+- [ ] Rollback da aplicação exercitado.
 
 ### HOM-OPS-003 — observabilidade
 
@@ -375,6 +421,16 @@ Provocar falha controlada de frontend, API, banco e entrega.
 **Esperado:** alerta chega ao canal responsável; logs correlacionam `request_id`; nenhum dado pessoal/sensível indevido aparece.
 
 - [ ] Aprovado.
+
+### HOM-OPS-004 — classificação do ambiente
+
+**Esperado:** interface e runbook identificam homologação; somente dados sintéticos ou anonimizados são usados enquanto houver `NO-GO`.
+
+- [x] Render mantém `APP_ENV=staging`.
+- [x] Runbook proíbe dados pessoais e operação reais até o `GO profissional`.
+- [x] Banco está rotulado como “destinado a homologação; conteúdo não verificado”.
+- [x] Aviso visual coberto no login e na área autenticada por E2E.
+- [ ] Base revisada e confirmada sem dados reais.
 
 ## 9. Regressão por perfil
 
@@ -432,6 +488,8 @@ cd backend
 Repositório:
 
 ```powershell
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass `
+  -File .\scripts\tests\backup_restore_contract.ps1
 git diff --check
 ```
 
@@ -441,7 +499,7 @@ Além do baseline atual, a release profissional exige suíte integrada com MySQL
 
 - [ ] Commit publicado corresponde ao aprovado.
 - [ ] Status Vercel verde.
-- [ ] Checks frontend e backend verdes.
+- [ ] Checks frontend, backend e operations verdes.
 - [ ] `/login` responde e renderiza.
 - [ ] `/health/db` responde `{"database":"ok"}`.
 - [ ] Login por cada perfil funciona.

@@ -139,11 +139,11 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 
 | ID | Achado | Evidência principal | Impacto | Status |
 |---|---|---|---|---|
-| BLQ-001 | Lote vencido soma no estoque, disponibilidade, dashboard e financeiro; pode ser baixado na entrega | `stock_summary_service.py:45`, `basket_availability_service.py:29`, `dashboard_service.py:72`, `delivery_service.py:257` | Segurança alimentar e indicadores falsos | Aberto |
-| BLQ-002 | Cadastro de lote/validade não é alcançável por nenhum link | `App.tsx:153`, `ItemCreatePage.tsx:113`, `ItemDetailPage.tsx:217` | Operador não encontra a validade | Aberto |
-| BLQ-003 | Commit com CI vermelho foi publicado automaticamente | `.github/workflows/ci.yml`, `render.yaml:12`, Actions #29 | Release sem gate de qualidade | Aberto |
-| BLQ-004 | Backup/restore não validam integralmente saída, checksum e restauração antes de migration automática | `scripts/backup_mysql.ps1`, `scripts/restore_mysql.ps1`, `render.yaml:9` | Rollback de dados não comprovado | Aberto |
-| BLQ-005 | Ambiente público está online, mas documentação e `APP_ENV=staging` não esclarecem se aceita dados reais | `render.yaml:16`, `README.md`, `OPERACAO_STAGING_E_BACKUP.md` | Risco operacional e LGPD | Aberto |
+| BLQ-001 | Lote vencido soma no estoque, disponibilidade, dashboard e financeiro; pode ser baixado na entrega | Política central e testes de fronteira aprovados localmente na branch da Fase 0; CI/deploy pendentes | Segurança alimentar e indicadores falsos | Em homologação |
+| BLQ-002 | Cadastro de lote/validade não é alcançável por nenhum link | Jornada produto → primeiro lote e CTAs de estoque aprovados localmente; CI/deploy pendentes | Operador não encontra a validade | Em homologação |
+| BLQ-003 | Commit com CI vermelho foi publicado automaticamente | CI por branch, E2E sem retry e promoção pelo mesmo SHA implementados; comprovação remota pendente | Release sem gate de qualidade | Em homologação |
+| BLQ-004 | Backup/restore não validam integralmente saída, checksum e restauração antes de migration automática | Scripts e contrato de segurança em segunda revisão; ensaio real continua pendente | Rollback de dados não comprovado | Em andamento |
+| BLQ-005 | Ambiente público está online, mas documentação e `APP_ENV=staging` não esclarecem se aceita dados reais | Banner e política de homologação aprovados localmente; conteúdo da base ainda precisa ser classificado | Risco operacional e LGPD | Em homologação |
 
 ### P1 — alta prioridade
 
@@ -157,13 +157,13 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 | DOM-006 | API de entrega não expõe os itens e lotes efetivamente entregues | Rastreabilidade ponta a ponta | Aberto |
 | UX-001 | Navegação plana não representa Social, Estoque, Distribuição e Administração | Arquitetura de informação por tarefa | Aberto |
 | UX-002 | Tabelas usam `min-width: 720px`; quase todas dependem de rolagem horizontal no celular | Listas e ações mobile próprias | Aberto |
-| UX-003 | Login bloqueia navegação por vídeo não pulável de 7,4–8,5 s, inclusive com movimento reduzido | Entrada imediata e feedback de até 600 ms | Aberto |
+| UX-003 | Login bloqueia navegação por vídeo não pulável de 7,4–8,5 s, inclusive com movimento reduzido | Entrada imediata aprovada localmente em desktop/mobile e movimento reduzido; publicação pendente | Em homologação |
 | UX-004 | Cadastro de família e membro é extenso, sem rascunho, progresso ou proteção de dados não salvos | Wizard retomável com revisão | Aberto |
 | UX-005 | Erros são globais e podem substituir a tela; faltam erros por campo e foco no primeiro erro | Recuperação sem perda de preenchimento | Aberto |
 | UI-001 | Gradientes, faixas laterais e elevação se repetem em superfícies não interativas | Identidade institucional própria e sem ruído | Aberto |
 | QA-001 | E2E intercepta toda a API; backend usa SQLite e não executa Alembic/MySQL | Teste integrado da pilha real | Aberto |
 | SEC-001 | Cookie cross-site sem defesa CSRF explícita; TLS do banco pode não validar CA | Threat model e hardening | Aberto |
-| OPS-001 | Healthcheck do Render aponta para `/`, não para `/health/db` | Disponibilidade dependente do banco | Aberto |
+| OPS-001 | Healthcheck do Render aponta para `/`, não para `/health/db` | Blueprint corrigido e testado localmente; configuração efetiva do Render pendente | Em homologação |
 
 ### P2/P3 — evolução e dívida
 
@@ -758,10 +758,20 @@ Uma entrega só está pronta quando:
 
 Na ausência de decisão diferente, estas recomendações são o padrão de planejamento. Mudanças de banco, identidade visual ou política de dados continuam exigindo aprovação antes da execução.
 
+**Decisão registrada em 14/07/2026:** Gabriel aprovou o plano como padrão de
+execução, autorizou a separação por branches/fases, testes proporcionais e
+publicação de cada fase somente após os gates verdes. A autorização não altera
+o `NO-GO` para dados/entregas reais nem dispensa backup e restore antes de
+migrations.
+
 ## 22. Registro de evolução
 
 | Data | Evento | Resultado |
 |---|---|---|
 | 14/07/2026 | Auditoria sênior de produto, domínio, frontend, QA, segurança e produção | Documento canônico criado; decisão `NO-GO`; Fase 0 recomendada |
+| 14/07/2026 | Aprovação do plano e início da execução por fases | Branch `feat/fase-0-seguranca-release` aberta; Fase 0 em implementação e revisão independente |
+| 14/07/2026 | Checkpoint local da Fase 0 | Backend 53/53; frontend E2E 25/25 sem retry; lint/build/auditorias verdes; frontend e operações aprovados por revisões independentes para o gate remoto |
 
-Próxima entrada esperada: aprovação do plano e início da Fase 0, com atualização dos IDs `BLQ-001` a `BLQ-005`.
+Próxima entrada esperada: evidências locais e remotas da Fase 0, com atualização
+dos IDs `BLQ-001` a `BLQ-005` para `Em homologação` ou `Concluído` conforme o
+gate realmente comprovado.
