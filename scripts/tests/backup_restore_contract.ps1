@@ -586,10 +586,7 @@ exit /b %ERRORLEVEL%
     $legacyEvidence = Get-Content -LiteralPath $legacyResult.EvidenceFile -Raw | ConvertFrom-Json
     Assert-True ($legacyEvidence.verification_mode -eq "legacy-minimum-only") "bypass legado deve ficar explicito na evidencia"
 
-    $expectedOptionContent = @'
-[client]
-password="contract\\password\"quote"
-'@ + "`n"
+    $expectedOptionContent = "[client]`npassword=`"contract\\password\`"quote`"`n"
     Assert-CredentialCaptures -CaptureFile $fakeCaptureFile -ExpectedOptionContent $expectedOptionContent
     Assert-True ($env:MYSQL_PWD -eq "sentinel-must-remain") "MYSQL_PWD deve permanecer intacta em todo o contrato"
     Assert-True ($env:CESTA_DB_PASSWORD -ceq 'contract\password"quote') "variavel de senha deve permanecer intacta"
