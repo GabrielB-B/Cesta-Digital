@@ -186,6 +186,46 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
+function Split-FakeCommandLine {
+    param([string]$CommandLine)
+
+    $arguments = @()
+    $current = [Text.StringBuilder]::new()
+    $inQuotes = $false
+    $hasToken = $false
+
+    for ($index = 0; $index -lt $CommandLine.Length; $index++) {
+        $character = $CommandLine[$index]
+        if ($character -eq '"') {
+            $inQuotes = -not $inQuotes
+            $hasToken = $true
+            continue
+        }
+        if (-not $inQuotes -and [char]::IsWhiteSpace($character)) {
+            if ($hasToken) {
+                $arguments += $current.ToString()
+                [void]$current.Clear()
+                $hasToken = $false
+            }
+            continue
+        }
+
+        [void]$current.Append($character)
+        $hasToken = $true
+    }
+
+    if ($hasToken) {
+        $arguments += $current.ToString()
+    }
+
+    return @($arguments)
+}
+
+$rawClientArguments = [Environment]::GetEnvironmentVariable("FAKE_CLIENT_ARGS", [EnvironmentVariableTarget]::Process)
+if (-not [string]::IsNullOrWhiteSpace($rawClientArguments)) {
+    $ClientArguments = @(Split-FakeCommandLine -CommandLine $rawClientArguments)
+}
+
 if ($ClientArguments.Count -eq 1 -and $ClientArguments[0] -eq "--version") {
     Write-Output "fake-$Mode 8.4.0 contract"
     exit 0
@@ -356,14 +396,18 @@ if ($execute -match "SELECT version_num FROM alembic_version") {
 exit 39
 '@ | Set-Content -LiteralPath $fakeHandler -Encoding UTF8
 
-    @'
+@'
 @echo off
-"%FAKE_POWERSHELL_COMMAND%" -NoProfile -ExecutionPolicy Bypass -File "%FAKE_MYSQL_HANDLER%" dump %*
+setlocal
+set "FAKE_CLIENT_ARGS=%*"
+"%FAKE_POWERSHELL_COMMAND%" -NoProfile -ExecutionPolicy Bypass -File "%FAKE_MYSQL_HANDLER%" dump
 exit /b %ERRORLEVEL%
 '@ | Set-Content -LiteralPath $fakeDumpCommand -Encoding Ascii
     @'
 @echo off
-"%FAKE_POWERSHELL_COMMAND%" -NoProfile -ExecutionPolicy Bypass -File "%FAKE_MYSQL_HANDLER%" mysql %*
+setlocal
+set "FAKE_CLIENT_ARGS=%*"
+"%FAKE_POWERSHELL_COMMAND%" -NoProfile -ExecutionPolicy Bypass -File "%FAKE_MYSQL_HANDLER%" mysql
 exit /b %ERRORLEVEL%
 '@ | Set-Content -LiteralPath $fakeMySqlCommand -Encoding Ascii
 
