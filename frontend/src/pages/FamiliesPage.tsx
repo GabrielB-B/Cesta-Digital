@@ -37,15 +37,16 @@ export function FamiliesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function loadFamilies(nextOffset = offset) {
+  async function loadFamilies(
+    nextOffset = offset,
+    activeSearch = search,
+    activeStatus = status
+  ) {
     try {
-      setIsLoading(true);
-      setError("");
-
       const response = await api.get<FamilyListItemResponse[]>("/families", {
         params: {
-          q: search.trim() || undefined,
-          status: status || undefined,
+          q: activeSearch.trim() || undefined,
+          status: activeStatus || undefined,
           limit: PAGE_SIZE,
           offset: nextOffset,
         },
@@ -61,9 +62,46 @@ export function FamiliesPage() {
     }
   }
 
+  function startFamilyLoad() {
+    setIsLoading(true);
+    setError("");
+  }
+
   useEffect(() => {
-    void loadFamilies(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let isCurrent = true;
+
+    void api
+      .get<FamilyListItemResponse[]>("/families", {
+        params: {
+          limit: PAGE_SIZE,
+          offset: 0,
+        },
+      })
+      .then((response) => {
+        if (!isCurrent) {
+          return;
+        }
+
+        setFamilies(response.data);
+        setTotal(Number(response.headers["x-total-count"] ?? response.data.length));
+        setOffset(0);
+      })
+      .catch((err) => {
+        if (isCurrent) {
+          setError(
+            getApiErrorMessage(err, "Nao foi possivel carregar as familias.")
+          );
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   const summary = useMemo(() => {
@@ -81,13 +119,20 @@ export function FamiliesPage() {
 
   async function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    startFamilyLoad();
     await loadFamilies(0);
   }
 
   function handleClearFilters() {
     setSearch("");
     setStatus("");
-    setTimeout(() => void loadFamilies(0), 0);
+    startFamilyLoad();
+    void loadFamilies(0, "", "");
+  }
+
+  function handlePageChange(nextOffset: number) {
+    startFamilyLoad();
+    void loadFamilies(nextOffset);
   }
 
   return (
@@ -230,7 +275,7 @@ export function FamiliesPage() {
               offset={offset}
               limit={PAGE_SIZE}
               isLoading={isLoading}
-              onPageChange={(nextOffset) => void loadFamilies(nextOffset)}
+              onPageChange={handlePageChange}
             />
           </>
         )}

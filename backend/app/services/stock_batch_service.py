@@ -7,6 +7,7 @@ from app.models.stock_batch import StockBatch
 from app.models.user import User
 from app.schemas.stock_batch import StockBatchCreate
 from app.services.audit_log_service import record_audit_log
+from app.services.stock_availability_policy import validate_stock_batch_dates
 
 
 def create_stock_batch(
@@ -21,11 +22,23 @@ def create_stock_batch(
             detail="Item nao encontrado.",
         )
 
-    if item.tracks_expiration and payload.expiration_date is None:
+    if not item.is_active:
         raise HTTPException(
             status_code=400,
-            detail="Este item exige data de validade.",
+            detail="Itens inativos nao podem receber novos lotes.",
         )
+
+    try:
+        validate_stock_batch_dates(
+            tracks_expiration=item.tracks_expiration,
+            entry_date=payload.entry_date,
+            expiration_date=payload.expiration_date,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
 
     batch = StockBatch(
         item_id=payload.item_id,

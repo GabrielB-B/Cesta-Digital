@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -20,9 +21,11 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<CurrentUserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const authRequestGenerationRef = useRef(0);
 
   useEffect(() => {
     let isMounted = true;
+    const requestGeneration = ++authRequestGenerationRef.current;
 
     async function loadCurrentUser() {
       if (isMounted) {
@@ -32,15 +35,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const response = await api.get<CurrentUserResponse>("/auth/me");
 
-        if (isMounted) {
+        if (
+          isMounted &&
+          requestGeneration === authRequestGenerationRef.current
+        ) {
           setUser(response.data);
         }
       } catch {
-        if (isMounted) {
+        if (
+          isMounted &&
+          requestGeneration === authRequestGenerationRef.current
+        ) {
           setUser(null);
         }
       } finally {
-        if (isMounted) {
+        if (
+          isMounted &&
+          requestGeneration === authRequestGenerationRef.current
+        ) {
           setIsLoading(false);
         }
       }
@@ -54,6 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = useCallback(async (loginName: string, password: string) => {
+    const requestGeneration = ++authRequestGenerationRef.current;
     setIsLoading(true);
 
     const body = new URLSearchParams();
@@ -70,18 +83,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const meResponse = await api.get<CurrentUserResponse>("/auth/me");
 
-      setUser(meResponse.data);
+      if (requestGeneration === authRequestGenerationRef.current) {
+        setUser(meResponse.data);
+      }
     } finally {
-      setIsLoading(false);
+      if (requestGeneration === authRequestGenerationRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   const logout = useCallback(async () => {
+    const requestGeneration = ++authRequestGenerationRef.current;
     try {
       await api.post("/auth/logout");
     } finally {
-      setUser(null);
-      setIsLoading(false);
+      if (requestGeneration === authRequestGenerationRef.current) {
+        setUser(null);
+        setIsLoading(false);
+      }
     }
   }, []);
 

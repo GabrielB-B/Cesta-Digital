@@ -8,10 +8,19 @@ from app.models.stock_movement import StockMovement
 from app.models.user import User
 from app.schemas.stock_movement import StockMovementCreate
 from app.services.audit_log_service import record_audit_log
+from app.services.stock_availability_policy import (
+    is_expiration_loss_applicable,
+    is_stock_batch_usable,
+)
 
 
 NEGATIVE_MOVEMENTS = {"saida_manual", "perda_validade", "ajuste_negativo", "saida_entrega"}
 POSITIVE_MOVEMENTS = {"ajuste_positivo"}
+MOVEMENTS_REQUIRING_NOTES = {
+    "perda_validade",
+    "ajuste_negativo",
+    "ajuste_positivo",
+}
 
 
 def _get_batch_for_update(db: Session, batch_id: int) -> StockBatch:
@@ -36,7 +45,43 @@ def create_stock_movement(
     movement: StockMovement | None = None
 
     try:
+        if (
+            payload.movement_type in MOVEMENTS_REQUIRING_NOTES
+            and not (payload.notes or "").strip()
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Esta movimentacao exige uma justificativa em observacoes.",
+            )
+
         batch = _get_batch_for_update(db, payload.batch_id)
+
+        if payload.movement_type == "saida_manual" and not is_stock_batch_usable(
+            batch=batch,
+            item=batch.item,
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Saida manual permitida apenas para lote utilizavel. "
+                    "Registre perda de validade ou ajuste negativo quando aplicavel."
+                ),
+            )
+
+        if (
+            payload.movement_type == "perda_validade"
+            and not is_expiration_loss_applicable(
+                batch=batch,
+                item=batch.item,
+            )
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Perda de validade permitida apenas para lote vencido "
+                    "ou item que controla validade sem data registrada."
+                ),
+            )
 
         if payload.movement_type in NEGATIVE_MOVEMENTS:
             if payload.quantity > batch.current_quantity:

@@ -8,6 +8,10 @@ from app.models.item import Item
 from app.models.item_category import ItemCategory
 from app.models.stock_batch import StockBatch
 from app.models.stock_movement import StockMovement
+from app.services.stock_availability_policy import (
+    usable_stock_batch_condition,
+    usable_stock_batch_join_condition,
+)
 
 
 NEGATIVE_MOVEMENTS = {"saida_manual", "perda_validade", "ajuste_negativo", "saida_entrega"}
@@ -29,11 +33,16 @@ def get_financial_summary(db: Session) -> dict:
     - saídas usam quantity * estimated_unit_value do lote movimentado
     - benefícios ativos são somados à parte como informação social/financeira
     """
-    stock_value_stmt = select(
-        func.coalesce(
-            func.sum(StockBatch.current_quantity * StockBatch.estimated_unit_value),
-            0,
+    stock_value_stmt = (
+        select(
+            func.coalesce(
+                func.sum(StockBatch.current_quantity * StockBatch.estimated_unit_value),
+                0,
+            )
         )
+        .select_from(StockBatch)
+        .join(Item, Item.id == StockBatch.item_id)
+        .where(usable_stock_batch_condition())
     )
     estimated_total_stock_value = _to_decimal(db.scalar(stock_value_stmt))
 
@@ -74,7 +83,7 @@ def get_financial_summary(db: Session) -> dict:
             ).label("estimated_stock_value"),
         )
         .join(Item, Item.category_id == ItemCategory.id)
-        .outerjoin(StockBatch, StockBatch.item_id == Item.id)
+        .outerjoin(StockBatch, usable_stock_batch_join_condition(Item.id))
         .group_by(ItemCategory.id, ItemCategory.name)
         .order_by(ItemCategory.name.asc())
     )

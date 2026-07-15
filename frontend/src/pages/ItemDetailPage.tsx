@@ -17,6 +17,12 @@ import type {
 } from "../types/item";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatCurrency, formatDateOnly } from "../utils/format";
+import {
+  formatStockMovementType,
+  formatStockSourceType,
+  getBatchExpirationStatus,
+  isStockBatchReceived,
+} from "../utils/stock";
 
 export function ItemDetailPage() {
   const { itemId } = useParams();
@@ -95,7 +101,7 @@ export function ItemDetailPage() {
         });
       } catch (err) {
         if (isMounted) {
-          setError(getApiErrorMessage(err, "Nao foi possivel carregar o item."));
+          setError(getApiErrorMessage(err, "Não foi possível carregar o item."));
         }
       } finally {
         if (isMounted) {
@@ -113,13 +119,42 @@ export function ItemDetailPage() {
     };
   }, [itemId]);
 
-  const totalCurrentQuantity = useMemo(() => {
-    return batches.reduce((acc, batch) => acc + batch.current_quantity, 0);
+  const usableCurrentQuantity = useMemo(() => {
+    if (!item?.is_active) {
+      return 0;
+    }
+
+    return batches.reduce((total, batch) => {
+      if (!isStockBatchReceived(batch)) {
+        return total;
+      }
+
+      const status = getBatchExpirationStatus(
+        batch,
+        item?.tracks_expiration ?? true
+      );
+
+      return status.blocksManualExit ? total : total + batch.current_quantity;
+    }, 0);
+  }, [batches, item?.is_active, item?.tracks_expiration]);
+
+  const criticalBatchCount = useMemo(() => {
+    return batches.filter((batch) =>
+      getBatchExpirationStatus(batch, item?.tracks_expiration ?? false).isCritical
+    ).length;
+  }, [batches, item?.tracks_expiration]);
+
+  const futureBatchCount = useMemo(() => {
+    return batches.filter((batch) => !isStockBatchReceived(batch)).length;
   }, [batches]);
+
+  const displayedUsableQuantity = item?.is_active
+    ? summary?.total_quantity ?? usableCurrentQuantity
+    : 0;
 
   function formatDate(value: string | null): string {
     if (!value) {
-      return "-";
+      return "Não informada";
     }
 
     return formatDateOnly(value);
@@ -149,6 +184,7 @@ export function ItemDetailPage() {
       };
 
       const response = await api.put<ItemDetailResponse>(`/items/${itemId}`, payload);
+      setSummary(null);
       setItem(response.data);
       setEditForm({
         category_id: String(response.data.category_id),
@@ -160,9 +196,25 @@ export function ItemDetailPage() {
         minimum_stock_alert: String(response.data.minimum_stock_alert),
         notes: response.data.notes ?? "",
       });
+
+      try {
+        const summaryResponse = await api.get<StockSummaryResponse[]>(
+          "/stock-summary",
+          { params: { limit: 200 } }
+        );
+        setSummary(
+          summaryResponse.data.find(
+            (entry) => entry.item_id === response.data.id
+          ) ?? null
+        );
+      } catch {
+        // O fallback local já aplica a política de saldo utilizável aos lotes.
+        setSummary(null);
+      }
+
       setSuccessMessage("Item atualizado com auditoria registrada.");
     } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel salvar o item."));
+      setError(getApiErrorMessage(err, "Não foi possível salvar o item."));
     } finally {
       setIsSavingItem(false);
     }
@@ -173,7 +225,7 @@ export function ItemDetailPage() {
       <div className="page-stack">
         <div className="panel-card">
           <StateMessage variant="loading">
-            Carregando detalhe do item...
+            Carregando detalhe do item…
           </StateMessage>
         </div>
       </div>
@@ -185,7 +237,7 @@ export function ItemDetailPage() {
       <div className="page-stack">
         <div className="panel-card">
           <StateMessage variant="error">
-            {error || "Nao foi possivel carregar o item."}
+            {error || "Não foi possível carregar o item."}
           </StateMessage>
           <FormActions>
             <Link to="/items" className="button button--secondary">
@@ -203,23 +255,47 @@ export function ItemDetailPage() {
         eyebrow="Detalhe do item"
         title={item.name}
         description={`Categoria: ${item.category_name} | Unidade: ${item.unit_measure}`}
+        actions={
+          item.is_active ? (
+            <>
+            <Link
+              to={`/stock-batches/new?itemId=${item.id}`}
+              className="button button--link"
+            >
+              Registrar entrada
+            </Link>
+            <Link
+              to={`/stock-movements/new?itemId=${item.id}`}
+              className="button button--secondary button--link"
+            >
+              Ajustar saldo
+            </Link>
+            </>
+          ) : undefined
+        }
         meta={
           <div className="hero-badges">
-          <span className="hero-badge">
-            Estoque atual: {summary?.total_quantity ?? totalCurrentQuantity}
-          </span>
-          <span className="hero-badge">
-            Alerta minimo: {item.minimum_stock_alert}
-          </span>
-          <span className="hero-badge">
-            Status: {item.is_active ? "Ativo" : "Inativo"}
-          </span>
-          <Link
-            to={`/stock-movements/new?itemId=${item.id}`}
-            className="button button--secondary button--link"
-          >
-            Nova movimentacao
-          </Link>
+            <span className="hero-badge">
+              Saldo utilizável: {displayedUsableQuantity}
+            </span>
+            <span className="hero-badge">
+              Alerta mínimo: {item.minimum_stock_alert}
+            </span>
+            <span className="hero-badge">
+              Status: {item.is_active ? "Ativo" : "Inativo"}
+            </span>
+            {criticalBatchCount > 0 ? (
+              <span className="hero-badge hero-badge--danger">
+                {criticalBatchCount} lote{criticalBatchCount > 1 ? "s" : ""} com
+                validade crítica
+              </span>
+            ) : null}
+            {futureBatchCount > 0 ? (
+              <span className="hero-badge hero-badge--danger">
+                {futureBatchCount} lote{futureBatchCount > 1 ? "s" : ""} com
+                entrada futura
+              </span>
+            ) : null}
           </div>
         }
       />
@@ -242,12 +318,12 @@ export function ItemDetailPage() {
               <strong>{item.unit_measure}</strong>
             </div>
             <div className="detail-item">
-              <span>Valor de referencia</span>
+              <span>Valor de referência</span>
               <strong>{formatCurrency(item.reference_unit_value)}</strong>
             </div>
             <div className="detail-item">
-              <span>Quantidade atual</span>
-              <strong>{summary?.total_quantity ?? totalCurrentQuantity}</strong>
+              <span>Saldo utilizável</span>
+              <strong>{displayedUsableQuantity}</strong>
             </div>
             <div className="detail-item">
               <span>Total de lotes</span>
@@ -255,7 +331,7 @@ export function ItemDetailPage() {
             </div>
             <div className="detail-item">
               <span>Controla validade</span>
-              <strong>{item.tracks_expiration ? "Sim" : "Nao"}</strong>
+              <strong>{item.tracks_expiration ? "Sim, por lote" : "Não"}</strong>
             </div>
           </div>
         </article>
@@ -317,7 +393,7 @@ export function ItemDetailPage() {
             </label>
 
             <label className="form__group">
-              <span>Valor de referencia</span>
+              <span>Valor de referência</span>
               <input
                 type="number"
                 min="0"
@@ -333,7 +409,7 @@ export function ItemDetailPage() {
             </label>
 
             <label className="form__group">
-              <span>Alerta minimo</span>
+              <span>Alerta mínimo</span>
               <input
                 type="number"
                 min="0"
@@ -358,7 +434,13 @@ export function ItemDetailPage() {
                   }))
                 }
               />
-              Controla validade
+              <span className="checkbox-card__content">
+                <strong>Controla validade por lote</strong>
+                <small>
+                  A data será informada em cada entrada, conforme a embalagem
+                  recebida.
+                </small>
+              </span>
             </label>
 
             <label className="checkbox-card">
@@ -376,7 +458,7 @@ export function ItemDetailPage() {
             </label>
 
             <label className="form__group form__group--wide">
-              <span>Observacoes</span>
+              <span>Observações</span>
               <textarea
                 value={editForm.notes}
                 onChange={(event) =>
@@ -396,7 +478,7 @@ export function ItemDetailPage() {
 
           <FormActions>
             <button type="submit" className="button" disabled={isSavingItem}>
-              {isSavingItem ? "Salvando..." : "Salvar item"}
+              {isSavingItem ? "Salvando…" : "Salvar item"}
             </button>
           </FormActions>
         </form>
@@ -404,61 +486,101 @@ export function ItemDetailPage() {
 
       <section className="content-grid">
         <article className="panel-card">
-          <PanelHeader eyebrow="Lotes" title="Entradas e saldos" />
+          <PanelHeader
+            eyebrow="Lotes"
+            title="Entradas e saldos"
+            actions={
+              item.is_active ? (
+              <Link
+                to={`/stock-batches/new?itemId=${item.id}`}
+                className="button button--secondary button--link"
+              >
+                Registrar entrada
+              </Link>
+              ) : undefined
+            }
+          />
 
           {batches.length === 0 ? (
-            <StateMessage>Nenhum lote encontrado para este item.</StateMessage>
+            <StateMessage>
+              Nenhuma entrada registrada. Este item ainda não possui saldo em
+              lotes.
+            </StateMessage>
           ) : (
             <DataTable caption="Lotes do item">
                 <thead>
                   <tr>
-                    <th>ID</th>
+                    <th>Lote</th>
                     <th>Origem</th>
                     <th>Entrada</th>
                     <th>Atual</th>
                     <th>Entrada em</th>
                     <th>Validade</th>
+                    <th>Situação</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {batches.map((batch) => (
-                    <tr key={batch.id}>
-                      <td>{batch.id}</td>
-                      <td>{batch.source_type}</td>
-                      <td>{batch.entry_quantity}</td>
-                      <td>{batch.current_quantity}</td>
-                      <td>{formatDate(batch.entry_date)}</td>
-                      <td>{formatDate(batch.expiration_date)}</td>
-                    </tr>
-                  ))}
+                  {batches.map((batch) => {
+                    const batchWasReceived = isStockBatchReceived(batch);
+                    const expirationStatus = getBatchExpirationStatus(
+                      batch,
+                      item.tracks_expiration
+                    );
+
+                    return (
+                      <tr key={batch.id}>
+                        <td>#{batch.id}</td>
+                        <td>{formatStockSourceType(batch.source_type)}</td>
+                        <td>{batch.entry_quantity}</td>
+                        <td>{batch.current_quantity}</td>
+                        <td>{formatDate(batch.entry_date)}</td>
+                        <td>{formatDate(batch.expiration_date)}</td>
+                        <td>
+                          <span
+                            className={`pill${
+                              !batchWasReceived
+                                ? " pill--danger"
+                                : expirationStatus.tone === "neutral"
+                                ? ""
+                                : ` pill--${expirationStatus.tone}`
+                            }`}
+                          >
+                            {batchWasReceived
+                              ? expirationStatus.label
+                              : "Entrada futura"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
             </DataTable>
           )}
         </article>
 
         <article className="panel-card">
-          <PanelHeader eyebrow="Movimentacoes" title="Historico do item" />
+          <PanelHeader eyebrow="Movimentações" title="Histórico do item" />
 
           {movements.length === 0 ? (
             <StateMessage>
-              Nenhuma movimentacao encontrada para este item.
+              Nenhuma movimentação encontrada para este item.
             </StateMessage>
           ) : (
-            <DataTable caption="Historico de movimentacoes do item">
+            <DataTable caption="Histórico de movimentações do item">
                 <thead>
                   <tr>
                     <th>ID</th>
                     <th>Tipo</th>
                     <th>Quantidade</th>
                     <th>Lote</th>
-                    <th>Observacao</th>
+                    <th>Observação</th>
                   </tr>
                 </thead>
                 <tbody>
                   {movements.map((movement) => (
                     <tr key={movement.id}>
                       <td>{movement.id}</td>
-                      <td>{movement.movement_type}</td>
+                      <td>{formatStockMovementType(movement.movement_type)}</td>
                       <td>{movement.quantity}</td>
                       <td>{movement.batch_id}</td>
                       <td>{movement.notes ?? "-"}</td>

@@ -5,6 +5,7 @@ from app.models.basket_type import BasketType
 from app.models.basket_type_item import BasketTypeItem
 from app.models.item import Item
 from app.models.stock_batch import StockBatch
+from app.services.stock_availability_policy import usable_stock_batch_join_condition
 from fastapi import HTTPException
 
 
@@ -35,7 +36,10 @@ def get_basket_availability(db: Session, basket_type_id: int) -> dict:
             func.coalesce(func.sum(StockBatch.current_quantity), 0).label("available_quantity"),
         )
         .join(Item, Item.id == BasketTypeItem.item_id)
-        .outerjoin(StockBatch, StockBatch.item_id == BasketTypeItem.item_id)
+        .outerjoin(
+            StockBatch,
+            usable_stock_batch_join_condition(BasketTypeItem.item_id),
+        )
         .where(BasketTypeItem.basket_type_id == basket_type_id)
         .group_by(
             BasketTypeItem.item_id,

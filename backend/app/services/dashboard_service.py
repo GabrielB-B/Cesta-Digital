@@ -11,6 +11,7 @@ from app.models.family import Family
 from app.models.item import Item
 from app.models.item_category import ItemCategory
 from app.models.stock_batch import StockBatch
+from app.services.stock_availability_policy import usable_stock_batch_join_condition
 from app.services.stock_summary_service import list_stock_alerts
 
 
@@ -75,7 +76,10 @@ def _calculate_possible_baskets_for_basket_type(db: Session, basket_type_id: int
             func.coalesce(func.sum(StockBatch.current_quantity), 0).label("available_quantity"),
         )
         .join(Item, Item.id == BasketTypeItem.item_id)
-        .outerjoin(StockBatch, StockBatch.item_id == BasketTypeItem.item_id)
+        .outerjoin(
+            StockBatch,
+            usable_stock_batch_join_condition(BasketTypeItem.item_id),
+        )
         .where(BasketTypeItem.basket_type_id == basket_type_id)
         .group_by(BasketTypeItem.item_id, BasketTypeItem.required_quantity)
     )

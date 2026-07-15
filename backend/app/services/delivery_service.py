@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from fastapi import HTTPException
-from sqlalchemy import case, func, select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -20,6 +20,10 @@ from app.schemas.delivery import (
     DeliveryScheduleUpdate,
 )
 from app.services.audit_log_service import record_audit_log
+from app.services.stock_availability_policy import (
+    stock_batch_fefo_ordering,
+    usable_stock_batch_condition,
+)
 
 
 def _require_user_id(current_user: User) -> int:
@@ -256,17 +260,12 @@ def _lock_batches_by_item(
 
     stmt = (
         select(StockBatch)
+        .join(Item, Item.id == StockBatch.item_id)
         .where(
             StockBatch.item_id.in_(item_ids),
-            StockBatch.current_quantity > 0,
+            usable_stock_batch_condition(),
         )
-        .order_by(
-            StockBatch.item_id.asc(),
-            case((StockBatch.expiration_date.is_(None), 1), else_=0),
-            StockBatch.expiration_date.asc(),
-            StockBatch.entry_date.asc(),
-            StockBatch.id.asc(),
-        )
+        .order_by(*stock_batch_fefo_ordering())
         .with_for_update()
     )
 

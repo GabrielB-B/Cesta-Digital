@@ -65,9 +65,6 @@ export function UsersPage() {
 
   async function loadData() {
     try {
-      setIsLoading(true);
-      setError("");
-
       const [usersResponse, rolesResponse] = await Promise.all([
         api.get<UserAdminResponse[]>("/users"),
         api.get<RoleOptionResponse[]>("/users/roles"),
@@ -83,7 +80,36 @@ export function UsersPage() {
   }
 
   useEffect(() => {
-    void loadData();
+    let isCurrent = true;
+
+    void Promise.all([
+      api.get<UserAdminResponse[]>("/users"),
+      api.get<RoleOptionResponse[]>("/users/roles"),
+    ])
+      .then(([usersResponse, rolesResponse]) => {
+        if (!isCurrent) {
+          return;
+        }
+
+        setUsers(usersResponse.data);
+        setRoles(rolesResponse.data);
+      })
+      .catch((err) => {
+        if (isCurrent) {
+          setError(
+            getApiErrorMessage(err, "Nao foi possivel carregar os usuarios.")
+          );
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   const editingUser = useMemo(() => {
@@ -179,6 +205,8 @@ export function UsersPage() {
       }
 
       resetForm();
+      setIsLoading(true);
+      setError("");
       await loadData();
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel salvar o usuario."));
@@ -208,6 +236,8 @@ export function UsersPage() {
 
       await api.put(`/users/${editingUserId}/password`, payload);
       setPasswordReset("");
+      setIsLoading(true);
+      setError("");
       await loadData();
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel redefinir a senha."));

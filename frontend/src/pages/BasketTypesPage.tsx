@@ -21,15 +21,17 @@ export function BasketTypesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function loadBasketTypes(nextOffset = offset) {
+  async function loadBasketTypes(
+    nextOffset = offset,
+    activeSearch = search,
+    nextActiveFilter = activeFilter
+  ) {
     try {
-      setIsLoading(true);
-      setError("");
-
       const response = await api.get<BasketTypeResponse[]>("/basket-types", {
         params: {
-          q: search.trim() || undefined,
-          is_active: activeFilter === "" ? undefined : activeFilter === "true",
+          q: activeSearch.trim() || undefined,
+          is_active:
+            nextActiveFilter === "" ? undefined : nextActiveFilter === "true",
           limit: PAGE_SIZE,
           offset: nextOffset,
         },
@@ -45,9 +47,49 @@ export function BasketTypesPage() {
     }
   }
 
+  function startBasketTypeLoad() {
+    setIsLoading(true);
+    setError("");
+  }
+
   useEffect(() => {
-    void loadBasketTypes(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let isCurrent = true;
+
+    void api
+      .get<BasketTypeResponse[]>("/basket-types", {
+        params: {
+          limit: PAGE_SIZE,
+          offset: 0,
+        },
+      })
+      .then((response) => {
+        if (!isCurrent) {
+          return;
+        }
+
+        setBasketTypes(response.data);
+        setTotal(Number(response.headers["x-total-count"] ?? response.data.length));
+        setOffset(0);
+      })
+      .catch((err) => {
+        if (isCurrent) {
+          setError(
+            getApiErrorMessage(
+              err,
+              "Nao foi possivel carregar os tipos de cesta."
+            )
+          );
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   const summary = useMemo(() => {
@@ -60,13 +102,20 @@ export function BasketTypesPage() {
 
   async function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    startBasketTypeLoad();
     await loadBasketTypes(0);
   }
 
   function handleClearFilters() {
     setSearch("");
     setActiveFilter("");
-    setTimeout(() => void loadBasketTypes(0), 0);
+    startBasketTypeLoad();
+    void loadBasketTypes(0, "", "");
+  }
+
+  function handlePageChange(nextOffset: number) {
+    startBasketTypeLoad();
+    void loadBasketTypes(nextOffset);
   }
 
   return (
@@ -203,7 +252,7 @@ export function BasketTypesPage() {
               offset={offset}
               limit={PAGE_SIZE}
               isLoading={isLoading}
-              onPageChange={(nextOffset) => void loadBasketTypes(nextOffset)}
+              onPageChange={handlePageChange}
             />
           </>
         )}

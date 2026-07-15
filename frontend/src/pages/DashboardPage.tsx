@@ -35,7 +35,7 @@ export function DashboardPage() {
           setError(
             getApiErrorMessage(
               err,
-              "Nao foi possivel carregar os indicadores do dashboard."
+              "Não foi possível carregar os indicadores do dashboard."
             )
           );
         }
@@ -60,23 +60,23 @@ export function DashboardPage() {
 
     return [
       {
-        title: "Familias acompanhadas",
+        title: "Famílias acompanhadas",
         value: data.active_families,
         description:
           data.total_families > 0
-            ? `${data.total_families} familias registradas no total.`
-            : "Nenhuma familia cadastrada ainda.",
+            ? `${data.total_families} famílias registradas no total.`
+            : "Nenhuma família cadastrada ainda.",
         tone: "social",
         emphasis: data.active_families > 0,
         actionTo: data.total_families === 0 ? "/families/new" : undefined,
-        actionLabel: data.total_families === 0 ? "Cadastrar familia" : undefined,
+        actionLabel: data.total_families === 0 ? "Cadastrar família" : undefined,
       },
       {
         title: "Itens em alerta",
         value: data.items_below_minimum_count,
         description:
           data.items_below_minimum_count > 0
-            ? "Entrada de alimentos precisa de atencao."
+            ? "Entrada de alimentos precisa de atenção."
             : "Nenhum item em alerta.",
         tone: data.items_below_minimum_count > 0 ? "attention" : "stock",
         emphasis: data.items_below_minimum_count > 0,
@@ -88,7 +88,7 @@ export function DashboardPage() {
         value: data.pending_schedules,
         description:
           data.pending_schedules > 0
-            ? "Agendamentos ainda nao concluidos."
+            ? "Agendamentos ainda não concluídos."
             : "Nenhuma retirada pendente.",
         tone: data.pending_schedules > 0 ? "delivery" : "neutral",
         actionTo: data.pending_schedules === 0 ? "/deliveries" : undefined,
@@ -96,12 +96,12 @@ export function DashboardPage() {
           data.pending_schedules === 0 ? "Planejar entrega" : undefined,
       },
       {
-        title: "Entregas no mes",
+        title: "Entregas no mês",
         value: data.deliveries_this_month,
         description:
           data.deliveries_this_month > 0
-            ? "Baixas concluidas no mes atual."
-            : "Nenhuma entrega registrada neste mes.",
+            ? "Baixas concluídas no mês atual."
+            : "Nenhuma entrega registrada neste mês.",
         tone: "delivery",
       },
       {
@@ -110,16 +110,16 @@ export function DashboardPage() {
         description:
           data.recurring_eligible_families > 0
             ? "Acompanhamento social continuo."
-            : "Nenhuma familia recorrente no momento.",
+            : "Nenhuma família recorrente no momento.",
         tone: "social",
       },
       {
-        title: "Em analise",
+        title: "Em análise",
         value: data.under_review_families,
         description:
           data.under_review_families > 0
-            ? "Familias aguardando decisao."
-            : "Nenhuma familia aguardando analise.",
+            ? "Famílias aguardando decisão."
+            : "Nenhuma família aguardando análise.",
         tone: "neutral",
       },
     ];
@@ -136,7 +136,7 @@ export function DashboardPage() {
         value: data.active_families,
         detail:
           data.active_families > 0
-            ? "familias ativas"
+            ? "famílias ativas"
             : "comece pelo cadastro",
         tone: "social",
       },
@@ -177,13 +177,18 @@ export function DashboardPage() {
     if (roles.some((role) => role === "admin" || role === "lider_social")) {
       actions.push({
         to: "/families",
-        label: "Familias",
+        label: "Famílias",
         icon: "families",
       });
     }
 
     if (roles.some((role) => role === "admin" || role === "operador")) {
       actions.push({ to: "/items", label: "Estoque", icon: "items" });
+      actions.push({
+        to: "/stock-batches/new",
+        label: "Registrar entrada",
+        icon: "items",
+      });
       actions.push({ to: "/basket-types", label: "Cestas", icon: "baskets" });
       actions.push({
         to: "/deliveries",
@@ -193,7 +198,7 @@ export function DashboardPage() {
     }
 
     if (roles.includes("admin")) {
-      actions.push({ to: "/users", label: "Usuarios", icon: "users" });
+      actions.push({ to: "/users", label: "Usuários", icon: "users" });
     }
 
     return actions.slice(0, 4);
@@ -203,8 +208,8 @@ export function DashboardPage() {
     return (
       <div className="dashboard-page">
         <div className="hero-card">
-          <h2>Dashboard</h2>
-          <p>Carregando indicadores do Cesta Digital...</p>
+          <h1>Dashboard</h1>
+          <p>Carregando indicadores do Cesta Digital…</p>
         </div>
       </div>
     );
@@ -214,9 +219,9 @@ export function DashboardPage() {
     return (
       <div className="dashboard-page">
         <div className="hero-card">
-          <h2>Dashboard</h2>
+          <h1>Dashboard</h1>
           <p className="status-error" role="alert" aria-live="polite">
-            {error || "Nao foi possivel montar o dashboard."}
+            {error || "Não foi possível montar o dashboard."}
           </p>
         </div>
       </div>
@@ -227,10 +232,10 @@ export function DashboardPage() {
     <div className="dashboard-page">
       <section className="hero-card hero-card--dashboard">
         <div className="hero-card__main">
-          <p className="eyebrow">Visao geral</p>
-          <h2>Dashboard do Cesta Digital</h2>
+          <p className="eyebrow">Visão geral</p>
+          <h1>Dashboard do Cesta Digital</h1>
           <p className="hero-card__description">
-            Acompanhe familias, estoque de alimentos e entregas de cestas em
+            Acompanhe famílias, estoque de alimentos e entregas de cestas em
             tempo real.
           </p>
 
@@ -250,12 +255,12 @@ export function DashboardPage() {
 
         <div className="hero-card__side">
           <div className="hero-status-card">
-            <p className="eyebrow">Acompanhamento do mes</p>
+            <p className="eyebrow">Acompanhamento do mês</p>
             <strong className="hero-status-card__value">
               {data.deliveries_this_month} entregas
             </strong>
             <p className="hero-status-card__text">
-              O painel destaca onde agir primeiro: familias, estoque ou
+              O painel destaca onde agir primeiro: famílias, estoque ou
               retiradas.
             </p>
           </div>
@@ -295,14 +300,14 @@ export function DashboardPage() {
           <div className="panel-card__header">
             <div>
               <p className="eyebrow">Cestas</p>
-              <h3>Cestas possiveis por tipo</h3>
+              <h3>Cestas possíveis por tipo</h3>
             </div>
           </div>
 
           {data.basket_summaries.length === 0 ? (
             <div className="empty-state empty-state--with-action">
               <span>
-                Nenhum tipo de cesta ativo. Comece configurando uma cesta padrao.
+                Nenhum tipo de cesta ativo. Comece configurando uma cesta padrão.
               </span>
               <Link className="empty-state__action" to="/basket-types">
                 Montar cestas
@@ -320,7 +325,7 @@ export function DashboardPage() {
                   </div>
 
                   <span className="pill pill--primary">
-                    {basket.possible_baskets} possiveis
+                    {basket.possible_baskets} possíveis
                   </span>
                 </div>
               ))}
@@ -331,14 +336,14 @@ export function DashboardPage() {
         <article className="panel-card">
           <div className="panel-card__header">
             <div>
-              <p className="eyebrow">Reavaliacoes</p>
-              <h3>Proximas reavaliacoes</h3>
+              <p className="eyebrow">Reavaliações</p>
+              <h3>Próximas reavaliações</h3>
             </div>
           </div>
 
           {data.upcoming_revaluations.length === 0 ? (
             <div className="empty-state">
-              Nenhuma reavaliacao proxima. O acompanhamento esta em dia.
+              Nenhuma reavaliação próxima. O acompanhamento está em dia.
             </div>
           ) : (
             <div className="stack-list">
@@ -363,17 +368,27 @@ export function DashboardPage() {
 
       <section className="content-grid content-grid--single">
         <article className="panel-card">
-          <div className="panel-card__header">
+          <div className="panel-card__header panel-card__header--actions">
             <div>
               <p className="eyebrow">Estoque</p>
-              <h3>Itens abaixo do minimo</h3>
+              <h3>Itens abaixo do mínimo</h3>
             </div>
+            {user?.roles.some(
+              (role) => role === "admin" || role === "operador"
+            ) ? (
+              <Link
+                className="button button--secondary button--link"
+                to="/stock-batches/new"
+              >
+                Registrar entrada
+              </Link>
+            ) : null}
           </div>
 
           {data.stock_alerts.length === 0 ? (
             <div className="empty-state empty-state--with-action">
               <span>
-                Nenhum item em alerta. O estoque esta dentro dos limites
+                Nenhum item em alerta. O estoque está dentro dos limites
                 cadastrados.
               </span>
               <Link className="empty-state__action" to="/items">
@@ -381,13 +396,13 @@ export function DashboardPage() {
               </Link>
             </div>
           ) : (
-            <DataTable caption="Itens abaixo do minimo">
+            <DataTable caption="Itens abaixo do mínimo">
               <thead>
                 <tr>
                   <th>Item</th>
                   <th>Categoria</th>
                   <th>Quantidade</th>
-                  <th>Minimo</th>
+                  <th>Mínimo</th>
                 </tr>
               </thead>
               <tbody>

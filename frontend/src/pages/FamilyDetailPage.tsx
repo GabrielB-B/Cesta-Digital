@@ -57,6 +57,16 @@ function getLatestAssessment(
 
 export function FamilyDetailPage() {
   const { familyId } = useParams();
+
+  return (
+    <FamilyDetailContent
+      key={familyId ?? "family-missing"}
+      familyId={familyId}
+    />
+  );
+}
+
+function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
   const [family, setFamily] = useState<FamilyDetailResponse | null>(null);
   const [eligibilityPreview, setEligibilityPreview] =
     useState<EligibilityPreviewResponse | null>(null);
@@ -69,23 +79,28 @@ export function FamilyDetailPage() {
     internal_notes: "",
   });
 
-  async function loadFamilyDetail(isMounted = true) {
-    try {
-      setIsLoading(true);
-      setError("");
+  useEffect(() => {
+    if (!familyId) {
+      return;
+    }
 
-      const [familyResult, previewResult] = await Promise.allSettled([
-        api.get<FamilyDetailResponse>(`/families/${familyId}`),
-        api.get<EligibilityPreviewResponse>(
-          `/families/${familyId}/eligibility-preview`
-        ),
-      ]);
+    let isCurrent = true;
 
-      if (familyResult.status === "rejected") {
-        throw familyResult.reason;
-      }
+    void Promise.allSettled([
+      api.get<FamilyDetailResponse>(`/families/${familyId}`),
+      api.get<EligibilityPreviewResponse>(
+        `/families/${familyId}/eligibility-preview`
+      ),
+    ])
+      .then(([familyResult, previewResult]) => {
+        if (!isCurrent) {
+          return;
+        }
 
-      if (isMounted) {
+        if (familyResult.status === "rejected") {
+          throw familyResult.reason;
+        }
+
         setFamily(familyResult.value.data);
         setEligibilityPreview(
           previewResult.status === "fulfilled" ? previewResult.value.data : null
@@ -94,31 +109,26 @@ export function FamilyDetailPage() {
           status: familyResult.value.data.status,
           internal_notes: familyResult.value.data.internal_notes ?? "",
         });
-      }
-    } catch (err) {
-      if (isMounted) {
-        setError(
-          getApiErrorMessage(err, "Nao foi possivel carregar o detalhe da familia.")
-        );
-      }
-    } finally {
-      if (isMounted) {
-        setIsLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    let isMounted = true;
-
-    if (familyId) {
-      void loadFamilyDetail(isMounted);
-    }
+      })
+      .catch((err) => {
+        if (isCurrent) {
+          setError(
+            getApiErrorMessage(
+              err,
+              "Nao foi possivel carregar o detalhe da familia."
+            )
+          );
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
 
     return () => {
-      isMounted = false;
+      isCurrent = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [familyId]);
 
   async function handleStatusSubmit(event: React.FormEvent<HTMLFormElement>) {

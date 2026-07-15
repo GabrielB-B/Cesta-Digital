@@ -1,13 +1,10 @@
 import axios from "axios";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { LogIn, Mail, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { BrandLockup } from "../components/BrandLockup";
-import {
-  LOGIN_SUCCESS_SPLASH_TIMEOUT_MS,
-  LoginSuccessOverlay,
-} from "../components/LoginSuccessOverlay";
+import { EnvironmentNotice } from "../components/EnvironmentNotice";
 import { useAuth } from "../contexts/useAuth";
 import { getApiErrorMessage } from "../utils/api-error";
 
@@ -52,10 +49,6 @@ function normalizeLoginError(detail: unknown) {
   return "";
 }
 
-function getLoginSuccessSplashDuration() {
-  return LOGIN_SUCCESS_SPLASH_TIMEOUT_MS;
-}
-
 export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -67,58 +60,13 @@ export function LoginPage() {
   const [recoveryMessage, setRecoveryMessage] = useState("");
   const [recoveryError, setRecoveryError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccessSplashVisible, setIsSuccessSplashVisible] = useState(false);
   const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
   const [isRecoverySubmitting, setIsRecoverySubmitting] = useState(false);
-  const loginRevealTimeoutRef = useRef<number | null>(null);
-  const loginRevealResolveRef = useRef<(() => void) | null>(null);
-
-  const resolveLoginReveal = useCallback(() => {
-    if (loginRevealTimeoutRef.current !== null) {
-      window.clearTimeout(loginRevealTimeoutRef.current);
-      loginRevealTimeoutRef.current = null;
-    }
-
-    if (loginRevealResolveRef.current !== null) {
-      const resolve = loginRevealResolveRef.current;
-      loginRevealResolveRef.current = null;
-      resolve();
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (loginRevealTimeoutRef.current !== null) {
-        window.clearTimeout(loginRevealTimeoutRef.current);
-        loginRevealTimeoutRef.current = null;
-      }
-      loginRevealResolveRef.current = null;
-    };
-  }, []);
-
-  function waitForLoginReveal(durationMs: number) {
-    if (loginRevealTimeoutRef.current !== null) {
-      window.clearTimeout(loginRevealTimeoutRef.current);
-      loginRevealTimeoutRef.current = null;
-    }
-
-    if (loginRevealResolveRef.current !== null) {
-      loginRevealResolveRef.current();
-      loginRevealResolveRef.current = null;
-    }
-
-    return new Promise<void>((resolve) => {
-      loginRevealResolveRef.current = resolve;
-      loginRevealTimeoutRef.current = window.setTimeout(() => {
-        resolveLoginReveal();
-      }, durationMs);
-    });
-  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (isSubmitting || isSuccessSplashVisible) {
+    if (isSubmitting) {
       return;
     }
 
@@ -143,16 +91,11 @@ export function LoginPage() {
     }
 
     setIsSubmitting(true);
-    setIsSuccessSplashVisible(false);
 
     try {
       await login(normalizedLoginName, normalizedPassword);
-      setIsSuccessSplashVisible(true);
-      await waitForLoginReveal(getLoginSuccessSplashDuration());
       navigate("/", { replace: true });
     } catch (err) {
-      setIsSuccessSplashVisible(false);
-
       if (axios.isAxiosError(err)) {
         const backendDetail = err.response?.data?.detail;
         const normalizedError = normalizeLoginError(backendDetail);
@@ -178,7 +121,7 @@ export function LoginPage() {
     const normalizedEmail = recoveryEmail.trim().toLowerCase();
 
     if (!normalizedEmail) {
-      setRecoveryError("Informe o email de recuperacao cadastrado.");
+      setRecoveryError("Informe o e-mail de recuperação cadastrado.");
       return;
     }
 
@@ -190,7 +133,9 @@ export function LoginPage() {
       });
       setRecoveryMessage(response.data.message);
     } catch (err) {
-      setRecoveryError(getApiErrorMessage(err, "Nao foi possivel solicitar a recuperacao."));
+      setRecoveryError(
+        getApiErrorMessage(err, "Não foi possível solicitar a recuperação.")
+      );
     } finally {
       setIsRecoverySubmitting(false);
     }
@@ -200,13 +145,13 @@ export function LoginPage() {
     <div className="login-page">
       <div
         className={`login-shell${isSubmitting ? " login-shell--submitting" : ""}`}
-        aria-busy={isSubmitting || isSuccessSplashVisible}
+        aria-busy={isSubmitting}
       >
         <aside className="login-brand-panel" aria-label="Cesta Digital">
           <BrandLockup
             variant="login"
             title="Cesta Digital"
-            subtitle="Gestao social, estoque e entregas em um so lugar."
+            subtitle="Gestão social, estoque e entregas em um só lugar."
           />
         </aside>
 
@@ -215,14 +160,16 @@ export function LoginPage() {
             <BrandLockup
               variant="login"
               title="Cesta Digital"
-              subtitle="Gestao social, estoque e entregas em um so lugar."
+              subtitle="Gestão social, estoque e entregas em um só lugar."
             />
           </div>
+
+          <EnvironmentNotice />
 
           <div className="login-card__heading">
             <p className="eyebrow">Acesso seguro</p>
             <h1>Entrar no sistema</h1>
-            <p>Use seu nome de login para acessar a operacao.</p>
+            <p>Use seu nome de login para acessar a operação.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="form login-form">
@@ -288,10 +235,10 @@ export function LoginPage() {
             <button
               type="submit"
               className="button login-card__submit"
-              disabled={isSubmitting || isSuccessSplashVisible}
+              disabled={isSubmitting}
             >
               <LogIn size={18} aria-hidden="true" />
-              {isSubmitting || isSuccessSplashVisible ? "Entrando..." : "Entrar"}
+              {isSubmitting ? "Entrando…" : "Entrar"}
             </button>
           </form>
 
@@ -299,18 +246,18 @@ export function LoginPage() {
             <form
               className="login-card__recovery"
               onSubmit={handleRecoverySubmit}
-              aria-label="Solicitar recuperacao de senha"
+              aria-label="Solicitar recuperação de senha"
             >
               <div className="login-card__recovery-heading">
                 <ShieldCheck size={18} aria-hidden="true" />
                 <div>
                   <strong>Recuperar acesso</strong>
-                  <p>Informe o email cadastrado para a equipe redefinir sua senha.</p>
+                  <p>Informe o e-mail cadastrado para a equipe redefinir sua senha.</p>
                 </div>
               </div>
 
               <div className="form__group">
-                <label htmlFor="recovery-email">Email de recuperacao</label>
+                <label htmlFor="recovery-email">E-mail de recuperação</label>
                 <input
                   id="recovery-email"
                   type="email"
@@ -345,15 +292,13 @@ export function LoginPage() {
                 disabled={isRecoverySubmitting}
               >
                 <Mail size={17} aria-hidden="true" />
-                {isRecoverySubmitting ? "Enviando..." : "Solicitar recuperacao"}
+                {isRecoverySubmitting ? "Enviando…" : "Solicitar recuperação"}
               </button>
             </form>
           ) : null}
         </section>
 
       </div>
-
-      {isSuccessSplashVisible ? <LoginSuccessOverlay onComplete={resolveLoginReveal} /> : null}
     </div>
   );
 }

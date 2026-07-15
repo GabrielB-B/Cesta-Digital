@@ -9,7 +9,6 @@ import { getApiErrorMessage } from "../utils/api-error";
 import type {
   ItemCategoryResponse,
   ItemCreatePayload,
-  ItemDetailResponse,
 } from "../types/item";
 
 /**
@@ -110,12 +109,30 @@ export function ItemCreatePage() {
         notes: formData.notes.trim() || null,
       };
 
-      const response = await api.post<ItemDetailResponse>("/items", payload);
-      navigate(`/items/${response.data.id}`, {
+      const response = await api.post<{ id: number; is_active: boolean }>(
+        "/items",
+        payload
+      );
+
+      if (!response.data.is_active) {
+        navigate(`/items/${response.data.id}`, {
+          state: {
+            flash: {
+              type: "success",
+              message:
+                "Item inativo cadastrado. Ative-o antes de registrar uma entrada de estoque.",
+            },
+          },
+        });
+        return;
+      }
+
+      navigate(`/stock-batches/new?itemId=${response.data.id}&from=item-create`, {
         state: {
           flash: {
             type: "success",
-            message: "Item cadastrado com sucesso.",
+            message:
+              "Item cadastrado. Agora registre a primeira entrada para adicionar saldo ao estoque.",
           },
         },
       });
@@ -211,7 +228,13 @@ export function ItemCreatePage() {
               checked={formData.tracks_expiration}
               onChange={handleInputChange}
             />
-            <span>Controla validade</span>
+            <span className="checkbox-card__content">
+              <strong>Controla validade por lote</strong>
+              <small>
+                A data não pertence ao item. Ela será informada em cada entrada,
+                conforme a embalagem recebida.
+              </small>
+            </span>
           </label>
 
           <label className="checkbox-card">
@@ -245,7 +268,7 @@ export function ItemCreatePage() {
           </Link>
 
           <button type="submit" className="button" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : "Cadastrar item"}
+            {isSubmitting ? "Salvando…" : "Cadastrar item"}
           </button>
         </FormActions>
       </form>

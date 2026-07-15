@@ -1,9 +1,10 @@
-from sqlalchemy import func, or_, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models.item import Item
 from app.models.item_category import ItemCategory
 from app.models.stock_batch import StockBatch
+from app.services.stock_availability_policy import usable_stock_batch_condition
 
 
 def list_stock_summary(
@@ -51,7 +52,18 @@ def list_stock_summary(
             Item.tracks_expiration.label("tracks_expiration"),
             Item.is_active.label("is_active"),
             Item.minimum_stock_alert.label("minimum_stock_alert"),
-            func.coalesce(func.sum(StockBatch.current_quantity), 0).label("total_quantity"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            usable_stock_batch_condition(),
+                            StockBatch.current_quantity,
+                        ),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("total_quantity"),
             func.count(StockBatch.id).label("total_batches"),
         )
         .join(ItemCategory, Item.category_id == ItemCategory.id)
@@ -120,7 +132,7 @@ def list_stock_alerts(db: Session) -> list[dict]:
             "is_below_minimum": item["is_below_minimum"],
         }
         for item in summary
-        if item["is_below_minimum"]
+        if item["is_active"] and item["is_below_minimum"]
     ]
 
     return alerts

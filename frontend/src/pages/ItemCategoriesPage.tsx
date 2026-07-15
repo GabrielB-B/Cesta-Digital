@@ -18,8 +18,6 @@ export function ItemCategoriesPage() {
 
   async function loadCategories() {
     try {
-      setIsLoading(true);
-      setError("");
       const response = await api.get<ItemCategoryResponse[]>("/item-categories");
       setCategories(response.data);
     } catch (err) {
@@ -30,7 +28,31 @@ export function ItemCategoriesPage() {
   }
 
   useEffect(() => {
-    void loadCategories();
+    let isCurrent = true;
+
+    void api
+      .get<ItemCategoryResponse[]>("/item-categories")
+      .then((response) => {
+        if (isCurrent) {
+          setCategories(response.data);
+        }
+      })
+      .catch((err) => {
+        if (isCurrent) {
+          setError(
+            getApiErrorMessage(err, "Nao foi possivel carregar as categorias.")
+          );
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   function resetForm() {
@@ -73,6 +95,8 @@ export function ItemCategoriesPage() {
       }
 
       resetForm();
+      setIsLoading(true);
+      setError("");
       await loadCategories();
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel salvar a categoria."));

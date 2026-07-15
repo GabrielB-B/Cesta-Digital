@@ -431,9 +431,6 @@ export function AuditLogsPage() {
     activeFilters = filters
   ) {
     try {
-      setIsLoading(true);
-      setError("");
-
       const response = await api.get<AuditLogListResponse>("/audit-logs", {
         params: buildAuditParams(activeFilters, limit, nextOffset),
       });
@@ -448,10 +445,44 @@ export function AuditLogsPage() {
     }
   }
 
+  function startAuditLogLoad() {
+    setIsLoading(true);
+    setError("");
+  }
+
   useEffect(() => {
-    void loadAuditLogs(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    let isCurrent = true;
+
+    void api
+      .get<AuditLogListResponse>("/audit-logs", {
+        params: buildAuditParams(initialFilters, limit, 0),
+      })
+      .then((response) => {
+        if (!isCurrent) {
+          return;
+        }
+
+        setLogs(response.data.items);
+        setTotal(response.data.total);
+        setOffset(0);
+      })
+      .catch((err) => {
+        if (isCurrent) {
+          setError(
+            getApiErrorMessage(err, "Nao foi possivel carregar a auditoria.")
+          );
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [limit]);
 
   const summary = useMemo(() => {
     const today = new Date().toDateString();
@@ -476,12 +507,19 @@ export function AuditLogsPage() {
 
   async function handleApplyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    startAuditLogLoad();
     await loadAuditLogs(0);
   }
 
   function handleClearFilters() {
     setFilters(initialFilters);
+    startAuditLogLoad();
     void loadAuditLogs(0, initialFilters);
+  }
+
+  function handlePageChange(nextOffset: number) {
+    startAuditLogLoad();
+    void loadAuditLogs(nextOffset);
   }
 
   async function handleExportCsv() {
@@ -763,7 +801,7 @@ export function AuditLogsPage() {
               offset={offset}
               limit={limit}
               isLoading={isLoading}
-              onPageChange={(nextOffset) => void loadAuditLogs(nextOffset)}
+              onPageChange={handlePageChange}
             />
           </>
         )}

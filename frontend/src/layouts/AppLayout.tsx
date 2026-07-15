@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   Menu,
@@ -8,6 +8,7 @@ import {
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { AppIcon } from "../components/AppIcon";
 import { BrandLockup } from "../components/BrandLockup";
+import { EnvironmentNotice } from "../components/EnvironmentNotice";
 import { useAuth } from "../contexts/useAuth";
 
 type MenuIconName =
@@ -54,14 +55,14 @@ function formatRole(role: string): string {
   }
 
   if (role === "lider_social") {
-    return "Lideranca social";
+    return "Liderança social";
   }
 
   if (role === "operador") {
     return "Operador";
   }
 
-  return "Usuario";
+  return "Usuário";
 }
 
 function getInitials(name?: string | null): string {
@@ -88,6 +89,8 @@ function getInitials(name?: string | null): string {
 export function AppLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const navigationToggleRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
   const userRoles = user?.roles ?? [];
   const [isSidebarCollapsed, setIsSidebarCollapsed] =
     useState(getInitialSidebarState);
@@ -135,6 +138,67 @@ export function AppLayout() {
     return () => mediaQuery.removeEventListener("change", handleViewportChange);
   }, []);
 
+  useEffect(() => {
+    if (!isMobileViewport || !isMobileMenuOpen) {
+      return;
+    }
+
+    const sidebar = sidebarRef.current;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previouslyFocusedElement =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : navigationToggleRef.current;
+
+    const getFocusableElements = () =>
+      Array.from(
+        sidebar?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) ?? []
+      ).filter((element) => !element.hasAttribute("disabled"));
+
+    document.body.style.overflow = "hidden";
+    getFocusableElements()[0]?.focus();
+
+    const handleDrawerKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setIsMobileMenuOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusableElements = getFocusableElements();
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleDrawerKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleDrawerKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+      previouslyFocusedElement?.focus();
+    };
+  }, [isMobileMenuOpen, isMobileViewport]);
+
   function hasAnyRole(...roles: string[]): boolean {
     return roles.some((role) => userRoles.includes(role));
   }
@@ -143,7 +207,7 @@ export function AppLayout() {
     { path: "/", label: "Dashboard", icon: "dashboard", visible: true },
     {
       path: "/families",
-      label: "Familias",
+      label: "Famílias",
       icon: "families",
       visible: hasAnyRole("admin", "lider_social"),
     },
@@ -179,7 +243,7 @@ export function AppLayout() {
     },
     {
       path: "/users",
-      label: "Usuarios",
+      label: "Usuários",
       icon: "users",
       visible: hasAnyRole("admin"),
     },
@@ -258,11 +322,18 @@ export function AppLayout() {
   return (
     <>
       <a className="skip-link" href="#conteudo-principal">
-        Pular para o conteudo
+        Pular para o conteúdo
       </a>
 
       <div className={shellClasses}>
-        <aside className="sidebar" aria-label="Navegacao principal">
+        <aside
+          ref={sidebarRef}
+          id="main-navigation"
+          className="sidebar"
+          aria-label="Navegação principal"
+          aria-hidden={isMobileViewport && !isMobileMenuOpen ? true : undefined}
+          inert={isMobileViewport && !isMobileMenuOpen ? true : undefined}
+        >
           <div className="sidebar__overlay" />
 
           <div className="sidebar__content">
@@ -271,7 +342,7 @@ export function AppLayout() {
                 <BrandLockup
                   variant="sidebar"
                   title="Cesta Digital"
-                  subtitle="UPG | Gestao social e operacional"
+                  subtitle="UPG | Gestão social e operacional"
                 />
               </div>
 
@@ -310,8 +381,8 @@ export function AppLayout() {
             </nav>
 
             <div className="sidebar__footer">
-              <span className="sidebar__footer-label">Sessao ativa</span>
-              <strong>{user?.name ?? "Usuario"}</strong>
+              <span className="sidebar__footer-label">Sessão ativa</span>
+              <strong>{user?.name ?? "Usuário"}</strong>
               <p>{primaryRole}</p>
               <button
                 className="sidebar__footer-logout"
@@ -326,20 +397,24 @@ export function AppLayout() {
 
         </aside>
 
-      <button
-        className="mobile-drawer-backdrop"
-        type="button"
-        aria-label="Fechar menu"
-        onClick={() => setIsMobileMenuOpen(false)}
-      />
+      {isMobileViewport && isMobileMenuOpen ? (
+        <button
+          className="mobile-drawer-backdrop"
+          type="button"
+          aria-label="Fechar menu"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      ) : null}
 
       <main id="conteudo-principal" className="content">
         <header className="topbar">
           <div className="topbar__identity">
             <button
+              ref={navigationToggleRef}
               className="topbar__menu"
               type="button"
               aria-label={navigationToggleLabel}
+              aria-controls="main-navigation"
               aria-expanded={isMobileViewport ? isMobileMenuOpen : !isSidebarCollapsed}
               title={navigationToggleLabel}
               onClick={handleNavigationToggle}
@@ -359,19 +434,19 @@ export function AppLayout() {
               <button
                 className="topbar__account-button"
                 type="button"
-                aria-label={`Conta de ${user?.name ?? "Usuario"}`}
+                aria-label={`Conta de ${user?.name ?? "Usuário"}`}
                 aria-haspopup="menu"
                 aria-expanded={isAccountMenuOpen}
-                title={user?.login_name ? `${user.name} (@${user.login_name})` : user?.name ?? "Usuario"}
+                title={user?.login_name ? `${user.name} (@${user.login_name})` : user?.name ?? "Usuário"}
                 onClick={() => setIsAccountMenuOpen((current) => !current)}
               >
                 <span className="topbar__avatar" aria-hidden="true">
                   {accountInitials}
                 </span>
                 <span className="topbar__account-text">
-                  <strong>{user?.name ?? "Usuario"}</strong>
+                  <strong>{user?.name ?? "Usuário"}</strong>
                   <span>
-                    {user?.login_name ? `@${user.login_name}` : "Sessao ativa"}
+                    {user?.login_name ? `@${user.login_name}` : "Sessão ativa"}
                   </span>
                 </span>
                 <ChevronDown
@@ -390,7 +465,7 @@ export function AppLayout() {
                       <span>
                         {user?.login_name
                           ? `@${user.login_name}`
-                          : "Sessao ativa"}
+                          : "Sessão ativa"}
                       </span>
                     </div>
                   </div>
@@ -411,6 +486,8 @@ export function AppLayout() {
         </header>
 
         <section className="page-content">
+          <EnvironmentNotice compact />
+
           {routeFlash ? (
             <p
               className={`flash-message flash-message--${routeFlash.type}`}

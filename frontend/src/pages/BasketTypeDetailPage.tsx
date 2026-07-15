@@ -17,6 +17,20 @@ import { getApiErrorMessage } from "../utils/api-error";
 
 export function BasketTypeDetailPage() {
   const { basketTypeId } = useParams();
+
+  return (
+    <BasketTypeDetailContent
+      key={basketTypeId ?? "basket-type-missing"}
+      basketTypeId={basketTypeId}
+    />
+  );
+}
+
+function BasketTypeDetailContent({
+  basketTypeId,
+}: {
+  basketTypeId: string | undefined;
+}) {
   const [basketType, setBasketType] = useState<BasketTypeDetailResponse | null>(null);
   const [availability, setAvailability] = useState<BasketAvailabilityResponse | null>(
     null
@@ -41,9 +55,6 @@ export function BasketTypeDetailPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   async function loadBasketTypeData(targetBasketTypeId: string) {
-    setIsLoading(true);
-    setError("");
-
     try {
       const [detailResponse, availabilityResponse, itemsResponse] = await Promise.all([
         api.get<BasketTypeDetailResponse>(`/basket-types/${targetBasketTypeId}`),
@@ -76,10 +87,62 @@ export function BasketTypeDetailPage() {
     }
   }
 
+  async function refreshBasketTypeData(targetBasketTypeId: string) {
+    setIsLoading(true);
+    setError("");
+    await loadBasketTypeData(targetBasketTypeId);
+  }
+
   useEffect(() => {
-    if (basketTypeId) {
-      void loadBasketTypeData(basketTypeId);
+    if (!basketTypeId) {
+      return;
     }
+
+    let isCurrent = true;
+
+    void Promise.all([
+      api.get<BasketTypeDetailResponse>(`/basket-types/${basketTypeId}`),
+      api.get<BasketAvailabilityResponse>(
+        `/basket-types/${basketTypeId}/availability`
+      ),
+      api.get<ItemDetailResponse[]>("/items"),
+    ])
+      .then(([detailResponse, availabilityResponse, itemsResponse]) => {
+        if (!isCurrent) {
+          return;
+        }
+
+        setBasketType(detailResponse.data);
+        setAvailability(availabilityResponse.data);
+        setItems(itemsResponse.data);
+        setBasketForm({
+          name: detailResponse.data.name,
+          is_active: detailResponse.data.is_active,
+          notes: detailResponse.data.notes ?? "",
+        });
+        setQuantityDrafts(
+          Object.fromEntries(
+            detailResponse.data.basket_items.map((item) => [
+              item.item_id,
+              String(item.required_quantity),
+            ])
+          )
+        );
+      })
+      .catch((err) => {
+        if (isCurrent) {
+          setError(getApiErrorMessage(err, "Nao foi possivel carregar a cesta."));
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, [basketTypeId]);
 
   const limitingItems = useMemo(() => {
@@ -116,7 +179,7 @@ export function BasketTypeDetailPage() {
         is_active: basketForm.is_active,
         notes: basketForm.notes.trim() || null,
       });
-      await loadBasketTypeData(basketTypeId);
+      await refreshBasketTypeData(basketTypeId);
       setSuccessMessage("Tipo de cesta atualizado com auditoria registrada.");
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel salvar o tipo de cesta."));
@@ -147,7 +210,7 @@ export function BasketTypeDetailPage() {
         item_id: "",
         required_quantity: 1,
       });
-      await loadBasketTypeData(basketTypeId);
+      await refreshBasketTypeData(basketTypeId);
     } catch (err) {
       setRecipeError(getApiErrorMessage(err, "Nao foi possivel adicionar o item."));
     } finally {
@@ -166,7 +229,7 @@ export function BasketTypeDetailPage() {
       await api.put(`/basket-types/${basketTypeId}/items/${itemId}`, {
         required_quantity: Number(quantityDrafts[itemId] ?? 0),
       });
-      await loadBasketTypeData(basketTypeId);
+      await refreshBasketTypeData(basketTypeId);
     } catch (err) {
       setRecipeError(getApiErrorMessage(err, "Nao foi possivel atualizar a receita."));
     } finally {
@@ -188,7 +251,7 @@ export function BasketTypeDetailPage() {
       setBusyRecipeItemId(itemId);
       setRecipeError("");
       await api.delete(`/basket-types/${basketTypeId}/items/${itemId}`);
-      await loadBasketTypeData(basketTypeId);
+      await refreshBasketTypeData(basketTypeId);
     } catch (err) {
       setRecipeError(getApiErrorMessage(err, "Nao foi possivel remover o item."));
     } finally {

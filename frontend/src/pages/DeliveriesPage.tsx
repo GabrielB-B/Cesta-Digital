@@ -53,9 +53,6 @@ export function DeliveriesPage() {
     nextDeliveryOffset = deliveryOffset
   ) {
     try {
-      setIsLoading(true);
-      setError("");
-
       const [schedulesResponse, deliveriesResponse, familiesResponse, basketTypesResponse] =
         await Promise.all([
           api.get<DeliveryScheduleResponse[]>("/delivery-schedules", {
@@ -110,9 +107,93 @@ export function DeliveriesPage() {
     }
   }
 
+  function startDataLoad() {
+    setIsLoading(true);
+    setError("");
+  }
+
   useEffect(() => {
-    void loadData(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let isCurrent = true;
+
+    void Promise.all([
+      api.get<DeliveryScheduleResponse[]>("/delivery-schedules", {
+        params: {
+          limit: PAGE_SIZE,
+          offset: 0,
+        },
+      }),
+      api.get<DeliveryResponse[]>("/deliveries", {
+        params: {
+          limit: DELIVERY_PAGE_SIZE,
+          offset: 0,
+        },
+      }),
+      api.get<FamilyListItemResponse[]>("/families", {
+        params: { limit: 200 },
+      }),
+      api.get<BasketTypeResponse[]>("/basket-types", {
+        params: { limit: 200 },
+      }),
+    ])
+      .then(
+        ([
+          schedulesResponse,
+          deliveriesResponse,
+          familiesResponse,
+          basketTypesResponse,
+        ]) => {
+          if (!isCurrent) {
+            return;
+          }
+
+          setSchedules(schedulesResponse.data);
+          setDeliveries(deliveriesResponse.data);
+          setFamilies(familiesResponse.data);
+          setBasketTypes(basketTypesResponse.data);
+          setTotalSchedules(
+            Number(
+              schedulesResponse.headers["x-total-count"] ??
+                schedulesResponse.data.length
+            )
+          );
+          setTotalDeliveries(
+            Number(
+              deliveriesResponse.headers["x-total-count"] ??
+                deliveriesResponse.data.length
+            )
+          );
+          setOffset(0);
+          setDeliveryOffset(0);
+          setScheduleDrafts(
+            Object.fromEntries(
+              schedulesResponse.data.map((schedule) => [
+                schedule.id,
+                {
+                  scheduled_date: schedule.scheduled_date,
+                  status: schedule.status,
+                  notes: schedule.notes ?? "",
+                },
+              ])
+            )
+          );
+        }
+      )
+      .catch((err) => {
+        if (isCurrent) {
+          setError(
+            getApiErrorMessage(err, "Nao foi possivel carregar as entregas.")
+          );
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   const summary = useMemo(() => {
@@ -154,6 +235,7 @@ export function DeliveriesPage() {
 
       await api.post(`/deliveries/from-schedule/${scheduleId}`, payload);
       setSuccessMessage("Entrega confirmada e estoque baixado automaticamente.");
+      startDataLoad();
       await loadData(offset, statusFilter, deliveryOffset);
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel confirmar a entrega."));
@@ -181,6 +263,7 @@ export function DeliveriesPage() {
 
       await api.put(`/delivery-schedules/${scheduleId}`, payload);
       setSuccessMessage("Agendamento atualizado com auditoria registrada.");
+      startDataLoad();
       await loadData(offset, statusFilter, deliveryOffset);
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel atualizar o agendamento."));
@@ -215,6 +298,7 @@ export function DeliveriesPage() {
         notes: schedule.notes ?? "Cancelado pela interface.",
       } satisfies DeliveryScheduleUpdatePayload);
       setSuccessMessage("Agendamento cancelado.");
+      startDataLoad();
       await loadData(offset, statusFilter, deliveryOffset);
     } catch (err) {
       setError(getApiErrorMessage(err, "Nao foi possivel cancelar o agendamento."));
@@ -225,7 +309,18 @@ export function DeliveriesPage() {
 
   async function handleApplyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    startDataLoad();
     await loadData(0, statusFilter, deliveryOffset);
+  }
+
+  function handleSchedulePageChange(nextOffset: number) {
+    startDataLoad();
+    void loadData(nextOffset);
+  }
+
+  function handleDeliveryPageChange(nextDeliveryOffset: number) {
+    startDataLoad();
+    void loadData(offset, statusFilter, nextDeliveryOffset);
   }
 
   return (
@@ -459,7 +554,7 @@ export function DeliveriesPage() {
               offset={offset}
               limit={PAGE_SIZE}
               isLoading={isLoading}
-              onPageChange={(nextOffset) => void loadData(nextOffset)}
+              onPageChange={handleSchedulePageChange}
             />
           </>
         )}
@@ -504,9 +599,7 @@ export function DeliveriesPage() {
               offset={deliveryOffset}
               limit={DELIVERY_PAGE_SIZE}
               isLoading={isLoading}
-              onPageChange={(nextOffset) =>
-                void loadData(offset, statusFilter, nextOffset)
-              }
+              onPageChange={handleDeliveryPageChange}
             />
           </>
         )}

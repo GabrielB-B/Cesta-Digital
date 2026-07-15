@@ -21,15 +21,22 @@ export function ItemsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function loadItems(nextOffset = offset) {
+  async function loadItems(
+    nextOffset = offset,
+    nextSearch = search,
+    nextActiveFilter = activeFilter
+  ) {
     try {
       setIsLoading(true);
       setError("");
 
       const response = await api.get<StockSummaryResponse[]>("/stock-summary", {
         params: {
-          q: search.trim() || undefined,
-          is_active: activeFilter === "" ? undefined : activeFilter === "true",
+          q: nextSearch.trim() || undefined,
+          is_active:
+            nextActiveFilter === ""
+              ? undefined
+              : nextActiveFilter === "true",
           limit: PAGE_SIZE,
           offset: nextOffset,
         },
@@ -39,21 +46,60 @@ export function ItemsPage() {
       setTotal(Number(response.headers["x-total-count"] ?? response.data.length));
       setOffset(nextOffset);
     } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel carregar os itens."));
+      setError(getApiErrorMessage(err, "Não foi possível carregar os itens."));
     } finally {
       setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    void loadItems(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let isMounted = true;
+
+    async function loadInitialItems() {
+      try {
+        const response = await api.get<StockSummaryResponse[]>(
+          "/stock-summary",
+          {
+            params: {
+              limit: PAGE_SIZE,
+              offset: 0,
+            },
+          }
+        );
+
+        if (isMounted) {
+          setItems(response.data);
+          setTotal(
+            Number(response.headers["x-total-count"] ?? response.data.length)
+          );
+          setOffset(0);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            getApiErrorMessage(err, "Não foi possível carregar os itens.")
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadInitialItems();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const summary = useMemo(() => {
     return {
       total,
-      belowMinimum: items.filter((item) => item.is_below_minimum).length,
+      belowMinimum: items.filter(
+        (item) => item.is_active && item.is_below_minimum
+      ).length,
       active: items.filter((item) => item.is_active).length,
       withExpiration: items.filter((item) => item.tracks_expiration).length,
     };
@@ -67,7 +113,7 @@ export function ItemsPage() {
   function handleClearFilters() {
     setSearch("");
     setActiveFilter("");
-    setTimeout(() => void loadItems(0), 0);
+    void loadItems(0, "", "");
   }
 
   return (
@@ -75,7 +121,12 @@ export function ItemsPage() {
       <PageHeader
         eyebrow="Estoque"
         title="Itens"
-        description="Acompanhe o catalogo operacional com filtros e paginacao executados no backend."
+        description="Acompanhe o catálogo operacional com filtros e paginação executados no backend."
+        actions={
+          <Link to="/stock-batches/new" className="button button--link">
+            Registrar entrada
+          </Link>
+        }
       />
 
       <MetricGrid
@@ -88,17 +139,17 @@ export function ItemsPage() {
           {
             title: "Itens ativos",
             value: summary.active,
-            description: "Nesta pagina.",
+            description: "Nesta página.",
           },
           {
-            title: "Abaixo do minimo",
+            title: "Abaixo do mínimo",
             value: summary.belowMinimum,
-            description: "Nesta pagina.",
+            description: "Nesta página.",
           },
           {
             title: "Controlam validade",
             value: summary.withExpiration,
-            description: "Nesta pagina.",
+            description: "Nesta página.",
           },
         ]}
       />
@@ -106,7 +157,7 @@ export function ItemsPage() {
       <section className="panel-card">
         <PanelHeader
           eyebrow="Consulta"
-          title="Catalogo operacional"
+          title="Catálogo operacional"
           stacked
           actions={
             <form className="toolbar toolbar--row" onSubmit={handleApplyFilters}>
@@ -139,7 +190,7 @@ export function ItemsPage() {
             </label>
 
             <button type="submit" className="button" disabled={isLoading}>
-              {isLoading ? "Consultando..." : "Aplicar"}
+              {isLoading ? "Consultando…" : "Aplicar"}
             </button>
 
             <button
@@ -166,7 +217,7 @@ export function ItemsPage() {
         />
 
         {isLoading ? (
-          <StateMessage variant="loading">Carregando itens...</StateMessage>
+          <StateMessage variant="loading">Carregando itens…</StateMessage>
         ) : error ? (
           <StateMessage variant="error">{error}</StateMessage>
         ) : items.length === 0 ? (
@@ -175,17 +226,18 @@ export function ItemsPage() {
           </StateMessage>
         ) : (
           <>
-            <DataTable caption="Catalogo operacional de itens">
+            <DataTable caption="Catálogo operacional de itens">
               <thead>
                 <tr>
                   <th>Item</th>
                   <th>Categoria</th>
                   <th>Unidade</th>
                   <th>Quantidade</th>
-                  <th>Minimo</th>
+                  <th>Mínimo</th>
                   <th>Lotes</th>
+                  <th>Validade</th>
                   <th>Status</th>
-                  <th></th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -198,18 +250,38 @@ export function ItemsPage() {
                     <td>{item.minimum_stock_alert}</td>
                     <td>{item.total_batches}</td>
                     <td>
-                      {item.is_below_minimum ? (
-                        <span className="pill pill--danger">Atencao</span>
-                      ) : item.is_active ? (
-                        <span className="pill pill--success">Ativo</span>
+                      {item.tracks_expiration ? (
+                        <span className="pill pill--primary">Por lote</span>
                       ) : (
-                        <span className="pill">Inativo</span>
+                        <span className="pill">Não controla</span>
                       )}
                     </td>
                     <td>
-                      <Link to={`/items/${item.item_id}`} className="table-link">
-                        Ver detalhe
-                      </Link>
+                      {!item.is_active ? (
+                        <span className="pill">Inativo</span>
+                      ) : item.is_below_minimum ? (
+                        <span className="pill pill--danger">Atenção</span>
+                      ) : (
+                        <span className="pill pill--success">Ativo</span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="table-actions">
+                        {item.is_active ? (
+                          <Link
+                            to={`/stock-batches/new?itemId=${item.item_id}`}
+                            className="table-link"
+                          >
+                            Registrar entrada
+                          </Link>
+                        ) : null}
+                        <Link
+                          to={`/items/${item.item_id}`}
+                          className="table-link"
+                        >
+                          Ver detalhe
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}
