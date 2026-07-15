@@ -34,6 +34,13 @@ type RouteState = {
   flash?: FlashMessage;
 };
 
+type MenuGroupName =
+  | "Principal"
+  | "Social"
+  | "Estoque"
+  | "Distribuicao"
+  | "Administracao";
+
 function getInitialSidebarState(): boolean {
   if (typeof window === "undefined") {
     return false;
@@ -205,63 +212,88 @@ export function AppLayout() {
   }
 
   const menuItems = [
-    { path: "/", label: "Dashboard", icon: "dashboard", visible: true },
+    {
+      path: "/",
+      label: "Dashboard",
+      icon: "dashboard",
+      group: "Principal",
+      visible: true,
+    },
     {
       path: "/families",
       label: "Famílias",
       icon: "families",
+      group: "Social",
       visible: hasAnyRole("admin", "lider_social"),
     },
     {
       path: "/financial-summary",
       label: "Financeiro",
       icon: "finance",
+      group: "Social",
       visible: hasAnyRole("admin", "lider_social"),
     },
     {
       path: "/items",
       label: "Itens",
       icon: "items",
+      group: "Estoque",
       visible: hasAnyRole("admin", "operador"),
     },
     {
       path: "/item-categories",
       label: "Categorias",
       icon: "categories",
+      group: "Estoque",
       visible: hasAnyRole("admin", "operador"),
     },
     {
       path: "/basket-types",
       label: "Cestas",
       icon: "baskets",
+      group: "Distribuicao",
       visible: hasAnyRole("admin", "operador"),
     },
     {
       path: "/deliveries",
       label: "Entregas",
       icon: "deliveries",
+      group: "Distribuicao",
       visible: hasAnyRole("admin", "operador"),
     },
     {
       path: "/users",
       label: "Usuários",
       icon: "users",
+      group: "Administracao",
       visible: hasAnyRole("admin"),
     },
     {
       path: "/audit-logs",
       label: "Auditoria",
       icon: "audit",
+      group: "Administracao",
       visible: hasAnyRole("admin"),
     },
   ] satisfies Array<{
     path: string;
     label: string;
     icon: MenuIconName;
+    group: MenuGroupName;
     visible: boolean;
   }>;
 
   const visibleMenuItems = menuItems.filter((item) => item.visible);
+  const menuGroups = [
+    "Principal",
+    "Social",
+    "Estoque",
+    "Distribuicao",
+    "Administracao",
+  ].map((group) => ({
+    group,
+    items: visibleMenuItems.filter((item) => item.group === group),
+  })).filter((group) => group.items.length > 0);
 
   const routeMeta = getRouteMeta(location.pathname);
   const currentSection =
@@ -361,26 +393,32 @@ export function AppLayout() {
             </div>
 
             <nav className="sidebar__nav">
-              {visibleMenuItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  data-label={item.label}
-                  aria-label={isSidebarCollapsed ? item.label : undefined}
-                  title={isSidebarCollapsed ? item.label : undefined}
-                  aria-current={isActive(item.path) ? "page" : undefined}
-                  className={
-                    isActive(item.path)
-                      ? "sidebar__link sidebar__link--active"
-                      : "sidebar__link"
-                  }
-                >
-                  <span className="sidebar__link-icon">
-                    <AppIcon name={item.icon} />
-                  </span>
-                  <span className="sidebar__link-label">{item.label}</span>
-                </Link>
+              {menuGroups.map(({ group, items }) => (
+                <div className="sidebar__nav-group" key={group}>
+                  <span className="sidebar__nav-group-label">{group}</span>
+
+                  {items.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      data-label={item.label}
+                      aria-label={isSidebarCollapsed ? item.label : undefined}
+                      title={isSidebarCollapsed ? item.label : undefined}
+                      aria-current={isActive(item.path) ? "page" : undefined}
+                      className={
+                        isActive(item.path)
+                          ? "sidebar__link sidebar__link--active"
+                          : "sidebar__link"
+                      }
+                    >
+                      <span className="sidebar__link-icon">
+                        <AppIcon name={item.icon} />
+                      </span>
+                      <span className="sidebar__link-label">{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
               ))}
             </nav>
 

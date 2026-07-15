@@ -223,6 +223,25 @@ textarea {
   flex: 1;
 }
 
+.sidebar__nav-group {
+  display: grid;
+  gap: 7px;
+}
+
+.sidebar__nav-group + .sidebar__nav-group {
+  margin-top: 10px;
+}
+
+.sidebar__nav-group-label {
+  padding: 0 14px;
+  color: rgba(232, 184, 74, 0.7);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
 .sidebar__link {
   display: flex;
   align-items: center;
@@ -410,7 +429,8 @@ textarea {
 }
 
 .app-shell--sidebar-collapsed .brand-lockup__content,
-.app-shell--sidebar-collapsed .sidebar__link-label {
+.app-shell--sidebar-collapsed .sidebar__link-label,
+.app-shell--sidebar-collapsed .sidebar__nav-group-label {
   max-width: 0;
   opacity: 0;
   overflow: hidden;
@@ -432,6 +452,11 @@ textarea {
 .app-shell--sidebar-collapsed .sidebar__nav {
   align-items: center;
   margin-top: 22px;
+}
+
+.app-shell--sidebar-collapsed .sidebar__nav-group {
+  gap: 9px;
+  margin-top: 0;
 }
 
 .app-shell--sidebar-collapsed .sidebar__link {
