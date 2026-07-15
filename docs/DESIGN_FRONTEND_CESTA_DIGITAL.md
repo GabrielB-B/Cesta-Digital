@@ -1,5 +1,7 @@
 # Design Frontend Cesta Digital
 
+> **Documento histórico.** A direção visual vigente, os problemas encontrados em produção e o plano de redesign estão em [`PROJETO_PROFISSIONAL_CESTA_DIGITAL.md`](./PROJETO_PROFISSIONAL_CESTA_DIGITAL.md). As declarações de QA abaixo registram rodadas passadas e não representam aprovação atual.
+
 Este documento registra a direcao visual aplicada na rodada de refinamento do frontend.
 
 ## Conceito

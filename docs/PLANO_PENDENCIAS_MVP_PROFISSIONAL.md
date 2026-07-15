@@ -1,5 +1,7 @@
 # Plano de Pendencias Para MVP Profissional
 
+> **Documento histórico.** Não usar os status abaixo como estado atual. A fonte canônica é [`PROJETO_PROFISSIONAL_CESTA_DIGITAL.md`](./PROJETO_PROFISSIONAL_CESTA_DIGITAL.md).
+
 Este plano organiza as pendencias encontradas na varredura tecnica e divide a execucao em partes pequenas, com prioridade por risco real de operacao.
 
 ## Estado Atual

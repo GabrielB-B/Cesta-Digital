@@ -1,5 +1,7 @@
 # Analise Critica e Roadmap MVP
 
+> **Documento histórico.** O diagnóstico e o backlog vigentes ficam em [`PROJETO_PROFISSIONAL_CESTA_DIGITAL.md`](./PROJETO_PROFISSIONAL_CESTA_DIGITAL.md).
+
 ## Resumo executivo
 
 O projeto ja tem uma base boa para um MVP social-operacional: autentica, protege rotas, registra familias, calcula elegibilidade, controla estoque por lote e conclui entregas com baixa automatica.
