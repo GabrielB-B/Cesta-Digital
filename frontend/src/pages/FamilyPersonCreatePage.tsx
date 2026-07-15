@@ -10,6 +10,10 @@ import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
 import { focusFirstFieldError } from "../utils/form-errors";
 import { formatDecimalInputValue } from "../utils/format";
+import {
+  confirmDiscardUnsavedChanges,
+  useUnsavedChangesWarning,
+} from "../utils/unsaved-changes";
 import type { FamilyPersonCreatePayload, FamilyPersonResponse } from "../types/family";
 import type { FieldErrors } from "../utils/form-errors";
 
@@ -42,6 +46,7 @@ export function FamilyPersonCreatePage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<PersonFieldName>>(
     {}
@@ -53,6 +58,7 @@ export function FamilyPersonCreatePage() {
     const { name, value, type } = event.target as HTMLInputElement;
 
     if (type === "checkbox") {
+      setIsDirty(true);
       setFormData((previous) => ({
         ...previous,
         [name]: (event.target as HTMLInputElement).checked,
@@ -60,6 +66,7 @@ export function FamilyPersonCreatePage() {
       return;
     }
 
+    setIsDirty(true);
     setFormData((previous) => ({
       ...previous,
       [name]: value,
@@ -68,6 +75,7 @@ export function FamilyPersonCreatePage() {
 
   function handleCurrencyBlur(event: React.FocusEvent<HTMLInputElement>) {
     const { name, value } = event.target;
+    setIsDirty(true);
     setFormData((previous) => ({
       ...previous,
       [name]: formatDecimalInputValue(value),
@@ -128,6 +136,7 @@ export function FamilyPersonCreatePage() {
       };
 
       await api.post<FamilyPersonResponse>(`/families/${familyId}/people`, payload);
+      setIsDirty(false);
       navigate(`/families/${familyId}`, {
         state: {
           flash: {
@@ -144,6 +153,8 @@ export function FamilyPersonCreatePage() {
       setIsSubmitting(false);
     }
   }
+
+  useUnsavedChangesWarning(isDirty && !isSubmitting);
 
   return (
     <div className="page-stack">
@@ -393,6 +404,11 @@ export function FamilyPersonCreatePage() {
           <Link
             to={`/families/${familyId}`}
             className="button button--secondary button--link"
+            onClick={(event) => {
+              if (!confirmDiscardUnsavedChanges(isDirty && !isSubmitting)) {
+                event.preventDefault();
+              }
+            }}
           >
             Cancelar
           </Link>

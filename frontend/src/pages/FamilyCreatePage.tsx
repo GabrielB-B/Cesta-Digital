@@ -10,6 +10,10 @@ import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
 import { focusFirstFieldError } from "../utils/form-errors";
 import { formatDecimalInputValue, formatTodayForInput } from "../utils/format";
+import {
+  confirmDiscardUnsavedChanges,
+  useUnsavedChangesWarning,
+} from "../utils/unsaved-changes";
 import type {
   FamilyCreatePayload,
   FamilyListItemResponse,
@@ -78,6 +82,7 @@ export function FamilyCreatePage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<FamilyFieldName>>(
     {}
@@ -103,6 +108,7 @@ export function FamilyCreatePage() {
     const { name, value, type } = event.target as HTMLInputElement;
 
     if (type === "checkbox") {
+      setIsDirty(true);
       setFormData((previous) => ({
         ...previous,
         [name]: (event.target as HTMLInputElement).checked,
@@ -110,6 +116,7 @@ export function FamilyCreatePage() {
       return;
     }
 
+    setIsDirty(true);
     setFormData((previous) => ({
       ...previous,
       [name]: value,
@@ -118,6 +125,7 @@ export function FamilyCreatePage() {
 
   function handleCurrencyBlur(event: React.FocusEvent<HTMLInputElement>) {
     const { name, value } = event.target;
+    setIsDirty(true);
     setFormData((previous) => ({
       ...previous,
       [name]: formatDecimalInputValue(value),
@@ -225,6 +233,7 @@ export function FamilyCreatePage() {
       };
 
       const response = await api.post<FamilyListItemResponse>("/families", payload);
+      setIsDirty(false);
       navigate(`/families/${response.data.id}`, {
         state: {
           flash: {
@@ -244,6 +253,8 @@ export function FamilyCreatePage() {
       setIsSubmitting(false);
     }
   }
+
+  useUnsavedChangesWarning(isDirty && !isSubmitting);
 
   return (
     <div className="page-stack">
@@ -768,7 +779,15 @@ export function FamilyCreatePage() {
         ) : null}
 
         <FormActions>
-          <Link to="/families" className="button button--secondary button--link">
+          <Link
+            to="/families"
+            className="button button--secondary button--link"
+            onClick={(event) => {
+              if (!confirmDiscardUnsavedChanges(isDirty && !isSubmitting)) {
+                event.preventDefault();
+              }
+            }}
+          >
             Cancelar
           </Link>
 

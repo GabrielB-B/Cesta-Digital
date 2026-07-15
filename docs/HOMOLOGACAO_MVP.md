@@ -6,18 +6,20 @@ Este é o roteiro executável de homologação do produto. A visão, regras, arq
 
 **NO-GO para ampliar o uso com dados e entregas reais.**
 
-Motivos vigentes em 14/07/2026:
+Motivos vigentes em 15/07/2026:
 
-- as correções locais da Fase 0 ainda precisam ser comprovadas pelo CI remoto,
-  publicadas pelo mesmo SHA e validadas por smoke pós-deploy;
+- a Fase 0 foi publicada na `main` no commit
+  `374660b8337667137ed2557e4e41d9e4bd4ce5b7`, com CI `main` verde e smoke
+  público básico aprovado;
 - backup/restore real e verificação do conteúdo do banco ainda não têm evidência
   suficiente;
 - os gates finais de domínio social, distribuição, UX/mobile, segurança, LGPD,
   observabilidade e usabilidade permanecem abertos.
 
-Os defeitos de saldo vencido, FEFO e acesso à entrada de lote foram corrigidos e
-aprovados em testes locais na branch da Fase 0. Isso é evidência de implementação,
-não autorização para operação real antes dos gates remotos e finais.
+Os defeitos de saldo vencido, FEFO e acesso à entrada de lote foram corrigidos,
+aprovados em testes locais e publicados pela Fase 0. Isso remove os bloqueios
+imediatos de segurança alimentar, mas não autoriza operação real antes dos gates
+finais de domínio, LGPD, backup/restore real, UX e observabilidade.
 
 O ambiente público pode continuar somente como homologação controlada com dados sintéticos ou anonimizados até o fechamento dos gates obrigatórios. Enquanto `BLQ-005` estiver aberto, dados pessoais reais são proibidos; autorização informal não substitui classificação do ambiente e aprovação de privacidade/LGPD.
 
@@ -95,8 +97,24 @@ Não usar CPF, telefone, endereço, renda, condição de saúde, senha, cookie o
 | Revisão independente de release/operações | aprovada para o gate remoto, sem P0/P1 remanescente |
 | QA visual Chromium | login inspecionado em 1440 × 900 e 390 × 844; aviso de homologação visível e sem overflow documental |
 
-Pendências do checkpoint: CI remoto, deploy do mesmo SHA, smoke público, drill
-real de backup/restore, configuração efetiva da CA e inspeção da base.
+Pendências após o checkpoint local: drill real de backup/restore, configuração
+efetiva da CA e inspeção da base. CI remoto, publicação pelo mesmo SHA e smoke
+público foram comprovados no checkpoint remoto abaixo.
+
+### Checkpoint remoto da Fase 0 — 15/07/2026
+
+| Evidência | Resultado |
+|---|---|
+| Commit publicado | `374660b8337667137ed2557e4e41d9e4bd4ce5b7` |
+| Promoção | `feat/fase-0-seguranca-release` → `main` por fast-forward |
+| CI da branch | backend, frontend e operations aprovados |
+| CI da `main` | workflow `CI` concluído com sucesso |
+| Smoke público frontend | `https://cesta-digital.vercel.app/login` HTTP 200 |
+| Smoke público backend | `https://cesta-digital-api.onrender.com/health/db` HTTP 200, `{"database":"ok"}` |
+
+Pendências mantidas: drill real de backup/restore, configuração efetiva da CA,
+inspeção/classificação da base, UX/mobile final, LGPD, observabilidade e decisão
+formal de `GO profissional`.
 
 ## 3. Pré-condições
 

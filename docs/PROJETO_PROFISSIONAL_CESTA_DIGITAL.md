@@ -8,13 +8,13 @@
 |---|---|
 | Dono da visão e decisão final | Gabriel Bomfim Bispo |
 | Produto | Cesta Digital |
-| Última revisão | 14/07/2026 |
-| Commit auditado | `c0fd3994d91836b20bb81d594c9847acf3b68761` |
+| Última revisão | 15/07/2026 |
+| Commit auditado | `374660b8337667137ed2557e4e41d9e4bd4ce5b7` |
 | Branch auditada | `main` |
 | Ambiente público | Vercel + Render, atualmente configurado como `staging` no backend |
 | Decisão vigente | **NO-GO profissional e para ampliar uso com dados e entregas reais** |
 | Uso permitido enquanto houver bloqueios | Somente homologação controlada com dados sintéticos ou anonimizados |
-| Próxima revisão obrigatória | Após a Fase 0 ou qualquer mudança de regra de estoque/entrega |
+| Próxima revisão obrigatória | Após a conclusão da Fase 1 ou qualquer mudança de regra de cadastro social/estoque |
 
 ### Regra de atualização
 
@@ -139,9 +139,9 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 
 | ID | Achado | Evidência principal | Impacto | Status |
 |---|---|---|---|---|
-| BLQ-001 | Lote vencido soma no estoque, disponibilidade, dashboard e financeiro; pode ser baixado na entrega | Política central e testes de fronteira aprovados localmente na branch da Fase 0; CI/deploy pendentes | Segurança alimentar e indicadores falsos | Em homologação |
-| BLQ-002 | Cadastro de lote/validade não é alcançável por nenhum link | Jornada produto → primeiro lote e CTAs de estoque aprovados localmente; CI/deploy pendentes | Operador não encontra a validade | Em homologação |
-| BLQ-003 | Commit com CI vermelho foi publicado automaticamente | CI por branch, E2E sem retry e promoção pelo mesmo SHA implementados; comprovação remota pendente | Release sem gate de qualidade | Em homologação |
+| BLQ-001 | Lote vencido soma no estoque, disponibilidade, dashboard e financeiro; pode ser baixado na entrega | Política central publicada na `main` em `374660b`; CI `main` verde e smoke público `/login` + `/health/db` aprovado em 15/07/2026 | Segurança alimentar e indicadores falsos | Concluído |
+| BLQ-002 | Cadastro de lote/validade não é alcançável por nenhum link | Jornada produto → primeiro lote e CTAs de estoque publicados na `main` em `374660b` | Operador não encontra a validade | Concluído |
+| BLQ-003 | Commit com CI vermelho foi publicado automaticamente | CI por branch, E2E sem retry, contrato operacional e promoção por fast-forward publicados na `main` em `374660b`; CI `main` verde | Release sem gate de qualidade | Concluído |
 | BLQ-004 | Backup/restore não validam integralmente saída, checksum e restauração antes de migration automática | Scripts e contrato de segurança em segunda revisão; ensaio real continua pendente | Rollback de dados não comprovado | Em andamento |
 | BLQ-005 | Ambiente público está online, mas documentação e `APP_ENV=staging` não esclarecem se aceita dados reais | Banner e política de homologação aprovados localmente; conteúdo da base ainda precisa ser classificado | Risco operacional e LGPD | Em homologação |
 
@@ -158,8 +158,8 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 | UX-001 | Navegação plana não representa Social, Estoque, Distribuição e Administração | Arquitetura de informação por tarefa | Aberto |
 | UX-002 | Tabelas usam `min-width: 720px`; quase todas dependem de rolagem horizontal no celular | Listas e ações mobile próprias | Aberto |
 | UX-003 | Login bloqueia navegação por vídeo não pulável de 7,4–8,5 s, inclusive com movimento reduzido | Entrada imediata aprovada localmente em desktop/mobile e movimento reduzido; publicação pendente | Em homologação |
-| UX-004 | Cadastro de família e membro é extenso, sem rascunho, progresso ou proteção de dados não salvos | Wizard retomável com revisão | Aberto |
-| UX-005 | Erros são globais e podem substituir a tela; faltam erros por campo e foco no primeiro erro | Recuperação sem perda de preenchimento | Aberto |
+| UX-004 | Cadastro de família e membro é extenso, sem rascunho, progresso ou proteção de dados não salvos | Wizard retomável com revisão | Em andamento |
+| UX-005 | Erros são globais e podem substituir a tela; faltam erros por campo e foco no primeiro erro | Recuperação sem perda de preenchimento | Em andamento |
 | UI-001 | Gradientes, faixas laterais e elevação se repetem em superfícies não interativas | Identidade institucional própria e sem ruído | Aberto |
 | QA-001 | E2E intercepta toda a API; backend usa SQLite e não executa Alembic/MySQL | Teste integrado da pilha real | Aberto |
 | SEC-001 | Cookie cross-site sem defesa CSRF explícita; TLS do banco pode não validar CA | Threat model e hardening | Aberto |
@@ -771,7 +771,8 @@ migrations.
 | 14/07/2026 | Auditoria sênior de produto, domínio, frontend, QA, segurança e produção | Documento canônico criado; decisão `NO-GO`; Fase 0 recomendada |
 | 14/07/2026 | Aprovação do plano e início da execução por fases | Branch `feat/fase-0-seguranca-release` aberta; Fase 0 em implementação e revisão independente |
 | 14/07/2026 | Checkpoint local da Fase 0 | Backend 53/53; frontend E2E 25/25 sem retry; lint/build/auditorias verdes; frontend e operações aprovados por revisões independentes para o gate remoto |
+| 15/07/2026 | Publicação da Fase 0 | Branch `feat/fase-0-seguranca-release` promovida por fast-forward para `main` no commit `374660b8337667137ed2557e4e41d9e4bd4ce5b7`; CI `main` concluído com sucesso; smoke público `/login` HTTP 200 e `/health/db` `{"database":"ok"}` |
+| 15/07/2026 | Início da Fase 1 | Branch `feat/fase-1-clareza-jornadas` aberta; primeiro bloco melhora ciclo de rota, título/foco, seção correta, filtros em URL, erros inline e proteção contra descarte nos cadastros de família/pessoa |
 
-Próxima entrada esperada: evidências locais e remotas da Fase 0, com atualização
-dos IDs `BLQ-001` a `BLQ-005` para `Em homologação` ou `Concluído` conforme o
-gate realmente comprovado.
+Próxima entrada esperada: evidências completas da Fase 1, incluindo E2E,
+QA visual mobile/desktop e decisão sobre rascunho retomável de cadastro social.
