@@ -85,6 +85,11 @@ class Settings(BaseSettings):
                 "SECRET_KEY deve ter pelo menos 32 caracteres fora do ambiente local."
             )
 
+        if self.app_env in {"staging", "production"} and not self.db_ssl_required:
+            raise ValueError(
+                "DB_SSL_REQUIRED deve permanecer ativo em staging e production."
+            )
+
         if self.login_rate_limit_attempts < 1:
             raise ValueError("LOGIN_RATE_LIMIT_ATTEMPTS deve ser maior que zero.")
 

@@ -5,6 +5,7 @@ from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import settings
+from app.db.tls import build_database_ssl_context
 
 database_url = URL.create(
     drivername="mysql+pymysql",
@@ -20,11 +21,12 @@ database_connect_args = {
     "read_timeout": settings.db_read_timeout_seconds,
     "write_timeout": settings.db_write_timeout_seconds,
 }
-if settings.db_ssl_required:
-    database_connect_args["ssl"] = {"verify_mode": "none"}
-    if settings.db_ssl_ca:
-        database_connect_args["ssl"]["ca"] = settings.db_ssl_ca
-        database_connect_args["ssl"]["verify_mode"] = "required"
+database_ssl_context = build_database_ssl_context(
+    ssl_required=settings.db_ssl_required,
+    ca_source=settings.db_ssl_ca,
+)
+if database_ssl_context is not None:
+    database_connect_args["ssl"] = database_ssl_context
 
 engine = create_engine(
     database_url,

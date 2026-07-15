@@ -1,4 +1,4 @@
-name: Production Healthcheck
+name: Staging Healthcheck
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: production-healthcheck
+  group: staging-healthcheck
   cancel-in-progress: true
 
 jobs:

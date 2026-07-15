@@ -5,14 +5,14 @@ services:
     plan: free
     region: oregon
     rootDir: backend
+    branch: main
     buildCommand: pip install -r requirements.txt
-    preDeployCommand: alembic upgrade head && python scripts/seed_initial_data.py
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /
-    autoDeployTrigger: commit
+    startCommand: python scripts/start_service.py
+    healthCheckPath: /health/db
+    autoDeployTrigger: checksPass
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.6
+        value: 3.12.13
       - key: APP_ENV
         value: staging
       - key: LOG_LEVEL
@@ -65,6 +65,8 @@ services:
         value: 30
       - key: DB_WRITE_TIMEOUT_SECONDS
         value: 30
+      - key: STARTUP_DB_LOCK_TIMEOUT_SECONDS
+        value: 120
       - key: FIRST_ADMIN_EMAIL
         sync: false
       - key: FIRST_ADMIN_PASSWORD
