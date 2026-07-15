@@ -17,8 +17,8 @@ Motivos vigentes em 15/07/2026:
 - o checkpoint de distribuição da Fase 2 foi publicado no commit
   `88aa60bc355c3491ccc88cc1a431b29ba0af4891`, bloqueando duplicidade ativa de
   agendamento e promessa acima do estoque utilizável;
-- backup/restore real e verificação do conteúdo do banco ainda não têm evidência
-  suficiente;
+- backup/restore MySQL local real foi comprovado, mas o banco público ainda não
+  possui a evidência exigida para receber a migration de rastreabilidade;
 - os gates finais de domínio social, distribuição, UX/mobile, segurança, LGPD,
   observabilidade e usabilidade permanecem abertos.
 
@@ -155,9 +155,27 @@ backup/restore, LGPD, observabilidade e decisão formal de `GO profissional`.
 | Smoke público frontend | `https://cesta-digital.vercel.app/login` HTTP 200 |
 | Smoke público backend | `https://cesta-digital-api.onrender.com/health/db` HTTP 200, `{"database":"ok"}` |
 
-Pendências mantidas: rastreabilidade detalhada item/lote entregue, lote com
-metadados físicos, quantidade decimal, agregados derivados, UX/mobile final,
-backup/restore real, LGPD, observabilidade e decisão formal de `GO profissional`.
+Pendências mantidas: publicação e validação pública da rastreabilidade, quantidade
+decimal, agregados derivados, UX/mobile final, backup/restore do banco público,
+LGPD, observabilidade e decisão formal de `GO profissional`.
+
+### Checkpoint local de rastreabilidade da Fase 2 — 15/07/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/fase-2-rastreabilidade-entrega-lote` |
+| Escopo | DOM-001 e DOM-006: código/status/localização/quarentena auditada do lote e itens/lotes efetivamente entregues |
+| Backend local | `compileall` aprovado; suíte completa 56/56 testes aprovados |
+| Frontend local | lint e build aprovados; E2E 27/27, incluindo rastreabilidade mobile sem overflow |
+| Alembic | cabeça única `b7c9d1e2f3a4`; migration aditiva/expand, sem backfill em massa; legado permanece corrigível pela interface |
+| Contrato operacional | `scripts/tests/backup_restore_contract.ps1` aprovado após corrigir o restore MySQL por entrada padrão |
+| Drill MySQL local | backup exit code zero, 37.704 bytes, SHA-256 validado; restore `exact-manifest-v2`; migration aplicada; contagens conciliadas; banco temporário removido |
+| Custódia local | Gabriel Bomfim Bispo; conjunto fora do repositório em diretório privado com EFS; retenção máxima de sete dias |
+| Gate público | **Bloqueado:** o drill local não substitui backup/restore do banco público antes da integração em `main` |
+
+Resultado do checkpoint: código apto para gate remoto em branch. DOM-001 e
+DOM-006 permanecem `Em homologação` até CI remoto, backup/restore público,
+integração pelo mesmo SHA e smoke público.
 
 ## 3. Pré-condições
 

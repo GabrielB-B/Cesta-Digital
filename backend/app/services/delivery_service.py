@@ -223,6 +223,68 @@ def list_delivery_schedules(
     return list(db.scalars(stmt).all()), total
 
 
+def _build_delivery_trace_by_delivery_id(
+    db: Session,
+    delivery_ids: list[int],
+) -> dict[int, list[dict]]:
+    if not delivery_ids:
+        return {}
+
+    stmt = (
+        select(
+            StockMovement.delivery_id,
+            StockMovement.id.label("movement_id"),
+            StockMovement.item_id,
+            Item.name.label("item_name"),
+            Item.unit_measure,
+            StockMovement.batch_id,
+            StockBatch.batch_code,
+            StockBatch.status.label("batch_status"),
+            StockBatch.storage_location,
+            StockBatch.expiration_date,
+            StockMovement.quantity,
+        )
+        .join(Item, Item.id == StockMovement.item_id)
+        .join(StockBatch, StockBatch.id == StockMovement.batch_id)
+        .where(
+            StockMovement.delivery_id.in_(delivery_ids),
+            StockMovement.movement_type == "saida_entrega",
+        )
+        .order_by(
+            StockMovement.delivery_id.asc(),
+            Item.name.asc(),
+            StockMovement.id.asc(),
+        )
+    )
+
+    trace_by_delivery_id: dict[int, list[dict]] = defaultdict(list)
+    for row in db.execute(stmt).mappings().all():
+        delivery_id = row["delivery_id"]
+        if delivery_id is not None:
+            trace_by_delivery_id[int(delivery_id)].append(
+                {
+                    key: value
+                    for key, value in row.items()
+                    if key != "delivery_id"
+                }
+            )
+    return trace_by_delivery_id
+
+
+def _serialize_delivery(delivery: Delivery, items: list[dict]) -> dict:
+    return {
+        "id": delivery.id,
+        "delivery_schedule_id": delivery.delivery_schedule_id,
+        "family_id": delivery.family_id,
+        "basket_type_id": delivery.basket_type_id,
+        "delivery_date": delivery.delivery_date,
+        "delivered_by_user_id": delivery.delivered_by_user_id,
+        "status": delivery.status,
+        "notes": delivery.notes,
+        "items": items,
+    }
+
+
 def list_deliveries(
     db: Session,
     *,
@@ -230,7 +292,7 @@ def list_deliveries(
     status: str | None = None,
     limit: int | None = None,
     offset: int = 0,
-) -> tuple[list[Delivery], int]:
+) -> tuple[list[dict], int]:
     filters = []
     if family_id is not None:
         filters.append(Delivery.family_id == family_id)
@@ -249,7 +311,30 @@ def list_deliveries(
     if limit is not None:
         stmt = stmt.offset(offset).limit(limit)
 
-    return list(db.scalars(stmt).all()), total
+    deliveries = list(db.scalars(stmt).all())
+    trace_by_delivery_id = _build_delivery_trace_by_delivery_id(
+        db,
+        [delivery.id for delivery in deliveries],
+    )
+    return [
+        _serialize_delivery(
+            delivery,
+            trace_by_delivery_id.get(delivery.id, []),
+        )
+        for delivery in deliveries
+    ], total
+
+
+def get_delivery_detail(db: Session, delivery_id: int) -> dict:
+    delivery = db.get(Delivery, delivery_id)
+    if delivery is None:
+        raise HTTPException(status_code=404, detail="Entrega nao encontrada.")
+
+    trace_by_delivery_id = _build_delivery_trace_by_delivery_id(db, [delivery.id])
+    return _serialize_delivery(
+        delivery,
+        trace_by_delivery_id.get(delivery.id, []),
+    )
 
 
 def update_delivery_schedule(

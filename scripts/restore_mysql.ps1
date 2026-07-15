@@ -84,6 +84,43 @@ function ConvertTo-MySqlOptionValue {
     return $Value.Replace('\', '\\').Replace('"', '\"').Replace("`r", '\r').Replace("`n", '\n').Replace("`t", '\t')
 }
 
+function ConvertTo-NativeProcessArgument {
+    param([AllowEmptyString()][string]$Value)
+
+    if ($Value.Length -eq 0) { return '""' }
+    if ($Value -notmatch '[\s"]') { return $Value }
+
+    $builder = [Text.StringBuilder]::new()
+    [void]$builder.Append('"')
+    $backslashes = 0
+
+    foreach ($character in $Value.ToCharArray()) {
+        if ($character -eq '\') {
+            $backslashes++
+            continue
+        }
+
+        if ($character -eq '"') {
+            [void]$builder.Append(('\' * (($backslashes * 2) + 1)))
+            [void]$builder.Append('"')
+            $backslashes = 0
+            continue
+        }
+
+        if ($backslashes -gt 0) {
+            [void]$builder.Append(('\' * $backslashes))
+            $backslashes = 0
+        }
+        [void]$builder.Append($character)
+    }
+
+    if ($backslashes -gt 0) {
+        [void]$builder.Append(('\' * ($backslashes * 2)))
+    }
+    [void]$builder.Append('"')
+    return $builder.ToString()
+}
+
 function Test-NormalizedPathEqual {
     param(
         [Parameter(Mandatory = $true)][string]$Left,
@@ -599,19 +636,22 @@ try {
         throw "O banco-alvo possui $objectsBefore objeto(s), considerando tabelas, views, rotinas, eventos, triggers e revisoes. Restore seguro exige banco vazio."
     }
 
-    $originalLocation = Get-Location
-    try {
-        Set-Location -LiteralPath $inputItem.DirectoryName
-        $restoreArguments = @($script:CredentialArgument)
-        $restoreArguments += $script:BaseMySqlArguments
-        $restoreArguments += "--database=$TargetDatabase"
-        $restoreArguments += "--execute=source $($inputItem.Name)"
-        & $script:MySqlMetadata.Path @restoreArguments
-        $restoreExitCode = $LASTEXITCODE
-    }
-    finally {
-        Set-Location -LiteralPath $originalLocation.ProviderPath
-    }
+    $restoreArguments = @($script:CredentialArgument)
+    $restoreArguments += $script:BaseMySqlArguments
+    $restoreArguments += "--database=$TargetDatabase"
+    $nativeArguments = @(
+        $restoreArguments | ForEach-Object {
+            ConvertTo-NativeProcessArgument -Value $_
+        }
+    )
+    $restoreProcess = Start-Process `
+        -FilePath $script:MySqlMetadata.Path `
+        -ArgumentList $nativeArguments `
+        -RedirectStandardInput $inputItem.FullName `
+        -NoNewWindow `
+        -Wait `
+        -PassThru
+    $restoreExitCode = $restoreProcess.ExitCode
     if ($restoreExitCode -ne 0) { throw "mysql restore falhou com exit code $restoreExitCode." }
 
     $inventoryAfter = Get-DatabaseInventory -DatabaseName $TargetDatabase

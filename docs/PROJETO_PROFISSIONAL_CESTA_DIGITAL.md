@@ -142,19 +142,19 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 | BLQ-001 | Lote vencido soma no estoque, disponibilidade, dashboard e financeiro; pode ser baixado na entrega | Política central publicada na `main` em `374660b`; CI `main` verde e smoke público `/login` + `/health/db` aprovado em 15/07/2026 | Segurança alimentar e indicadores falsos | Concluído |
 | BLQ-002 | Cadastro de lote/validade não é alcançável por nenhum link | Jornada produto → primeiro lote e CTAs de estoque publicados na `main` em `374660b` | Operador não encontra a validade | Concluído |
 | BLQ-003 | Commit com CI vermelho foi publicado automaticamente | CI por branch, E2E sem retry, contrato operacional e promoção por fast-forward publicados na `main` em `374660b`; CI `main` verde | Release sem gate de qualidade | Concluído |
-| BLQ-004 | Backup/restore não validam integralmente saída, checksum e restauração antes de migration automática | Scripts e contrato de segurança em segunda revisão; ensaio real continua pendente | Rollback de dados não comprovado | Em andamento |
+| BLQ-004 | Backup/restore não validam integralmente saída, checksum e restauração antes de migration automática | Contrato e drill MySQL local real aprovados em 15/07/2026, incluindo correção do restore por entrada padrão; backup/restore do banco público ainda é obrigatório antes da migration | Rollback do ambiente público ainda não comprovado | Em homologação |
 | BLQ-005 | Ambiente público está online, mas documentação e `APP_ENV=staging` não esclarecem se aceita dados reais | Banner e política de homologação aprovados localmente; conteúdo da base ainda precisa ser classificado | Risco operacional e LGPD | Em homologação |
 
 ### P1 — alta prioridade
 
 | ID | Achado | Resultado esperado | Status |
 |---|---|---|---|
-| DOM-001 | Lote sem código, status, quarentena, localização e correção auditada de metadados | Rastreabilidade física do lote | Aberto |
+| DOM-001 | Lote sem código, status, quarentena, localização e correção auditada de metadados | Implementado no branch `feat/fase-2-rastreabilidade-entrega-lote`: novas entradas recebem código; status físico governa saldo/saída; localização e correção auditada estão disponíveis; lotes legados são corrigidos gradualmente | Em homologação |
 | DOM-002 | `kg`/`litro` aceitos, mas quantidades e receitas são inteiras | Quantidade decimal e apresentação explícita | Aberto |
 | DOM-003 | Agregados da família também são digitados nos membros e podem divergir com o tempo | Pessoas e rendas como fonte; agregados derivados | Aberto |
 | DOM-004 | Família pode ser marcada apta sem avaliação vinculada | Regra publicada na `main` em `77e7cbe`: cadastro/edição/status manual bloqueiam `apta_recorrente`, `apta_emergencial` e `inapta` sem avaliação social compatível; formulário orienta o caminho correto pela avaliação | Concluído |
 | DOM-005 | Agendamento não reserva estoque nem limita ciclo/duplicidade | Publicado na `main` em `88aa60b`: agendamentos ativos passam a respeitar capacidade prometível do estoque utilizável e bloqueiam duplicidade ativa por família+cesta; formulário orienta a regra | Concluído |
-| DOM-006 | API de entrega não expõe os itens e lotes efetivamente entregues | Rastreabilidade ponta a ponta | Aberto |
+| DOM-006 | API de entrega não expõe os itens e lotes efetivamente entregues | Implementado no branch `feat/fase-2-rastreabilidade-entrega-lote`: lista e detalhe expõem item, quantidade, lote, localização e validade; histórico responsivo apresenta a trilha ao operador | Em homologação |
 | UX-001 | Navegação plana não representa Social, Estoque, Distribuição e Administração | Arquitetura de informação por tarefa | Aberto |
 | UX-002 | Tabelas usam `min-width: 720px`; quase todas dependem de rolagem horizontal no celular | Listas e ações mobile próprias | Aberto |
 | UX-003 | Login bloqueia navegação por vídeo não pulável de 7,4–8,5 s, inclusive com movimento reduzido | Entrada imediata aprovada localmente em desktop/mobile e movimento reduzido; publicação pendente | Em homologação |
@@ -778,7 +778,8 @@ migrations.
 | 15/07/2026 | Publicação do checkpoint da Fase 2 | Branch `feat/fase-2-regras-funcionais` promovida para `main` no commit `77e7cbed73e959dc9b5326412d09dcaa0e160cfd`; backend 54/54, frontend lint/build/E2E 25/25, CI `main` verde e smoke público `/login` + `/health/db` aprovado |
 | 15/07/2026 | Continuidade da Fase 2 | Branch `feat/fase-2-distribuicao-regras` aberta para tornar agendamento uma promessa confiável, evitando duplicidade ativa e excesso sobre estoque utilizável |
 | 15/07/2026 | Publicação do checkpoint de distribuição | Branch `feat/fase-2-distribuicao-regras` promovida para `main` no commit `88aa60bc355c3491ccc88cc1a431b29ba0af4891`; backend 55/55, frontend lint/build/E2E 25/25, CI `main` público `Success` e smoke público `/login` + `/health/db` aprovado |
+| 15/07/2026 | Checkpoint local de rastreabilidade da Fase 2 | DOM-001/DOM-006 implementados no branch `feat/fase-2-rastreabilidade-entrega-lote`; backend 56/56, frontend lint/build/E2E 27/27; contrato de backup/restore aprovado; drill MySQL local com restore exato, migration `b7c9d1e2f3a4`, contagens conciliadas e descarte do banco temporário; publicação bloqueada até backup/restore do banco público |
 
-Próxima entrada esperada: continuidade da Fase 2 nos próximos bloqueios de
-domínio, priorizando rastreabilidade de lote, agregados derivados da família ou
-reserva/duplicidade de agendamento.
+Próxima entrada esperada: obter e validar backup/restore do banco público para
+publicar o checkpoint de rastreabilidade; depois continuar a Fase 2 em quantidade
+decimal e agregados derivados da família.

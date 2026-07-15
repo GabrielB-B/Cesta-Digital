@@ -336,6 +336,20 @@ const delivery = {
   delivered_by_user_id: 1,
   status: "concluida",
   notes: "Entrega anterior",
+  items: [
+    {
+      movement_id: 10,
+      item_id: 1,
+      item_name: "Arroz 1kg",
+      unit_measure: "pacote",
+      batch_id: 1,
+      batch_code: "LT-MOCK-001",
+      batch_status: "disponivel",
+      storage_location: "Prateleira A1",
+      expiration_date: "2099-12-31",
+      quantity: 2,
+    },
+  ],
 };
 
 const users = [
@@ -397,7 +411,13 @@ async function fulfillJson(route: Route, body: unknown, headers = {}) {
 
 async function mockApi(page: Page, user = currentUser) {
   const mockedItems = itemDetails.map((entry) => ({ ...entry }));
-  const mockedStockBatches = stockBatches.map((entry) => ({ ...entry }));
+  const mockedStockBatches = stockBatches.map((entry) => ({
+    ...entry,
+    batch_code: `LT-MOCK-${String(entry.id).padStart(3, "0")}`,
+    status: "disponivel",
+    storage_location: entry.id === 1 ? "Prateleira A1" : null,
+    quarantine_reason: null,
+  }));
   const mockedStockMovements: Array<{
     id: number;
     batch_id: number;
@@ -428,6 +448,7 @@ async function mockApi(page: Page, user = currentUser) {
     const totalQuantity = itemBatches.reduce((total, batch) => {
       const isUsable =
         summaryItem.is_active &&
+        batch.status === "disponivel" &&
         batch.current_quantity > 0 &&
         isStockBatchReceived(batch) &&
         !getBatchExpirationStatus(batch, summaryItem.tracks_expiration)
@@ -640,6 +661,14 @@ async function mockApi(page: Page, user = currentUser) {
         id:
           Math.max(0, ...mockedStockBatches.map((batch) => batch.id)) + 1,
         ...payload,
+        batch_code:
+          payload.batch_code ||
+          `LT-MOCK-${String(
+            Math.max(0, ...mockedStockBatches.map((batch) => batch.id)) + 1
+          ).padStart(3, "0")}`,
+        status: payload.status ?? "disponivel",
+        storage_location: payload.storage_location ?? null,
+        quarantine_reason: payload.quarantine_reason ?? null,
         current_quantity: payload.entry_quantity,
         estimated_unit_value: String(payload.estimated_unit_value ?? "0"),
         created_by_user_id: 1,
@@ -676,6 +705,25 @@ async function mockApi(page: Page, user = currentUser) {
     }
 
     await fulfillJson(route, mockedStockBatches);
+  });
+  await page.route("**/stock-batches/*/metadata", async (route) => {
+    const batchId = Number(new URL(route.request().url()).pathname.split("/").at(-2));
+    const batch = mockedStockBatches.find((entry) => entry.id === batchId);
+    if (!batch) {
+      await route.fulfill({ status: 404 });
+      return;
+    }
+
+    const payload = route.request().postDataJSON();
+    Object.assign(batch, payload, {
+      batch_code: payload.batch_code || batch.batch_code,
+      quarantine_reason:
+        payload.status === "disponivel"
+          ? null
+          : payload.quarantine_reason ?? batch.quarantine_reason,
+    });
+    recomputeStockSummary(batch.item_id);
+    await fulfillJson(route, batch);
   });
   await page.route("**/stock-movements?**", async (route) => {
     const url = new URL(route.request().url());
@@ -1154,12 +1202,11 @@ test("item creation guides the first stock entry with conditional expiration", a
     page.getByRole("link", { name: "Registrar entrada" }).first()
   ).toBeVisible();
   await expect(page.getByText("Saldo utilizável: 7")).toBeVisible();
-  const createdEntryRow = page
-    .getByRole("table", { name: "Lotes do item" })
-    .getByRole("row", {
-      name: /Compra com recursos da instituição.*31\/12\/2099/,
-    });
-  await expect(createdEntryRow).toBeVisible();
+  const createdEntryCard = page.locator(".trace-card").filter({
+    hasText: "Compra com recursos da instituição",
+  });
+  await expect(createdEntryCard).toContainText("31/12/2099");
+  await expect(createdEntryCard).toContainText("LT-MOCK-");
 });
 
 test("invalid stock entry item query never becomes a selectable payload", async ({
@@ -1180,6 +1227,56 @@ test("invalid stock entry item query never becomes a selectable payload", async 
     page.getByRole("combobox", { name: "Item", exact: true })
   ).toHaveAttribute("aria-invalid", "true");
   await expect(page.getByRole("button", { name: "Registrar entrada" })).toBeDisabled();
+});
+
+test("batch traceability can quarantine stock without mobile overflow", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/items/1");
+
+  const batchCard = page.locator(".trace-card").filter({ hasText: "LT-MOCK-001" });
+  await expect(batchCard).toBeVisible();
+  await expect(batchCard).toContainText("Prateleira A1");
+  await batchCard.getByText("Corrigir identificação ou situação").click();
+
+  await batchCard.getByLabel("Situação física").selectOption("quarentena");
+  await batchCard.getByLabel("Localização").fill("Mesa de triagem");
+  await batchCard
+    .getByLabel("Motivo da restrição")
+    .fill("Em conferência de integridade");
+
+  const metadataRequestPromise = page.waitForRequest(
+    (request) =>
+      request.url().endsWith("/stock-batches/1/metadata") &&
+      request.method() === "PATCH"
+  );
+  await batchCard.getByRole("button", { name: "Salvar rastreabilidade" }).click();
+  const metadataRequest = await metadataRequestPromise;
+  expect(metadataRequest.postDataJSON()).toMatchObject({
+    status: "quarentena",
+    storage_location: "Mesa de triagem",
+    quarantine_reason: "Em conferência de integridade",
+  });
+
+  await expect(
+    batchCard.locator(".trace-card__header .pill").filter({
+      hasText: "Em quarentena",
+    })
+  ).toBeVisible();
+  await expect(batchCard).toContainText("Em conferência de integridade");
+  await expect(page.getByText("Saldo utilizável: 0")).toBeVisible();
+  const hasNoDocumentOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth <= document.documentElement.clientWidth
+  );
+  expect(hasNoDocumentOverflow).toBe(true);
+
+  await page.goto("/stock-movements/new?itemId=1");
+  const quarantinedOption = page
+    .getByRole("combobox", { name: "Lote", exact: true })
+    .locator('option[value="1"]');
+  await expect(quarantinedOption).toHaveAttribute("disabled", "");
+  await expect(quarantinedOption).toContainText("Em quarentena");
 });
 
 test("inactive item creation stays on detail without stock entry CTA", async ({ page }) => {
@@ -1236,14 +1333,18 @@ test("item detail explains expiration and highlights critical batches", async ({
   await expect(page.getByText("2 lotes com validade crítica")).toBeVisible();
   await expect(page.getByText("1 lote com entrada futura")).toBeVisible();
 
-  const batchesTable = page.getByRole("table", { name: "Lotes do item" });
-  await expect(batchesTable.getByText("Doação de item")).toHaveCount(2);
-  await expect(batchesTable.getByText("Vencido", { exact: true })).toBeVisible();
+  const batchesList = page.getByLabel("Lotes do item");
+  await expect(batchesList.getByText("Doação de item")).toHaveCount(2);
   await expect(
-    batchesTable.getByText("Validade não informada", { exact: true })
+    batchesList.locator(".trace-card").filter({ hasText: "Vencido" })
   ).toBeVisible();
   await expect(
-    batchesTable.getByText("Entrada futura", { exact: true })
+    batchesList.locator(".trace-card").filter({
+      hasText: "Validade não informada",
+    })
+  ).toBeVisible();
+  await expect(
+    batchesList.locator(".trace-card").filter({ hasText: "Entrada futura" })
   ).toBeVisible();
 });
 
@@ -1310,11 +1411,10 @@ test("manual stock exit follows FEFO and keeps expired batch available for dispo
     movement_type: "perda_validade",
   });
   await expect(page).toHaveURL(/\/items\/1$/);
-  const updatedExpiredBatchRow = page
-    .getByRole("table", { name: "Lotes do item" })
-    .getByRole("row")
-    .filter({ hasText: "#2" });
-  await expect(updatedExpiredBatchRow.getByRole("cell").nth(3)).toHaveText("1");
+  const updatedExpiredBatchCard = page.locator(".trace-card").filter({
+    hasText: "LT-MOCK-002",
+  });
+  await expect(updatedExpiredBatchCard).toContainText("1 de 2 pacote");
   await expect(
     page
       .getByRole("table", { name: "Histórico de movimentações do item" })
@@ -1384,6 +1484,23 @@ test("delivery confirmation shows success feedback", async ({ page }) => {
   await expect(
     page.getByText("Entrega confirmada e estoque baixado automaticamente.")
   ).toBeVisible();
+});
+
+test("delivery history exposes item and batch trace on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/deliveries");
+
+  const deliveryCard = page.locator(".delivery-trace").filter({
+    hasText: "LT-MOCK-001",
+  });
+  await expect(deliveryCard).toBeVisible();
+  await expect(deliveryCard).toContainText("Arroz 1kg");
+  await expect(deliveryCard).toContainText("Prateleira A1");
+  await expect(deliveryCard).toContainText("31/12/2099");
+  const hasNoDocumentOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth <= document.documentElement.clientWidth
+  );
+  expect(hasNoDocumentOverflow).toBe(true);
 });
 
 test("family creation makes church and UPG relationship easy to fill", async ({ page }) => {

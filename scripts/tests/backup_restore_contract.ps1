@@ -364,7 +364,7 @@ if ($Mode -eq "dump") {
     exit 0
 }
 
-if ($execute -and $execute.StartsWith("source ")) {
+if ((-not $execute -and $database) -or ($execute -and $execute.StartsWith("source "))) {
     $restoreExit = if ([string]::IsNullOrWhiteSpace($env:FAKE_MYSQL_RESTORE_EXIT)) { 0 } else { [int]$env:FAKE_MYSQL_RESTORE_EXIT }
     if ($restoreExit -ne 0) { exit $restoreExit }
     [IO.File]::WriteAllText($env:FAKE_MYSQL_STATE, "restored")

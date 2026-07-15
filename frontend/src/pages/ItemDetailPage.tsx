@@ -11,7 +11,9 @@ import type {
   ItemCategoryResponse,
   ItemDetailResponse,
   ItemUpdatePayload,
+  StockBatchMetadataUpdatePayload,
   StockBatchResponse,
+  StockBatchStatus,
   StockMovementResponse,
   StockSummaryResponse,
 } from "../types/item";
@@ -24,6 +26,30 @@ import {
   isStockBatchReceived,
 } from "../utils/stock";
 
+type BatchMetadataDraft = {
+  batch_code: string;
+  status: StockBatchStatus;
+  storage_location: string;
+  quarantine_reason: string;
+  notes: string;
+};
+
+function toBatchMetadataDraft(batch: StockBatchResponse): BatchMetadataDraft {
+  return {
+    batch_code: batch.batch_code ?? "",
+    status: batch.status,
+    storage_location: batch.storage_location ?? "",
+    quarantine_reason: batch.quarantine_reason ?? "",
+    notes: batch.notes ?? "",
+  };
+}
+
+function formatBatchStatus(status: StockBatchStatus): string {
+  if (status === "quarentena") return "Em quarentena";
+  if (status === "bloqueado") return "Bloqueado";
+  return "Disponível";
+}
+
 export function ItemDetailPage() {
   const { itemId } = useParams();
   const [item, setItem] = useState<ItemDetailResponse | null>(null);
@@ -31,6 +57,9 @@ export function ItemDetailPage() {
   const [batches, setBatches] = useState<StockBatchResponse[]>([]);
   const [movements, setMovements] = useState<StockMovementResponse[]>([]);
   const [categories, setCategories] = useState<ItemCategoryResponse[]>([]);
+  const [batchDrafts, setBatchDrafts] = useState<Record<number, BatchMetadataDraft>>(
+    {}
+  );
   const [editForm, setEditForm] = useState({
     category_id: "",
     name: "",
@@ -43,6 +72,7 @@ export function ItemDetailPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingItem, setIsSavingItem] = useState(false);
+  const [isSavingBatchId, setIsSavingBatchId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -87,6 +117,11 @@ export function ItemDetailPage() {
             null
         );
         setBatches(batchesResponse.data);
+        setBatchDrafts(
+          Object.fromEntries(
+            batchesResponse.data.map((batch) => [batch.id, toBatchMetadataDraft(batch)])
+          )
+        );
         setMovements(movementsResponse.data);
         setCategories(categoriesResponse.data);
         setEditForm({
@@ -125,7 +160,7 @@ export function ItemDetailPage() {
     }
 
     return batches.reduce((total, batch) => {
-      if (!isStockBatchReceived(batch)) {
+      if (!isStockBatchReceived(batch) || batch.status !== "disponivel") {
         return total;
       }
 
@@ -147,6 +182,21 @@ export function ItemDetailPage() {
   const futureBatchCount = useMemo(() => {
     return batches.filter((batch) => !isStockBatchReceived(batch)).length;
   }, [batches]);
+
+  const restrictedBatchCount = useMemo(
+    () => batches.filter((batch) => batch.status !== "disponivel").length,
+    [batches]
+  );
+  const batchCodeById = useMemo(
+    () =>
+      new Map(
+        batches.map((batch) => [
+          batch.id,
+          batch.batch_code ?? `Lote legado #${batch.id}`,
+        ])
+      ),
+    [batches]
+  );
 
   const displayedUsableQuantity = item?.is_active
     ? summary?.total_quantity ?? usableCurrentQuantity
@@ -220,6 +270,76 @@ export function ItemDetailPage() {
     }
   }
 
+  async function handleBatchMetadataSave(
+    event: React.FormEvent<HTMLFormElement>,
+    batchId: number
+  ) {
+    event.preventDefault();
+    const draft = batchDrafts[batchId];
+    if (!draft) return;
+
+    if (
+      (draft.status === "quarentena" || draft.status === "bloqueado") &&
+      !draft.quarantine_reason.trim()
+    ) {
+      setError("Informe o motivo da quarentena ou do bloqueio do lote.");
+      return;
+    }
+
+    try {
+      setIsSavingBatchId(batchId);
+      setError("");
+      setSuccessMessage("");
+
+      const payload: StockBatchMetadataUpdatePayload = {
+        batch_code: draft.batch_code.trim() || null,
+        status: draft.status,
+        storage_location: draft.storage_location.trim() || null,
+        quarantine_reason:
+          draft.status === "disponivel"
+            ? null
+            : draft.quarantine_reason.trim() || null,
+        notes: draft.notes.trim() || null,
+      };
+      const response = await api.patch<StockBatchResponse>(
+        `/stock-batches/${batchId}/metadata`,
+        payload
+      );
+
+      setBatches((current) =>
+        current.map((batch) => (batch.id === batchId ? response.data : batch))
+      );
+      setBatchDrafts((current) => ({
+        ...current,
+        [batchId]: toBatchMetadataDraft(response.data),
+      }));
+
+      try {
+        const summaryResponse = await api.get<StockSummaryResponse[]>(
+          "/stock-summary",
+          { params: { limit: 200 } }
+        );
+        setSummary(
+          summaryResponse.data.find(
+            (entry) => entry.item_id === response.data.item_id
+          ) ?? null
+        );
+      } catch {
+        setSummary(null);
+      }
+
+      setSuccessMessage(
+        `Rastreabilidade do lote ${response.data.batch_code} atualizada.`
+      );
+    } catch (err) {
+      setError(
+        getApiErrorMessage(err, "Não foi possível atualizar os dados do lote.")
+      );
+    } finally {
+      setIsSavingBatchId(null);
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="page-stack">
@@ -232,7 +352,7 @@ export function ItemDetailPage() {
     );
   }
 
-  if (error || !item) {
+  if (!item) {
     return (
       <div className="page-stack">
         <div className="panel-card">
@@ -294,6 +414,12 @@ export function ItemDetailPage() {
               <span className="hero-badge hero-badge--danger">
                 {futureBatchCount} lote{futureBatchCount > 1 ? "s" : ""} com
                 entrada futura
+              </span>
+            ) : null}
+            {restrictedBatchCount > 0 ? (
+              <span className="hero-badge hero-badge--danger">
+                {restrictedBatchCount} lote{restrictedBatchCount > 1 ? "s" : ""}{" "}
+                fora do saldo utilizável
               </span>
             ) : null}
           </div>
@@ -507,54 +633,186 @@ export function ItemDetailPage() {
               lotes.
             </StateMessage>
           ) : (
-            <DataTable caption="Lotes do item">
-                <thead>
-                  <tr>
-                    <th>Lote</th>
-                    <th>Origem</th>
-                    <th>Entrada</th>
-                    <th>Atual</th>
-                    <th>Entrada em</th>
-                    <th>Validade</th>
-                    <th>Situação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {batches.map((batch) => {
-                    const batchWasReceived = isStockBatchReceived(batch);
-                    const expirationStatus = getBatchExpirationStatus(
-                      batch,
-                      item.tracks_expiration
-                    );
+            <div className="trace-card-list" aria-label="Lotes do item">
+              {batches.map((batch) => {
+                const batchWasReceived = isStockBatchReceived(batch);
+                const expirationStatus = getBatchExpirationStatus(
+                  batch,
+                  item.tracks_expiration
+                );
+                const draft = batchDrafts[batch.id] ?? toBatchMetadataDraft(batch);
+                const statusTone =
+                  batch.status === "disponivel"
+                    ? "success"
+                    : batch.status === "quarentena"
+                      ? "warning"
+                      : "danger";
 
-                    return (
-                      <tr key={batch.id}>
-                        <td>#{batch.id}</td>
-                        <td>{formatStockSourceType(batch.source_type)}</td>
-                        <td>{batch.entry_quantity}</td>
-                        <td>{batch.current_quantity}</td>
-                        <td>{formatDate(batch.entry_date)}</td>
-                        <td>{formatDate(batch.expiration_date)}</td>
-                        <td>
-                          <span
-                            className={`pill${
-                              !batchWasReceived
-                                ? " pill--danger"
-                                : expirationStatus.tone === "neutral"
-                                ? ""
-                                : ` pill--${expirationStatus.tone}`
-                            }`}
+                return (
+                  <article className="trace-card" key={batch.id}>
+                    <div className="trace-card__header">
+                      <div>
+                        <span className="trace-card__label">Lote físico</span>
+                        <h3>{batch.batch_code ?? `Lote legado #${batch.id}`}</h3>
+                      </div>
+                      <span className={`pill pill--${statusTone}`}>
+                        {formatBatchStatus(batch.status)}
+                      </span>
+                    </div>
+
+                    <div className="trace-card__facts">
+                      <div>
+                        <span>Saldo</span>
+                        <strong>
+                          {batch.current_quantity} de {batch.entry_quantity}{" "}
+                          {item.unit_measure}
+                        </strong>
+                      </div>
+                      <div>
+                        <span>Localização</span>
+                        <strong>{batch.storage_location ?? "Não informada"}</strong>
+                      </div>
+                      <div>
+                        <span>Recebimento</span>
+                        <strong>{formatDate(batch.entry_date)}</strong>
+                      </div>
+                      <div>
+                        <span>Validade</span>
+                        <strong>{formatDate(batch.expiration_date)}</strong>
+                      </div>
+                    </div>
+
+                    <div className="trace-card__signals">
+                      <span
+                        className={`pill${
+                          !batchWasReceived
+                            ? " pill--danger"
+                            : expirationStatus.tone === "neutral"
+                              ? ""
+                              : ` pill--${expirationStatus.tone}`
+                        }`}
+                      >
+                        {batchWasReceived ? expirationStatus.label : "Entrada futura"}
+                      </span>
+                      <span className="trace-card__source">
+                        {formatStockSourceType(batch.source_type)}
+                      </span>
+                    </div>
+
+                    {batch.quarantine_reason ? (
+                      <p className="trace-card__restriction">
+                        <strong>Motivo da restrição:</strong> {batch.quarantine_reason}
+                      </p>
+                    ) : null}
+
+                    <details className="trace-card__details">
+                      <summary>Corrigir identificação ou situação</summary>
+                      <form
+                        className="trace-card__form"
+                        onSubmit={(event) =>
+                          void handleBatchMetadataSave(event, batch.id)
+                        }
+                      >
+                        <label className="form__group">
+                          <span>Código do lote</span>
+                          <input
+                            value={draft.batch_code}
+                            maxLength={50}
+                            onChange={(event) =>
+                              setBatchDrafts((current) => ({
+                                ...current,
+                                [batch.id]: {
+                                  ...draft,
+                                  batch_code: event.target.value,
+                                },
+                              }))
+                            }
+                            required
+                          />
+                        </label>
+                        <label className="form__group">
+                          <span>Situação física</span>
+                          <select
+                            value={draft.status}
+                            onChange={(event) =>
+                              setBatchDrafts((current) => ({
+                                ...current,
+                                [batch.id]: {
+                                  ...draft,
+                                  status: event.target.value as StockBatchStatus,
+                                },
+                              }))
+                            }
                           >
-                            {batchWasReceived
-                              ? expirationStatus.label
-                              : "Entrada futura"}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-            </DataTable>
+                            <option value="disponivel">Disponível</option>
+                            <option value="quarentena">Em quarentena</option>
+                            <option value="bloqueado">Bloqueado</option>
+                          </select>
+                        </label>
+                        <label className="form__group">
+                          <span>Localização</span>
+                          <input
+                            value={draft.storage_location}
+                            maxLength={120}
+                            onChange={(event) =>
+                              setBatchDrafts((current) => ({
+                                ...current,
+                                [batch.id]: {
+                                  ...draft,
+                                  storage_location: event.target.value,
+                                },
+                              }))
+                            }
+                          />
+                        </label>
+                        {draft.status !== "disponivel" ? (
+                          <label className="form__group">
+                            <span>Motivo da restrição</span>
+                            <input
+                              value={draft.quarantine_reason}
+                              onChange={(event) =>
+                                setBatchDrafts((current) => ({
+                                  ...current,
+                                  [batch.id]: {
+                                    ...draft,
+                                    quarantine_reason: event.target.value,
+                                  },
+                                }))
+                              }
+                              required
+                            />
+                          </label>
+                        ) : null}
+                        <label className="form__group form__group--wide">
+                          <span>Observações</span>
+                          <textarea
+                            value={draft.notes}
+                            rows={2}
+                            onChange={(event) =>
+                              setBatchDrafts((current) => ({
+                                ...current,
+                                [batch.id]: { ...draft, notes: event.target.value },
+                              }))
+                            }
+                          />
+                        </label>
+                        <div className="trace-card__actions">
+                          <button
+                            type="submit"
+                            className="button button--secondary"
+                            disabled={isSavingBatchId === batch.id}
+                          >
+                            {isSavingBatchId === batch.id
+                              ? "Salvando…"
+                              : "Salvar rastreabilidade"}
+                          </button>
+                        </div>
+                      </form>
+                    </details>
+                  </article>
+                );
+              })}
+            </div>
           )}
         </article>
 
@@ -582,7 +840,9 @@ export function ItemDetailPage() {
                       <td>{movement.id}</td>
                       <td>{formatStockMovementType(movement.movement_type)}</td>
                       <td>{movement.quantity}</td>
-                      <td>{movement.batch_id}</td>
+                      <td>
+                        {batchCodeById.get(movement.batch_id) ?? `#${movement.batch_id}`}
+                      </td>
                       <td>{movement.notes ?? "-"}</td>
                     </tr>
                   ))}

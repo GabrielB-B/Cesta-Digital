@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 ALLOWED_SCHEDULE_STATUSES = {"agendado", "cancelado", "faltou", "reagendado"}
@@ -69,6 +69,21 @@ class DeliveryFromScheduleCreate(BaseModel):
         return value
 
 
+class DeliveryTraceItemResponse(BaseModel):
+    """Item e lote efetivamente consumidos por uma entrega."""
+
+    movement_id: int
+    item_id: int
+    item_name: str
+    unit_measure: str
+    batch_id: int
+    batch_code: str | None
+    batch_status: str
+    storage_location: str | None
+    expiration_date: date | None
+    quantity: int
+
+
 class DeliveryResponse(BaseModel):
     """Resposta serializada de entrega."""
 
@@ -82,3 +97,4 @@ class DeliveryResponse(BaseModel):
     delivered_by_user_id: int
     status: str
     notes: str | None
+    items: list[DeliveryTraceItemResponse] = Field(default_factory=list)

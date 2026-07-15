@@ -115,7 +115,23 @@ class DeliveriesApiIntegrationTests(ApiIntegrationTestCase):
         )
         self.assertEqual(deliveries_response.status_code, 200, deliveries_response.text)
         self.assertEqual(deliveries_response.headers["x-total-count"], "1")
-        self.assertEqual(deliveries_response.json()[0]["family_id"], family["id"])
+        persisted_delivery = deliveries_response.json()[0]
+        self.assertEqual(persisted_delivery["family_id"], family["id"])
+        self.assertEqual(len(persisted_delivery["items"]), 1)
+        self.assertEqual(
+            persisted_delivery["items"][0]["batch_id"],
+            batch_response.json()["id"],
+        )
+        self.assertEqual(persisted_delivery["items"][0]["item_name"], item["name"])
+        self.assertEqual(persisted_delivery["items"][0]["quantity"], 2)
+        self.assertTrue(persisted_delivery["items"][0]["batch_code"])
+
+        detail_response = self.client.get(
+            f"/deliveries/{persisted_delivery['id']}",
+            headers=self.headers,
+        )
+        self.assertEqual(detail_response.status_code, 200, detail_response.text)
+        self.assertEqual(detail_response.json()["items"], persisted_delivery["items"])
 
         movements_response = self.client.get("/stock-movements", headers=self.headers)
         self.assertEqual(movements_response.status_code, 200, movements_response.text)
@@ -273,3 +289,11 @@ class DeliveriesApiIntegrationTests(ApiIntegrationTestCase):
                 no_expiration_batch["id"],
             },
         )
+
+        deliveries_response = self.client.get("/deliveries", headers=self.headers)
+        self.assertEqual(deliveries_response.status_code, 200, deliveries_response.text)
+        traced_batch_ids = {
+            item["batch_id"]
+            for item in deliveries_response.json()[0]["items"]
+        }
+        self.assertEqual(traced_batch_ids, consumed_batch_ids)

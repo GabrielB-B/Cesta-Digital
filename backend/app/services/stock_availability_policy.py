@@ -65,6 +65,7 @@ def usable_stock_batch_condition(
 
     return and_(
         Item.is_active.is_(True),
+        StockBatch.status == "disponivel",
         StockBatch.current_quantity > 0,
         StockBatch.entry_date <= reference_date,
         expiration_is_usable,
@@ -89,6 +90,7 @@ def is_stock_batch_usable(
 
     return bool(
         item.is_active
+        and batch.status == "disponivel"
         and batch.current_quantity > 0
         and batch.entry_date <= reference_date
         and expiration_is_usable

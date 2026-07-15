@@ -69,6 +69,7 @@ function isBatchBlockedForMovement(
 
   if (movementType === "saida_manual") {
     return (
+      batch.status !== "disponivel" ||
       !isStockBatchReceived(batch) ||
       getBatchExpirationStatus(batch, item.tracks_expiration).blocksManualExit
     );
@@ -160,6 +161,13 @@ export function StockMovementCreatePage() {
           const firstBatch = batchesResponse.data
             .filter((batch) => batch.item_id === requestedItem.id)
             .toSorted((first, second) => {
+              if (
+                (first.status === "disponivel") !==
+                (second.status === "disponivel")
+              ) {
+                return first.status === "disponivel" ? -1 : 1;
+              }
+
               const firstStatus = getBatchExpirationStatus(
                 first,
                 requestedItem.tracks_expiration
@@ -385,6 +393,17 @@ export function StockMovementCreatePage() {
       return;
     }
 
+    if (
+      formData.movement_type === "saida_manual" &&
+      selectedBatch.status !== "disponivel"
+    ) {
+      reportError(
+        "Este lote está em quarentena ou bloqueado. Libere sua situação física no detalhe do item antes da saída.",
+        "batch_id"
+      );
+      return;
+    }
+
     if (formData.movement_type === "saida_manual" && expirationStatus.blocksManualExit) {
       reportError(
         "Este lote não pode sair para consumo porque está vencido, sem validade obrigatória ou sem saldo. Use Perda por validade quando for descartá-lo.",
@@ -528,10 +547,15 @@ export function StockMovementCreatePage() {
                     value={batch.id}
                     disabled={isBlocked}
                   >
-                    Lote #{batch.id} • {batchItem?.name ?? `Item #${batch.item_id}`} •
+                    {batch.batch_code ?? `Lote legado #${batch.id}`} •{" "}
+                    {batchItem?.name ?? `Item #${batch.item_id}`} •
                     Saldo {batch.current_quantity} • Validade {expirationLabel} •{" "}
                     {batchItem && !batchItem.is_active
                       ? "Item inativo"
+                      : batch.status !== "disponivel"
+                        ? batch.status === "quarentena"
+                          ? "Em quarentena"
+                          : "Bloqueado"
                       : !batchWasReceived
                         ? "Entrada futura"
                       : expirationStatus.label}
@@ -541,7 +565,7 @@ export function StockMovementCreatePage() {
             </select>
             <small id="stock-batch-help" className="form__hint">
               {formData.movement_type === "saida_manual"
-                ? "Para saída manual, lotes utilizáveis aparecem primeiro em ordem de validade (FEFO). Lotes com entrada futura, vencidos ou sem validade obrigatória ficam bloqueados."
+                ? "Para saída manual, lotes disponíveis aparecem primeiro em ordem de validade (FEFO). Quarentena, bloqueio, entrada futura, vencimento ou validade obrigatória ausente impedem o uso."
                 : formData.movement_type === "perda_validade"
                   ? "Somente lotes vencidos ou sem a validade obrigatória podem ser selecionados para descarte."
                   : "Selecione o lote que receberá o ajuste de saldo."}

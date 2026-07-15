@@ -6,8 +6,16 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.stock_batch import StockBatchCreate, StockBatchResponse
-from app.services.stock_batch_service import create_stock_batch, list_stock_batches
+from app.schemas.stock_batch import (
+    StockBatchCreate,
+    StockBatchMetadataUpdate,
+    StockBatchResponse,
+)
+from app.services.stock_batch_service import (
+    create_stock_batch,
+    list_stock_batches,
+    update_stock_batch_metadata,
+)
 
 router = APIRouter(
     tags=["Lotes de Estoque"],
@@ -23,6 +31,20 @@ def create_stock_batch_endpoint(
 ):
     """Registra uma entrada de lote no estoque."""
     return create_stock_batch(db, payload, current_user)
+
+
+@router.patch(
+    "/stock-batches/{batch_id}/metadata",
+    response_model=StockBatchResponse,
+)
+def update_stock_batch_metadata_endpoint(
+    batch_id: int,
+    payload: StockBatchMetadataUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    """Corrige identificacao e estado fisico do lote com trilha de auditoria."""
+    return update_stock_batch_metadata(db, batch_id, payload, current_user)
 
 
 @router.get("/stock-batches", response_model=list[StockBatchResponse])

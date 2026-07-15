@@ -277,6 +277,12 @@ Por padrão, o script:
 7. exige igualdade exata entre o inventário/revisão do destino e o manifesto;
 8. grava uma evidência JSON sem linhas ou dados pessoais.
 
+O dump é enviado ao processo `mysql` pela entrada padrão, com
+`--binary-mode=1`. Não usar `--execute="source ..."` junto desse modo: o cliente
+desativa comandos interativos e pode encaminhar `source` ao servidor como SQL
+inválido. O contrato automatizado cobre o caminho de entrada padrão e o exit code
+do processo nativo.
+
 `-AllowNonEmptyTarget`, `-AllowInPlaceRestore` e
 `-AllowLegacyBackupWithoutManifest` são exceções de incidente. Não fazem parte de
 um ensaio normal e exigem autorização explícita, janela de manutenção e registro

@@ -580,7 +580,11 @@ export function DeliveriesPage() {
       </section>
 
       <section className="panel-card">
-        <PanelHeader eyebrow="Entregas" title="Historico de entregas" />
+        <PanelHeader
+          eyebrow="Entregas"
+          title="Histórico rastreável"
+          description="Confira o que saiu do estoque e de qual lote em cada atendimento."
+        />
 
         {isLoading ? (
           <StateMessage variant="loading">Carregando entregas...</StateMessage>
@@ -588,30 +592,63 @@ export function DeliveriesPage() {
           <StateMessage>Nenhuma entrega registrada.</StateMessage>
         ) : (
           <>
-            <DataTable caption="Historico de entregas">
-              <thead>
-                <tr>
-                  <th>Familia</th>
-                  <th>Cesta</th>
-                  <th>Data/hora</th>
-                  <th>Status</th>
-                  <th>Observacao</th>
-                </tr>
-              </thead>
-              <tbody>
-                {deliveries.map((delivery) => (
-                  <tr key={delivery.id}>
-                    <td>{getFamilyCode(delivery.family_id)}</td>
-                    <td>{getBasketTypeName(delivery.basket_type_id)}</td>
-                    <td>{formatDateTime(delivery.delivery_date)}</td>
-                    <td>
-                      <span className="pill pill--success">{delivery.status}</span>
-                    </td>
-                    <td>{delivery.notes ?? "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </DataTable>
+            <div className="delivery-trace-list" aria-label="Histórico de entregas">
+              {deliveries.map((delivery) => (
+                <article className="delivery-trace" key={delivery.id}>
+                  <header className="delivery-trace__header">
+                    <div>
+                      <span className="delivery-trace__eyebrow">
+                        Entrega #{delivery.id} · {formatDateTime(delivery.delivery_date)}
+                      </span>
+                      <h3>{getFamilyCode(delivery.family_id)}</h3>
+                      <p>{getBasketTypeName(delivery.basket_type_id)}</p>
+                    </div>
+                    <span className="pill pill--success">Concluída</span>
+                  </header>
+
+                  {delivery.items.length === 0 ? (
+                    <StateMessage>
+                      Esta entrega é anterior à rastreabilidade detalhada ou não possui
+                      movimentos vinculados.
+                    </StateMessage>
+                  ) : (
+                    <ul className="delivery-trace__items">
+                      {delivery.items.map((deliveredItem) => (
+                        <li key={deliveredItem.movement_id}>
+                          <div className="delivery-trace__quantity">
+                            <strong>{deliveredItem.quantity}</strong>
+                            <span>{deliveredItem.unit_measure}</span>
+                          </div>
+                          <div className="delivery-trace__item-name">
+                            <strong>{deliveredItem.item_name}</strong>
+                            <span>
+                              {deliveredItem.batch_code
+                                ? `Lote ${deliveredItem.batch_code}`
+                                : `Lote legado #${deliveredItem.batch_id}`}
+                              {deliveredItem.storage_location
+                                ? ` · ${deliveredItem.storage_location}`
+                                : ""}
+                            </span>
+                          </div>
+                          <div className="delivery-trace__validity">
+                            <span>Validade</span>
+                            <strong>
+                              {deliveredItem.expiration_date
+                                ? formatDateOnly(deliveredItem.expiration_date)
+                                : "Não controlada"}
+                            </strong>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {delivery.notes ? (
+                    <p className="delivery-trace__notes">{delivery.notes}</p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
 
             <PaginationControls
               total={totalDeliveries}

@@ -13,9 +13,13 @@ import type {
 
 type StockBatchErrorField =
   | "item_id"
+  | "batch_code"
+  | "status"
   | "entry_quantity"
   | "entry_date"
   | "expiration_date"
+  | "storage_location"
+  | "quarantine_reason"
   | "estimated_unit_value"
   | "form";
 
@@ -52,10 +56,14 @@ export function StockBatchCreatePage() {
 
   const [formData, setFormData] = useState({
     item_id: "",
+    batch_code: "",
     source_type: "doacao_item",
+    status: "disponivel",
     entry_quantity: 1,
     entry_date: formatSaoPauloTodayForInput(),
     expiration_date: "",
+    storage_location: "",
+    quarantine_reason: "",
     estimated_unit_value: 0,
     notes: "",
   });
@@ -216,6 +224,17 @@ export function StockBatchCreatePage() {
       return;
     }
 
+    if (
+      (formData.status === "quarentena" || formData.status === "bloqueado") &&
+      !formData.quarantine_reason.trim()
+    ) {
+      reportError(
+        "Informe por que este lote não pode ser utilizado.",
+        "quarantine_reason"
+      );
+      return;
+    }
+
     const estimatedUnitValue = Number(formData.estimated_unit_value);
 
     if (!Number.isFinite(estimatedUnitValue) || estimatedUnitValue < 0) {
@@ -231,10 +250,17 @@ export function StockBatchCreatePage() {
     try {
       const payload: StockBatchCreatePayload = {
         item_id: selectedItem.id,
+        batch_code: formData.batch_code.trim() || null,
         source_type: formData.source_type,
+        status: formData.status as StockBatchCreatePayload["status"],
         entry_quantity: entryQuantity,
         entry_date: formData.entry_date,
         expiration_date: formData.expiration_date || null,
+        storage_location: formData.storage_location.trim() || null,
+        quarantine_reason:
+          formData.status === "disponivel"
+            ? null
+            : formData.quarantine_reason.trim() || null,
         estimated_unit_value: estimatedUnitValue,
         notes: formData.notes.trim() || null,
       };
@@ -264,7 +290,7 @@ export function StockBatchCreatePage() {
       <PageHeader
         eyebrow="Estoque"
         title="Registrar entrada"
-        description="Cada recebimento gera um lote. Informe origem, quantidade e, quando o item controlar validade, a data desta entrada."
+        description="Cada recebimento gera um lote rastreável. Identifique onde ele está e bloqueie seu uso quando ainda precisar de conferência."
       />
 
       <form
@@ -316,6 +342,23 @@ export function StockBatchCreatePage() {
           </label>
 
           <label className="form__group">
+            <span>Código do lote</span>
+            <input
+              name="batch_code"
+              value={formData.batch_code}
+              onChange={handleInputChange}
+              placeholder="Ex.: DOACAO-2026-014"
+              maxLength={50}
+              autoCapitalize="characters"
+              aria-invalid={errorField === "batch_code"}
+              aria-describedby="batch-code-help"
+            />
+            <small id="batch-code-help" className="form__hint">
+              Opcional. Se ficar vazio, o sistema gera um identificador único.
+            </small>
+          </label>
+
+          <label className="form__group">
             <span>Origem</span>
             <select
               name="source_type"
@@ -331,6 +374,23 @@ export function StockBatchCreatePage() {
               </option>
               <option value="ajuste">Ajuste de inventário</option>
             </select>
+          </label>
+
+          <label className="form__group">
+            <span>Situação física</span>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              aria-invalid={errorField === "status"}
+            >
+              <option value="disponivel">Disponível para uso</option>
+              <option value="quarentena">Em quarentena</option>
+              <option value="bloqueado">Bloqueado</option>
+            </select>
+            <small className="form__hint">
+              Quarentena e bloqueio retiram este lote do saldo utilizável.
+            </small>
           </label>
 
           <label className="form__group">
@@ -409,6 +469,38 @@ export function StockBatchCreatePage() {
               }
             />
           </label>
+
+          <label className="form__group">
+            <span>Localização no estoque</span>
+            <input
+              name="storage_location"
+              value={formData.storage_location}
+              onChange={handleInputChange}
+              placeholder="Ex.: Prateleira A · nível 2"
+              maxLength={120}
+              aria-invalid={errorField === "storage_location"}
+            />
+          </label>
+
+          {formData.status === "quarentena" || formData.status === "bloqueado" ? (
+            <label className="form__group form__group--wide">
+              <span>Motivo da restrição</span>
+              <textarea
+                name="quarantine_reason"
+                value={formData.quarantine_reason}
+                onChange={handleInputChange}
+                rows={3}
+                required
+                placeholder="Descreva o que precisa ser conferido ou corrigido."
+                aria-invalid={errorField === "quarantine_reason"}
+                aria-describedby={
+                  errorField === "quarantine_reason"
+                    ? "stock-batch-form-error"
+                    : undefined
+                }
+              />
+            </label>
+          ) : null}
 
           <label className="form__group form__group--wide">
             <span>Observações</span>

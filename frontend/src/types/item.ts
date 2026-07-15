@@ -51,22 +51,40 @@ export interface StockSummaryResponse {
 
 export interface StockBatchCreatePayload {
   item_id: number;
+  batch_code: string | null;
   source_type: string;
+  status: StockBatchStatus;
   entry_quantity: number;
   entry_date: string;
   expiration_date: string | null;
+  storage_location: string | null;
+  quarantine_reason: string | null;
   estimated_unit_value: number;
   notes: string | null;
+}
+
+export type StockBatchStatus = "disponivel" | "quarentena" | "bloqueado";
+
+export interface StockBatchMetadataUpdatePayload {
+  batch_code?: string | null;
+  status?: StockBatchStatus;
+  storage_location?: string | null;
+  quarantine_reason?: string | null;
+  notes?: string | null;
 }
 
 export interface StockBatchResponse {
   id: number;
   item_id: number;
+  batch_code: string | null;
   source_type: string;
+  status: StockBatchStatus;
   entry_quantity: number;
   current_quantity: number;
   entry_date: string;
   expiration_date: string | null;
+  storage_location: string | null;
+  quarantine_reason: string | null;
   estimated_unit_value: string;
   notes: string | null;
   created_by_user_id: number;

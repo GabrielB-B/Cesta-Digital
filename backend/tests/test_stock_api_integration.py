@@ -293,6 +293,103 @@ class StockApiIntegrationTests(ApiIntegrationTestCase):
         self.assertGreaterEqual(payload["total"], 1)
         self.assertEqual(payload["items"][0]["event_type"], "stock.movement.created")
 
+    def test_stock_batch_traceability_metadata_is_unique_audited_and_controls_stock(self):
+        item = self.create_item(self.headers, tracks_expiration=False)
+        create_response = self.client.post(
+            "/stock-batches",
+            json={
+                "item_id": item["id"],
+                "batch_code": "  doacao-2026-001 ",
+                "source_type": "doacao_item",
+                "status": "disponivel",
+                "entry_quantity": 5,
+                "entry_date": TEST_OPERATIONAL_DATE.isoformat(),
+                "expiration_date": None,
+                "storage_location": "Prateleira A1",
+                "quarantine_reason": None,
+                "estimated_unit_value": 3,
+                "notes": "Recebimento conferido",
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(create_response.status_code, 201, create_response.text)
+        batch = create_response.json()
+        self.assertEqual(batch["batch_code"], "DOACAO-2026-001")
+        self.assertEqual(batch["status"], "disponivel")
+        self.assertEqual(batch["storage_location"], "Prateleira A1")
+
+        duplicate_response = self.client.post(
+            "/stock-batches",
+            json={
+                "item_id": item["id"],
+                "batch_code": "doacao-2026-001",
+                "source_type": "doacao_item",
+                "entry_quantity": 1,
+                "entry_date": TEST_OPERATIONAL_DATE.isoformat(),
+                "expiration_date": None,
+                "estimated_unit_value": 1,
+                "notes": None,
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(duplicate_response.status_code, 409, duplicate_response.text)
+
+        missing_reason_response = self.client.patch(
+            f"/stock-batches/{batch['id']}/metadata",
+            json={"status": "quarentena"},
+            headers=self.headers,
+        )
+        self.assertEqual(missing_reason_response.status_code, 400)
+        self.assertIn("exige um motivo", missing_reason_response.json()["detail"])
+
+        quarantine_response = self.client.patch(
+            f"/stock-batches/{batch['id']}/metadata",
+            json={
+                "status": "quarentena",
+                "storage_location": "Mesa de triagem",
+                "quarantine_reason": "Em conferencia de integridade",
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(quarantine_response.status_code, 200, quarantine_response.text)
+        quarantined_batch = quarantine_response.json()
+        self.assertEqual(quarantined_batch["status"], "quarentena")
+        self.assertEqual(quarantined_batch["storage_location"], "Mesa de triagem")
+
+        summary_response = self.client.get("/stock-summary", headers=self.headers)
+        self.assertEqual(summary_response.status_code, 200, summary_response.text)
+        self.assertEqual(summary_response.json()[0]["total_quantity"], 0)
+
+        manual_output_response = self.client.post(
+            "/stock-movements",
+            json={
+                "batch_id": batch["id"],
+                "movement_type": "saida_manual",
+                "quantity": 1,
+                "notes": "Nao deve consumir quarentena",
+            },
+            headers=self.headers,
+        )
+        self.assertEqual(manual_output_response.status_code, 400)
+        self.assertIn("lote utilizavel", manual_output_response.json()["detail"])
+
+        release_response = self.client.patch(
+            f"/stock-batches/{batch['id']}/metadata",
+            json={"status": "disponivel"},
+            headers=self.headers,
+        )
+        self.assertEqual(release_response.status_code, 200, release_response.text)
+        self.assertIsNone(release_response.json()["quarantine_reason"])
+
+        audit_response = self.client.get(
+            "/audit-logs",
+            headers=self.headers,
+            params={"entity_type": "stock_batch"},
+        )
+        self.assertEqual(audit_response.status_code, 200, audit_response.text)
+        event_types = [entry["event_type"] for entry in audit_response.json()["items"]]
+        self.assertIn("stock.batch.metadata_updated", event_types)
+
     @patch(
         "app.services.stock_availability_policy.operational_today",
         return_value=TEST_OPERATIONAL_DATE,

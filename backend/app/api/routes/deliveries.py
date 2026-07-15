@@ -16,6 +16,7 @@ from app.schemas.delivery import (
 from app.services.delivery_service import (
     create_delivery_from_schedule,
     create_delivery_schedule,
+    get_delivery_detail,
     list_deliveries,
     list_delivery_schedules,
     update_delivery_schedule,
@@ -103,3 +104,13 @@ def list_deliveries_endpoint(
     )
     response.headers["X-Total-Count"] = str(total)
     return deliveries
+
+
+@router.get("/deliveries/{delivery_id}", response_model=DeliveryResponse)
+def get_delivery_detail_endpoint(
+    delivery_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    """Exibe a entrega e os itens/lotes efetivamente consumidos."""
+    return get_delivery_detail(db, delivery_id)
