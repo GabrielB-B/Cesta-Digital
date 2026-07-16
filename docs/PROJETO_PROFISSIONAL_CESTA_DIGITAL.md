@@ -779,6 +779,7 @@ migrations.
 | 15/07/2026 | Continuidade da Fase 2 | Branch `feat/fase-2-distribuicao-regras` aberta para tornar agendamento uma promessa confiável, evitando duplicidade ativa e excesso sobre estoque utilizável |
 | 15/07/2026 | Publicação do checkpoint de distribuição | Branch `feat/fase-2-distribuicao-regras` promovida para `main` no commit `88aa60bc355c3491ccc88cc1a431b29ba0af4891`; backend 55/55, frontend lint/build/E2E 25/25, CI `main` público `Success` e smoke público `/login` + `/health/db` aprovado |
 | 15/07/2026 | Checkpoint local de rastreabilidade da Fase 2 | DOM-001/DOM-006 implementados no branch `feat/fase-2-rastreabilidade-entrega-lote`; backend 56/56, frontend lint/build/E2E 27/27; contrato de backup/restore aprovado; drill MySQL local com restore exato, migration `b7c9d1e2f3a4`, contagens conciliadas e descarte do banco temporário; publicação bloqueada até backup/restore do banco público |
+| 15/07/2026 | Gate remoto de rastreabilidade da Fase 2 | Commit `738afe85631095945b84b5fd8be7fcc352ce2078` publicado na branch `feat/fase-2-rastreabilidade-entrega-lote`; workflow `CI` nº `29463482370` aprovado nos jobs `frontend`, `backend` e `operations`; integração em `main` permanece bloqueada até backup/restore do banco público |
 
 Próxima entrada esperada: obter e validar backup/restore do banco público para
 publicar o checkpoint de rastreabilidade; depois continuar a Fase 2 em quantidade

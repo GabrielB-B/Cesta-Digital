@@ -171,11 +171,13 @@ LGPD, observabilidade e decisão formal de `GO profissional`.
 | Contrato operacional | `scripts/tests/backup_restore_contract.ps1` aprovado após corrigir o restore MySQL por entrada padrão |
 | Drill MySQL local | backup exit code zero, 37.704 bytes, SHA-256 validado; restore `exact-manifest-v2`; migration aplicada; contagens conciliadas; banco temporário removido |
 | Custódia local | Gabriel Bomfim Bispo; conjunto fora do repositório em diretório privado com EFS; retenção máxima de sete dias |
+| Publicação da branch | commit `738afe85631095945b84b5fd8be7fcc352ce2078` enviado para `origin/feat/fase-2-rastreabilidade-entrega-lote` em 15/07/2026 |
+| CI remoto da branch | workflow `CI` nº `29463482370`; jobs `frontend`, `backend` e `operations` concluídos com `success` para o mesmo SHA |
 | Gate público | **Bloqueado:** o drill local não substitui backup/restore do banco público antes da integração em `main` |
 
-Resultado do checkpoint: código apto para gate remoto em branch. DOM-001 e
-DOM-006 permanecem `Em homologação` até CI remoto, backup/restore público,
-integração pelo mesmo SHA e smoke público.
+Resultado do checkpoint: código aprovado no gate remoto da branch. DOM-001 e
+DOM-006 permanecem `Em homologação` até backup/restore público, integração pelo
+mesmo SHA e smoke público.
 
 ## 3. Pré-condições
 
@@ -183,7 +185,7 @@ integração pelo mesmo SHA e smoke público.
 - [ ] HTTPS ativo no frontend e backend.
 - [ ] Variáveis revisadas, sem secrets padrão ou expostos.
 - [ ] Commit implantado identificado na interface/API.
-- [ ] CI frontend e backend verdes no mesmo commit.
+- [x] CI frontend e backend verdes no mesmo commit.
 - [ ] Banco migrado com Alembic e revision registrada.
 - [ ] Dados de teste preparados por perfil.
 - [ ] Backup verificado antes de migration.
