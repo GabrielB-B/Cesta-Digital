@@ -176,19 +176,24 @@ LGPD, observabilidade e decisão formal de `GO profissional`.
 | Backup público pré-migration | aprovado em 16/07/2026; 52.921 bytes; SHA-256 `82C6C36C7619090B2FA74504D23020C4BF392FF9004DB72F9AE823ACB7E579B4`; manifesto e checksum conciliados; conjunto privado com retenção máxima de sete dias |
 | Restore do backup público | aprovado em MySQL local isolado no modo `exact-manifest-v2`; 19 tabelas e contagens exatas conciliadas; revisão `9f2a7b6c8d1e` preservada; banco temporário removido |
 | Gate público | **Aprovado para integração:** backup e restore do banco público comprovados antes da migration `b7c9d1e2f3a4` |
+| Integração | branch promovida por fast-forward para `main` no commit `987e0df6c4fae490bd046c89d8eadd2e32e45686` em 16/07/2026 |
+| CI de `main` | workflow `CI` nº `29535564353`; jobs `frontend`, `backend` e `operations` concluídos com `success` |
+| Vercel | deploy de produção concluído com `success`; `https://cesta-digital.vercel.app/login` respondeu HTTP 200 |
+| Render/TLS | startup inicial falhou de forma segura por ausência da CA privada; `DB_SSL_CA` foi configurada no ambiente com a CA do Aiven e o redeploy concluiu |
+| Banco público pós-deploy | revisão `b7c9d1e2f3a4`; quatro colunas de rastreabilidade, índices e constraint de status confirmados; `/health/db` HTTP 200 com `{"database":"ok"}` |
+| Contrato público | `/docs` e `/openapi.json` HTTP 200; `DeliveryResponse.items`, `DeliveryTraceItemResponse` e metadados de lote presentes |
 
-Resultado do checkpoint: código aprovado no gate remoto da branch e no gate de
-recuperação do banco público. DOM-001 e DOM-006 permanecem `Em homologação` até
-integração pelo SHA final e smoke público.
+Resultado do checkpoint: publicado e aprovado pelos gates local, remoto, banco,
+deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.
-- [ ] HTTPS ativo no frontend e backend.
+- [x] HTTPS ativo no frontend e backend.
 - [ ] Variáveis revisadas, sem secrets padrão ou expostos.
-- [ ] Commit implantado identificado na interface/API.
+- [x] Commit implantado identificado na interface/API.
 - [x] CI frontend e backend verdes no mesmo commit.
-- [ ] Banco migrado com Alembic e revision registrada.
+- [x] Banco migrado com Alembic e revision registrada.
 - [ ] Dados de teste preparados por perfil.
 - [x] Backup verificado antes de migration.
 - [x] Restore testado em ambiente limpo quando houver mudança de banco.

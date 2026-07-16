@@ -149,12 +149,12 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 
 | ID | Achado | Resultado esperado | Status |
 |---|---|---|---|
-| DOM-001 | Lote sem código, status, quarentena, localização e correção auditada de metadados | Implementado no branch `feat/fase-2-rastreabilidade-entrega-lote`: novas entradas recebem código; status físico governa saldo/saída; localização e correção auditada estão disponíveis; lotes legados são corrigidos gradualmente | Em homologação |
+| DOM-001 | Lote sem código, status, quarentena, localização e correção auditada de metadados | Publicado na `main` em `987e0df`: novas entradas recebem código; status físico governa saldo/saída; localização e correção auditada estão disponíveis; migration `b7c9d1e2f3a4` e schema público validados | Concluído |
 | DOM-002 | `kg`/`litro` aceitos, mas quantidades e receitas são inteiras | Quantidade decimal e apresentação explícita | Aberto |
 | DOM-003 | Agregados da família também são digitados nos membros e podem divergir com o tempo | Pessoas e rendas como fonte; agregados derivados | Aberto |
 | DOM-004 | Família pode ser marcada apta sem avaliação vinculada | Regra publicada na `main` em `77e7cbe`: cadastro/edição/status manual bloqueiam `apta_recorrente`, `apta_emergencial` e `inapta` sem avaliação social compatível; formulário orienta o caminho correto pela avaliação | Concluído |
 | DOM-005 | Agendamento não reserva estoque nem limita ciclo/duplicidade | Publicado na `main` em `88aa60b`: agendamentos ativos passam a respeitar capacidade prometível do estoque utilizável e bloqueiam duplicidade ativa por família+cesta; formulário orienta a regra | Concluído |
-| DOM-006 | API de entrega não expõe os itens e lotes efetivamente entregues | Implementado no branch `feat/fase-2-rastreabilidade-entrega-lote`: lista e detalhe expõem item, quantidade, lote, localização e validade; histórico responsivo apresenta a trilha ao operador | Em homologação |
+| DOM-006 | API de entrega não expõe os itens e lotes efetivamente entregues | Publicado na `main` em `987e0df`: lista e detalhe expõem item, quantidade, lote, localização e validade; histórico responsivo apresenta a trilha ao operador; contrato OpenAPI público validado | Concluído |
 | UX-001 | Navegação plana não representa Social, Estoque, Distribuição e Administração | Arquitetura de informação por tarefa | Aberto |
 | UX-002 | Tabelas usam `min-width: 720px`; quase todas dependem de rolagem horizontal no celular | Listas e ações mobile próprias | Aberto |
 | UX-003 | Login bloqueia navegação por vídeo não pulável de 7,4–8,5 s, inclusive com movimento reduzido | Entrada imediata aprovada localmente em desktop/mobile e movimento reduzido; publicação pendente | Em homologação |
@@ -781,7 +781,7 @@ migrations.
 | 15/07/2026 | Checkpoint local de rastreabilidade da Fase 2 | DOM-001/DOM-006 implementados no branch `feat/fase-2-rastreabilidade-entrega-lote`; backend 56/56, frontend lint/build/E2E 27/27; contrato de backup/restore aprovado; drill MySQL local com restore exato, migration `b7c9d1e2f3a4`, contagens conciliadas e descarte do banco temporário; publicação bloqueada até backup/restore do banco público |
 | 15/07/2026 | Gate remoto de rastreabilidade da Fase 2 | Commit `738afe85631095945b84b5fd8be7fcc352ce2078` publicado na branch `feat/fase-2-rastreabilidade-entrega-lote`; workflow `CI` nº `29463482370` aprovado nos jobs `frontend`, `backend` e `operations`; integração em `main` permanece bloqueada até backup/restore do banco público |
 | 16/07/2026 | Gate público de recuperação da Fase 2 | Backup público pré-migration aprovado com 52.921 bytes, SHA-256 `82C6C36C7619090B2FA74504D23020C4BF392FF9004DB72F9AE823ACB7E579B4`, manifesto e checksum válidos; restore MySQL isolado `exact-manifest-v2` preservou 19 tabelas, contagens exatas e revisão `9f2a7b6c8d1e`; banco temporário removido |
+| 16/07/2026 | Publicação da rastreabilidade da Fase 2 | Branch promovida para `main` no commit `987e0df6c4fae490bd046c89d8eadd2e32e45686`; CI `main` nº `29535564353` verde; Vercel produção `success`; Render corrigido com CA privada do Aiven após falha TLS fail-closed; migration `b7c9d1e2f3a4`, schema, `/health/db`, `/docs`, OpenAPI e `/login` aprovados |
 
-Próxima entrada esperada: integrar e validar o checkpoint de rastreabilidade em
-produção; depois continuar a Fase 2 em quantidade decimal e agregados derivados
-da família.
+Próxima entrada esperada: continuar a Fase 2 em quantidade decimal e agregados
+derivados da família.
