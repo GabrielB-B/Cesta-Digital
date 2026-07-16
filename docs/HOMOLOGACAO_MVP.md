@@ -173,11 +173,13 @@ LGPD, observabilidade e decisão formal de `GO profissional`.
 | Custódia local | Gabriel Bomfim Bispo; conjunto fora do repositório em diretório privado com EFS; retenção máxima de sete dias |
 | Publicação da branch | commit `738afe85631095945b84b5fd8be7fcc352ce2078` enviado para `origin/feat/fase-2-rastreabilidade-entrega-lote` em 15/07/2026 |
 | CI remoto da branch | workflow `CI` nº `29463482370`; jobs `frontend`, `backend` e `operations` concluídos com `success` para o mesmo SHA |
-| Gate público | **Bloqueado:** o drill local não substitui backup/restore do banco público antes da integração em `main` |
+| Backup público pré-migration | aprovado em 16/07/2026; 52.921 bytes; SHA-256 `82C6C36C7619090B2FA74504D23020C4BF392FF9004DB72F9AE823ACB7E579B4`; manifesto e checksum conciliados; conjunto privado com retenção máxima de sete dias |
+| Restore do backup público | aprovado em MySQL local isolado no modo `exact-manifest-v2`; 19 tabelas e contagens exatas conciliadas; revisão `9f2a7b6c8d1e` preservada; banco temporário removido |
+| Gate público | **Aprovado para integração:** backup e restore do banco público comprovados antes da migration `b7c9d1e2f3a4` |
 
-Resultado do checkpoint: código aprovado no gate remoto da branch. DOM-001 e
-DOM-006 permanecem `Em homologação` até backup/restore público, integração pelo
-mesmo SHA e smoke público.
+Resultado do checkpoint: código aprovado no gate remoto da branch e no gate de
+recuperação do banco público. DOM-001 e DOM-006 permanecem `Em homologação` até
+integração pelo SHA final e smoke público.
 
 ## 3. Pré-condições
 
@@ -188,8 +190,8 @@ mesmo SHA e smoke público.
 - [x] CI frontend e backend verdes no mesmo commit.
 - [ ] Banco migrado com Alembic e revision registrada.
 - [ ] Dados de teste preparados por perfil.
-- [ ] Backup verificado antes de migration.
-- [ ] Restore testado em ambiente limpo quando houver mudança de banco.
+- [x] Backup verificado antes de migration.
+- [x] Restore testado em ambiente limpo quando houver mudança de banco.
 - [ ] Observabilidade e canal de alerta ativos.
 - [ ] Navegadores/dispositivos definidos para a rodada.
 

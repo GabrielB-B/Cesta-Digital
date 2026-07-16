@@ -142,7 +142,7 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 | BLQ-001 | Lote vencido soma no estoque, disponibilidade, dashboard e financeiro; pode ser baixado na entrega | Política central publicada na `main` em `374660b`; CI `main` verde e smoke público `/login` + `/health/db` aprovado em 15/07/2026 | Segurança alimentar e indicadores falsos | Concluído |
 | BLQ-002 | Cadastro de lote/validade não é alcançável por nenhum link | Jornada produto → primeiro lote e CTAs de estoque publicados na `main` em `374660b` | Operador não encontra a validade | Concluído |
 | BLQ-003 | Commit com CI vermelho foi publicado automaticamente | CI por branch, E2E sem retry, contrato operacional e promoção por fast-forward publicados na `main` em `374660b`; CI `main` verde | Release sem gate de qualidade | Concluído |
-| BLQ-004 | Backup/restore não validam integralmente saída, checksum e restauração antes de migration automática | Contrato e drill MySQL local real aprovados em 15/07/2026, incluindo correção do restore por entrada padrão; backup/restore do banco público ainda é obrigatório antes da migration | Rollback do ambiente público ainda não comprovado | Em homologação |
+| BLQ-004 | Backup/restore não validam integralmente saída, checksum e restauração antes de migration automática | Contrato e drill local aprovados; em 16/07/2026, backup público de 52.921 bytes teve checksum/manifesto validados e restore isolado `exact-manifest-v2` com 19 tabelas, contagens exatas e revisão Alembic conciliadas | Rollback do ambiente público comprovado antes da migration | Concluído |
 | BLQ-005 | Ambiente público está online, mas documentação e `APP_ENV=staging` não esclarecem se aceita dados reais | Banner e política de homologação aprovados localmente; conteúdo da base ainda precisa ser classificado | Risco operacional e LGPD | Em homologação |
 
 ### P1 — alta prioridade
@@ -780,7 +780,8 @@ migrations.
 | 15/07/2026 | Publicação do checkpoint de distribuição | Branch `feat/fase-2-distribuicao-regras` promovida para `main` no commit `88aa60bc355c3491ccc88cc1a431b29ba0af4891`; backend 55/55, frontend lint/build/E2E 25/25, CI `main` público `Success` e smoke público `/login` + `/health/db` aprovado |
 | 15/07/2026 | Checkpoint local de rastreabilidade da Fase 2 | DOM-001/DOM-006 implementados no branch `feat/fase-2-rastreabilidade-entrega-lote`; backend 56/56, frontend lint/build/E2E 27/27; contrato de backup/restore aprovado; drill MySQL local com restore exato, migration `b7c9d1e2f3a4`, contagens conciliadas e descarte do banco temporário; publicação bloqueada até backup/restore do banco público |
 | 15/07/2026 | Gate remoto de rastreabilidade da Fase 2 | Commit `738afe85631095945b84b5fd8be7fcc352ce2078` publicado na branch `feat/fase-2-rastreabilidade-entrega-lote`; workflow `CI` nº `29463482370` aprovado nos jobs `frontend`, `backend` e `operations`; integração em `main` permanece bloqueada até backup/restore do banco público |
+| 16/07/2026 | Gate público de recuperação da Fase 2 | Backup público pré-migration aprovado com 52.921 bytes, SHA-256 `82C6C36C7619090B2FA74504D23020C4BF392FF9004DB72F9AE823ACB7E579B4`, manifesto e checksum válidos; restore MySQL isolado `exact-manifest-v2` preservou 19 tabelas, contagens exatas e revisão `9f2a7b6c8d1e`; banco temporário removido |
 
-Próxima entrada esperada: obter e validar backup/restore do banco público para
-publicar o checkpoint de rastreabilidade; depois continuar a Fase 2 em quantidade
-decimal e agregados derivados da família.
+Próxima entrada esperada: integrar e validar o checkpoint de rastreabilidade em
+produção; depois continuar a Fase 2 em quantidade decimal e agregados derivados
+da família.
