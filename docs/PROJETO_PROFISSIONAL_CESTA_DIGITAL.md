@@ -8,8 +8,8 @@
 |---|---|
 | Dono da visão e decisão final | Gabriel Bomfim Bispo |
 | Produto | Cesta Digital |
-| Última revisão | 15/07/2026 |
-| Commit auditado | `374660b8337667137ed2557e4e41d9e4bd4ce5b7` |
+| Última revisão | 18/08/2026 |
+| Commit auditado | `4e3d24e12a3ab24bba06895052a6f2768e6881c7` |
 | Branch auditada | `main` |
 | Ambiente público | Vercel + Render, atualmente configurado como `staging` no backend |
 | Decisão vigente | **NO-GO profissional e para ampliar uso com dados e entregas reais** |
@@ -131,7 +131,8 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 - Skip link, foco visível, labels clicáveis e `aria-live` em fluxos importantes.
 - Formatação de datas e moedas com helpers/`Intl`.
 - Componentes reutilizáveis para cabeçalhos, estados, métricas e formulários.
-- Paleta institucional dark com verde, magenta e dourado.
+- Símbolo e cores proprietárias da marca consolidados; a aplicação `dark premium`
+  registrada nesta auditoria foi substituída pela decisão Frontend V2 de 18/08/2026.
 
 ## 5. Bloqueios e achados priorizados
 
@@ -473,55 +474,47 @@ Princípios:
 - Nenhuma perda de preenchimento após erro de API.
 - Login libera a aplicação em até 1 segundo depois da autenticação, sem animação obrigatória.
 
-## 13. Direção visual recomendada
+## 13. Direção visual vigente — Frontend V2
 
-### Conceito
+### Decisão aprovada em 18/08/2026
 
-**Central de Abastecimento Solidário — editorial operacional humanista.**
+**Cesta Digital Clean Humanitarian Operations:** uma aplicação operacional
+premium, clara, humana e predominantemente mobile. A antiga linguagem
+`dark premium` deixa de orientar telas novas ou migradas.
 
-A memória visual deve vir de etiquetas de lote, fichas de atendimento, livro-caixa e organização de depósito — não de gradientes, glassmorphism ou faixas decorativas típicas de dashboards genéricos.
+Fontes de execução e comparação:
 
-### O que permanece
+- [`direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`](./direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md);
+- [`direção_visual/CODEX_FRONTEND_V2_EXECUTION.md`](./direção_visual/CODEX_FRONTEND_V2_EXECUTION.md);
+- [`direção_visual/Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./direção_visual/Cesta_Digital_Frontend_V2_Baseline_Desktop.png);
+- [`direção_visual/cesta-digital-frontend-v2-design-tokens.json`](./direção_visual/cesta-digital-frontend-v2-design-tokens.json).
 
-- Base verde-escura institucional.
-- Magenta/rosa como assinatura da marca.
-- Dourado como foco, atenção e detalhe institucional.
-- Símbolo e nome Cesta Digital, com asset otimizado.
-- Sensação premium sóbria e acolhedora.
+O mockup aprovado é baseline estética, de densidade e de interação. Ele não é
+contrato para criar dados, métricas, permissões, endpoints ou rotas inexistentes.
 
-### O que muda
+### Contrato visual
 
-- Superfícies predominantemente sólidas.
-- Uma textura contextual muito sutil, não aplicada a cada componente.
-- Cor reservada a ação, estado, prioridade e marca.
-- Remover faixas laterais coloridas repetitivas de cards/hero.
-- Remover hover/elevation de blocos que não são clicáveis.
-- Menos cards aninhados; mais seções, linhas, respiro e hierarquia tipográfica.
-- Botão primário sólido; gradiente não é padrão de ação.
-- Dourado não compete com magenta em todas as superfícies.
+- Preservar o símbolo oficial Cesta Digital e seu gradiente interno como asset.
+- Usar fundo `#F7F8FA`, superfícies brancas, texto grafite e bordas neutras.
+- Usar `#D92676` para ação principal; rosa/roxo como assinatura da marca.
+- Reservar verde, amarelo e vermelho para estados semânticos.
+- Não usar gradientes decorativos, glow, glassmorphism, texturas repetidas,
+  faixas coloridas ou sombras pesadas.
+- Evitar cards aninhados e duplicação de dados; preferir espaço, divisores e
+  hierarquia tipográfica.
+- Manter uma ação primária dominante por região visual.
+- Projetar primeiro em 360/390 px e validar 768 e 1440 px.
+- Substituir tabelas desktop por listas operacionais próprias no mobile quando
+  houver risco de rolagem horizontal da página.
+- Preservar e ampliar acessibilidade, rotas, RBAC, sessão, contratos de API,
+  tipos e regras de domínio durante os marcos visuais.
 
-### Tipografia recomendada para protótipo
+### Governança de aprovação visual
 
-- Títulos editoriais: `Source Serif 4` ou alternativa aprovada.
-- Interface e dados: `Atkinson Hyperlegible` ou alternativa humanista aprovada.
-- Números: variante tabular.
-
-A troca só deve ocorrer depois de protótipo comparativo e validação de legibilidade. Não instalar fontes antes da aprovação visual.
-
-### Tokens iniciais
-
-| Papel | Referência |
-|---|---|
-| Fundo | verde-preto profundo atual, sem gradiente dominante |
-| Superfície | verde carvão sólido |
-| Texto principal | marfim |
-| Texto secundário | areia fria |
-| Marca/ação | magenta sólido |
-| Foco/atenção | dourado |
-| Sucesso | verde claro |
-| Perigo/validade vencida | vermelho dedicado |
-| Raio | 6–10 px, conforme componente |
-| Sombra | rara e funcional |
+Cada marco que altera UI deve gerar evidências comparativas em 390x844 e
+1440x900, além de 768x1024 quando o layout mudar materialmente. A entrega deve
+ser comparada com a baseline aprovada, apresentada a Gabriel e interrompida até
+aprovação antes do avanço para o próximo marco visual.
 
 ## 14. Acessibilidade
 
@@ -705,8 +698,10 @@ Objetivo: rastreabilidade e consistência duráveis.
 
 Objetivo: consolidar valor percebido e eficiência operacional.
 
-- Prototipar direção visual em login, dashboard, estoque e família.
-- Aprovar com Gabriel antes de escalar.
+- Implementar a direção Frontend V2 aprovada em login, dashboard, estoque e
+  família por marcos independentes.
+- Apresentar comparação visual em 390/768/1440 e obter aprovação de Gabriel em
+  cada marco antes de escalar para o próximo.
 - Implementar tokens e componentes sem gradientes/faixas repetitivas.
 - Criar cards/listas mobile para módulos críticos.
 - Compactar cabeçalhos CRUD e ações fixas em formulários.
@@ -752,7 +747,7 @@ Uma entrega só está pronta quando:
 | Quantidades | Decimal com unidade de estoque + apresentação explícita |
 | CPF/NIS | Não coletar por padrão; adicionar somente com necessidade e finalidade aprovadas |
 | Cadastro social | Wizard com responsável na primeira etapa e agregados derivados |
-| Visual | Aprovar “Central de Abastecimento Solidário” antes da implementação ampla |
+| Visual | Frontend V2 clean, mobile-first e desktop responsivo aprovado em 18/08/2026; implementar incrementalmente conforme o plano V2 |
 | Splash pós-login | Remover bloqueio; feedback opcional de até 600 ms |
 | Ordem de trabalho | Fase 0 antes de redesign completo |
 
@@ -782,6 +777,9 @@ migrations.
 | 15/07/2026 | Gate remoto de rastreabilidade da Fase 2 | Commit `738afe85631095945b84b5fd8be7fcc352ce2078` publicado na branch `feat/fase-2-rastreabilidade-entrega-lote`; workflow `CI` nº `29463482370` aprovado nos jobs `frontend`, `backend` e `operations`; integração em `main` permanece bloqueada até backup/restore do banco público |
 | 16/07/2026 | Gate público de recuperação da Fase 2 | Backup público pré-migration aprovado com 52.921 bytes, SHA-256 `82C6C36C7619090B2FA74504D23020C4BF392FF9004DB72F9AE823ACB7E579B4`, manifesto e checksum válidos; restore MySQL isolado `exact-manifest-v2` preservou 19 tabelas, contagens exatas e revisão `9f2a7b6c8d1e`; banco temporário removido |
 | 16/07/2026 | Publicação da rastreabilidade da Fase 2 | Branch promovida para `main` no commit `987e0df6c4fae490bd046c89d8eadd2e32e45686`; CI `main` nº `29535564353` verde; Vercel produção `success`; Render corrigido com CA privada do Aiven após falha TLS fail-closed; migration `b7c9d1e2f3a4`, schema, `/health/db`, `/docs`, OpenAPI e `/login` aprovados |
+| 18/08/2026 | Aprovação da identidade Frontend V2 | Gabriel aprovou a direção visual clean, mobile-first e desktop responsiva, preservando o símbolo Cesta Digital. A antiga linguagem `dark premium` deixa de orientar novas telas. Ficam proibidos gradientes decorativos, glow, glassmorphism, faixas coloridas e excesso de cards. A implementação será incremental, preservando rotas, RBAC, contratos de API e comportamentos funcionais, conforme `docs/direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`. |
 
-Próxima entrada esperada: continuar a Fase 2 em quantidade decimal e agregados
-derivados da família.
+Próximo marco do frontend: `V2-01`, congelar contratos funcionais, RBAC, fluxos
+críticos e evidências de baseline antes do primeiro redesign. A continuidade da
+Fase 2 de domínio permanece em backlog separado e não deve ser misturada aos PRs
+visuais.
