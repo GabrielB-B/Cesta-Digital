@@ -117,3 +117,11 @@ endpoint.
 O `V2-03 — AppShell e navegação` só pode começar após aprovação visual explícita
 desta fundação. Até lá, este branch não deve migrar telas reais nem ser
 publicado.
+
+## 10. Revisão visual do responsável
+
+Após a primeira avaliação, a direção de cor, densidade e composição mobile foi
+considerada adequada. O símbolo no cabeçalho móvel passou de 24 para 32 px e o
+nome do produto recebeu maior peso para corrigir a presença insuficiente da
+marca. O comportamento responsivo permanece explícito: sidebar fixa a partir de
+900 px e navegação inferior abaixo desse breakpoint.
