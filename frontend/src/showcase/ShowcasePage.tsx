@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import {
   Bell,
   ChevronRight,
@@ -39,17 +39,94 @@ interface ServiceQueueItem {
   update: string;
 }
 
-const navigationItems: NavigationItem[] = [
+type PreviewView = "overview" | "families" | "stock" | "deliveries";
+type ModuleView = Exclude<PreviewView, "overview">;
+
+interface ModulePreviewConfig {
+  eyebrow: string;
+  title: string;
+  description: string;
+  scopeTitle: string;
+  scopeDescription: string;
+  icon: ReactNode;
+  groups: Array<{
+    title: string;
+    items: string[];
+  }>;
+}
+
+const navigationDefinitions: Array<Omit<NavigationItem, "current" | "onSelect"> & { id: PreviewView }> = [
   {
+    id: "overview",
     label: "Visão geral",
-    href: "#inicio",
+    href: "#visao-geral",
     icon: <LayoutDashboard />,
-    current: true,
   },
-  { label: "Famílias", href: "#atendimentos", icon: <UsersRound /> },
-  { label: "Estoque", href: "#componentes", icon: <Package /> },
-  { label: "Entregas", href: "#criterios", icon: <Truck /> },
+  { id: "families", label: "Famílias", href: "#familias", icon: <UsersRound /> },
+  { id: "stock", label: "Estoque", href: "#estoque", icon: <Package /> },
+  { id: "deliveries", label: "Entregas", href: "#entregas", icon: <Truck /> },
 ];
+
+const modulePreviewConfig: Record<ModuleView, ModulePreviewConfig> = {
+  families: {
+    eyebrow: "Prévia de navegação · futura etapa V2-07",
+    title: "Famílias",
+    description: "Cadastro, composição familiar e acompanhamento social no mesmo contexto.",
+    scopeTitle: "O que pertence a esta área",
+    scopeDescription:
+      "Dados das pessoas atendidas e sua trajetória social. Informações de estoque não aparecem aqui.",
+    icon: <UsersRound aria-hidden="true" />,
+    groups: [
+      {
+        title: "Cadastro e composição",
+        items: ["Responsável e membros", "Endereço e território", "Renda e vínculos"],
+      },
+      {
+        title: "Proteção social",
+        items: ["Avaliações", "Benefícios", "Situação de acompanhamento"],
+      },
+    ],
+  },
+  stock: {
+    eyebrow: "Prévia de navegação · futura etapa V2-09",
+    title: "Estoque",
+    description:
+      "Controle de alimentos, itens de higiene, limpeza e outros produtos recebidos por doação.",
+    scopeTitle: "Alimentos, higiene e itens essenciais",
+    scopeDescription:
+      "Esta área trata somente dos produtos armazenados. Cadastros de famílias e pessoas não pertencem ao estoque.",
+    icon: <Package aria-hidden="true" />,
+    groups: [
+      {
+        title: "Produtos e categorias",
+        items: ["Alimentos", "Higiene pessoal", "Limpeza e outros essenciais"],
+      },
+      {
+        title: "Controle físico",
+        items: ["Unidade e quantidade", "Lote e validade", "Entradas, saídas e descarte"],
+      },
+    ],
+  },
+  deliveries: {
+    eyebrow: "Prévia de navegação · futura etapa V2-10",
+    title: "Entregas",
+    description: "Planejamento, separação e confirmação das cestas destinadas às famílias.",
+    scopeTitle: "Distribuição com rastreabilidade",
+    scopeDescription:
+      "A entrega conecta uma família apta aos itens e lotes efetivamente distribuídos, sem misturar seus cadastros.",
+    icon: <Truck aria-hidden="true" />,
+    groups: [
+      {
+        title: "Planejamento",
+        items: ["Tipos de cesta", "Agendamentos", "Disponibilidade de estoque"],
+      },
+      {
+        title: "Execução",
+        items: ["Confirmação da entrega", "Itens e lotes entregues", "Histórico por família"],
+      },
+    ],
+  },
+};
 
 const queueItems: ServiceQueueItem[] = [
   {
@@ -115,13 +192,81 @@ const columns: DataColumn<ServiceQueueItem>[] = [
   },
 ];
 
-export function ShowcasePage() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+function ModulePreview({ view, onBack }: { view: ModuleView; onBack: () => void }) {
+  const config = modulePreviewConfig[view];
 
   return (
-    <div className={styles.shell} id="inicio">
-      <SideNavigation items={navigationItems} />
+    <>
+      <PageHeader
+        eyebrow={config.eyebrow}
+        title={config.title}
+        description={config.description}
+      />
+      <Surface className={styles.modulePreview} padding="none">
+        <div className={styles.previewNotice}>
+          <StatusBadge tone="info">Showcase isolado</StatusBadge>
+          <p>
+            A navegação está sendo validada agora; a tela operacional será migrada somente
+            na etapa indicada acima.
+          </p>
+        </div>
+        <div className={styles.moduleIntro}>
+          <span className={styles.moduleIcon}>{config.icon}</span>
+          <div>
+            <h2>{config.scopeTitle}</h2>
+            <p>{config.scopeDescription}</p>
+          </div>
+        </div>
+        <div className={styles.domainGrid}>
+          {config.groups.map((group) => (
+            <section className={styles.domainGroup} key={group.title}>
+              <h3>{group.title}</h3>
+              <ul>
+                {group.items.map((item) => (
+                  <li key={item}>
+                    <ClipboardCheck aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+        <div className={styles.previewFooter}>
+          <p>Nenhuma rota, dado ou regra de negócio foi alterada nesta prévia.</p>
+          <Button onClick={onBack} variant="secondary">
+            Voltar à visão geral
+          </Button>
+        </div>
+      </Surface>
+    </>
+  );
+}
+
+export function ShowcasePage() {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [activeView, setActiveView] = useState<PreviewView>("overview");
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+
+  const selectView = useCallback((view: PreviewView) => {
+    setActiveView(view);
+    const target = navigationDefinitions.find((item) => item.id === view);
+    if (target) window.history.replaceState(null, "", target.href);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
+  const navigationItems: NavigationItem[] = navigationDefinitions.map((item) => ({
+    ...item,
+    current: item.id === activeView,
+    onSelect: () => selectView(item.id),
+  }));
+
+  const activeLabel =
+    navigationDefinitions.find((item) => item.id === activeView)?.label ?? "Visão geral";
+
+  return (
+    <div className={styles.shell} id="visao-geral">
+      <SideNavigation items={navigationItems} onBrandSelect={() => selectView("overview")} />
       <header className={styles.topbar}>
         <div className={styles.mobileBrand}>
           <img src="/brand/cesta-digital-symbol.png" alt="" />
@@ -130,7 +275,7 @@ export function ShowcasePage() {
         <div className={styles.breadcrumbs} aria-label="Localização">
           <span>Operação</span>
           <ChevronRight size={14} aria-hidden="true" />
-          <strong>Visão geral</strong>
+          <strong>{activeLabel}</strong>
         </div>
         <div className={styles.topbarActions}>
           <button className={styles.iconButton} aria-label="Notificações">
@@ -143,7 +288,9 @@ export function ShowcasePage() {
 
       <main className={styles.main}>
         <div className={styles.content}>
-          <PageHeader
+          {activeView === "overview" ? (
+            <>
+              <PageHeader
             eyebrow="Frontend V2 · Fundação"
             title="Visão geral da operação"
             description="Uma base mais clara, humana e eficiente para quem coordena o atendimento todos os dias."
@@ -289,7 +436,11 @@ export function ShowcasePage() {
                 A marca oficial mantém seu degradê original; nenhum gradiente foi criado na interface.
               </p>
             </aside>
-          </div>
+              </div>
+            </>
+          ) : (
+            <ModulePreview view={activeView} onBack={() => selectView("overview")} />
+          )}
         </div>
       </main>
 

@@ -86,7 +86,7 @@ endpoint.
 - `npm run lint`: aprovado;
 - `npm run build`: aprovado;
 - `npm run build:showcase`: aprovado;
-- `npm run test:visual:foundation`: 8/8 aprovados;
+- `npm run test:visual:foundation`: 12/12 aprovados;
 - `npm run test:e2e`: 35/35 aprovados, sem retry;
 - `npm audit --audit-level=moderate`: zero vulnerabilidades conhecidas;
 - `git diff --check`: aprovado.
@@ -125,3 +125,26 @@ considerada adequada. O símbolo no cabeçalho móvel passou de 24 para 32 px e 
 nome do produto recebeu maior peso para corrigir a presença insuficiente da
 marca. O comportamento responsivo permanece explícito: sidebar fixa a partir de
 900 px e navegação inferior abaixo desse breakpoint.
+
+## 11. Correção de contexto e localização
+
+A revisão seguinte identificou que os itens “Estoque” e “Entregas” ainda eram
+âncoras demonstrativas para seções sem relação com seus nomes, enquanto “Visão
+geral” permanecia marcada como ativa. Embora não fossem rotas reais, esse
+comportamento gerava uma interpretação incorreta do domínio.
+
+A fundação passou a demonstrar navegação contextual de forma explícita:
+
+- item ativo e breadcrumb mudam juntos em desktop e mobile;
+- “Estoque” apresenta somente o escopo de alimentos, higiene, limpeza,
+  categorias, unidade, quantidade, lote, validade e movimentos;
+- cadastros de famílias e pessoas não aparecem no contexto de estoque;
+- “Famílias” e “Entregas” têm escopos próprios e informam em qual etapa real
+  serão migradas;
+- uma mensagem deixa claro que o conteúdo é showcase e não uma rota operacional
+  já concluída;
+- a suíte visual valida a troca de contexto nas quatro larguras.
+
+As capturas de aprovação foram copiadas para
+`frontend/showcase/evidence/v2-02/`, com galeria HTTP própria, evitando links
+locais frágeis ou caminhos com caracteres especiais.

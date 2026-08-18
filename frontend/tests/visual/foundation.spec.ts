@@ -76,3 +76,29 @@ test("drawer preserva foco, teclado e bloqueio de rolagem", async ({ page }, tes
   await expect(trigger).toBeFocused();
   await expect(page.locator("body")).not.toHaveCSS("overflow", "hidden");
 });
+
+test("navegação atualiza localização e mantém cada domínio no seu contexto", async ({
+  page,
+}, testInfo) => {
+  const stockLink = page.getByRole("link", { name: "Estoque", exact: true });
+  await stockLink.click();
+
+  await expect(page.getByRole("heading", { name: "Estoque", exact: true })).toBeVisible();
+  await expect(stockLink).toHaveAttribute("aria-current", "page");
+  await expect(page.getByText("Alimentos, higiene e itens essenciais")).toBeVisible();
+  await expect(page.getByText("Família de Ana Souza")).toBeHidden();
+  await expect(page).toHaveURL(/#estoque$/);
+
+  await page.screenshot({
+    path: testInfo.outputPath(`stock-${testInfo.project.name}-viewport.png`),
+    fullPage: false,
+  });
+
+  const deliveriesLink = page.getByRole("link", { name: "Entregas", exact: true });
+  await deliveriesLink.click();
+  await expect(page.getByRole("heading", { name: "Entregas", exact: true })).toBeVisible();
+  await expect(deliveriesLink).toHaveAttribute("aria-current", "page");
+
+  await page.getByRole("link", { name: "Visão geral", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Visão geral da operação" })).toBeVisible();
+});

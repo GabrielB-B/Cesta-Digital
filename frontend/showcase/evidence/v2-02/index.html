@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evidências V2-02 · Cesta Digital</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px;
+        color: #111827;
+        background: #f7f8fa;
+        font-family: Arial, sans-serif;
+      }
+      main { width: min(100%, 1500px); margin: 0 auto; }
+      h1 { margin: 0; font-size: 24px; }
+      p { margin: 8px 0 32px; color: #6e7583; }
+      section { margin-top: 40px; }
+      h2 { font-size: 18px; }
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(280px, 390px) minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+      }
+      figure { margin: 0; }
+      figcaption { margin-bottom: 8px; color: #4b5563; font-size: 13px; }
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+      }
+      @media (max-width: 760px) {
+        body { padding: 20px 16px; }
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Evidências visuais · V2-02</h1>
+      <p>Capturas versionadas para aprovação da fundação e da navegação contextual.</p>
+      <section>
+        <h2>Visão geral</h2>
+        <div class="grid">
+          <figure>
+            <figcaption>Mobile · 390 × 844</figcaption>
+            <a href="overview-mobile-390.png"><img src="overview-mobile-390.png" alt="Visão geral em 390 pixels" /></a>
+          </figure>
+          <figure>
+            <figcaption>Desktop · 1440 × 900</figcaption>
+            <a href="overview-desktop-1440.png"><img src="overview-desktop-1440.png" alt="Visão geral em 1440 pixels" /></a>
+          </figure>
+        </div>
+      </section>
+      <section>
+        <h2>Contexto de estoque corrigido</h2>
+        <div class="grid">
+          <figure>
+            <figcaption>Mobile · 390 × 844</figcaption>
+            <a href="stock-mobile-390.png"><img src="stock-mobile-390.png" alt="Estoque em 390 pixels" /></a>
+          </figure>
+          <figure>
+            <figcaption>Desktop · 1440 × 900</figcaption>
+            <a href="stock-desktop-1440.png"><img src="stock-desktop-1440.png" alt="Estoque em 1440 pixels" /></a>
+          </figure>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
