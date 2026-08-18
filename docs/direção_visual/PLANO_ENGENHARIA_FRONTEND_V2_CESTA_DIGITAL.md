@@ -1,7 +1,7 @@
 # Plano Mestre de Engenharia - Frontend V2 do Cesta Digital
 
 **Redesign mobile-first e desktop responsivo, preservando contratos funcionais e a marca existente**
-**Versão:** 1.0  |  **Data:** 18/08/2026  |  **Status:** direção visual aprovada para planejamento e implementação incremental
+**Versão:** 1.1  |  **Data:** 18/08/2026  |  **Status:** direção visual e referências por tela aprovadas para implementação incremental
 **Repositório:** [https://github.com/GabrielB-B/Cesta-Digital](https://github.com/GabrielB-B/Cesta-Digital)  |  **Baseline técnico auditado neste plano:** `4e3d24e12a3ab24bba06895052a6f2768e6881c7` (`main`)
 **Documento de execução:** destinado a orientar desenvolvimento humano e agentes de engenharia como Codex. Este plano é subordinado às regras de segurança, domínio e publicação do documento canônico do projeto, mas atualiza a decisão de identidade visual do frontend.
 > DECISÃO CENTRAL: não reescrever o sistema. Preservar backend, banco, regras de negócio, autenticação, RBAC, URLs, tipos e utilitários. Substituir de forma progressiva a camada de apresentação, o design system e a estrutura interna do frontend, com gates de regressão em cada etapa.
@@ -24,6 +24,16 @@ A imagem abaixo é a referência visual oficial para a identidade Frontend V2 no
 
 **Regra de interpretação da referência:** copiar a linguagem visual e os padrões de interação; nunca inventar capacidades, dados, rotas ou permissões apenas para reproduzir um mockup.
 
+### 2.1 Referências específicas por tela
+
+As dez imagens versionadas em [`referencias_por_tela/`](./referencias_por_tela/)
+são a referência prioritária da tela correspondente e refinam esta baseline
+geral. A autoridade, os hashes, a ordem de aprovação e a exceção controlada de
+gradiente estão em
+[`MANIFESTO_REFERENCIAS_VISUAIS_POR_TELA.md`](./MANIFESTO_REFERENCIAS_VISUAIS_POR_TELA.md).
+A compatibilidade com rotas e APIs reais está registrada em
+[`AUDITORIA_FUNCIONAL_REFERENCIAS_POR_TELA_2026-08-18.md`](./AUDITORIA_FUNCIONAL_REFERENCIAS_POR_TELA_2026-08-18.md).
+
 ## 3. Fontes técnicas analisadas e compatibilidade
 
 O estado corrente confirma que o redesign pode ser feito sem reescrever a aplicação. O projeto já possui React 19, React Router 7, TypeScript, Axios, Lucide, autenticação por cookie, gates de rota, tipos de domínio, helpers, testes Playwright e backend FastAPI estruturado. O principal passivo de frontend é a camada visual monolítica e a concentração de lógica de UI em páginas grandes.
@@ -44,7 +54,7 @@ O estado corrente confirma que o redesign pode ser feito sem reescrever a aplica
 - **Não haverá reescrita do backend** motivada por aparência. Mudança de API só ocorre quando um requisito funcional real exigir.
 - **Não haverá troca das URLs públicas** nesta fase. Deep links, Voltar, bookmarks e testes dependem delas.
 - **RBAC permanece idêntico** até decisão funcional específica. UI não concede permissão; backend continua sendo autoridade.
-- **A marca é preservada.** O símbolo oficial é asset; seu gradiente interno é permitido. Gradientes decorativos de interface são proibidos.
+- **A marca é preservada.** O símbolo oficial é asset. Gradiente de assinatura é restrito ao asset, ao CTA primário rosa-roxo das referências e ao ambiente institucional sutil do login; superfícies operacionais continuam sem gradiente.
 - **Mobile-first é obrigatório.** Nenhuma tela é considerada concluída se só estiver boa em desktop.
 - **Uma tela, uma prioridade dominante.** Ação primária precisa ser óbvia; ações secundárias não competem visualmente.
 - **Sem perda de dados em formulários.** Erro de API não pode apagar preenchimento; navegação com alterações não salvas deve continuar protegida.
@@ -64,7 +74,7 @@ Frase de referência: **gestão de doações que transforma vidas**. A interface
 | Token | Hex | Uso permitido | Uso proibido |
 | --- | --- | --- | --- |
 | Brand logo pink | #EB3385 | Marca, pequenos destaques, gráficos proprietários | Texto branco pequeno em fundo pink; grandes fundos decorativos |
-| Brand logo purple | #7C55F4 | Parte do logo, foco secundário raro, gráfico quando necessário | Gradientes de página, glow, sombras coloridas |
+| Brand logo purple | #7C55F4 | Parte do logo, final do CTA primário e ambiente institucional sutil do login | Gradientes em superfícies operacionais, glow, sombras coloridas |
 | Primary action | #D92676 | Botão primário e seleção ativa | Todas as bordas, todos os ícones, todos os cards |
 | Primary hover | #C2186A | Hover/focus forte do CTA | Superfície de conteúdo |
 | Success | #16A34A | Disponível, concluído, ativo quando semanticamente positivo | Decoração de card |
@@ -98,7 +108,7 @@ Para texto branco em botão, usar `#D92676` ou tom mais escuro; o rosa do logo `
 
 ### 5.5 Regras anti-poluição
 
-- Zero gradientes decorativos fora do asset de marca.
+- Zero gradientes em cards, tabelas, navegação, bordas ou sombras. Exceções: asset oficial, CTA primário rosa-roxo e ambiente institucional sutil do login.
 - Zero glassmorphism, blur de fundo, glow, partículas, faixas luminosas ou textura visível repetida.
 - No máximo uma ação primária por região visual; botões secundários usam contorno/ghost.
 - Não aninhar card dentro de card sem necessidade estrutural real.
@@ -401,7 +411,7 @@ A implementação deve ser precedida ou acompanhada por um arquivo Figma organiz
 | frontend/src/routes/routeMeta.ts | Evoluir com cuidado | Manter títulos/sectionPath; revisar copy e adicionar metadata visual sem mudar URL. |
 | frontend/src/layouts/AppLayout.tsx | Reescrever marcação/estilo; preservar comportamento crítico | Extrair AppShell, DesktopSidebar, MobileBottomNav, AccountMenu. Reutilizar skip link, focus trap, inert, Escape, restauração de foco e scroll lock. |
 | frontend/src/styles/global.css | Aposentar progressivamente | Arquivo de ~102 KB; não reescrever tudo num commit. Criar tokens/base V2, CSS Modules por componente e remover legado por tela. |
-| frontend/src/components/BrandLockup.tsx | Refatorar | Preservar símbolo. Padronizar lockups e impedir gradientes CSS fora do asset. |
+| frontend/src/components/BrandLockup.tsx | Refatorar | Preservar símbolo e padronizar lockups; exceções de gradiente pertencem aos componentes CTA/Login, não ao lockup. |
 | frontend/src/components/AppIcon.tsx | Preservar/refinar | Manter mapeamento Lucide; padronizar tamanho/stroke e não usar ícone como decoração redundante. |
 | frontend/src/components/DataTable.tsx | Substituir por padrão responsivo | Desktop table + MobileList; não depender de min-width e scroll horizontal como solução padrão. |
 | frontend/src/components/PageHeader.tsx | Refatorar | CompactPageHeader com título, descrição curta e até uma ação primária. |
@@ -564,6 +574,14 @@ Preferir role/name/label/aria e semântica visível. `data-testid` fica restrito
 
 Preferir um objetivo visual/funcional por PR. Um PR pode incluir uma tela completa e seus shared components, mas não deve simultaneamente mudar backend, reestruturar diretórios, trocar biblioteca de forms e redesenhar múltiplos módulos sem necessidade. Diffs pequenos tornam regressão e rollback possíveis.
 
+### 21.2 Subdivisão obrigatória por aba
+
+Os agrupamentos V2-08, V2-09 e V2-10 não autorizam migrar várias abas no mesmo
+branch. A sequência executável é: AppShell, Login, Início, Famílias, Avaliações,
+Estoque, Entradas, Entregas, Tipos de Cesta, Relatórios e Administração. Cada
+item usa o branch indicado no manifesto de referências, gera capturas 390/1440
+e aguarda aprovação antes do próximo.
+
 ## 22. Sequência exata para trabalhar com Codex
 
 1. **Primeiro PR é documentação.** Atualizar `docs/PROJETO_PROFISSIONAL_CESTA_DIGITAL.md` e `AGENTS.md` com a decisão Frontend V2. Versionar baseline, plano, tokens e símbolo em `docs/direção_visual/`, preservando a pasta definida por Gabriel como fonte de leitura obrigatória.
@@ -581,7 +599,7 @@ Preferir um objetivo visual/funcional por PR. Um PR pode incluir uma tela comple
 
 ## 23. Definition of Done específico do Frontend V2
 
-- Tela corresponde à identidade aprovada: clara, limpa, sem gradiente decorativo, sem glow e sem cards redundantes.
+- Tela corresponde à identidade aprovada: clara, limpa, sem gradiente em superfícies operacionais, sem glow e sem cards redundantes; exceções de marca seguem o manifesto.
 - Funciona a 360/390 px sem scroll horizontal da página e a 1440 px sem excesso de largura/linhas.
 - URL e RBAC continuam corretos.
 - Loading, empty, error, success e permission denied estão definidos.
@@ -598,7 +616,7 @@ Preferir um objetivo visual/funcional por PR. Um PR pode incluir uma tela comple
 
 | Critério | Aceite |
 | --- | --- |
-| Gradiente | Nenhum gradiente em background/border/shadow de UI. Exceção: pixels do asset oficial da marca. |
+| Gradiente | Nenhum gradiente em cards, tabelas, navegação, bordas ou sombras. Permitido somente no asset oficial, CTA primário rosa-roxo e ambiente institucional sutil do login. |
 | Cards | Somente para agrupamento real, KPI ou item clicável. Não usar card como divisor padrão de cada texto. |
 | Cor | Brand para ação/seleção; semântica para estado; neutros para estrutura. |
 | Sombras | Quase invisíveis em superfícies; overlay pode ter sombra mais forte. |
@@ -615,7 +633,7 @@ Preferir um objetivo visual/funcional por PR. Um PR pode incluir uma tela comple
 
 A referência visual é aprovada, mas cinco detalhes precisam ser interpretados para não quebrar o produto:
 1. **Menu “Avaliações”**: não existe rota global hoje; avaliações continuam sob família até existir capacidade real de listagem.
-2. **Menu “Entradas”**: existe rota de registrar lote, mas não uma tela completa de histórico/listagem equivalente ao mockup. Usar CTA “Registrar entrada” dentro de Estoque no primeiro corte.
+2. **Menu “Entradas”**: o backend lista e cria lotes, mas o frontend só possui a rota de cadastro. A aba de histórico exige uma nova rota frontend isolada, com RBAC, Voltar e testes congelados antes da implementação visual.
 3. **“Relatórios”**: não existe rota correspondente; não expor item vazio. O resumo financeiro existente pode continuar no módulo Social.
 4. **Painel lateral de família/entrada**: pode ser evolução de interação, mas manter as URLs atuais. Não transformar rota em estado efêmero que quebre deep link.
 5. **Métricas do dashboard**: a imagem demonstra composição. A implementação usa somente `DashboardOverviewResponse`; novos KPIs precisam de requisito e contrato backend específico.
@@ -640,7 +658,7 @@ Regras obrigatórias:
 - preservar o símbolo/asset oficial da marca e sua identidade rosa/roxo;
 - superfícies predominantemente claras (`#F7F8FA` / branco), texto grafite e bordas neutras;
 - rosa da marca para ação/seleção; verde/amarelo/vermelho somente para estados semânticos;
-- zero gradientes decorativos, glow, glassmorphism, texturas repetidas e faixas coloridas;
+- zero gradientes em superfícies operacionais, glow, glassmorphism, texturas repetidas e faixas coloridas; exceções somente conforme o manifesto por tela;
 - zero hover/elevation em superfície não interativa;
 - evitar cards aninhados e duplicação de métricas/informações;
 - projetar primeiro para 360/390 px e validar também 768 e 1440 px;
@@ -659,7 +677,7 @@ Adicionar ao `docs/PROJETO_PROFISSIONAL_CESTA_DIGITAL.md`, em “Registro de evo
 
 ```markdown
 
-| 18/08/2026 | Aprovação da identidade Frontend V2 | Gabriel aprovou a direção visual clean, mobile-first e desktop responsiva, preservando o símbolo Cesta Digital. A antiga linguagem dark premium deixa de orientar novas telas. Ficam proibidos gradientes decorativos, glow, glassmorphism, faixas coloridas e excesso de cards. A implementação será incremental, preservando rotas, RBAC, contratos de API e comportamentos funcionais, conforme `docs/direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`. |
+| 18/08/2026 | Aprovação da identidade Frontend V2 | Gabriel aprovou a direção visual clean, mobile-first e desktop responsiva, preservando o símbolo Cesta Digital. A antiga linguagem dark premium deixa de orientar novas telas. Gradientes ficam limitados ao asset, CTA primário e ambiente institucional do login; glow, glassmorphism, faixas coloridas e excesso de cards permanecem proibidos. A implementação será incremental, preservando rotas, RBAC, contratos de API e comportamentos funcionais, conforme `docs/direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`. |
 
 ```
 
@@ -682,7 +700,7 @@ REGRAS:
 - não edite backend numa tarefa visual sem necessidade explícita;
 - não invente endpoint, métrica ou campo para imitar o mockup;
 - mobile-first: 390px primeiro, depois 1440px;
-- zero gradiente decorativo/glow/glassmorphism;
+- zero gradiente em superfícies operacionais/glow/glassmorphism; aplicar somente as exceções do manifesto;
 - uma ação primária por região;
 - use tokens V2; não acrescente novos estilos ao global.css legado salvo correção indispensável;
 - preserve/aumente acessibilidade existente;
@@ -702,7 +720,7 @@ ENTREGA DA TAREFA:
 - Escopo é somente o necessário para o milestone?
 - Rotas e allowedRoles mudaram? Se sim, existe requisito funcional explícito?
 - Foi criado endpoint/fake data para acompanhar mockup? Se sim, bloquear.
-- Existe gradiente CSS, glow, box-shadow colorida ou superfície decorativa? Bloquear salvo asset de marca.
+- Existe gradiente CSS fora do asset, CTA primário ou ambiente institucional do login? Bloquear. Glow e box-shadow colorida continuam bloqueados.
 - Alguma tabela ainda força rolagem horizontal no mobile? Justificar ou criar MobileList.
 - Há mais de um botão primário competindo na mesma área?
 - Erros, loading, vazio e sucesso foram tratados?
@@ -770,6 +788,8 @@ Após adoção de Vitest, adicionar `npm run test` ao gate local. Após adoção
 - `frontend/src/styles/global.css` - legado visual monolítico.
 - `frontend/tests/e2e/app-smoke.spec.ts` - baseline E2E.
 - `docs/PROJETO_PROFISSIONAL_CESTA_DIGITAL.md` - documento canônico.
+- `docs/direção_visual/MANIFESTO_REFERENCIAS_VISUAIS_POR_TELA.md` - autoridade das dez telas aprovadas.
+- `docs/direção_visual/AUDITORIA_FUNCIONAL_REFERENCIAS_POR_TELA_2026-08-18.md` - limites funcionais por tela.
 - `AGENTS.md` - instruções a agentes; atualizado para V2 no marco documental V2-00.
 
 ## Apêndice C - Status deste documento

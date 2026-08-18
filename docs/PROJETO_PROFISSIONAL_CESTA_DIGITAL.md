@@ -486,6 +486,9 @@ Fontes de execução e comparação:
 
 - [`direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`](./direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md);
 - [`direção_visual/CODEX_FRONTEND_V2_EXECUTION.md`](./direção_visual/CODEX_FRONTEND_V2_EXECUTION.md);
+- [`direção_visual/MANIFESTO_REFERENCIAS_VISUAIS_POR_TELA.md`](./direção_visual/MANIFESTO_REFERENCIAS_VISUAIS_POR_TELA.md);
+- [`direção_visual/AUDITORIA_FUNCIONAL_REFERENCIAS_POR_TELA_2026-08-18.md`](./direção_visual/AUDITORIA_FUNCIONAL_REFERENCIAS_POR_TELA_2026-08-18.md);
+- [`direção_visual/referencias_por_tela/`](./direção_visual/referencias_por_tela/) para a imagem específica de cada tela;
 - [`direção_visual/Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./direção_visual/Cesta_Digital_Frontend_V2_Baseline_Desktop.png);
 - [`direção_visual/cesta-digital-frontend-v2-design-tokens.json`](./direção_visual/cesta-digital-frontend-v2-design-tokens.json).
 
@@ -498,8 +501,10 @@ contrato para criar dados, métricas, permissões, endpoints ou rotas inexistent
 - Usar fundo `#F7F8FA`, superfícies brancas, texto grafite e bordas neutras.
 - Usar `#D92676` para ação principal; rosa/roxo como assinatura da marca.
 - Reservar verde, amarelo e vermelho para estados semânticos.
-- Não usar gradientes decorativos, glow, glassmorphism, texturas repetidas,
-  faixas coloridas ou sombras pesadas.
+- Não usar gradientes em superfícies operacionais, glow, glassmorphism,
+  texturas repetidas, faixas coloridas ou sombras pesadas. Gradiente fica
+  restrito ao asset oficial, CTA primário rosa-roxo e ambiente institucional
+  sutil do login, conforme as referências por tela.
 - Evitar cards aninhados e duplicação de dados; preferir espaço, divisores e
   hierarquia tipográfica.
 - Manter uma ação primária dominante por região visual.
@@ -702,7 +707,8 @@ Objetivo: consolidar valor percebido e eficiência operacional.
   família por marcos independentes.
 - Apresentar comparação visual em 390/768/1440 e obter aprovação de Gabriel em
   cada marco antes de escalar para o próximo.
-- Implementar tokens e componentes sem gradientes/faixas repetitivas.
+- Implementar tokens e componentes sem gradientes em superfícies operacionais
+  ou faixas repetitivas; aplicar apenas as exceções de assinatura aprovadas.
 - Criar cards/listas mobile para módulos críticos.
 - Compactar cabeçalhos CRUD e ações fixas em formulários.
 - Otimizar marca, vídeo/assets e lazy loading por rota.
@@ -777,12 +783,13 @@ migrations.
 | 15/07/2026 | Gate remoto de rastreabilidade da Fase 2 | Commit `738afe85631095945b84b5fd8be7fcc352ce2078` publicado na branch `feat/fase-2-rastreabilidade-entrega-lote`; workflow `CI` nº `29463482370` aprovado nos jobs `frontend`, `backend` e `operations`; integração em `main` permanece bloqueada até backup/restore do banco público |
 | 16/07/2026 | Gate público de recuperação da Fase 2 | Backup público pré-migration aprovado com 52.921 bytes, SHA-256 `82C6C36C7619090B2FA74504D23020C4BF392FF9004DB72F9AE823ACB7E579B4`, manifesto e checksum válidos; restore MySQL isolado `exact-manifest-v2` preservou 19 tabelas, contagens exatas e revisão `9f2a7b6c8d1e`; banco temporário removido |
 | 16/07/2026 | Publicação da rastreabilidade da Fase 2 | Branch promovida para `main` no commit `987e0df6c4fae490bd046c89d8eadd2e32e45686`; CI `main` nº `29535564353` verde; Vercel produção `success`; Render corrigido com CA privada do Aiven após falha TLS fail-closed; migration `b7c9d1e2f3a4`, schema, `/health/db`, `/docs`, OpenAPI e `/login` aprovados |
-| 18/08/2026 | Aprovação da identidade Frontend V2 | Gabriel aprovou a direção visual clean, mobile-first e desktop responsiva, preservando o símbolo Cesta Digital. A antiga linguagem `dark premium` deixa de orientar novas telas. Ficam proibidos gradientes decorativos, glow, glassmorphism, faixas coloridas e excesso de cards. A implementação será incremental, preservando rotas, RBAC, contratos de API e comportamentos funcionais, conforme `docs/direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`. |
+| 18/08/2026 | Aprovação da identidade Frontend V2 | Gabriel aprovou a direção visual clean, mobile-first e desktop responsiva, preservando o símbolo Cesta Digital. A antiga linguagem `dark premium` deixa de orientar novas telas. Gradientes ficam restritos ao asset, CTA primário e ambiente institucional sutil do login; glow, glassmorphism, faixas coloridas e excesso de cards permanecem proibidos. A implementação será incremental, preservando rotas, RBAC, contratos de API e comportamentos funcionais, conforme `docs/direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`. |
 | 18/08/2026 | Checkpoint local V2-01 — safety net | Branch `test/frontend-v2-safety-net` congela 25 rotas, títulos, seções, RBAC e nove destinos de menu para `admin`, `lider_social` e `operador`; cobre deep link anônimo, fallback 404 e evidências 390/1440. O lockfile recebeu correções compatíveis de segurança, `npm audit` ficou sem vulnerabilidades e os gates fecharam com frontend lint/build e 35/35 E2E aprovados. Nenhuma mudança visual ou de backend foi realizada. |
 | 18/08/2026 | Checkpoint local V2-02 — fundação visual | Branch `feat/frontend-v2-foundation` materializa tokens, Inter local, símbolo oficial e dez primitives em um showcase isolado. Navegação contextual, tabela/lista e drawer foram validados em 360/390/768/1440; item ativo e breadcrumb permanecem sincronizados e cada domínio demonstra somente seu próprio escopo. Rotas, RBAC, API, telas reais e backend não foram alterados. O marco aguarda aprovação visual antes do AppShell. |
 | 18/08/2026 | Auditoria de fidelidade da baseline V2 | Comparação lado a lado transformada em matriz obrigatória por tela. A fundação corrigiu seleção ativa em hover, botão secundário rosa versus neutro, conta na topbar e numeração dos marcos. Dashboard, Famílias, Avaliação, Estoque e Distribuição continuam explicitamente pendentes de seus branches próprios; 16/16 testes visuais aprovados. |
+| 18/08/2026 | Referências detalhadas por tela aprovadas | Dez imagens 1586×992 de Início, Famílias, Avaliações, Estoque, Entradas, Entregas, Tipos de Cesta, Relatórios, Administração e Login foram versionadas com SHA-256, galeria clicável e auditoria de compatibilidade. Elas passam a ser a referência prioritária de cada tela, sem autorizar mapa, relatórios, configurações, métricas ou rotas inexistentes. A execução foi subdividida em um branch e um gate de aprovação por aba. |
 
-Próximo marco do frontend, condicionado à aprovação do V2-02: `V2-03`, migrar o
-AppShell e a navegação sem alterar paths, RBAC ou contratos. A continuidade da
+Próximo marco do frontend, com V2-02 aprovado: `V2-03`, migrar o AppShell e a
+navegação sem alterar paths, RBAC ou contratos. A continuidade da
 Fase 2 de domínio permanece em backlog separado e não deve ser misturada aos
 PRs visuais.

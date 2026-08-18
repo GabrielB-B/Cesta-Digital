@@ -4,7 +4,7 @@
 
 **Base aprovada:** `16f787b` (`V2-01`)
 
-**Status:** implementação concluída localmente e aguardando aprovação visual.
+**Status:** fundação aprovada; referências específicas por tela incorporadas antes do AppShell.
 
 **Objetivo:** transformar a direção aprovada em tokens e componentes reais,
 validáveis de forma isolada antes de alterar o AppShell ou qualquer jornada
@@ -54,7 +54,7 @@ ignorada pelo Git por ser evidência regenerável.
 | Estados | verde, amarelo, vermelho e azul apenas para semântica operacional |
 | Composição | sidebar de 232 px no desktop, topbar compacta e conteúdo com máximo de 1440 px |
 | Mobile | navegação inferior, ação primária em largura total e tabela convertida em lista |
-| Restrições | nenhum gradiente decorativo, glow, glassmorphism, textura ou hover em superfície estática |
+| Restrições | nenhum gradiente em superfície operacional, glow, glassmorphism, textura ou hover em superfície estática; exceções de marca seguem o manifesto por tela |
 
 O showcase usa conteúdo operacional plausível somente para exercitar a
 fundação. Números, nomes e ações são demonstrações e não criam domínio, rota ou
@@ -114,9 +114,9 @@ endpoint.
 
 ## 9. Próximo gate
 
-O `V2-03 — AppShell e navegação` só pode começar após aprovação visual explícita
-desta fundação. Até lá, este branch não deve migrar telas reais nem ser
-publicado.
+Gabriel aprovou a fundação e forneceu dez referências específicas por tela. O
+`V2-03 — AppShell e navegação` pode começar em branch próprio, mantendo este
+branch sem migração de telas reais e sem publicação.
 
 ## 10. Revisão visual do responsável
 
