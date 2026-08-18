@@ -14,9 +14,10 @@ de 18/08/2026. Ela deve ser consultada antes de toda alteração visual.
 7. [`AUDITORIA_FIDELIDADE_BASELINE_V2_2026-08-18.md`](./AUDITORIA_FIDELIDADE_BASELINE_V2_2026-08-18.md) — auditoria da fundação contra a baseline geral.
 8. [`REGISTRO_V2_01_SAFETY_NET.md`](./REGISTRO_V2_01_SAFETY_NET.md) — evidências do congelamento funcional.
 9. [`REGISTRO_V2_02_FOUNDATION.md`](./REGISTRO_V2_02_FOUNDATION.md) — implementação e aprovação da fundação visual.
-10. [`Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./Cesta_Digital_Frontend_V2_Baseline_Desktop.png) — baseline estética geral anterior às referências por tela.
-11. [`cesta-digital-frontend-v2-design-tokens.json`](./cesta-digital-frontend-v2-design-tokens.json) — tokens canônicos.
-12. [`Cesta_Digital_Simbolo_Oficial_Transparente.png`](./Cesta_Digital_Simbolo_Oficial_Transparente.png) — símbolo oficial preservado.
+10. [`REGISTRO_V2_03_APPSHELL.md`](./REGISTRO_V2_03_APPSHELL.md) — implementação, diferenças deliberadas e evidências do shell real.
+11. [`Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./Cesta_Digital_Frontend_V2_Baseline_Desktop.png) — baseline estética geral anterior às referências por tela.
+12. [`cesta-digital-frontend-v2-design-tokens.json`](./cesta-digital-frontend-v2-design-tokens.json) — tokens canônicos.
+13. [`Cesta_Digital_Simbolo_Oficial_Transparente.png`](./Cesta_Digital_Simbolo_Oficial_Transparente.png) — símbolo oficial preservado.
 
 O PDF é a versão diagramada do plano mestre. O CSS canônico de tokens foi
 materializado no frontend no marco de fundação V2-02.

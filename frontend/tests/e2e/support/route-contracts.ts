@@ -177,14 +177,14 @@ export const APP_ROUTE_CONTRACTS = [
 ] as const satisfies readonly RouteContract[];
 
 export const NAVIGATION_CONTRACTS = [
-  { path: "/", label: "Dashboard", allowedRoles: allRoles },
+  { path: "/", label: "Início", allowedRoles: allRoles },
   { path: "/families", label: "Famílias", allowedRoles: socialRoles },
   {
     path: "/financial-summary",
     label: "Financeiro",
     allowedRoles: socialRoles,
   },
-  { path: "/items", label: "Itens", allowedRoles: operationsRoles },
+  { path: "/items", label: "Estoque", allowedRoles: operationsRoles },
   {
     path: "/item-categories",
     label: "Categorias",
@@ -192,7 +192,7 @@ export const NAVIGATION_CONTRACTS = [
   },
   {
     path: "/basket-types",
-    label: "Cestas",
+    label: "Tipos de Cesta",
     allowedRoles: operationsRoles,
   },
   {

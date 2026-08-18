@@ -788,8 +788,9 @@ migrations.
 | 18/08/2026 | Checkpoint local V2-02 — fundação visual | Branch `feat/frontend-v2-foundation` materializa tokens, Inter local, símbolo oficial e dez primitives em um showcase isolado. Navegação contextual, tabela/lista e drawer foram validados em 360/390/768/1440; item ativo e breadcrumb permanecem sincronizados e cada domínio demonstra somente seu próprio escopo. Rotas, RBAC, API, telas reais e backend não foram alterados. O marco aguarda aprovação visual antes do AppShell. |
 | 18/08/2026 | Auditoria de fidelidade da baseline V2 | Comparação lado a lado transformada em matriz obrigatória por tela. A fundação corrigiu seleção ativa em hover, botão secundário rosa versus neutro, conta na topbar e numeração dos marcos. Dashboard, Famílias, Avaliação, Estoque e Distribuição continuam explicitamente pendentes de seus branches próprios; 16/16 testes visuais aprovados. |
 | 18/08/2026 | Referências detalhadas por tela aprovadas | Dez imagens 1586×992 de Início, Famílias, Avaliações, Estoque, Entradas, Entregas, Tipos de Cesta, Relatórios, Administração e Login foram versionadas com SHA-256, galeria clicável e auditoria de compatibilidade. Elas passam a ser a referência prioritária de cada tela, sem autorizar mapa, relatórios, configurações, métricas ou rotas inexistentes. A execução foi subdividida em um branch e um gate de aprovação por aba. |
+| 18/08/2026 | Checkpoint local V2-03 — AppShell | Branch `feat/frontend-v2-shell` migra sidebar, topbar, conta, navegação ativa e shell responsivo para a linguagem clara aprovada. Desktop usa sidebar fixa; 360/390/768 usam topbar, bottom navigation e drawer acessível. Rotas filhas preservam a seção ativa; RBAC, 25 paths, APIs e backend não mudaram. Gates: lint/build, 35/35 E2E e 11 testes visuais aprovados com um skip desktop intencional. A galeria V2-03 aguarda aprovação antes do Login. |
 
-Próximo marco do frontend, com V2-02 aprovado: `V2-03`, migrar o AppShell e a
-navegação sem alterar paths, RBAC ou contratos. A continuidade da
+Próximo marco do frontend, condicionado à aprovação visual do V2-03: `V2-04`,
+migrar o Login sem alterar autenticação, cookie ou redirects. A continuidade da
 Fase 2 de domínio permanece em backlog separado e não deve ser misturada aos
 PRs visuais.

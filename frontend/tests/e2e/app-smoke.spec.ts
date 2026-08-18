@@ -1203,7 +1203,7 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
   await expect(page.getByRole("heading", { name: "Familias", exact: true })).toBeVisible();
   await expect(page.getByText("FAM-0001")).toBeVisible();
 
-  await mainNav.getByRole("link", { name: /^Itens$/i }).click();
+  await mainNav.getByRole("link", { name: /^Estoque$/i }).click();
   await expect(page.getByRole("heading", { name: "Itens", exact: true })).toBeVisible();
   await expect(page.getByText("Arroz 1kg")).toBeVisible();
 

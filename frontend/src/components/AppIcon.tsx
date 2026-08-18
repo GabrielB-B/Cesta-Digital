@@ -29,10 +29,9 @@ export function AppIcon({ name, className }: AppIconProps) {
     >
       {name === "dashboard" ? (
         <>
-          <rect x="3" y="3" width="8" height="8" rx="2" />
-          <rect x="13" y="3" width="8" height="5" rx="2" />
-          <rect x="13" y="10" width="8" height="11" rx="2" />
-          <rect x="3" y="13" width="8" height="8" rx="2" />
+          <path d="m3 11 9-7 9 7" />
+          <path d="M5 10v10h14V10" />
+          <path d="M9 20v-6h6v6" />
         </>
       ) : null}
 
