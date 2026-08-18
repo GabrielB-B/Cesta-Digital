@@ -1,7 +1,7 @@
 # Plano Mestre de Engenharia - Frontend V2 do Cesta Digital
 
 **Redesign mobile-first e desktop responsivo, preservando contratos funcionais e a marca existente**
-**Versão:** 1.1  |  **Data:** 18/08/2026  |  **Status:** direção visual e referências por tela aprovadas para implementação incremental
+**Versão:** 1.2  |  **Data:** 18/08/2026  |  **Status:** direção visual, referências por tela e finalidade da aba Avaliações aprovadas para implementação incremental
 **Repositório:** [https://github.com/GabrielB-B/Cesta-Digital](https://github.com/GabrielB-B/Cesta-Digital)  |  **Baseline técnico auditado neste plano:** `4e3d24e12a3ab24bba06895052a6f2768e6881c7` (`main`)
 **Documento de execução:** destinado a orientar desenvolvimento humano e agentes de engenharia como Codex. Este plano é subordinado às regras de segurança, domínio e publicação do documento canônico do projeto, mas atualiza a decisão de identidade visual do frontend.
 > DECISÃO CENTRAL: não reescrever o sistema. Preservar backend, banco, regras de negócio, autenticação, RBAC, URLs, tipos e utilitários. Substituir de forma progressiva a camada de apresentação, o design system e a estrutura interna do frontend, com gates de regressão em cada etapa.
@@ -345,7 +345,18 @@ A implementação deve ser precedida ou acompanhada por um arquivo Figma organiz
 - ActionBar sticky no mobile com Próximo/Salvar; etapa atual sempre visível.
 - Erros por campo, foco no primeiro erro, resumo de erros em etapa quando necessário e proteção de alterações não salvas.
 
-### 12.6 Estoque e doações
+### 12.6 Avaliação e reavaliação de elegibilidade
+
+- “Avaliações” responde à pergunta operacional: quais famílias precisam ser avaliadas ou reavaliadas para confirmar se estão aptas ao atendimento.
+- A fila global prioriza sem avaliação, reavaliação vencida e próxima do vencimento; famílias em dia permanecem consultáveis sem competir com pendências.
+- A tela distingue três conceitos: dados atuais da família, sugestão calculada pelo sistema e decisão técnica final. Sugestão automática não é decisão automática.
+- O fluxo contextual é: conferir dados → revisar renda, faixa econômica, score e agravantes → decidir → justificar divergência quando houver → definir próxima reavaliação.
+- A última decisão registrada e uma nova prévia calculada nunca aparecem como se fossem o mesmo dado.
+- O score calculado pelo servidor deve ser somente leitura. Qualquer override futuro exige permissão, motivo, valor anterior/novo e auditoria; não será criado apenas no frontend.
+- A referência 03 orienta proporção, tabela/lista, filtros e painel lateral, mas suas etapas fictícias de triagem, documentos, visita e entrevista não serão copiadas.
+- A rota global e seu item de menu só entram após contrato backend paginado para a fila; até lá, o fluxo real continua dentro da família.
+
+### 12.7 Estoque e doações
 
 - `/items` torna-se a visão operacional do estoque, não uma simples tabela de catálogo.
 - Desktop: tabela limpa + filtros; detalhes de alerta por validade/quantidade sem cores excessivas.
@@ -354,7 +365,7 @@ A implementação deve ser precedida ou acompanhada por um arquivo Figma organiz
 - O mockup com drawer lateral pode ser atingido posteriormente usando route overlay; não é pré-requisito se introduzir complexidade/riscos na primeira migração.
 - Validade pertence ao lote. UI não desloca esse conceito para produto.
 
-### 12.7 Cestas e entregas
+### 12.8 Cestas e entregas
 
 - Tipos de cesta: listagem com nome, quantidade de itens, status e disponibilidade; detalhes sob demanda.
 - Entregas: primeira visão por “Hoje/Pendentes/Concluídas”, mantendo filtros/estado de rota.
@@ -362,7 +373,7 @@ A implementação deve ser precedida ou acompanhada por um arquivo Figma organiz
 - Status usam badge + texto; não pintar linhas inteiras.
 - Mobile prioriza ação operacional e reduz metadados não essenciais.
 
-### 12.8 Administração e auditoria
+### 12.9 Administração e auditoria
 
 - Usuários: tabela desktop, mobile list, filtros simples e papéis explícitos.
 - Auditoria é caso legítimo de maior densidade no desktop; no mobile mostrar resumo e detalhe expandível.
@@ -384,6 +395,7 @@ A implementação deve ser precedida ou acompanhada por um arquivo Figma organiz
 | /families/:familyId/benefits/new | FamilyBenefitCreatePage.tsx | admin, lider_social | Atendimento social | Formulário contextual dentro da família | Nenhum |
 | /families/:familyId/benefits/:benefitId/edit | FamilyBenefitEditPage.tsx | admin, lider_social | Atendimento social | Edição contextual; preservar histórico | Nenhum |
 | /families/:familyId/assessments/new | FamilyAssessmentCreatePage.tsx | admin, lider_social | Atendimento social | Stepper de avaliação social, sem criar rota global inexistente | Nenhum |
+| /assessments (rota alvo, ainda inexistente) | AssessmentQueuePage.tsx (planejado) | admin, lider_social | Avaliações | Fila paginada de avaliação/reavaliação; tabela desktop, lista mobile e painel contextual | Exige consulta paginada por situação e vencimento; não agregar no cliente |
 | /financial-summary | FinancialSummaryPage.tsx | admin, lider_social | Atendimento social | Resumo financeiro sóbrio; indicadores + tabela/lista | Nenhum |
 | /items | ItemsPage.tsx | admin, operador | Estoque | Visão do estoque; filtros compactos; cards mobile | Nenhum |
 | /items/new | ItemCreatePage.tsx | admin, operador | Estoque | Cadastro de produto como etapa do recebimento quando aplicável | Nenhum |
@@ -562,7 +574,9 @@ Preferir role/name/label/aria e semântica visível. `data-testid` fica restrito
 | V2-04 - Login | screen | Login limpo e imediato; retirar dependência do splash; otimizar marca. | Autenticação e redirects iguais; sem bloqueio pós-login; LCP e teclado mobile validados. |
 | V2-05 - Dashboard | screen | Redesenhar usando somente dados já entregues por /dashboard/overview; eliminar hero e métricas duplicadas. | Usuário identifica a principal pendência em poucos segundos; sem novos endpoints. |
 | V2-06 - Famílias - lista e detalhe | feature | Lista/table responsiva, filtros URL, detalhe por seções/abas, CTAs contextuais. | Fluxo listar -> abrir -> editar funciona em mobile/desktop sem scroll horizontal de página. |
-| V2-07 - Famílias - formulários | feature | Migrar criação/edição/membros/benefícios/avaliação para RHF+Zod e Stepper onde útil. | Nenhuma perda de preenchimento; foco no primeiro erro; payloads compatíveis. |
+| V2-07 - Famílias - formulários | feature | Migrar criação/edição/membros/benefícios para RHF+Zod e Stepper onde útil. | Nenhuma perda de preenchimento; foco no primeiro erro; payloads compatíveis. |
+| V2-07A - Contrato de Avaliações | domain/API | Criar fila paginada por situação de avaliação e fechar a integridade do score/snapshot calculado no servidor. | Testes backend comprovam paginação, vencimento, sugestão versus decisão e impossibilidade de divergência silenciosa do score. |
+| V2-07B - Avaliações | feature | Criar a aba global e migrar o formulário/histórico por família para o fluxo de elegibilidade aprovado. | Usuário encontra quem avaliar/reavaliar, entende cálculo versus decisão e conclui o fluxo em 390/1440 sem dado simulado. |
 | V2-08 - Estoque | feature | Itens, categorias, detalhe, entrada de lote e movimentação; mobile list; alertas sem excesso de cor. | Recebimento existente funciona; validade/lote permanecem intactos; ações críticas testadas. |
 | V2-09 - Cestas e distribuição | feature | Tipos de cesta, agendamento e entregas; organizar por hoje/pendentes/concluídas. | Regras de estoque prometível e entrega não mudam; testes backend/frontend verdes. |
 | V2-10 - Administração e financeiro | feature | Usuários, auditoria e resumo financeiro sob a mesma linguagem visual. | Admin continua restrito; auditoria permanece pesquisável e utilizável em 390px. |
@@ -632,7 +646,7 @@ e aguarda aprovação antes do próximo.
 ## 25. Compatibilidade com o mockup aprovado - divergências deliberadas
 
 A referência visual é aprovada, mas cinco detalhes precisam ser interpretados para não quebrar o produto:
-1. **Menu “Avaliações”**: não existe rota global hoje; avaliações continuam sob família até existir capacidade real de listagem.
+1. **Menu “Avaliações”**: a finalidade está confirmada como fila de avaliação e reavaliação de aptidão. A rota global ainda não existe e só será adicionada ao menu após o contrato paginado V2-07A; até lá, avaliações continuam sob família. A referência visual não autoriza etapas fictícias.
 2. **Menu “Entradas”**: o backend lista e cria lotes, mas o frontend só possui a rota de cadastro. A aba de histórico exige uma nova rota frontend isolada, com RBAC, Voltar e testes congelados antes da implementação visual.
 3. **“Relatórios”**: não existe rota correspondente; não expor item vazio. O resumo financeiro existente pode continuar no módulo Social.
 4. **Painel lateral de família/entrada**: pode ser evolução de interação, mas manter as URLs atuais. Não transformar rota em estado efêmero que quebre deep link.

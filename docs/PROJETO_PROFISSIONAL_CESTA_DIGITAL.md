@@ -156,11 +156,13 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 | DOM-004 | Família pode ser marcada apta sem avaliação vinculada | Regra publicada na `main` em `77e7cbe`: cadastro/edição/status manual bloqueiam `apta_recorrente`, `apta_emergencial` e `inapta` sem avaliação social compatível; formulário orienta o caminho correto pela avaliação | Concluído |
 | DOM-005 | Agendamento não reserva estoque nem limita ciclo/duplicidade | Publicado na `main` em `88aa60b`: agendamentos ativos passam a respeitar capacidade prometível do estoque utilizável e bloqueiam duplicidade ativa por família+cesta; formulário orienta a regra | Concluído |
 | DOM-006 | API de entrega não expõe os itens e lotes efetivamente entregues | Publicado na `main` em `987e0df`: lista e detalhe expõem item, quantidade, lote, localização e validade; histórico responsivo apresenta a trilha ao operador; contrato OpenAPI público validado | Concluído |
+| DOM-007 | O servidor recalcula a sugestão de elegibilidade, mas o snapshot de `vulnerability_score` ainda aceita o valor enviado pelo cliente | Tornar o score calculado autoridade do servidor ou governar override com permissão, antes/depois, motivo e auditoria | Aberto |
 | UX-001 | Navegação plana não representa Social, Estoque, Distribuição e Administração | Arquitetura de informação por tarefa | Aberto |
 | UX-002 | Tabelas usam `min-width: 720px`; quase todas dependem de rolagem horizontal no celular | Listas e ações mobile próprias | Aberto |
 | UX-003 | Login bloqueia navegação por vídeo não pulável de 7,4–8,5 s, inclusive com movimento reduzido | Entrada imediata aprovada localmente em desktop/mobile e movimento reduzido; publicação pendente | Em homologação |
 | UX-004 | Cadastro de família e membro é extenso, sem rascunho, progresso ou proteção de dados não salvos | Wizard retomável com revisão | Em andamento |
 | UX-005 | Erros são globais e podem substituir a tela; faltam erros por campo e foco no primeiro erro | Recuperação sem perda de preenchimento | Em andamento |
+| UX-006 | Avaliações existem apenas dentro da família e não oferecem uma fila segura de quem precisa ser avaliado ou reavaliado | Aba paginada por situação e vencimento, distinguindo sugestão calculada, decisão técnica vigente e nova prévia | Planejado para V2-07A/V2-07B |
 | UI-001 | Gradientes, faixas laterais e elevação se repetem em superfícies não interativas | Identidade institucional própria e sem ruído | Aberto |
 | QA-001 | E2E intercepta toda a API; backend usa SQLite e não executa Alembic/MySQL | Teste integrado da pilha real | Aberto |
 | SEC-001 | Cookie cross-site sem defesa CSRF explícita; TLS do banco pode não validar CA | Threat model e hardening | Aberto |
@@ -306,6 +308,7 @@ Os casos da homologação final usam as propostas como alvo recomendado. Enquant
 - **RB-SOC-008 — Proposta para aprovação:** coaprovador deve estar ativo, possuir papel autorizado e ser diferente do aprovador quando a política exigir.
 - **RB-SOC-009 — Proposta para aprovação:** score automático é calculado no servidor; override registra antes/depois e motivo.
 - **RB-SOC-010 — Vigente:** CPF, NIS ou outro documento só será coletado após necessidade aprovada e finalidade documentada.
+- **UX-SOC-001 — Direção funcional aprovada:** a área “Avaliações” é uma fila de avaliação e reavaliação da aptidão das famílias. O sistema apresenta cálculo e sugestão; a decisão final permanece técnica e humana, com justificativa obrigatória quando divergir.
 
 ### 8.3 Agendamento e entrega
 
@@ -789,6 +792,7 @@ migrations.
 | 18/08/2026 | Auditoria de fidelidade da baseline V2 | Comparação lado a lado transformada em matriz obrigatória por tela. A fundação corrigiu seleção ativa em hover, botão secundário rosa versus neutro, conta na topbar e numeração dos marcos. Dashboard, Famílias, Avaliação, Estoque e Distribuição continuam explicitamente pendentes de seus branches próprios; 16/16 testes visuais aprovados. |
 | 18/08/2026 | Referências detalhadas por tela aprovadas | Dez imagens 1586×992 de Início, Famílias, Avaliações, Estoque, Entradas, Entregas, Tipos de Cesta, Relatórios, Administração e Login foram versionadas com SHA-256, galeria clicável e auditoria de compatibilidade. Elas passam a ser a referência prioritária de cada tela, sem autorizar mapa, relatórios, configurações, métricas ou rotas inexistentes. A execução foi subdividida em um branch e um gate de aprovação por aba. |
 | 18/08/2026 | Checkpoint local V2-03 — AppShell | Branch `feat/frontend-v2-shell` migra sidebar, topbar, conta, navegação ativa e shell responsivo para a linguagem clara aprovada. Desktop usa sidebar fixa; 360/390/768 usam topbar, bottom navigation e drawer acessível. Rotas filhas preservam a seção ativa; RBAC, 25 paths, APIs e backend não mudaram. Gates: lint/build, 35/35 E2E e 11 testes visuais aprovados com um skip desktop intencional. A galeria V2-03 aguarda aprovação antes do Login. |
+| 18/08/2026 | Finalidade funcional de Avaliações confirmada | Gabriel definiu a aba como fila de avaliação e reavaliação para decidir aptidão da família. A arquitetura passou a separar sugestão calculada, decisão técnica e próxima revisão; etapas fictícias do mockup não serão simuladas. Foram registrados V2-07A para contrato paginado/integridade do score e V2-07B para a experiência visual responsiva. |
 
 Próximo marco do frontend, condicionado à aprovação visual do V2-03: `V2-04`,
 migrar o Login sem alterar autenticação, cookie ou redirects. A continuidade da

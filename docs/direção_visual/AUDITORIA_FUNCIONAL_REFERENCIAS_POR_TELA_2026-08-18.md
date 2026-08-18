@@ -58,10 +58,36 @@ Não existe listagem global, busca global, etapas “triagem → análise docume
 O modelo atual registra uma avaliação concluída com pontuação, sugestão do
 sistema e decisão final.
 
-**Fidelidade segura:** aplicar a linguagem de timeline/status ao histórico real
-da família e ao formulário existente. Uma aba global “Avaliações” com o
-comportamento da imagem depende de decisão funcional e novo contrato; não será
-simulada.
+**Direção funcional confirmada por Gabriel em 18/08/2026:** “Avaliações” é o
+processo usado para avaliar e reavaliar se a família está apta ao atendimento.
+Não é um cadastro genérico nem um fluxo cenográfico de documentos. O motor atual
+calcula no servidor uma sugestão econômica a partir da renda per capita e um
+peso social complementar a partir das condições da família. A decisão final
+continua sendo técnica e humana; quando diverge da sugestão, exige motivo.
+
+**Fidelidade segura:** a composição visual da referência será adaptada para uma
+fila real de elegibilidade, com quatro situações operacionais: sem avaliação,
+reavaliação vencida, reavaliação próxima e avaliação em dia. A lista deve exibir
+somente dados reais — código da família, decisão vigente, última avaliação,
+próxima reavaliação e prioridade — e abrir a família para `Avaliar` ou
+`Reavaliar`. No desktop, o painel contextual distingue de modo inequívoco a
+última decisão registrada da nova prévia calculada; no mobile, cada família vira
+um item operacional sem tabela horizontal.
+
+O fluxo de avaliação será organizado como: conferir dados atuais da família →
+revisar cálculo e agravantes → registrar decisão técnica → programar a próxima
+reavaliação. A sugestão do sistema nunca será rotulada como decisão definitiva.
+O histórico real mostrará sugestão, decisão final, eventual divergência,
+responsável e data, sem inventar etapas de visita ou entrevista.
+
+**Dependência funcional:** a API atual lista avaliações apenas por família e a
+lista de famílias não filtra nem ordena por vencimento de reavaliação. A aba
+global exige um contrato paginado de fila de elegibilidade antes da
+implementação visual; não será calculada a partir de uma página incompleta no
+cliente. Além disso, o `POST` atual recalcula a sugestão no servidor, mas grava
+`vulnerability_score` recebido do formulário. Antes do gate desta aba, a
+integridade desse snapshot deve ser fechada: score calculado não pode parecer
+livremente editável nem divergir silenciosamente do cálculo do servidor.
 
 ### 3.4 Estoque — referência 04
 
