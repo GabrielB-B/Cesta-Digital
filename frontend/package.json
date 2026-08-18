@@ -6,11 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:showcase": "tsc -b && vite build --config vite.showcase.config.ts",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:e2e": "playwright test"
+    "showcase": "vite --host 127.0.0.1 --port 4174 --strictPort",
+    "test:e2e": "playwright test",
+    "test:visual:foundation": "playwright test --config=playwright.showcase.config.ts"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/nunito-sans": "^5.2.7",
     "@fontsource-variable/sora": "^5.2.8",
     "axios": "^1.16.1",

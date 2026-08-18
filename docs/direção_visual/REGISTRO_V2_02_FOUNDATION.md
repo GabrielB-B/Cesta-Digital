@@ -1,0 +1,119 @@
+# Registro do marco V2-02 — Fundação visual
+
+**Branch:** `feat/frontend-v2-foundation`
+
+**Base aprovada:** `16f787b` (`V2-01`)
+
+**Status:** implementação concluída localmente e aguardando aprovação visual.
+
+**Objetivo:** transformar a direção aprovada em tokens e componentes reais,
+validáveis de forma isolada antes de alterar o AppShell ou qualquer jornada
+operacional.
+
+## 1. Escopo implementado
+
+- Tokens V2 em CSS custom properties, derivados dos arquivos canônicos desta
+  pasta.
+- Inter Variable carregada localmente pelo pacote `@fontsource-variable/inter`.
+- Símbolo oficial copiado sem redesenho para `frontend/public/brand/`.
+- Primitives com CSS Modules: `Button`, `TextField`, `StatusBadge`, `Surface`,
+  `PageHeader`, `DataTable`, `MobileList`, `Drawer`, `SideNavigation` e
+  `BottomNavigation`.
+- Showcase responsivo em `frontend/showcase/index.html`, separado do router,
+  autenticação, APIs e bundle atual do produto.
+- Build próprio do showcase e suíte Playwright própria em 360, 390, 768 e
+  1440 px.
+
+## 2. Como visualizar
+
+No diretório `frontend`:
+
+```powershell
+npm run showcase
+```
+
+Abrir `http://127.0.0.1:4174/showcase/`.
+
+Para regenerar as evidências:
+
+```powershell
+npm run test:visual:foundation
+```
+
+As capturas são gravadas em `frontend/test-results/foundation-v2/`. A pasta é
+ignorada pelo Git por ser evidência regenerável.
+
+## 3. Comparação com a baseline aprovada
+
+| Critério | Implementação V2-02 |
+|---|---|
+| Marca | símbolo oficial preservado como asset; sem redesenho em CSS |
+| Tipografia | Inter Variable, com hierarquia compacta de 12 a 28 px |
+| Superfícies | página `#F7F8FA`, painéis brancos, borda neutra e sombra mínima |
+| Cor de marca | rosa funcional em ação principal, foco, navegação ativa e pequenos marcadores |
+| Estados | verde, amarelo, vermelho e azul apenas para semântica operacional |
+| Composição | sidebar de 232 px no desktop, topbar compacta e conteúdo com máximo de 1440 px |
+| Mobile | navegação inferior, ação primária em largura total e tabela convertida em lista |
+| Restrições | nenhum gradiente decorativo, glow, glassmorphism, textura ou hover em superfície estática |
+
+O showcase usa conteúdo operacional plausível somente para exercitar a
+fundação. Números, nomes e ações são demonstrações e não criam domínio, rota ou
+endpoint.
+
+## 4. Acessibilidade e responsividade
+
+- foco visível global e contraste sem depender apenas de cor;
+- labels, hint, erro, `aria-invalid` e `aria-describedby` nos campos;
+- `caption` de tabela e lista móvel nomeada;
+- navegação atual com `aria-current="page"`;
+- drawer com `role="dialog"`, nome e descrição acessíveis, foco inicial,
+  contenção de Tab, Escape, restauração de foco e scroll lock;
+- respeito a `prefers-reduced-motion`;
+- ausência de overflow horizontal validada em 360, 390, 768 e 1440 px.
+
+## 5. Isolamento e contratos preservados
+
+- nenhuma rota de `App.tsx` foi incluída, removida ou alterada;
+- nenhuma regra RBAC, chamada Axios, cookie, payload ou endpoint mudou;
+- login, dashboard e telas operacionais continuam renderizando o frontend
+  legado até aprovação explícita do próximo marco;
+- o build principal continua tendo somente seu entrypoint original; o showcase
+  possui build separado em `dist-showcase`;
+- nenhum arquivo do backend foi alterado.
+
+## 6. Gates locais
+
+- `npm run lint`: aprovado;
+- `npm run build`: aprovado;
+- `npm run build:showcase`: aprovado;
+- `npm run test:visual:foundation`: 8/8 aprovados;
+- `npm run test:e2e`: 35/35 aprovados, sem retry;
+- `npm audit --audit-level=moderate`: zero vulnerabilidades conhecidas;
+- `git diff --check`: aprovado.
+
+## 7. Diferenças deliberadas
+
+- A baseline desktop é uma imagem estática. O showcase acrescenta estados
+  acessíveis e responsivos indispensáveis para produção sem mudar sua linguagem.
+- Em larguras abaixo de 900 px, a sidebar dá lugar à navegação inferior. A
+  largura de 768 px também usa esse modo por falta de espaço útil para operação.
+- A tabela vira lista abaixo de 680 px para manter legibilidade em 360/390 px.
+- O drawer ocupa quase toda a largura no celular, preservando uma pequena faixa
+  do contexto e uma área confortável de toque.
+
+## 8. Riscos conhecidos
+
+- O bundle legado continua com aproximadamente 513 kB de JavaScript e o logo
+  legado de aproximadamente 1,38 MB. Este marco não os remove porque o produto
+  atual ainda depende deles; a migração e o code splitting pertencem aos marcos
+  de shell/performance.
+- O showcase não deve ser confundido com rota pública ou dashboard conectado.
+  Ele é um ambiente de decisão e teste da fundação.
+- As APIs dos primitives foram mantidas pequenas. Estados adicionais só devem
+  ser incluídos quando uma jornada real provar a necessidade.
+
+## 9. Próximo gate
+
+O `V2-03 — AppShell e navegação` só pode começar após aprovação visual explícita
+desta fundação. Até lá, este branch não deve migrar telas reais nem ser
+publicado.
