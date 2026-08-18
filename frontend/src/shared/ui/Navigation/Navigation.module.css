@@ -26,14 +26,12 @@
   object-fit: contain;
 }
 
-.brand span,
-.profile > span:last-child {
+.brand span {
   display: grid;
   min-width: 0;
 }
 
-.brand strong,
-.profile strong {
+.brand strong {
   overflow: hidden;
   font-size: 0.8125rem;
   line-height: 1.125rem;
@@ -41,8 +39,7 @@
   white-space: nowrap;
 }
 
-.brand small,
-.profile small {
+.brand small {
   overflow: hidden;
   color: var(--cd-text-muted);
   font-size: 0.6875rem;
@@ -93,6 +90,11 @@
   font-weight: 650;
 }
 
+.current:hover {
+  color: var(--cd-brand-action-pressed);
+  background: var(--cd-brand-soft);
+}
+
 .current::before {
   position: absolute;
   left: 0;
@@ -107,28 +109,6 @@
 .icon svg {
   width: 1.125rem;
   height: 1.125rem;
-}
-
-.profile {
-  display: flex;
-  align-items: center;
-  gap: var(--cd-space-3);
-  padding: var(--cd-space-4) var(--cd-space-5);
-  margin-top: auto;
-  border-top: 1px solid var(--cd-border);
-}
-
-.avatar {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  color: var(--cd-brand-action-pressed);
-  background: var(--cd-brand-soft);
-  border-radius: 50%;
-  font-size: 0.6875rem;
-  font-weight: 700;
 }
 
 .bottomNav {

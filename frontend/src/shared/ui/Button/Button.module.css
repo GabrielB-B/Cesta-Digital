@@ -47,13 +47,26 @@
 }
 
 .secondary {
+  color: var(--cd-brand-action-pressed);
+  background: var(--cd-surface);
+  border-color: color-mix(in srgb, var(--cd-brand-action) 56%, var(--cd-surface));
+  box-shadow: var(--cd-shadow-xs);
+}
+
+.secondary:hover:not(:disabled) {
+  color: var(--cd-brand-action-hover);
+  background: var(--cd-brand-soft);
+  border-color: var(--cd-brand-action);
+}
+
+.neutral {
   color: var(--cd-text);
   background: var(--cd-surface);
   border-color: var(--cd-border-strong);
   box-shadow: var(--cd-shadow-xs);
 }
 
-.secondary:hover:not(:disabled) {
+.neutral:hover:not(:disabled) {
   background: var(--cd-surface-muted);
   border-color: var(--cd-text-muted);
 }

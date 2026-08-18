@@ -24,6 +24,7 @@ test("renderiza a fundação sem overflow e com navegação responsiva", async (
     await expect(
       page.getByRole("navigation", { name: "Navegação principal", exact: true }),
     ).toBeHidden();
+    await expect(page.getByRole("group", { name: "Conta de Marina Lima" })).toBeHidden();
   } else {
     await expect(
       page.getByRole("navigation", { name: "Navegação principal", exact: true }),
@@ -31,6 +32,7 @@ test("renderiza a fundação sem overflow e com navegação responsiva", async (
     await expect(
       page.getByRole("navigation", { name: "Navegação principal móvel", exact: true }),
     ).toBeHidden();
+    await expect(page.getByRole("group", { name: "Conta de Marina Lima" })).toBeVisible();
   }
 
   if (viewportWidth < 680) {
@@ -82,9 +84,12 @@ test("navegação atualiza localização e mantém cada domínio no seu contexto
 }, testInfo) => {
   const stockLink = page.getByRole("link", { name: "Estoque", exact: true });
   await stockLink.click();
+  await stockLink.hover();
 
   await expect(page.getByRole("heading", { name: "Estoque", exact: true })).toBeVisible();
   await expect(stockLink).toHaveAttribute("aria-current", "page");
+  await expect(stockLink).toHaveCSS("background-color", "rgb(253, 236, 244)");
+  await expect(stockLink).toHaveCSS("color", "rgb(177, 18, 95)");
   await expect(page.getByText("Alimentos, higiene e itens essenciais")).toBeVisible();
   await expect(page.getByText("Família de Ana Souza")).toBeHidden();
   await expect(page).toHaveURL(/#estoque$/);
@@ -101,4 +106,23 @@ test("navegação atualiza localização e mantém cada domínio no seu contexto
 
   await page.getByRole("link", { name: "Visão geral", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Visão geral da operação" })).toBeVisible();
+});
+
+test("ações primária, secundária e neutra preservam a hierarquia da baseline", async ({
+  page,
+}, testInfo) => {
+  const components = page.locator("#componentes");
+  await components.scrollIntoViewIfNeeded();
+
+  const primary = components.getByRole("button", { name: "Salvar cadastro" });
+  const secondary = components.getByRole("button", { name: "Nova família" });
+  const neutral = components.getByRole("button", { name: "Cancelar" });
+
+  await expect(primary).toHaveCSS("background-color", "rgb(217, 38, 118)");
+  await expect(secondary).toHaveCSS("color", "rgb(177, 18, 95)");
+  await expect(neutral).toHaveCSS("color", "rgb(17, 24, 39)");
+
+  await components.screenshot({
+    path: testInfo.outputPath(`components-${testInfo.project.name}.png`),
+  });
 });

@@ -69,7 +69,7 @@ const navigationDefinitions: Array<Omit<NavigationItem, "current" | "onSelect"> 
 
 const modulePreviewConfig: Record<ModuleView, ModulePreviewConfig> = {
   families: {
-    eyebrow: "Prévia de navegação · futura etapa V2-07",
+    eyebrow: "Prévia de navegação · futura etapa V2-06",
     title: "Famílias",
     description: "Cadastro, composição familiar e acompanhamento social no mesmo contexto.",
     scopeTitle: "O que pertence a esta área",
@@ -88,7 +88,7 @@ const modulePreviewConfig: Record<ModuleView, ModulePreviewConfig> = {
     ],
   },
   stock: {
-    eyebrow: "Prévia de navegação · futura etapa V2-09",
+    eyebrow: "Prévia de navegação · futura etapa V2-08",
     title: "Estoque",
     description:
       "Controle de alimentos, itens de higiene, limpeza e outros produtos recebidos por doação.",
@@ -108,7 +108,7 @@ const modulePreviewConfig: Record<ModuleView, ModulePreviewConfig> = {
     ],
   },
   deliveries: {
-    eyebrow: "Prévia de navegação · futura etapa V2-10",
+    eyebrow: "Prévia de navegação · futura etapa V2-09",
     title: "Entregas",
     description: "Planejamento, separação e confirmação das cestas destinadas às famílias.",
     scopeTitle: "Distribuição com rastreabilidade",
@@ -234,7 +234,7 @@ function ModulePreview({ view, onBack }: { view: ModuleView; onBack: () => void 
         </div>
         <div className={styles.previewFooter}>
           <p>Nenhuma rota, dado ou regra de negócio foi alterada nesta prévia.</p>
-          <Button onClick={onBack} variant="secondary">
+          <Button onClick={onBack} variant="neutral">
             Voltar à visão geral
           </Button>
         </div>
@@ -282,7 +282,13 @@ export function ShowcasePage() {
             <Bell size={18} aria-hidden="true" />
             <span className={styles.notificationDot} aria-hidden="true" />
           </button>
-          <span className={styles.contextDate}>Terça, 18 de agosto</span>
+          <div className={styles.accountPreview} aria-label="Conta de Marina Lima" role="group">
+            <span className={styles.accountAvatar} aria-hidden="true">ML</span>
+            <span>
+              <strong>Marina Lima</strong>
+              <small>Líder social</small>
+            </span>
+          </div>
         </div>
       </header>
 
@@ -393,7 +399,8 @@ export function ShowcasePage() {
                     <h3>Ações e estados</h3>
                     <div className={styles.buttonRow}>
                       <Button variant="primary">Salvar cadastro</Button>
-                      <Button variant="secondary">Cancelar</Button>
+                      <Button variant="secondary">Nova família</Button>
+                      <Button variant="neutral">Cancelar</Button>
                       <Button variant="ghost">Mais opções</Button>
                     </div>
                     <div className={styles.badgeRow} aria-label="Exemplos de status">

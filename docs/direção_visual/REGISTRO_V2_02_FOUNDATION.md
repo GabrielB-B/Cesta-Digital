@@ -86,7 +86,7 @@ endpoint.
 - `npm run lint`: aprovado;
 - `npm run build`: aprovado;
 - `npm run build:showcase`: aprovado;
-- `npm run test:visual:foundation`: 12/12 aprovados;
+- `npm run test:visual:foundation`: 16/16 aprovados;
 - `npm run test:e2e`: 35/35 aprovados, sem retry;
 - `npm audit --audit-level=moderate`: zero vulnerabilidades conhecidas;
 - `git diff --check`: aprovado.
@@ -148,3 +148,18 @@ A fundação passou a demonstrar navegação contextual de forma explícita:
 As capturas de aprovação foram copiadas para
 `frontend/showcase/evidence/v2-02/`, com galeria HTTP própria, evitando links
 locais frágeis ou caminhos com caracteres especiais.
+
+## 12. Fechamento da auditoria de fidelidade
+
+A comparação detalhada com a baseline gerou
+`AUDITORIA_FIDELIDADE_BASELINE_V2_2026-08-18.md` e corrigiu quatro diferenças da
+fundação antes do AppShell:
+
+- item ativo permanece rosa também em hover;
+- botão secundário de marca recebeu contorno rosa, separado do botão neutro;
+- identidade do usuário foi movida do rodapé da sidebar para a topbar desktop;
+- Famílias, Estoque e Entregas passaram a indicar corretamente V2-06, V2-08 e
+  V2-09.
+
+O showcase continua sem substituir telas reais. Dashboard, Famílias, Avaliação,
+Estoque e Distribuição obedecerão ao gate individual documentado na auditoria.

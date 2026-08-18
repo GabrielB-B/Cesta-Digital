@@ -63,15 +63,6 @@ export function SideNavigation({ items, onBrandSelect }: NavigationProps) {
           <NavigationLink item={item} key={item.label} />
         ))}
       </nav>
-      <div className={styles.profile}>
-        <span className={styles.avatar} aria-hidden="true">
-          ML
-        </span>
-        <span>
-          <strong>Marina Lima</strong>
-          <small>Líder social</small>
-        </span>
-      </div>
     </aside>
   );
 }
