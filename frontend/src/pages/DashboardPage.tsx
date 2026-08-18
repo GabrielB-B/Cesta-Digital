@@ -5,6 +5,7 @@ import { AppIcon } from "../components/AppIcon";
 import { DataTable } from "../components/DataTable";
 import { MetricGrid, type MetricGridItem } from "../components/MetricGrid";
 import { useAuth } from "../contexts/useAuth";
+import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateOnly } from "../utils/format";
 import type { DashboardOverviewResponse } from "../types/dashboard";
@@ -174,7 +175,7 @@ export function DashboardPage() {
         | "users";
     }> = [];
 
-    if (roles.some((role) => role === "admin" || role === "lider_social")) {
+    if (userHasAnyRole(roles, ROUTE_ACCESS.social)) {
       actions.push({
         to: "/families",
         label: "Famílias",
@@ -182,7 +183,7 @@ export function DashboardPage() {
       });
     }
 
-    if (roles.some((role) => role === "admin" || role === "operador")) {
+    if (userHasAnyRole(roles, ROUTE_ACCESS.operations)) {
       actions.push({ to: "/items", label: "Estoque", icon: "items" });
       actions.push({
         to: "/stock-batches/new",
@@ -197,7 +198,7 @@ export function DashboardPage() {
       });
     }
 
-    if (roles.includes("admin")) {
+    if (userHasAnyRole(roles, ROUTE_ACCESS.administration)) {
       actions.push({ to: "/users", label: "Usuários", icon: "users" });
     }
 
@@ -373,9 +374,7 @@ export function DashboardPage() {
               <p className="eyebrow">Estoque</p>
               <h3>Itens abaixo do mínimo</h3>
             </div>
-            {user?.roles.some(
-              (role) => role === "admin" || role === "operador"
-            ) ? (
+            {userHasAnyRole(user?.roles ?? [], ROUTE_ACCESS.operations) ? (
               <Link
                 className="button button--secondary button--link"
                 to="/stock-batches/new"

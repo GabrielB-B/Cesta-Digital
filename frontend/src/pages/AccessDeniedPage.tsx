@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 interface AccessDeniedPageProps {
-  allowedRoles?: string[];
+  allowedRoles?: readonly string[];
 }
 
 function formatRole(role: string): string {

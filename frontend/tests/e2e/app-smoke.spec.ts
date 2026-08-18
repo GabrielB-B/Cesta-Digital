@@ -6,6 +6,12 @@ import {
   getBatchExpirationStatus,
   isStockBatchReceived,
 } from "../../src/utils/stock";
+import { ROUTE_ACCESS } from "../../src/routes/routeAccess";
+import { getRouteMeta } from "../../src/routes/routeMeta";
+import {
+  APP_ROUTE_CONTRACTS,
+  NAVIGATION_CONTRACTS,
+} from "./support/route-contracts";
 
 const currentUser = {
   id: 1,
@@ -24,6 +30,21 @@ const operatorUser = {
   is_active: true,
   roles: ["operador"],
 };
+
+const routeAccessUsers = [
+  {
+    role: "admin",
+    user: { ...currentUser, roles: ["admin"] },
+  },
+  {
+    role: "lider_social",
+    user: { ...currentUser, id: 3, login_name: "lider", roles: ["lider_social"] },
+  },
+  {
+    role: "operador",
+    user: operatorUser,
+  },
+] as const;
 
 const family = {
   id: 1,
@@ -825,6 +846,132 @@ async function mockApi(page: Page, user = currentUser) {
 
 test.beforeEach(async ({ page }) => {
   await mockApi(page);
+});
+
+test("route access groups remain equal to the approved RBAC baseline", () => {
+  expect(ROUTE_ACCESS).toEqual({
+    authenticated: ["admin", "lider_social", "operador"],
+    social: ["admin", "lider_social"],
+    operations: ["admin", "operador"],
+    administration: ["admin"],
+  });
+});
+
+test("route metadata remains aligned with the 25-path contract", () => {
+  expect(APP_ROUTE_CONTRACTS).toHaveLength(25);
+
+  for (const route of APP_ROUTE_CONTRACTS) {
+    expect(getRouteMeta(route.path)).toMatchObject({
+      title: route.title,
+      sectionPath: route.sectionPath,
+    });
+  }
+});
+
+for (const scenario of routeAccessUsers) {
+  test(`direct route access remains frozen for ${scenario.role}`, async ({ page }) => {
+    test.slow();
+    await page.unroute("**/auth/me");
+    await page.route("**/auth/me", async (route) => fulfillJson(route, scenario.user));
+
+    await page.goto("/");
+    const navigation = page.getByLabel("Navegação principal");
+
+    for (const item of NAVIGATION_CONTRACTS) {
+      const shouldBeVisible = (item.allowedRoles as readonly string[]).includes(
+        scenario.role
+      );
+      const link = navigation.getByRole("link", { name: item.label });
+
+      if (shouldBeVisible) {
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAttribute("href", item.path);
+      } else {
+        await expect(link).toHaveCount(0);
+      }
+    }
+
+    for (const route of APP_ROUTE_CONTRACTS) {
+      if (route.allowedRoles === "public") {
+        continue;
+      }
+
+      await page.goto(route.path);
+
+      const isAllowed = (route.allowedRoles as readonly string[]).includes(
+        scenario.role
+      );
+
+      if (isAllowed) {
+        await expect(page).toHaveTitle(`${route.title} | Cesta Digital`);
+        await expect(
+          page.getByRole("heading", { name: "Acesso restrito" })
+        ).toHaveCount(0);
+      } else {
+        await expect(
+          page.getByRole("heading", { name: "Acesso restrito" })
+        ).toBeVisible();
+      }
+    }
+  });
+}
+
+test("anonymous deep links return to login without protected content", async ({ page }) => {
+  await page.unroute("**/auth/me");
+  await page.route("**/auth/me", (route) =>
+    route.fulfill({
+      status: 401,
+      contentType: "application/json",
+      body: JSON.stringify({ detail: "Nao autenticado" }),
+    })
+  );
+
+  await page.goto("/families/1");
+
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByLabel("Nome de login")).toBeVisible();
+  await expect(page.getByText("FAM-0001")).toHaveCount(0);
+});
+
+test("authenticated unknown paths keep the not-found fallback", async ({ page }) => {
+  await page.goto("/rota-inexistente-v2");
+
+  await expect(
+    page.getByRole("heading", { name: "Este caminho nao existe" })
+  ).toBeVisible();
+  await expect(page).toHaveTitle("Pagina nao encontrada | Cesta Digital");
+});
+
+test("capture approval evidence at mobile and desktop baselines", async ({
+  page,
+}, testInfo) => {
+  for (const viewport of [
+    { name: "mobile-390", width: 390, height: 844 },
+    { name: "desktop-1440", width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/login");
+    await page.getByRole("heading", { name: "Entrar no sistema" }).waitFor();
+
+    const loginPath = testInfo.outputPath(`login-${viewport.name}.png`);
+    await page.screenshot({ path: loginPath, fullPage: true });
+    await testInfo.attach(`login-${viewport.name}`, {
+      path: loginPath,
+      contentType: "image/png",
+    });
+
+    await page.goto("/");
+    await page
+      .getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+      .waitFor();
+
+    const dashboardPath = testInfo.outputPath(`dashboard-${viewport.name}.png`);
+    await page.screenshot({ path: dashboardPath, fullPage: true });
+    await testInfo.attach(`dashboard-${viewport.name}`, {
+      path: dashboardPath,
+      contentType: "image/png",
+    });
+  }
 });
 
 test("stock policy uses Sao Paulo civil date and evaluates optional legacy dates", () => {

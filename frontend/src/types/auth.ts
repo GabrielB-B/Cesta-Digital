@@ -1,3 +1,5 @@
+export type AppRole = "admin" | "lider_social" | "operador";
+
 export interface LoginResponse {
   access_token: string;
   token_type: string;
@@ -5,7 +7,7 @@ export interface LoginResponse {
   name: string;
   login_name: string;
   email: string;
-  roles: string[];
+  roles: AppRole[];
 }
 
 export interface CurrentUserResponse {
@@ -14,7 +16,7 @@ export interface CurrentUserResponse {
   login_name: string;
   email: string;
   is_active: boolean;
-  roles: string[];
+  roles: AppRole[];
 }
 
 export interface AuthContextData {

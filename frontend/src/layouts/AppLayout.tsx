@@ -10,6 +10,7 @@ import { AppIcon } from "../components/AppIcon";
 import { BrandLockup } from "../components/BrandLockup";
 import { EnvironmentNotice } from "../components/EnvironmentNotice";
 import { useAuth } from "../contexts/useAuth";
+import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
 import { getRouteMeta } from "../routes/routeMeta";
 
 type MenuIconName =
@@ -207,10 +208,6 @@ export function AppLayout() {
     };
   }, [isMobileMenuOpen, isMobileViewport]);
 
-  function hasAnyRole(...roles: string[]): boolean {
-    return roles.some((role) => userRoles.includes(role));
-  }
-
   const menuItems = [
     {
       path: "/",
@@ -224,56 +221,56 @@ export function AppLayout() {
       label: "Famílias",
       icon: "families",
       group: "Social",
-      visible: hasAnyRole("admin", "lider_social"),
+      visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
     },
     {
       path: "/financial-summary",
       label: "Financeiro",
       icon: "finance",
       group: "Social",
-      visible: hasAnyRole("admin", "lider_social"),
+      visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
     },
     {
       path: "/items",
       label: "Itens",
       icon: "items",
       group: "Estoque",
-      visible: hasAnyRole("admin", "operador"),
+      visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
     },
     {
       path: "/item-categories",
       label: "Categorias",
       icon: "categories",
       group: "Estoque",
-      visible: hasAnyRole("admin", "operador"),
+      visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
     },
     {
       path: "/basket-types",
       label: "Cestas",
       icon: "baskets",
       group: "Distribuicao",
-      visible: hasAnyRole("admin", "operador"),
+      visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
     },
     {
       path: "/deliveries",
       label: "Entregas",
       icon: "deliveries",
       group: "Distribuicao",
-      visible: hasAnyRole("admin", "operador"),
+      visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
     },
     {
       path: "/users",
       label: "Usuários",
       icon: "users",
       group: "Administracao",
-      visible: hasAnyRole("admin"),
+      visible: userHasAnyRole(userRoles, ROUTE_ACCESS.administration),
     },
     {
       path: "/audit-logs",
       label: "Auditoria",
       icon: "audit",
       group: "Administracao",
-      visible: hasAnyRole("admin"),
+      visible: userHasAnyRole(userRoles, ROUTE_ACCESS.administration),
     },
   ] satisfies Array<{
     path: string;

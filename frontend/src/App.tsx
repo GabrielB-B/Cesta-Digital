@@ -30,6 +30,7 @@ import { StockMovementCreatePage } from "./pages/StockMovementCreatePage";
 import { UsersPage } from "./pages/UsersPage";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { RoleRoute } from "./routes/RoleRoute";
+import { ROUTE_ACCESS } from "./routes/routeAccess";
 
 function App() {
   return (
@@ -51,7 +52,7 @@ function App() {
             <Route
               path="families"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamiliesPage />
                 </RoleRoute>
               }
@@ -59,7 +60,7 @@ function App() {
             <Route
               path="families/new"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamilyCreatePage />
                 </RoleRoute>
               }
@@ -67,7 +68,7 @@ function App() {
             <Route
               path="families/:familyId"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamilyDetailPage />
                 </RoleRoute>
               }
@@ -75,7 +76,7 @@ function App() {
             <Route
               path="families/:familyId/edit"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamilyEditPage />
                 </RoleRoute>
               }
@@ -83,7 +84,7 @@ function App() {
             <Route
               path="families/:familyId/people/new"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamilyPersonCreatePage />
                 </RoleRoute>
               }
@@ -91,7 +92,7 @@ function App() {
             <Route
               path="families/:familyId/people/:personId/edit"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamilyPersonEditPage />
                 </RoleRoute>
               }
@@ -99,7 +100,7 @@ function App() {
             <Route
               path="families/:familyId/benefits/new"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamilyBenefitCreatePage />
                 </RoleRoute>
               }
@@ -107,7 +108,7 @@ function App() {
             <Route
               path="families/:familyId/benefits/:benefitId/edit"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamilyBenefitEditPage />
                 </RoleRoute>
               }
@@ -115,7 +116,7 @@ function App() {
             <Route
               path="families/:familyId/assessments/new"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamilyAssessmentCreatePage />
                 </RoleRoute>
               }
@@ -123,7 +124,7 @@ function App() {
             <Route
               path="items"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <ItemsPage />
                 </RoleRoute>
               }
@@ -131,7 +132,7 @@ function App() {
             <Route
               path="item-categories"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <ItemCategoriesPage />
                 </RoleRoute>
               }
@@ -139,7 +140,7 @@ function App() {
             <Route
               path="items/new"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <ItemCreatePage />
                 </RoleRoute>
               }
@@ -147,7 +148,7 @@ function App() {
             <Route
               path="items/:itemId"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <ItemDetailPage />
                 </RoleRoute>
               }
@@ -155,7 +156,7 @@ function App() {
             <Route
               path="stock-batches/new"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <StockBatchCreatePage />
                 </RoleRoute>
               }
@@ -163,7 +164,7 @@ function App() {
             <Route
               path="stock-movements/new"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <StockMovementCreatePage />
                 </RoleRoute>
               }
@@ -171,7 +172,7 @@ function App() {
             <Route
               path="basket-types"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <BasketTypesPage />
                 </RoleRoute>
               }
@@ -179,7 +180,7 @@ function App() {
             <Route
               path="basket-types/new"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <BasketTypeCreatePage />
                 </RoleRoute>
               }
@@ -187,7 +188,7 @@ function App() {
             <Route
               path="basket-types/:basketTypeId"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <BasketTypeDetailPage />
                 </RoleRoute>
               }
@@ -195,7 +196,7 @@ function App() {
             <Route
               path="deliveries"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <DeliveriesPage />
                 </RoleRoute>
               }
@@ -203,7 +204,7 @@ function App() {
             <Route
               path="deliveries/schedules/new"
               element={
-                <RoleRoute allowedRoles={["admin", "operador"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <DeliveryScheduleCreatePage />
                 </RoleRoute>
               }
@@ -211,7 +212,7 @@ function App() {
             <Route
               path="financial-summary"
               element={
-                <RoleRoute allowedRoles={["admin", "lider_social"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FinancialSummaryPage />
                 </RoleRoute>
               }
@@ -219,7 +220,7 @@ function App() {
             <Route
               path="users"
               element={
-                <RoleRoute allowedRoles={["admin"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.administration}>
                   <UsersPage />
                 </RoleRoute>
               }
@@ -227,7 +228,7 @@ function App() {
             <Route
               path="audit-logs"
               element={
-                <RoleRoute allowedRoles={["admin"]}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.administration}>
                   <AuditLogsPage />
                 </RoleRoute>
               }

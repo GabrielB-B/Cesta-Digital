@@ -8,9 +8,10 @@ de 18/08/2026. Ela deve ser consultada antes de toda alteração visual.
 1. [`CODEX_FRONTEND_V2_EXECUTION.md`](./CODEX_FRONTEND_V2_EXECUTION.md) — contrato curto de execução.
 2. [`PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`](./PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md) — plano técnico completo.
 3. [`DIAGNOSTICO_FRONTEND_V2_2026-08-18.md`](./DIAGNOSTICO_FRONTEND_V2_2026-08-18.md) — revalidação do código, riscos e branches.
-4. [`Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./Cesta_Digital_Frontend_V2_Baseline_Desktop.png) — baseline estética e de interação.
-5. [`cesta-digital-frontend-v2-design-tokens.json`](./cesta-digital-frontend-v2-design-tokens.json) — tokens canônicos.
-6. [`Cesta_Digital_Simbolo_Oficial_Transparente.png`](./Cesta_Digital_Simbolo_Oficial_Transparente.png) — símbolo oficial preservado.
+4. [`REGISTRO_V2_01_SAFETY_NET.md`](./REGISTRO_V2_01_SAFETY_NET.md) — evidências do congelamento funcional.
+5. [`Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./Cesta_Digital_Frontend_V2_Baseline_Desktop.png) — baseline estética e de interação.
+6. [`cesta-digital-frontend-v2-design-tokens.json`](./cesta-digital-frontend-v2-design-tokens.json) — tokens canônicos.
+7. [`Cesta_Digital_Simbolo_Oficial_Transparente.png`](./Cesta_Digital_Simbolo_Oficial_Transparente.png) — símbolo oficial preservado.
 
 O PDF é a versão diagramada do plano mestre. O CSS de tokens é uma referência
 de implementação; sua adoção no frontend ocorre apenas no marco de fundação.
