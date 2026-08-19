@@ -1,69 +1,75 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  ClipboardCheck,
+  Edit3,
+  HeartHandshake,
+  Home,
+  MapPin,
+  Phone,
+  Plus,
+  ShieldCheck,
+  UserRound,
+  UsersRound,
+  WalletCards,
+} from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
-import { getApiErrorMessage } from "../utils/api-error";
-import { formatCurrency, formatDateOnly } from "../utils/format";
 import type {
   EligibilityPreviewResponse,
   FamilyAssessmentResponse,
   FamilyDetailResponse,
 } from "../types/family";
+import { getApiErrorMessage } from "../utils/api-error";
+import { formatCurrency, formatDateOnly } from "../utils/format";
+import styles from "./FamilyDetailPage.module.css";
 
 const familyStatusLabels: Record<string, string> = {
   apta_recorrente: "Apta recorrente",
   apta_emergencial: "Apta emergencial",
-  em_analise: "Em analise",
+  em_analise: "Em análise",
   inapta: "Inapta",
   inativa: "Inativa",
 };
 
 const priorityLabels: Record<string, string> = {
   alta: "Alta",
-  media: "Media",
+  media: "Média",
   baixa: "Baixa",
 };
 
 function formatFamilyStatus(status: string | null | undefined): string {
-  if (!status) {
-    return "Nao informado";
-  }
-
+  if (!status) return "Não informado";
   return familyStatusLabels[status] ?? status;
 }
 
 function formatPriority(priority: string | null | undefined): string {
-  if (!priority) {
-    return "Nao informado";
-  }
-
+  if (!priority) return "Não informada";
   return priorityLabels[priority] ?? priority;
 }
 
+function getStatusTone(status: string): string {
+  if (status === "apta_recorrente") return styles.statusSuccess;
+  if (status === "apta_emergencial") return styles.statusInfo;
+  if (status === "em_analise") return styles.statusWarning;
+  return styles.statusInactive;
+}
+
 function getLatestAssessment(
-  assessments: FamilyAssessmentResponse[]
+  assessments: FamilyAssessmentResponse[],
 ): FamilyAssessmentResponse | null {
   return [...assessments].sort((first, second) => {
-    const dateDiff =
+    const dateDifference =
       new Date(second.assessment_date).getTime() -
       new Date(first.assessment_date).getTime();
-
-    if (dateDiff !== 0) {
-      return dateDiff;
-    }
-
-    return second.id - first.id;
+    return dateDifference || second.id - first.id;
   })[0] ?? null;
 }
 
 export function FamilyDetailPage() {
   const { familyId } = useParams();
-
-  return (
-    <FamilyDetailContent
-      key={familyId ?? "family-missing"}
-      familyId={familyId}
-    />
-  );
+  return <FamilyDetailContent key={familyId ?? "family-missing"} familyId={familyId} />;
 }
 
 function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
@@ -80,50 +86,40 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
   });
 
   useEffect(() => {
-    if (!familyId) {
-      return;
-    }
-
+    if (!familyId) return;
     let isCurrent = true;
 
     void Promise.allSettled([
       api.get<FamilyDetailResponse>(`/families/${familyId}`),
       api.get<EligibilityPreviewResponse>(
-        `/families/${familyId}/eligibility-preview`
+        `/families/${familyId}/eligibility-preview`,
       ),
     ])
       .then(([familyResult, previewResult]) => {
-        if (!isCurrent) {
-          return;
-        }
-
-        if (familyResult.status === "rejected") {
-          throw familyResult.reason;
-        }
+        if (!isCurrent) return;
+        if (familyResult.status === "rejected") throw familyResult.reason;
 
         setFamily(familyResult.value.data);
         setEligibilityPreview(
-          previewResult.status === "fulfilled" ? previewResult.value.data : null
+          previewResult.status === "fulfilled" ? previewResult.value.data : null,
         );
         setStatusForm({
           status: familyResult.value.data.status,
           internal_notes: familyResult.value.data.internal_notes ?? "",
         });
       })
-      .catch((err) => {
+      .catch((requestError) => {
         if (isCurrent) {
           setError(
             getApiErrorMessage(
-              err,
-              "Nao foi possivel carregar o detalhe da familia."
-            )
+              requestError,
+              "Não foi possível carregar o detalhe da família.",
+            ),
           );
         }
       })
       .finally(() => {
-        if (isCurrent) {
-          setIsLoading(false);
-        }
+        if (isCurrent) setIsLoading(false);
       });
 
     return () => {
@@ -133,525 +129,310 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
 
   async function handleStatusSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    if (!familyId) {
-      return;
-    }
+    if (!familyId) return;
 
     try {
       setIsUpdatingStatus(true);
       setError("");
       setStatusMessage("");
-
       const response = await api.patch<FamilyDetailResponse>(
         `/families/${familyId}/status`,
         {
           status: statusForm.status,
           internal_notes: statusForm.internal_notes.trim() || null,
-        }
+        },
       );
-
       setFamily(response.data);
       setStatusForm({
         status: response.data.status,
         internal_notes: response.data.internal_notes ?? "",
       });
       setStatusMessage("Status atualizado com auditoria registrada.");
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel atualizar o status."));
+    } catch (requestError) {
+      setError(
+        getApiErrorMessage(requestError, "Não foi possível atualizar o status."),
+      );
     } finally {
       setIsUpdatingStatus(false);
     }
   }
 
   const formattedAddress = useMemo(() => {
-    if (!family) {
-      return "";
-    }
-
-    return `${family.street}, ${family.number} - ${family.neighborhood}, ${family.city}/${family.state}`;
+    if (!family) return "";
+    return `${family.street}, ${family.number} · ${family.neighborhood}, ${family.city}/${family.state}`;
   }, [family]);
 
-  const latestAssessment = useMemo(() => {
-    if (!family) {
-      return null;
-    }
+  const latestAssessment = useMemo(
+    () => (family ? getLatestAssessment(family.assessments) : null),
+    [family],
+  );
 
-    return getLatestAssessment(family.assessments);
-  }, [family]);
+  const responsiblePerson = family?.people.find((person) => person.is_family_responsible);
+  const primaryContact = family?.contacts[0];
 
   if (isLoading) {
     return (
-      <div className="page-stack">
-        <div className="panel-card">
-          <p className="empty-state">Carregando detalhe da familia...</p>
-        </div>
+      <div className={styles.loadingPage} aria-busy="true" aria-live="polite">
+        <span>Carregando cadastro da família…</span>
+        <div className={styles.loadingHeader} />
+        <div className={styles.loadingContent} />
       </div>
     );
   }
 
-  if (error || !family) {
+  if (!family) {
     return (
-      <div className="page-stack">
-        <div className="panel-card">
-          <p className="status-error" role="alert" aria-live="polite">
-            {error || "Nao foi possivel carregar a familia."}
-          </p>
-          <div className="panel-actions">
-            <Link to="/families" className="button button--secondary">
-              Voltar
-            </Link>
-          </div>
-        </div>
-      </div>
+      <section className={styles.errorState} role="alert">
+        <h1>Não foi possível abrir a família</h1>
+        <p>{error || "O cadastro solicitado não está disponível."}</p>
+        <Link to="/families"><ArrowLeft aria-hidden="true" />Voltar para famílias</Link>
+      </section>
     );
   }
 
   return (
-    <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Detalhe da familia</p>
-          <h2>{family.internal_code}</h2>
-          <p className="hero-card__description">{formattedAddress}</p>
-        </div>
-
-        <div className="hero-badges">
-          <span className="hero-badge">
-            Status: {formatFamilyStatus(family.status)}
-          </span>
-          <span className="hero-badge">
-            Renda per capita: {formatCurrency(family.income_per_capita)}
-          </span>
-          {eligibilityPreview ? (
-            <span className="hero-badge">
-              Sugestao: {formatFamilyStatus(eligibilityPreview.system_suggestion)}
-            </span>
-          ) : null}
-          <Link
-            to={`/families/${family.id}/edit#vinculo-igreja`}
-            className="button button--secondary button--link"
-          >
-            Igreja/UPG
-          </Link>
-          <Link
-            to={`/families/${family.id}/edit`}
-            className="button button--secondary button--link"
-          >
-            Editar cadastro
-          </Link>
-        </div>
-      </section>
-
-      <section className="panel-card">
-        <div className="panel-card__header panel-card__header--actions">
-          <div>
-            <p className="eyebrow">Decisao social</p>
-            <h3>Sugestao do sistema e decisao da lideranca</h3>
-          </div>
-
-          <Link
-            to={`/families/${family.id}/assessments/new`}
-            className="button button--secondary button--link"
-          >
-            Registrar avaliacao
-          </Link>
-        </div>
-
-        <div className="detail-grid">
-          <div className="detail-item">
-            <span>Status atual</span>
-            <strong>{formatFamilyStatus(family.status)}</strong>
-          </div>
-          <div className="detail-item">
-            <span>Sugestao automatica</span>
-            <strong>
-              {eligibilityPreview
-                ? formatFamilyStatus(eligibilityPreview.system_suggestion)
-                : "Nao calculada"}
-            </strong>
-          </div>
-          <div className="detail-item">
-            <span>Prioridade social</span>
-            <strong>
-              {eligibilityPreview
-                ? formatPriority(eligibilityPreview.priority_level)
-                : "Nao informada"}
-            </strong>
-          </div>
-          <div className="detail-item">
-            <span>Ultima decisao registrada</span>
-            <strong>
-              {latestAssessment
-                ? formatFamilyStatus(latestAssessment.final_decision)
-                : "Sem avaliacao"}
-            </strong>
-          </div>
-          <div className="detail-item">
-            <span>Renda total</span>
-            <strong>{formatCurrency(family.monthly_income_total)}</strong>
-          </div>
-          <div className="detail-item">
-            <span>Renda per capita</span>
-            <strong>{formatCurrency(family.income_per_capita)}</strong>
-          </div>
-          <div className="detail-item form__group--wide">
-            <span>Leitura do sistema</span>
-            <strong>
-              {eligibilityPreview?.economic_reason ??
-                "Registre uma avaliacao para consolidar a decisao social."}
-            </strong>
-          </div>
-        </div>
-      </section>
-
-      <section className="panel-card">
-        <form onSubmit={handleStatusSubmit} className="form-panel">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Gestao do cadastro</p>
-              <h3>Status e inativacao</h3>
-            </div>
-          </div>
-
-          <div className="form-grid">
-            <label className="form__group">
-              <span>Status</span>
-              <select
-                value={statusForm.status}
-                aria-describedby="family-status-management-help"
-                onChange={(event) =>
-                  setStatusForm((previous) => ({
-                    ...previous,
-                    status: event.target.value,
-                  }))
-                }
-              >
-                <option value="apta_recorrente">Apta recorrente</option>
-                <option value="apta_emergencial">Apta emergencial</option>
-                <option value="em_analise">Em analise</option>
-                <option value="inapta">Inapta</option>
-                <option value="inativa">Inativa</option>
-              </select>
-              <small id="family-status-management-help" className="form__hint">
-                Status apto ou inapto só pode ser salvo quando existir uma
-                avaliação social com a mesma decisão final.
-              </small>
-            </label>
-
-            <label className="form__group form__group--wide">
-              <span>Observacao interna</span>
-              <textarea
-                value={statusForm.internal_notes}
-                onChange={(event) =>
-                  setStatusForm((previous) => ({
-                    ...previous,
-                    internal_notes: event.target.value,
-                  }))
-                }
-                rows={3}
-              />
-            </label>
-          </div>
-
-          {statusMessage ? (
-            <p className="status-success" role="status" aria-live="polite">
-              {statusMessage}
-            </p>
-          ) : null}
-
-          <div className="panel-actions">
-            <button
-              type="submit"
-              className="button"
-              disabled={isUpdatingStatus}
-            >
-              {isUpdatingStatus ? "Atualizando..." : "Salvar status"}
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <section className="content-grid">
-        <article className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Resumo</p>
-              <h3>Dados gerais</h3>
-            </div>
-          </div>
-
-          <div className="detail-grid">
-            <div className="detail-item">
-              <span>Moradores</span>
-              <strong>{family.total_residents}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Adultos</span>
-              <strong>{family.total_adults}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Criancas</span>
-              <strong>{family.total_children}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Idosos</span>
-              <strong>{family.total_elderly}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Bebes</span>
-              <strong>{family.total_babies}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Renda mensal</span>
-              <strong>{formatCurrency(family.monthly_income_total)}</strong>
-            </div>
-          </div>
-        </article>
-
-        <article className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Contatos</p>
-              <h3>Contatos da familia</h3>
-            </div>
-          </div>
-
-          {family.contacts.length === 0 ? (
-            <p className="empty-state">Nenhum contato cadastrado.</p>
-          ) : (
-            <div className="stack-list">
-              {family.contacts.map((contact) => (
-                <div key={contact.id} className="stack-item">
-                  <div>
-                    <strong>{contact.contact_name ?? "Sem nome"}</strong>
-                    <p className="stack-item__muted">
-                      {contact.phone ?? "Sem telefone"} • {contact.contact_type}
-                    </p>
-                  </div>
-
-                  {contact.is_whatsapp ? (
-                    <span className="pill pill--primary">WhatsApp</span>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          )}
-        </article>
-      </section>
-
-      <section className="content-grid">
-        <article className="panel-card">
-          <div className="panel-card__header panel-card__header--actions">
-            <div>
-              <p className="eyebrow">Perfil social</p>
-              <h3>Igreja e vinculo comunitario</h3>
-            </div>
-
-            <Link
-              to={`/families/${family.id}/edit#vinculo-igreja`}
-              className="button button--secondary button--small button--link"
-            >
-              Editar vinculo
-            </Link>
-          </div>
-
-          <div className="detail-grid">
-            <div className="detail-item">
-              <span>Frequenta igreja/UPG</span>
-              <strong>{family.attends_church ? "Sim" : "Nao"}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Igreja ou UPG</span>
-              <strong>{family.church_name || "Nao informado"}</strong>
-            </div>
-            <div className="detail-item">
-              <span>O que faz ou vinculo</span>
-              <strong>{family.community_relationship || "Nao informado"}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Escolaridade do responsavel</span>
-              <strong>
-                {family.responsible_education_level || "Nao informado"}
-              </strong>
-            </div>
-            <div className="detail-item">
-              <span>Acesso a internet</span>
-              <strong>{family.has_internet_access ? "Sim" : "Nao"}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Celular disponivel</span>
-              <strong>{family.has_mobile_phone ? "Sim" : "Nao"}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Computador</span>
-              <strong>{family.has_computer ? "Sim" : "Nao"}</strong>
-            </div>
-          </div>
-        </article>
-
-        <article className="panel-card">
-          <div className="panel-card__header panel-card__header--actions">
-            <div>
-              <p className="eyebrow">Pessoas</p>
-              <h3>Composicao familiar</h3>
-            </div>
-
-            <Link
-              to={`/families/${family.id}/people/new`}
-              className="button button--link"
-            >
-              Novo membro
-            </Link>
-          </div>
-
-          {family.people.length === 0 ? (
-            <p className="empty-state">Nenhuma pessoa cadastrada.</p>
-          ) : (
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Parentesco</th>
-                    <th>Ocupacao</th>
-                    <th>Renda</th>
-                    <th>Igreja/UPG</th>
-                    <th>Responsavel</th>
-                    <th>Acoes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {family.people.map((person) => (
-                    <tr key={person.id}>
-                      <td>{person.full_name}</td>
-                      <td>{person.kinship}</td>
-                      <td>{person.occupation ?? "Nao informado"}</td>
-                      <td>{formatCurrency(person.individual_income)}</td>
-                      <td>
-                        {person.attends_church
-                          ? person.church_role || person.church_name || "Sim"
-                          : "Nao informado"}
-                      </td>
-                      <td>{person.is_family_responsible ? "Sim" : "Nao"}</td>
-                      <td>
-                        <div className="table-actions">
-                          <Link
-                            to={`/families/${family.id}/people/${person.id}/edit`}
-                            className="button button--secondary button--small"
-                          >
-                            Editar
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </article>
-      </section>
-
-      <section className="content-grid">
-        <article className="panel-card">
-          <div className="panel-card__header panel-card__header--actions">
-            <div>
-              <p className="eyebrow">Beneficios</p>
-              <h3>Beneficios vinculados</h3>
-            </div>
-
-            <Link
-              to={`/families/${family.id}/benefits/new`}
-              className="button button--secondary button--link"
-            >
-              Novo beneficio
-            </Link>
-          </div>
-
-          {family.benefits.length === 0 ? (
-            <p className="empty-state">Nenhum beneficio cadastrado.</p>
-          ) : (
-            <div className="stack-list">
-              {family.benefits.map((benefit) => (
-                <div key={benefit.id} className="stack-item">
-                  <div>
-                    <strong>{benefit.benefit_type}</strong>
-                    <p className="stack-item__muted">
-                      {benefit.is_active ? "Ativo" : "Inativo"} •{" "}
-                      {benefit.counts_as_income
-                        ? "Conta como renda"
-                        : "Nao conta como renda"}
-                    </p>
-                  </div>
-
-                  <div className="stack-item__actions">
-                    <span className="pill">
-                      {formatCurrency(benefit.monthly_amount)}
-                    </span>
-                    <Link
-                      to={`/families/${family.id}/benefits/${benefit.id}/edit`}
-                      className="button button--secondary button--small"
-                    >
-                      Editar
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </article>
-
-        <article className="panel-card">
-          <div className="panel-card__header panel-card__header--actions">
-            <div>
-              <p className="eyebrow">Avaliacoes</p>
-              <h3>Historico social</h3>
-            </div>
-
-            <Link
-              to={`/families/${family.id}/assessments/new`}
-              className="button button--secondary button--link"
-            >
-              Nova avaliacao
-            </Link>
-          </div>
-
-          {family.assessments.length === 0 ? (
-            <p className="empty-state">Nenhuma avaliacao registrada.</p>
-          ) : (
-            <div className="table-wrapper">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Sugestao</th>
-                    <th>Decisao final</th>
-                    <th>Pontuacao</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {family.assessments.map((assessment) => (
-                    <tr key={assessment.id}>
-                      <td>
-                        {formatDateOnly(assessment.assessment_date)}
-                      </td>
-                      <td>{formatFamilyStatus(assessment.system_suggestion)}</td>
-                      <td>{formatFamilyStatus(assessment.final_decision)}</td>
-                      <td>{assessment.vulnerability_score}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </article>
-      </section>
-
-      <div className="panel-actions">
-        <Link to="/families" className="button button--secondary">
-          Voltar para familias
+    <div className={styles.page}>
+      <header className={styles.detailHeader}>
+        <Link className={styles.backLink} to="/families">
+          <ArrowLeft aria-hidden="true" />
+          Famílias
         </Link>
+        <div className={styles.headerRow}>
+          <div className={styles.headerIdentity}>
+            <span className={styles.familyIcon}><UsersRound aria-hidden="true" /></span>
+            <div>
+              <span className={`${styles.statusBadge} ${getStatusTone(family.status)}`}>
+                {formatFamilyStatus(family.status)}
+              </span>
+              <h1>{family.internal_code}</h1>
+              <p><MapPin aria-hidden="true" />{formattedAddress}</p>
+            </div>
+          </div>
+          <div className={styles.headerActions}>
+            <Link className={styles.secondaryAction} to={`/families/${family.id}/edit#vinculo-igreja`}>
+              <HeartHandshake aria-hidden="true" />Igreja/UPG
+            </Link>
+            <Link className={styles.secondaryAction} to={`/families/${family.id}/edit`}>
+              <Edit3 aria-hidden="true" />Editar cadastro
+            </Link>
+            <Link className={styles.primaryAction} to={`/families/${family.id}/assessments/new`}>
+              <Plus aria-hidden="true" />Registrar avaliação
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <nav className={styles.sectionNav} aria-label="Seções da família">
+        <a href="#decisao">Aptidão</a>
+        <a href="#resumo">Resumo</a>
+        <a href="#composicao">Composição</a>
+        <a href="#beneficios">Benefícios</a>
+        <a href="#avaliacoes">Avaliações</a>
+      </nav>
+
+      <div className={styles.detailLayout}>
+        <aside className={styles.summaryCard} aria-label="Resumo da família">
+          <h2>Resumo do cadastro</h2>
+          <dl>
+            <div>
+              <dt><UserRound aria-hidden="true" />Pessoa responsável</dt>
+              <dd>{responsiblePerson?.full_name ?? "Não informada"}</dd>
+            </div>
+            <div>
+              <dt><Phone aria-hidden="true" />Contato principal</dt>
+              <dd>{primaryContact?.contact_name ?? "Não informado"}</dd>
+              {primaryContact?.phone ? <dd className={styles.mutedValue}>{primaryContact.phone}</dd> : null}
+            </div>
+            <div>
+              <dt><UsersRound aria-hidden="true" />Moradores</dt>
+              <dd>{family.total_residents} pessoas</dd>
+            </div>
+            <div>
+              <dt><WalletCards aria-hidden="true" />Renda per capita</dt>
+              <dd>{formatCurrency(family.income_per_capita)}</dd>
+            </div>
+            <div>
+              <dt><CalendarDays aria-hidden="true" />Próxima reavaliação</dt>
+              <dd>{family.next_revaluation_date ? formatDateOnly(family.next_revaluation_date) : "Não agendada"}</dd>
+            </div>
+            <div>
+              <dt><Home aria-hidden="true" />Moradia</dt>
+              <dd>{family.housing_type || "Não informada"}</dd>
+            </div>
+          </dl>
+        </aside>
+
+        <main className={styles.content}>
+          <section id="decisao" className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <div>
+                <span className={styles.eyebrow}>Aptidão ao atendimento</span>
+                <h2>Sugestão do sistema e decisão da liderança</h2>
+                <p>O cálculo orienta a análise; a decisão técnica permanece registrada separadamente.</p>
+              </div>
+              <ShieldCheck aria-hidden="true" />
+            </div>
+
+            <div className={styles.decisionGrid}>
+              <div>
+                <span>Sugestão calculada</span>
+                <strong>{eligibilityPreview ? formatFamilyStatus(eligibilityPreview.system_suggestion) : "Não calculada"}</strong>
+              </div>
+              <div>
+                <span>Última decisão registrada</span>
+                <strong>{latestAssessment ? formatFamilyStatus(latestAssessment.final_decision) : "Sem avaliação"}</strong>
+              </div>
+              <div>
+                <span>Prioridade social</span>
+                <strong>{formatPriority(eligibilityPreview?.priority_level)}</strong>
+              </div>
+            </div>
+
+            <div className={styles.systemReading}>
+              <ClipboardCheck aria-hidden="true" />
+              <div>
+                <strong>Sugestão: {eligibilityPreview ? formatFamilyStatus(eligibilityPreview.system_suggestion) : "Não calculada"}</strong>
+                <p>{eligibilityPreview?.economic_reason ?? "Registre uma avaliação para consolidar a leitura social."}</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="resumo" className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <div><span className={styles.eyebrow}>Resumo</span><h2>Condições gerais</h2></div>
+            </div>
+            <dl className={styles.factGrid}>
+              <div><dt>Renda mensal</dt><dd>{formatCurrency(family.monthly_income_total)}</dd></div>
+              <div><dt>Despesas essenciais</dt><dd>{formatCurrency(family.monthly_essential_expenses)}</dd></div>
+              <div><dt>Adultos</dt><dd>{family.total_adults}</dd></div>
+              <div><dt>Crianças</dt><dd>{family.total_children}</dd></div>
+              <div><dt>Idosos</dt><dd>{family.total_elderly}</dd></div>
+              <div><dt>Bebês</dt><dd>{family.total_babies}</dd></div>
+              <div><dt>Água</dt><dd>{family.has_water_supply ? "Disponível" : "Indisponível"}</dd></div>
+              <div><dt>Saneamento</dt><dd>{family.has_sanitation ? "Disponível" : "Indisponível"}</dd></div>
+            </dl>
+          </section>
+
+          <section id="composicao" className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <div><span className={styles.eyebrow}>Pessoas</span><h2>Composição familiar</h2></div>
+              <Link className={styles.textAction} to={`/families/${family.id}/people/new`}><Plus aria-hidden="true" />Novo membro</Link>
+            </div>
+            {family.people.length === 0 ? (
+              <p className={styles.emptyState}>Nenhuma pessoa cadastrada.</p>
+            ) : (
+              <div className={styles.peopleList}>
+                {family.people.map((person) => (
+                  <div key={person.id} className={styles.personRow}>
+                    <span className={styles.personAvatar} aria-hidden="true">{person.full_name.charAt(0)}</span>
+                    <span className={styles.personIdentity}>
+                      <strong>{person.full_name}</strong>
+                      <span>{person.kinship} · {person.occupation ?? "Ocupação não informada"}</span>
+                    </span>
+                    <span className={styles.personIncome}>{formatCurrency(person.individual_income)}</span>
+                    {person.is_family_responsible ? <span className={styles.responsibleBadge}>Responsável</span> : null}
+                    <Link to={`/families/${family.id}/people/${person.id}/edit`}>Editar</Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className={styles.splitSection}>
+            <article className={styles.panel}>
+              <div className={styles.panelHeader}>
+                <div><span className={styles.eyebrow}>Contatos</span><h2>Comunicação</h2></div>
+              </div>
+              {family.contacts.length === 0 ? <p className={styles.emptyState}>Nenhum contato cadastrado.</p> : (
+                <div className={styles.simpleList}>
+                  {family.contacts.map((contact) => (
+                    <div key={contact.id}>
+                      <span><strong>{contact.contact_name ?? "Sem nome"}</strong><small>{contact.contact_type}</small></span>
+                      <span>{contact.phone ?? "Sem telefone"}{contact.is_whatsapp ? " · WhatsApp" : ""}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
+
+            <article className={styles.panel}>
+              <div className={styles.panelHeader}>
+                <div><span className={styles.eyebrow}>Vínculo comunitário</span><h2>Igreja e UPG</h2></div>
+                <Link className={styles.iconAction} aria-label="Editar vínculo comunitário" to={`/families/${family.id}/edit#vinculo-igreja`}><Edit3 aria-hidden="true" /></Link>
+              </div>
+              <dl className={styles.compactFacts}>
+                <div><dt>Frequenta</dt><dd>{family.attends_church ? "Sim" : "Não"}</dd></div>
+                <div><dt>Igreja ou UPG</dt><dd>{family.church_name || "Não informada"}</dd></div>
+                <div><dt>Vínculo</dt><dd>{family.community_relationship || "Não informado"}</dd></div>
+              </dl>
+            </article>
+          </section>
+
+          <section id="beneficios" className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <div><span className={styles.eyebrow}>Benefícios</span><h2>Benefícios vinculados</h2></div>
+              <Link className={styles.textAction} to={`/families/${family.id}/benefits/new`}><Plus aria-hidden="true" />Novo benefício</Link>
+            </div>
+            {family.benefits.length === 0 ? <p className={styles.emptyState}>Nenhum benefício cadastrado.</p> : (
+              <div className={styles.simpleList}>
+                {family.benefits.map((benefit) => (
+                  <div key={benefit.id}>
+                    <span><strong>{benefit.benefit_type}</strong><small>{benefit.is_active ? "Ativo" : "Inativo"} · {benefit.counts_as_income ? "Conta como renda" : "Não conta como renda"}</small></span>
+                    <span>{formatCurrency(benefit.monthly_amount)} <Link to={`/families/${family.id}/benefits/${benefit.id}/edit`}>Editar</Link></span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section id="avaliacoes" className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <div><span className={styles.eyebrow}>Avaliações</span><h2>Histórico de aptidão</h2></div>
+              <Link className={styles.textAction} to={`/families/${family.id}/assessments/new`}><Plus aria-hidden="true" />Nova avaliação</Link>
+            </div>
+            {family.assessments.length === 0 ? <p className={styles.emptyState}>Nenhuma avaliação registrada.</p> : (
+              <div className={styles.assessmentList}>
+                {family.assessments.map((assessment) => (
+                  <div key={assessment.id}>
+                    <span className={styles.assessmentDate}>{formatDateOnly(assessment.assessment_date)}</span>
+                    <span><small>Sugestão</small><strong>{formatFamilyStatus(assessment.system_suggestion)}</strong></span>
+                    <span><small>Decisão final</small><strong>{formatFamilyStatus(assessment.final_decision)}</strong></span>
+                    <span><small>Pontuação</small><strong>{assessment.vulnerability_score}</strong></span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className={styles.panel}>
+            <form onSubmit={handleStatusSubmit} className={styles.statusForm}>
+              <div className={styles.panelHeader}>
+                <div><span className={styles.eyebrow}>Gestão do cadastro</span><h2>Status e observação interna</h2><p>Status apto ou inapto exige avaliação social com a mesma decisão final.</p></div>
+              </div>
+              <div className={styles.formGrid}>
+                <label>
+                  <span>Status</span>
+                  <select value={statusForm.status} onChange={(event) => setStatusForm((current) => ({ ...current, status: event.target.value }))}>
+                    <option value="apta_recorrente">Apta recorrente</option>
+                    <option value="apta_emergencial">Apta emergencial</option>
+                    <option value="em_analise">Em análise</option>
+                    <option value="inapta">Inapta</option>
+                    <option value="inativa">Inativa</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Observação interna</span>
+                  <textarea rows={3} value={statusForm.internal_notes} onChange={(event) => setStatusForm((current) => ({ ...current, internal_notes: event.target.value }))} />
+                </label>
+              </div>
+              {error ? <p className={styles.formError} role="alert">{error}</p> : null}
+              {statusMessage ? <p className={styles.formSuccess} role="status">{statusMessage}</p> : null}
+              <button className={styles.saveButton} type="submit" disabled={isUpdatingStatus}>
+                {isUpdatingStatus ? "Atualizando…" : "Salvar status"}
+              </button>
+            </form>
+          </section>
+        </main>
       </div>
     </div>
   );

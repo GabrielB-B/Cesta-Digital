@@ -2,7 +2,7 @@
 
 **Branch:** `feat/frontend-v2-inicio`
 **Base:** `12d3d73` (`V2-04` aprovado)
-**Status:** implementação concluída localmente e aguardando aprovação visual
+**Status:** aprovado por Gabriel em 19/08/2026
 **Referência principal:** `referencias_por_tela/01-inicio-desktop.png`
 
 ## 1. Resultado implementado
@@ -98,7 +98,8 @@ npm run test:visual:dashboard
 - `git diff --check`: aprovado;
 - backend não alterado.
 
-## 9. Próximo gate
+## 9. Aprovação e continuidade
 
-O branch de Famílias só começa depois da aprovação explícita das evidências do
-Início. Nenhuma tela de Família foi redesenhada neste marco.
+Gabriel aprovou a etapa em 19/08/2026. O marco foi consolidado no commit
+`2abf89b`, e o branch `feat/frontend-v2-familias` foi aberto a partir dessa base
+para executar o V2-06 sem misturar o histórico do Dashboard.

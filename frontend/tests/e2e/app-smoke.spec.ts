@@ -1198,8 +1198,8 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
   const mainNav = page.getByLabel("Navegação principal");
 
   await mainNav.getByRole("link", { name: /Famílias/i }).click();
-  await expect(page.getByRole("heading", { name: "Familias", exact: true })).toBeVisible();
-  await expect(page.getByText("FAM-0001")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Famílias", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "FAM-0001", exact: true })).toBeVisible();
 
   await mainNav.getByRole("link", { name: /^Estoque$/i }).click();
   await expect(page.getByRole("heading", { name: "Itens", exact: true })).toBeVisible();
@@ -1674,12 +1674,12 @@ test("family detail highlights system suggestion and church shortcut", async ({ 
   await page.goto("/families/1");
 
   await expect(
-    page.getByRole("heading", { name: "Sugestao do sistema e decisao da lideranca" })
+    page.getByRole("heading", { name: "Sugestão do sistema e decisão da liderança" })
   ).toBeVisible();
-  await expect(page.getByText("Sugestao: Apta recorrente")).toBeVisible();
-  await expect(page.getByText("Ultima decisao registrada")).toBeVisible();
+  await expect(page.getByText("Sugestão: Apta recorrente")).toBeVisible();
+  await expect(page.getByText("Última decisão registrada")).toBeVisible();
   await expect(page.getByRole("link", { name: "Igreja/UPG" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Registrar avaliacao" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Registrar avaliação" })).toBeVisible();
 });
 
 test("family member edit has its own church link separate from income", async ({ page }) => {
@@ -1733,7 +1733,7 @@ test("mobile shell opens drawer navigation and compact account menu", async ({ p
     .getByRole("link", { name: /Famílias/i })
     .click();
 
-  await expect(page.getByRole("heading", { name: "Familias", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Famílias", exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: /Conta de Admin Homologacao/i }).click();
   await expect(page.getByRole("menuitem", { name: "Sair" })).toBeVisible();
