@@ -186,6 +186,19 @@ LGPD, observabilidade e decisão formal de `GO profissional`.
 Resultado do checkpoint: publicado e aprovado pelos gates local, remoto, banco,
 deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 
+### Checkpoint local V2-07A de Avaliações — 19/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/backend-v2-avaliacoes-contrato` a partir do V2-06 aprovado (`380fd9c`) |
+| Fila | `GET /social-assessments/queue` pagina, busca e classifica famílias por urgência sem agregação incompleta no cliente |
+| Integridade | `vulnerability_score` gravado vem do cálculo do servidor; divergência do campo legado retorna 422 sem persistência |
+| Separação de conceitos | Última decisão, última sugestão e nova prévia calculada são campos distintos |
+| RBAC | `admin`/`lider_social` autorizados; `operador` 403; anônimo 401 |
+| Banco | nenhuma migration ou alteração de tabela |
+| Backend local | `compileall` aprovado; suíte completa 60/60 testes aprovados |
+| Publicação | não realizada; evidência é local e o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.
@@ -370,6 +383,8 @@ Testar:
 
 **Esperado:** status apto referencia avaliação e versão da regra; exceção exige justificativa; score vem do servidor; auditoria registra decisão.
 
+- [x] Gate automatizado local V2-07A comprova fila, prazos, paginação, RBAC,
+  prévia versus decisão e rejeição de score divergente.
 - [ ] Aprovado.
 
 ### HOM-SOC-006 — projeção mínima para operador

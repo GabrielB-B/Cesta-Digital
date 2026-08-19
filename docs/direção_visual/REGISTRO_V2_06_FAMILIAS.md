@@ -2,7 +2,7 @@
 
 **Branch:** `feat/frontend-v2-familias`
 **Base:** `2abf89b` (`V2-05` aprovado)
-**Status:** implementação concluída localmente e aguardando aprovação visual
+**Status:** aprovado por Gabriel em 19/08/2026
 **Referência principal:** `referencias_por_tela/02-familias-desktop.png`
 
 ## 1. Resultado implementado
@@ -98,9 +98,8 @@ npm run test:visual:families
 - `npm run test:visual:shell`: 11 aprovados e 1 skip desktop intencional;
 - backend não alterado.
 
-## 8. Próximo gate
+## 8. Aprovação e continuidade
 
-Nenhuma implementação da aba Avaliações começa antes da aprovação explícita
-desta galeria. A referência 03 depende primeiro do marco V2-07A, porque a fila
-global paginada, os vencimentos e a integridade da sugestão calculada ainda
-exigem contrato backend próprio; etapas fictícias do mockup não serão simuladas.
+Gabriel aprovou a etapa em 19/08/2026. O marco foi consolidado no commit
+`380fd9c`, e a branch `feat/backend-v2-avaliacoes-contrato` foi aberta a partir
+dessa base para executar o V2-07A antes da interface da referência 03.

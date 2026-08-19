@@ -1,7 +1,8 @@
 from datetime import date
 from decimal import Decimal
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 ALLOWED_FINAL_DECISIONS = {
@@ -32,8 +33,10 @@ class EligibilityPreviewResponse(BaseModel):
 class SocialAssessmentCreate(BaseModel):
     """Payload de criacao de avaliacao social."""
 
+    model_config = ConfigDict(extra="forbid")
+
     assessment_date: date
-    vulnerability_score: int
+    vulnerability_score: int | None = Field(default=None, ge=0, le=100)
     final_decision: str
     decision_reason: str | None = None
     exception_reason: str | None = None
@@ -47,13 +50,6 @@ class SocialAssessmentCreate(BaseModel):
         value = value.strip().lower()
         if value not in ALLOWED_FINAL_DECISIONS:
             raise ValueError("Decisao final invalida.")
-        return value
-
-    @field_validator("vulnerability_score")
-    @classmethod
-    def validate_vulnerability_score(cls, value: int) -> int:
-        if value < 0 or value > 100:
-            raise ValueError("A pontuacao de vulnerabilidade deve ficar entre 0 e 100.")
         return value
 
     @model_validator(mode="after")
@@ -85,3 +81,64 @@ class SocialAssessmentResponse(BaseModel):
     co_approved_by_user_id: int | None
     next_revaluation_date: date | None
     technical_notes: str | None
+
+
+AssessmentQueueStatus = Literal[
+    "sem_avaliacao",
+    "reavaliacao_vencida",
+    "reavaliacao_proxima",
+    "em_dia",
+]
+
+AssessmentQueueReason = Literal[
+    "nunca_avaliada",
+    "prazo_nao_definido",
+    "prazo_vencido",
+    "prazo_proximo",
+    "prazo_em_dia",
+]
+
+
+class AssessmentQueueItemResponse(BaseModel):
+    """Projecao operacional de uma familia na fila de elegibilidade."""
+
+    family_id: int
+    internal_code: str
+    responsible_name: str | None
+    total_residents: int
+    neighborhood: str
+    city: str
+    state: str
+    family_status: str
+    queue_status: AssessmentQueueStatus
+    queue_reason: AssessmentQueueReason
+    latest_assessment_id: int | None
+    latest_assessment_date: date | None
+    latest_system_suggestion: str | None
+    latest_final_decision: str | None
+    latest_vulnerability_score: int | None
+    latest_approved_by_user_id: int | None
+    latest_approved_by_name: str | None
+    next_revaluation_date: date | None
+    current_system_suggestion: str
+    current_social_weight_score: int
+    current_priority_level: str
+    current_preview_differs_from_decision: bool
+
+
+class AssessmentQueueSummaryResponse(BaseModel):
+    sem_avaliacao: int
+    reavaliacao_vencida: int
+    reavaliacao_proxima: int
+    em_dia: int
+    total: int
+
+
+class AssessmentQueueResponse(BaseModel):
+    items: list[AssessmentQueueItemResponse]
+    total: int
+    limit: int
+    offset: int
+    reference_date: date
+    due_soon_days: int
+    summary: AssessmentQueueSummaryResponse

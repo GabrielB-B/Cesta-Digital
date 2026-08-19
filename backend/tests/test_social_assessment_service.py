@@ -3,6 +3,7 @@ import unittest
 from datetime import date
 from decimal import Decimal
 
+from fastapi import HTTPException
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -133,6 +134,7 @@ class SocialAssessmentServiceTests(unittest.TestCase):
         self.assertIsNotNone(persisted)
         self.assertEqual(persisted.monthly_income_total_at_time, Decimal("300.00"))
         self.assertEqual(persisted.income_per_capita_at_time, Decimal("100.00"))
+        self.assertEqual(persisted.vulnerability_score, 2)
 
         refreshed_family = self.db.get(Family, self.family.id)
         self.assertEqual(refreshed_family.status, "apta_recorrente")
@@ -145,3 +147,25 @@ class SocialAssessmentServiceTests(unittest.TestCase):
         )
         self.assertIsNotNone(audit)
         self.assertEqual(audit.entity_id, str(assessment.id))
+
+    def test_rejects_client_score_that_diverges_from_server_calculation(self):
+        payload = SocialAssessmentCreate(
+            assessment_date=date(2026, 4, 6),
+            vulnerability_score=99,
+            final_decision="apta_recorrente",
+            next_revaluation_date=date(2026, 5, 6),
+        )
+
+        with self.assertRaises(HTTPException) as context:
+            create_social_assessment(
+                self.db,
+                self.family.id,
+                payload,
+                self.user,
+            )
+
+        self.assertEqual(context.exception.status_code, 422)
+        self.assertIn("calculada pelo servidor", context.exception.detail)
+        self.assertIsNone(
+            self.db.scalar(select(SocialAssessment).where(SocialAssessment.family_id == self.family.id))
+        )
