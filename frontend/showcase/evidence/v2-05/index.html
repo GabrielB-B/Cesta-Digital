@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-05 · Comparativo Início</title>
+    <style>
+      :root {
+        color: #142033;
+        background: #f5f6f8;
+        font-family: Inter, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+      header { display: grid; gap: 8px; margin-bottom: 28px; }
+      h1, h2, p { margin: 0; }
+      h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.04em; }
+      h2 { font-size: 18px; }
+      p { color: #667085; line-height: 1.55; }
+      .status { width: fit-content; margin-top: 8px; padding: 7px 12px; color: #a51558; background: #fdecf4; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      section { margin-top: 32px; }
+      .section-heading { display: grid; gap: 4px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+      .responsive { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      figure { margin: 0; overflow: hidden; background: white; border: 1px solid #e2e5e9; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.07); }
+      figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; color: #263247; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8eaed; }
+      figcaption span { color: #7b8492; font-weight: 500; }
+      figure a { display: block; background: #eef0f3; }
+      img { display: block; width: 100%; height: auto; }
+      .mobile img { width: min(100%, 390px); margin: 0 auto; }
+      .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
+      .note strong { display: block; margin-bottom: 5px; font-size: 14px; }
+      .note p { font-size: 13px; }
+      @media (max-width: 900px) {
+        main { width: min(100% - 20px, 680px); padding-top: 24px; }
+        .grid, .responsive, .notes { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>V2-05 · Início</h1>
+        <p>Comparação da referência aprovada com a implementação real em desktop, tablet e mobile.</p>
+        <span class="status">Aguardando aprovação visual</span>
+      </header>
+
+      <section>
+        <div class="section-heading">
+          <h2>Referência × implementação</h2>
+          <p>Clique em qualquer imagem para abrir a captura no tamanho original.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Referência específica <span>1586 × 992</span></figcaption>
+            <a href="referencia-inicio-desktop.png" target="_blank" rel="noreferrer">
+              <img src="referencia-inicio-desktop.png" alt="Referência visual aprovada da tela Início" />
+            </a>
+          </figure>
+          <figure>
+            <figcaption>Implementação desktop <span>1440 px</span></figcaption>
+            <a href="inicio-desktop-1440.png" target="_blank" rel="noreferrer">
+              <img src="inicio-desktop-1440.png" alt="Implementação V2 da tela Início em desktop" />
+            </a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Adaptação responsiva</h2>
+          <p>Mobile tem composição própria, sem tabela comprimida nem rolagem horizontal.</p>
+        </div>
+        <div class="grid responsive">
+          <figure class="mobile">
+            <figcaption>Mobile compacto <span>360 × 800</span></figcaption>
+            <a href="inicio-mobile-360.png" target="_blank" rel="noreferrer">
+              <img src="inicio-mobile-360.png" alt="Tela Início em mobile de 360 pixels" />
+            </a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Mobile principal <span>390 × 844</span></figcaption>
+            <a href="inicio-mobile-390.png" target="_blank" rel="noreferrer">
+              <img src="inicio-mobile-390.png" alt="Tela Início em mobile de 390 pixels" />
+            </a>
+          </figure>
+          <figure>
+            <figcaption>Tablet <span>768 × 1024</span></figcaption>
+            <a href="inicio-tablet-768.png" target="_blank" rel="noreferrer">
+              <img src="inicio-tablet-768.png" alt="Tela Início em tablet de 768 pixels" />
+            </a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Diferenças funcionais deliberadas</h2>
+        </div>
+        <div class="notes">
+          <div class="note">
+            <strong>Dados reais</strong>
+            <p>“Entradas hoje” foi substituído por retiradas pendentes, campo existente em DashboardOverviewResponse.</p>
+          </div>
+          <div class="note">
+            <strong>Aptidão explícita</strong>
+            <p>Reavaliações aparecem como prioridade para recalcular aptidão, unindo cálculo e parecer social.</p>
+          </div>
+          <div class="note">
+            <strong>Rotas válidas</strong>
+            <p>“Relatório rápido” não foi simulado; o quarto atalho leva aos tipos de cesta já disponíveis.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

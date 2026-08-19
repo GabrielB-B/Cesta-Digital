@@ -61,7 +61,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
   await expect(
-    page.getByRole("heading", { name: "Dashboard do Cesta Digital" }),
+    page.getByRole("heading", { name: /Olá, Ana/i }),
   ).toBeVisible();
 });
 

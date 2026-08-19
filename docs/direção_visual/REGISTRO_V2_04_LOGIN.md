@@ -2,7 +2,7 @@
 
 **Branch:** `feat/frontend-v2-login`
 **Base:** `5d6d2d8` (`V2-03` + direção funcional de Avaliações)
-**Status:** implementação concluída localmente e aguardando aprovação visual
+**Status:** aprovado por Gabriel em 19/08/2026 e sucedido pelo V2-05
 **Referência principal:** `referencias_por_tela/10-login-desktop.png`
 
 ## 1. Resultado implementado
@@ -94,7 +94,8 @@ npm run test:visual:login
 - `git diff --check`: aprovado;
 - backend não alterado.
 
-## 8. Próximo gate
+## 8. Aprovação e continuidade
 
-O branch `feat/frontend-v2-inicio` só começa após aprovação explícita destas
-evidências do Login. Nenhum conteúdo do Dashboard foi alterado neste marco.
+Gabriel aprovou as telas apresentadas em 19/08/2026. O branch
+`feat/frontend-v2-inicio` foi aberto a partir do commit `12d3d73`; nenhum
+conteúdo de outra aba foi incluído no marco do Login.

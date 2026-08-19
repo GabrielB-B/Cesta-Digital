@@ -962,7 +962,7 @@ test("capture approval evidence at mobile and desktop baselines", async ({
 
     await page.goto("/");
     await page
-      .getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+      .getByRole("heading", { name: /Olá,/i })
       .waitFor();
 
     const dashboardPath = testInfo.outputPath(`dashboard-${viewport.name}.png`);
@@ -1040,7 +1040,7 @@ test("login brand and immediate navigation remain polished on desktop and mobile
   await expect(page.locator(".login-success-overlay")).toHaveCount(0);
   await expect(page.locator(".login-success-overlay__video")).toHaveCount(0);
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible({ timeout: 1_500 });
 });
 
@@ -1086,13 +1086,13 @@ test("stale anonymous session check cannot undo a successful login", async ({
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible({ timeout: 1_500 });
   releaseStaleSession();
   await staleSessionResponse;
   await expect(page).toHaveURL(/\/$/);
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible();
 });
 
@@ -1128,7 +1128,7 @@ test("reduced motion login never renders blocking overlay or video", async ({ pa
   await expect(page.locator(".login-success-overlay")).toHaveCount(0);
   await expect(page.locator(".login-success-overlay__video")).toHaveCount(0);
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible({ timeout: 1_500 });
 });
 
@@ -1167,7 +1167,7 @@ test("auth loading uses the brand symbol on desktop and mobile", async ({ page }
   await activeGate.requestStarted;
   await expect(page.locator(".app-loading .brand-lockup--mark-only")).toBeVisible();
   activeGate.releaseResponse();
-  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 
   await page.setViewportSize({ width: 390, height: 844 });
   activeGate = createAuthResponseGate();
@@ -1176,7 +1176,7 @@ test("auth loading uses the brand symbol on desktop and mobile", async ({ page }
   await activeGate.requestStarted;
   await expect(page.locator(".app-loading .brand-lockup--mark-only")).toBeVisible();
   activeGate.releaseResponse();
-  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 });
 
 test("login, dashboard and core operational routes render", async ({ page }) => {
@@ -1189,7 +1189,7 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
   await expect(page.locator(".login-success-overlay")).toHaveCount(0);
   await expect(page.locator(".login-success-overlay__video")).toHaveCount(0);
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible({ timeout: 1_500 });
   await expect(
     page.locator("#conteudo-principal").getByText("Admin Homologacao")
@@ -1232,7 +1232,7 @@ test("mobile stock entry completes without document overflow", async ({ page }) 
   await page.goto("/");
 
   const dashboardEntryLink = page
-    .getByRole("link", { name: "Registrar entrada" })
+    .getByRole("link", { name: "Nova entrada" })
     .first();
   await expect(dashboardEntryLink).toBeVisible();
   await dashboardEntryLink.click();
@@ -1706,7 +1706,7 @@ test("mobile shell opens drawer navigation and compact account menu", async ({ p
   await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
-  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 
   const navigation = page.getByLabel("Navegação principal");
   const navigationToggle = page.getByRole("button", { name: "Abrir menu" });
@@ -1747,7 +1747,7 @@ test("desktop sidebar collapses and account logout returns to login", async ({ p
   await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
-  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 
   await page.getByRole("button", { name: "Recolher menu lateral" }).click();
   await expect(page.getByRole("button", { name: "Expandir menu lateral" })).toBeVisible();

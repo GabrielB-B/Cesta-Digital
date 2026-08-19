@@ -1,0 +1,643 @@
+.page {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+  color: var(--cd-text);
+  font-family: var(--cd-font-sans);
+}
+
+.pageHeader {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.25rem 0 0.125rem;
+}
+
+.pageHeader h1,
+.errorState h1 {
+  margin: 0;
+  color: #142033;
+  font-size: clamp(1.75rem, 2.3vw, 2.125rem);
+  font-weight: 720;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+.pageHeader p {
+  color: var(--cd-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5rem;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.metricCard {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+  min-width: 0;
+  min-height: 9.75rem;
+  padding: 1.5rem 1.25rem;
+  color: inherit;
+  text-decoration: none;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius-lg);
+  box-shadow: var(--cd-shadow-sm);
+}
+
+a.metricCard {
+  transition:
+    border-color var(--cd-motion-normal) var(--cd-ease-standard),
+    box-shadow var(--cd-motion-normal) var(--cd-ease-standard),
+    transform var(--cd-motion-normal) var(--cd-ease-standard);
+}
+
+a.metricCard:hover {
+  border-color: var(--cd-border-strong);
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.08);
+  transform: translateY(-2px);
+}
+
+a.metricCard:focus-visible,
+.priorityItem:focus-visible,
+.panelLink:focus-visible,
+.quickAction:focus-visible,
+.retryButton:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--cd-brand-action) 28%, transparent);
+  outline-offset: 3px;
+}
+
+.metricIcon,
+.iconCircle {
+  display: grid;
+  place-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 50%;
+}
+
+.metricIcon svg,
+.iconCircle svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  stroke-width: 2;
+}
+
+.familyIcon {
+  color: var(--cd-brand-action);
+  background: var(--cd-brand-soft);
+}
+
+.deliveryIcon {
+  color: #6d4bea;
+  background: #f0edff;
+}
+
+.scheduleIcon {
+  color: var(--cd-success);
+  background: var(--cd-success-soft);
+}
+
+.attentionIcon,
+.errorIcon {
+  color: #df7600;
+  background: #fff3e5;
+}
+
+.metricContent {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+}
+
+.metricTitle {
+  min-height: 2.25rem;
+  color: #273449;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1.125rem;
+}
+
+.metricContent strong {
+  color: #101b2d;
+  font-size: clamp(1.75rem, 2.4vw, 2.125rem);
+  font-weight: 720;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.metricDetail {
+  margin-top: 0.75rem;
+  color: var(--cd-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.05rem;
+}
+
+.operationalGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.panel,
+.quickPanel,
+.errorState {
+  min-width: 0;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius-lg);
+  box-shadow: var(--cd-shadow-sm);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 20.25rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+
+.panelHeader,
+.quickHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.panelHeader h2,
+.quickHeader h2 {
+  margin: 0;
+  color: #1a2639;
+  font-size: 1.0625rem;
+  font-weight: 680;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+}
+
+.panelHeader p,
+.quickHeader p {
+  margin: 0.15rem 0 0;
+  color: var(--cd-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+
+.panelHeader > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #7c8798;
+}
+
+.priorityList,
+.alertList {
+  display: grid;
+  margin-top: 1.25rem;
+}
+
+.priorityItem {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.625rem;
+  padding: 0.625rem 0;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--cd-border);
+}
+
+.priorityItem:first-child {
+  padding-top: 0.25rem;
+}
+
+.priorityItem:hover .priorityCopy strong {
+  color: var(--cd-brand-action);
+}
+
+.priorityMarker {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #97a1b0;
+  stroke-width: 1.6;
+}
+
+.priorityCopy,
+.alertCopy {
+  display: grid;
+  min-width: 0;
+}
+
+.priorityCopy strong,
+.alertCopy strong {
+  overflow: hidden;
+  color: #263247;
+  font-size: 0.8125rem;
+  font-weight: 610;
+  line-height: 1.2rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.priorityCopy span,
+.alertCopy span {
+  overflow: hidden;
+  color: var(--cd-text-muted);
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.priorityBadge {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.6875rem;
+  font-weight: 620;
+  line-height: 1rem;
+  border-radius: var(--cd-radius-sm);
+}
+
+.assessmentBadge {
+  color: #6d4bea;
+  background: #f0edff;
+}
+
+.familyBadge {
+  color: #b51861;
+  background: var(--cd-brand-soft);
+}
+
+.deliveryBadge {
+  color: #1664c0;
+  background: #edf6ff;
+}
+
+.basketBadge {
+  color: #9a5a00;
+  background: var(--cd-warning-soft);
+}
+
+.alertItem {
+  display: grid;
+  grid-template-columns: 0.625rem minmax(0, 1fr) minmax(5.5rem, auto) auto;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.875rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--cd-border);
+}
+
+.alertDot {
+  width: 0.625rem;
+  height: 0.625rem;
+  background: var(--cd-danger);
+  border-radius: 50%;
+}
+
+.alertStatus {
+  color: var(--cd-text-muted);
+  font-size: 0.6875rem;
+  line-height: 1rem;
+}
+
+.alertQuantity {
+  color: #263247;
+  font-size: 0.75rem;
+  font-weight: 620;
+  line-height: 1rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.panelLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: fit-content;
+  min-height: 2.75rem;
+  margin-top: auto;
+  padding-top: 0.875rem;
+  color: var(--cd-brand-action);
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.panelLink:hover {
+  color: var(--cd-brand-action-hover);
+}
+
+.emptyState {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  margin: 1.25rem 0 0;
+  padding: 1.5rem;
+  color: var(--cd-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  text-align: center;
+  background: var(--cd-surface-muted);
+  border: 1px dashed var(--cd-border-strong);
+  border-radius: var(--cd-radius-md);
+}
+
+.quickPanel {
+  display: grid;
+  gap: 1.125rem;
+  padding: 1.375rem 1.5rem 1.5rem;
+}
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.quickAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 4.25rem;
+  padding: 0.875rem 1rem;
+  color: #2d384b;
+  font-size: 0.8125rem;
+  font-weight: 610;
+  text-align: center;
+  text-decoration: none;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border-strong);
+  border-radius: var(--cd-radius-md);
+  transition:
+    color var(--cd-motion-fast) var(--cd-ease-standard),
+    border-color var(--cd-motion-fast) var(--cd-ease-standard),
+    background var(--cd-motion-fast) var(--cd-ease-standard);
+}
+
+.quickAction svg {
+  flex: 0 0 auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--cd-brand-action);
+  stroke-width: 1.9;
+}
+
+.quickAction:hover {
+  color: var(--cd-brand-action);
+  background: #fffafd;
+  border-color: color-mix(in srgb, var(--cd-brand-action) 42%, var(--cd-border));
+}
+
+.errorState {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.errorState h1 {
+  font-size: 1.25rem;
+}
+
+.errorState p {
+  margin: 0.25rem 0 0;
+  color: var(--cd-text-muted);
+}
+
+.retryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  color: var(--cd-text-inverse);
+  font-weight: 650;
+  background: var(--cd-brand-action);
+  border: 0;
+  border-radius: var(--cd-radius-md);
+  cursor: pointer;
+}
+
+.skeletonTitle,
+.skeletonSubtitle,
+.skeletonCard {
+  background: linear-gradient(90deg, #eef0f3 25%, #f7f8fa 50%, #eef0f3 75%);
+  background-size: 200% 100%;
+  border-radius: var(--cd-radius-md);
+  animation: skeleton 1.3s ease-in-out infinite;
+}
+
+.skeletonTitle {
+  width: 13rem;
+  height: 2.25rem;
+}
+
+.skeletonSubtitle {
+  width: min(22rem, 75%);
+  height: 1.125rem;
+}
+
+.skeletonCard {
+  min-height: 9.75rem;
+  border: 1px solid var(--cd-border);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes skeleton {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 1180px) {
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quickGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 899px) {
+  .page {
+    gap: 1rem;
+  }
+
+  .pageHeader {
+    padding-top: 0;
+  }
+
+  .pageHeader h1 {
+    font-size: 1.625rem;
+  }
+
+  .pageHeader p {
+    font-size: 0.875rem;
+    line-height: 1.3rem;
+  }
+
+  .metricGrid {
+    gap: 0.75rem;
+  }
+
+  .metricCard {
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    gap: 0.75rem;
+    min-height: 8.75rem;
+    padding: 1rem;
+  }
+
+  .metricIcon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .metricIcon svg {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .metricTitle {
+    min-height: 2rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .metricContent strong {
+    font-size: 1.625rem;
+  }
+
+  .metricDetail {
+    margin-top: 0.5rem;
+    font-size: 0.6875rem;
+    line-height: 0.95rem;
+  }
+
+  .operationalGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .panel {
+    min-height: 0;
+    padding: 1.125rem 1rem 1rem;
+  }
+
+  .priorityList,
+  .alertList {
+    margin-top: 1rem;
+  }
+
+  .priorityItem {
+    grid-template-columns: 1.375rem minmax(0, 1fr);
+    gap: 0.625rem;
+    min-height: 4rem;
+  }
+
+  .priorityBadge {
+    grid-column: 2;
+    width: fit-content;
+    margin-top: -0.35rem;
+  }
+
+  .alertItem {
+    grid-template-columns: 0.625rem minmax(0, 1fr) auto;
+    gap: 0.625rem;
+    min-height: 4rem;
+  }
+
+  .alertStatus {
+    display: none;
+  }
+
+  .alertQuantity {
+    font-size: 0.6875rem;
+  }
+
+  .quickPanel {
+    padding: 1.125rem 1rem 1rem;
+  }
+
+  .quickHeader p {
+    display: none;
+  }
+
+  .quickGrid {
+    gap: 0.75rem;
+  }
+
+  .quickAction {
+    justify-content: flex-start;
+    min-height: 3.5rem;
+    padding: 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .errorState {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .retryButton {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 374px) {
+  .metricCard {
+    grid-template-columns: 1fr;
+    gap: 0.625rem;
+    min-height: 9.25rem;
+    padding: 0.875rem;
+  }
+
+  .metricTitle {
+    min-height: auto;
+  }
+
+  .priorityCopy strong,
+  .priorityCopy span,
+  .alertCopy strong,
+  .alertCopy span {
+    white-space: normal;
+  }
+
+  .alertQuantity {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a.metricCard,
+  .quickAction {
+    transition: none;
+  }
+
+  .skeletonTitle,
+  .skeletonSubtitle,
+  .skeletonCard {
+    animation: none;
+  }
+}
