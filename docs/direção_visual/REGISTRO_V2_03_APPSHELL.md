@@ -2,7 +2,7 @@
 
 **Branch:** `feat/frontend-v2-shell`  
 **Base:** `9691cb3` (`V2-02` + referências por tela)  
-**Status:** implementação concluída localmente e aguardando aprovação visual  
+**Status:** aprovado por Gabriel em 19/08/2026 e sucedido pelo marco V2-04
 **Escopo visual:** somente a moldura autenticada; conteúdo das abas permanece
 fora deste marco
 
@@ -81,11 +81,13 @@ npm run test:visual:shell
 - 360, 390, 768 e 1440 px sem overflow horizontal;
 - `git diff --check`: aprovado.
 
-O warning já conhecido de bundle acima de 500 kB e o asset legado
-`logoupg.png` de aproximadamente 1,38 MB permanecem. Eles pertencem aos marcos
-de Login/cleanup e não foram escondidos por este shell.
+No momento deste marco, o warning de bundle acima de 500 kB e o asset legado
+`logoupg.png` de aproximadamente 1,38 MB permaneciam. O asset e o splash sem uso
+foram removidos no V2-04; o fracionamento do bundle continua registrado como
+dívida global de performance.
 
-## 6. Próximo gate
+## 6. Aprovação e continuidade
 
-O branch `feat/frontend-v2-login` só começa após aprovação explícita deste
-AppShell. Nenhuma aba autenticada será redesenhada antes desse aceite.
+Gabriel autorizou prosseguir em 19/08/2026. O branch
+`feat/frontend-v2-login` foi aberto a partir deste marco; o conteúdo das abas
+autenticadas continuou isolado e inalterado.

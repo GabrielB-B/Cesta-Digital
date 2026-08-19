@@ -951,7 +951,7 @@ test("capture approval evidence at mobile and desktop baselines", async ({
   ]) {
     await page.setViewportSize(viewport);
     await page.goto("/login");
-    await page.getByRole("heading", { name: "Entrar no sistema" }).waitFor();
+    await page.getByRole("heading", { name: "Bem-vindo de volta!" }).waitFor();
 
     const loginPath = testInfo.outputPath(`login-${viewport.name}.png`);
     await page.screenshot({ path: loginPath, fullPage: true });
@@ -1008,35 +1008,33 @@ test("stock policy uses Sao Paulo civil date and evaluates optional legacy dates
   ).toBeGreaterThan(0);
 });
 
-async function expectLoginBrandSeparated(page: Page) {
-  const brand = page
-    .locator(".login-page .brand-lockup--login:visible")
-    .filter({ hasText: "Cesta Digital" })
-    .first();
-  const mark = brand.locator(".brand-lockup__mark");
-  const title = brand.locator(".brand-lockup__title");
+async function expectLoginBrandVisible(page: Page) {
+  const symbol = page.getByRole("img", { name: "Símbolo da Cesta Digital" });
 
-  await expect(mark).toBeVisible();
-  await expect(title).toHaveText("Cesta Digital");
+  await expect(symbol).toBeVisible();
 
-  const markBox = await mark.boundingBox();
-  const titleBox = await title.boundingBox();
+  const symbolBox = await symbol.boundingBox();
+  const viewportWidth = page.viewportSize()?.width ?? 0;
 
-  expect(markBox).not.toBeNull();
-  expect(titleBox).not.toBeNull();
-  expect(markBox!.y + markBox!.height).toBeLessThanOrEqual(titleBox!.y - 4);
+  expect(symbolBox).not.toBeNull();
+  expect(symbolBox!.width).toBeGreaterThanOrEqual(viewportWidth >= 900 ? 120 : 56);
+  expect(symbolBox!.height).toBeGreaterThanOrEqual(viewportWidth >= 900 ? 120 : 56);
 }
 
 test("login brand and immediate navigation remain polished on desktop and mobile", async ({ page }) => {
   await page.setViewportSize({ width: 1365, height: 768 });
   await page.goto("/login");
-  await expectLoginBrandSeparated(page);
+  await expectLoginBrandVisible(page);
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await expectLoginBrandSeparated(page);
+  await expectLoginBrandVisible(page);
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
+  await page.getByRole("button", { name: "Mostrar senha" }).click();
+  await expect(page.getByLabel("Senha", { exact: true })).toHaveAttribute("type", "text");
+  await page.getByRole("button", { name: "Ocultar senha" }).click();
+  await expect(page.getByLabel("Senha", { exact: true })).toHaveAttribute("type", "password");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.locator(".login-success-overlay")).toHaveCount(0);
@@ -1084,7 +1082,7 @@ test("stale anonymous session check cannot undo a successful login", async ({
   await page.goto("/login");
   await initialRequestStarted;
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(
@@ -1110,7 +1108,7 @@ test("failed login keeps the user on login without success splash", async ({ pag
 
   await page.goto("/login");
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("senha-errada");
+  await page.getByLabel("Senha", { exact: true }).fill("senha-errada");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.getByText("Credenciais invalidas.")).toBeVisible();
@@ -1124,7 +1122,7 @@ test("reduced motion login never renders blocking overlay or video", async ({ pa
   await page.goto("/login");
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.locator(".login-success-overlay")).toHaveCount(0);
@@ -1185,7 +1183,7 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
   await page.goto("/login");
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.locator(".login-success-overlay")).toHaveCount(0);
@@ -1705,7 +1703,7 @@ test("mobile shell opens drawer navigation and compact account menu", async ({ p
   await page.goto("/login");
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
@@ -1746,7 +1744,7 @@ test("desktop sidebar collapses and account logout returns to login", async ({ p
   await page.goto("/login");
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
