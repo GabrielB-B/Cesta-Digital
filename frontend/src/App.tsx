@@ -5,6 +5,7 @@ import { AppLayout } from "./layouts/AppLayout";
 import { BasketTypeCreatePage } from "./pages/BasketTypeCreatePage";
 import { BasketTypeDetailPage } from "./pages/BasketTypeDetailPage";
 import { BasketTypesPage } from "./pages/BasketTypesPage";
+import { AssessmentQueuePage } from "./pages/AssessmentQueuePage";
 import { AuditLogsPage } from "./pages/AuditLogsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DeliveriesPage } from "./pages/DeliveriesPage";
@@ -54,6 +55,14 @@ function App() {
               element={
                 <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
                   <FamiliesPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="assessments"
+              element={
+                <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
+                  <AssessmentQueuePage />
                 </RoleRoute>
               }
             />

@@ -394,8 +394,8 @@ A implementação deve ser precedida ou acompanhada por um arquivo Figma organiz
 | /families/:familyId/people/:personId/edit | FamilyPersonEditPage.tsx | admin, lider_social | Atendimento social | Mesmo padrão de formulário do membro | Nenhum |
 | /families/:familyId/benefits/new | FamilyBenefitCreatePage.tsx | admin, lider_social | Atendimento social | Formulário contextual dentro da família | Nenhum |
 | /families/:familyId/benefits/:benefitId/edit | FamilyBenefitEditPage.tsx | admin, lider_social | Atendimento social | Edição contextual; preservar histórico | Nenhum |
-| /families/:familyId/assessments/new | FamilyAssessmentCreatePage.tsx | admin, lider_social | Atendimento social | Stepper de avaliação social, sem criar rota global inexistente | Nenhum |
-| /assessments (rota alvo, ainda inexistente) | AssessmentQueuePage.tsx (planejado) | admin, lider_social | Avaliações | Fila paginada de avaliação/reavaliação; tabela desktop, lista mobile e painel contextual | Exige consulta paginada por situação e vencimento; não agregar no cliente |
+| /families/:familyId/assessments/new | FamilyAssessmentCreatePage.tsx | admin, lider_social | Avaliações | Fluxo de dados atuais, cálculo, decisão e próxima reavaliação | Score calculado pelo servidor e somente leitura |
+| /assessments | AssessmentQueuePage.tsx | admin, lider_social | Avaliações | Fila paginada de avaliação/reavaliação; tabela desktop, lista mobile e painel contextual | Usa `GET /social-assessments/queue`; implementada no V2-07B |
 | /financial-summary | FinancialSummaryPage.tsx | admin, lider_social | Atendimento social | Resumo financeiro sóbrio; indicadores + tabela/lista | Nenhum |
 | /items | ItemsPage.tsx | admin, operador | Estoque | Visão do estoque; filtros compactos; cards mobile | Nenhum |
 | /items/new | ItemCreatePage.tsx | admin, operador | Estoque | Cadastro de produto como etapa do recebimento quando aplicável | Nenhum |
@@ -646,7 +646,7 @@ e aguarda aprovação antes do próximo.
 ## 25. Compatibilidade com o mockup aprovado - divergências deliberadas
 
 A referência visual é aprovada, mas cinco detalhes precisam ser interpretados para não quebrar o produto:
-1. **Menu “Avaliações”**: a finalidade está confirmada como fila de avaliação e reavaliação de aptidão. A rota global ainda não existe e só será adicionada ao menu após o contrato paginado V2-07A; até lá, avaliações continuam sob família. A referência visual não autoriza etapas fictícias.
+1. **Menu “Avaliações”**: a finalidade está confirmada como fila de avaliação e reavaliação de aptidão. O contrato V2-07A e a rota global V2-07B foram implementados para `admin`/`lider_social`; etapas fictícias da referência continuam proibidas.
 2. **Menu “Entradas”**: o backend lista e cria lotes, mas o frontend só possui a rota de cadastro. A aba de histórico exige uma nova rota frontend isolada, com RBAC, Voltar e testes congelados antes da implementação visual.
 3. **“Relatórios”**: não existe rota correspondente; não expor item vazio. O resumo financeiro existente pode continuar no módulo Social.
 4. **Painel lateral de família/entrada**: pode ser evolução de interação, mas manter as URLs atuais. Não transformar rota em estado efêmero que quebre deep link.

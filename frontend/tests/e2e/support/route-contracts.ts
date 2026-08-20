@@ -43,6 +43,12 @@ export const APP_ROUTE_CONTRACTS = [
     allowedRoles: socialRoles,
   },
   {
+    path: "/assessments",
+    title: "Avaliações",
+    sectionPath: "/assessments",
+    allowedRoles: socialRoles,
+  },
+  {
     path: "/families/new",
     title: "Cadastrar familia",
     sectionPath: "/families",
@@ -86,8 +92,8 @@ export const APP_ROUTE_CONTRACTS = [
   },
   {
     path: "/families/1/assessments/new",
-    title: "Nova avaliacao social",
-    sectionPath: "/families",
+    title: "Nova avaliação social",
+    sectionPath: "/assessments",
     allowedRoles: socialRoles,
   },
   {
@@ -179,6 +185,7 @@ export const APP_ROUTE_CONTRACTS = [
 export const NAVIGATION_CONTRACTS = [
   { path: "/", label: "Início", allowedRoles: allRoles },
   { path: "/families", label: "Famílias", allowedRoles: socialRoles },
+  { path: "/assessments", label: "Avaliações", allowedRoles: socialRoles },
   {
     path: "/financial-summary",
     label: "Financeiro",

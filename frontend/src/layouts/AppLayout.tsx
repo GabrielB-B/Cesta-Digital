@@ -19,6 +19,7 @@ import styles from "./AppLayout.module.css";
 type MenuIconName =
   | "dashboard"
   | "families"
+  | "assessments"
   | "finance"
   | "items"
   | "categories"
@@ -221,6 +222,12 @@ export function AppLayout() {
           visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
         },
         {
+          path: "/assessments",
+          label: "Avaliações",
+          icon: "assessments",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
+        },
+        {
           path: "/financial-summary",
           label: "Financeiro",
           icon: "finance",
@@ -275,7 +282,14 @@ export function AppLayout() {
           (item) => item.path !== "/" && location.pathname.startsWith(item.path),
         );
   const mobileQuickItems = useMemo(() => {
-    const priorityPaths = ["/", "/families", "/items", "/deliveries", "/financial-summary"];
+    const priorityPaths = [
+      "/",
+      "/families",
+      "/assessments",
+      "/items",
+      "/deliveries",
+      "/financial-summary",
+    ];
     return priorityPaths
       .map((path) => menuItems.find((item) => item.path === path))
       .filter((item): item is MenuItem => Boolean(item))

@@ -199,6 +199,19 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Backend local | `compileall` aprovado; suíte completa 60/60 testes aprovados |
 | Publicação | não realizada; evidência é local e o `NO-GO` profissional permanece |
 
+### Checkpoint local V2-07B de Avaliações — 19/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-avaliacoes` a partir do contrato V2-07A (`6544624`) |
+| Rota e navegação | `/assessments` adicionada para `admin`/`lider_social`; seção ativa correta no desktop e mobile |
+| Fila | quatro situações reais, busca/filtro/página/seleção em URL, tabela desktop e cards em 360/390/768 |
+| Decisão social | cálculo atual, última decisão e próxima reavaliação apresentados separadamente; sem etapas fictícias |
+| Integridade do score | score somente leitura; novo formulário não envia `vulnerability_score` |
+| Frontend local | lint e build aprovados; E2E 35/35; visual V2-07B 11 aprovados e 5 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Publicação | não realizada; aguarda aprovação visual e o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.

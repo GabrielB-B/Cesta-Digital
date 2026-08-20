@@ -15,7 +15,8 @@
     "test:visual:shell": "playwright test --config=playwright.shell.config.ts",
     "test:visual:login": "playwright test --config=playwright.login.config.ts",
     "test:visual:dashboard": "playwright test --config=playwright.dashboard.config.ts",
-    "test:visual:families": "playwright test --config=playwright.families.config.ts"
+    "test:visual:families": "playwright test --config=playwright.families.config.ts",
+    "test:visual:assessments": "playwright test --config=playwright.assessments.config.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

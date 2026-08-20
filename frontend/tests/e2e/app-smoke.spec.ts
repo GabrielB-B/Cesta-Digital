@@ -148,6 +148,47 @@ const familyDetail = {
   ],
 };
 
+const assessmentQueue = {
+  items: [
+    {
+      family_id: family.id,
+      internal_code: family.internal_code,
+      responsible_name: "Maria Silva",
+      total_residents: family.total_residents,
+      neighborhood: family.neighborhood,
+      city: family.city,
+      state: family.state,
+      family_status: family.status,
+      queue_status: "reavaliacao_vencida",
+      queue_reason: "prazo_vencido",
+      latest_assessment_id: 1,
+      latest_assessment_date: "2026-05-15",
+      latest_system_suggestion: "apta_recorrente",
+      latest_final_decision: "apta_recorrente",
+      latest_vulnerability_score: 4,
+      latest_approved_by_user_id: 1,
+      latest_approved_by_name: "Admin Homologacao",
+      next_revaluation_date: "2026-08-15",
+      current_system_suggestion: "apta_recorrente",
+      current_social_weight_score: 4,
+      current_priority_level: "media",
+      current_preview_differs_from_decision: false,
+    },
+  ],
+  total: 1,
+  limit: 25,
+  offset: 0,
+  reference_date: "2026-08-19",
+  due_soon_days: 30,
+  summary: {
+    sem_avaliacao: 0,
+    reavaliacao_vencida: 1,
+    reavaliacao_proxima: 0,
+    em_dia: 0,
+    total: 1,
+  },
+};
+
 const item = {
   item_id: 1,
   item_name: "Arroz 1kg",
@@ -539,6 +580,9 @@ async function mockApi(page: Page, user = currentUser) {
       },
     ],
   }));
+  await page.route("**/social-assessments/queue**", async (route) =>
+    fulfillJson(route, assessmentQueue, { "X-Total-Count": "1" })
+  );
   await page.route("**/families?**", async (route) =>
     fulfillJson(route, [family], { "X-Total-Count": "1" })
   );
@@ -857,8 +901,8 @@ test("route access groups remain equal to the approved RBAC baseline", () => {
   });
 });
 
-test("route metadata remains aligned with the 25-path contract", () => {
-  expect(APP_ROUTE_CONTRACTS).toHaveLength(25);
+test("route metadata remains aligned with the 26-path contract", () => {
+  expect(APP_ROUTE_CONTRACTS).toHaveLength(26);
 
   for (const route of APP_ROUTE_CONTRACTS) {
     expect(getRouteMeta(route.path)).toMatchObject({

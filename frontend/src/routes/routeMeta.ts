@@ -17,6 +17,12 @@ const ROUTE_META: RouteMeta[] = [
     sectionPath: "/families",
   },
   {
+    pattern: "/assessments",
+    title: "Avaliações",
+    section: "Avaliações",
+    sectionPath: "/assessments",
+  },
+  {
     pattern: "/families/new",
     title: "Cadastrar familia",
     section: "Familias",
@@ -60,9 +66,9 @@ const ROUTE_META: RouteMeta[] = [
   },
   {
     pattern: "/families/:familyId/assessments/new",
-    title: "Nova avaliacao social",
-    section: "Familias",
-    sectionPath: "/families",
+    title: "Nova avaliação social",
+    section: "Avaliações",
+    sectionPath: "/assessments",
   },
   { pattern: "/items", title: "Itens", section: "Estoque", sectionPath: "/items" },
   {
