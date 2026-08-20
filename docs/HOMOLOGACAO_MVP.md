@@ -212,6 +212,20 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Banco | nenhuma migration ou alteração de tabela |
 | Publicação | não realizada; aguarda aprovação visual e o `NO-GO` profissional permanece |
 
+### Checkpoint local V2-08A de Estoque — 20/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/backend-v2-estoque-contrato` a partir do V2-07B aprovado (`767969c`) |
+| Visão global | `GET /stock-overview` pagina, busca, filtra e ordena produtos por urgência sem agregar somente a página atual |
+| Indicadores | estoque baixo por produto e lotes vencendo em 15 dias, vencidos, sem validade obrigatória ou restritos |
+| Saldo | quantidade disponível reutiliza a política canônica de lote utilizável e a data operacional de São Paulo |
+| RBAC | `admin`/`operador` autorizados; `lider_social` 403; anônimo 401 |
+| Compatibilidade | `/stock-summary` e todos os contratos de escrita foram preservados |
+| Banco | nenhuma migration ou alteração de tabela |
+| Backend local | `compileall` aprovado; suíte completa 62/62 testes aprovados |
+| Publicação | não realizada; evidência é local e o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.
