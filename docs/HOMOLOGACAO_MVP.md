@@ -268,7 +268,7 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Integridade | origem, lote, quantidade, validade, localização e situação vêm da API; fornecedor e responsável nominais não foram inventados |
 | Contratos | `GET/POST /stock-batches` e payload existentes; RBAC `admin`/`operador`; nenhuma mudança no backend ou banco |
 | Frontend local | lint e build aprovados; E2E 37/37; visual V2-09A 6 aprovados e 2 skips intencionais |
-| Aprovação visual | pendente de Gabriel; galeria local V2-09A preparada |
+| Aprovação visual | aprovada por Gabriel em 21/08/2026; galeria local V2-09A preservada como evidência |
 | Publicação | não realizada; o `NO-GO` profissional permanece |
 
 ## 3. Pré-condições

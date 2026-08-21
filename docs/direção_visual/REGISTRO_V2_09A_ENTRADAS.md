@@ -4,7 +4,7 @@
 
 **Base aprovada:** `5a9751b` (`V2-08B/V2-08C`)
 
-**Status:** implementação local concluída; aguardando aprovação visual de Gabriel
+**Status:** aprovado visualmente por Gabriel em 21/08/2026
 
 **Referência:** `referencias_por_tela/05-entradas-desktop.png`
 
@@ -83,5 +83,5 @@
 
 ## 7. Gate
 
-O marco para no V2-09A e aguarda decisão visual de Gabriel. A aba Entregas
-(`V2-10`) não deve ser iniciada antes desta aprovação.
+Gabriel aprovou o marco V2-09A em 21/08/2026. A decisão encerra o gate de
+Entradas e libera exclusivamente a branch própria da aba Entregas (`V2-10`).
