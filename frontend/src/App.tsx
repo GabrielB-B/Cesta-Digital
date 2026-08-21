@@ -27,6 +27,7 @@ import { ItemsPage } from "./pages/ItemsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { StockBatchCreatePage } from "./pages/StockBatchCreatePage";
+import { StockBatchesPage } from "./pages/StockBatchesPage";
 import { StockMovementCreatePage } from "./pages/StockMovementCreatePage";
 import { UsersPage } from "./pages/UsersPage";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
@@ -159,6 +160,14 @@ function App() {
               element={
                 <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
                   <ItemDetailPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="stock-batches"
+              element={
+                <RoleRoute allowedRoles={ROUTE_ACCESS.operations}>
+                  <StockBatchesPage />
                 </RoleRoute>
               }
             />

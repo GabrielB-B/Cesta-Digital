@@ -257,6 +257,20 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Aprovação visual | conjunto V2-08B/V2-08C aprovado por Gabriel em 21/08/2026 |
 | Publicação | não realizada; migration permanece local e o `NO-GO` profissional permanece |
 
+### Checkpoint local V2-09A de Entradas — 21/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-entradas` a partir do V2-08B/V2-08C aprovado (`5a9751b`) |
+| Rotas | novo histórico `/stock-batches`; cadastro `/stock-batches/new` e seus deep links preservados |
+| Desktop | sidebar fixa, histórico paginado e formulário real lado a lado |
+| Mobile/tablet | cartões próprios em 360/390/768 e cadastro dedicado, sem overflow horizontal |
+| Integridade | origem, lote, quantidade, validade, localização e situação vêm da API; fornecedor e responsável nominais não foram inventados |
+| Contratos | `GET/POST /stock-batches` e payload existentes; RBAC `admin`/`operador`; nenhuma mudança no backend ou banco |
+| Frontend local | lint e build aprovados; E2E 37/37; visual V2-09A 6 aprovados e 2 skips intencionais |
+| Aprovação visual | pendente de Gabriel; galeria local V2-09A preparada |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.

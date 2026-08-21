@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-09A · Entradas</title>
+    <style>
+      :root { color: #142033; background: #f5f6f8; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+      header { display: grid; gap: 8px; margin-bottom: 28px; }
+      h1, h2, p { margin: 0; }
+      h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.04em; }
+      h2 { font-size: 18px; }
+      p { color: #667085; line-height: 1.55; }
+      .status { width: fit-content; margin-top: 8px; padding: 7px 12px; color: #a15c00; background: #fff2dc; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      section { margin-top: 32px; }
+      .section-heading { display: grid; gap: 4px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+      .responsive { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      figure { margin: 0; overflow: hidden; background: white; border: 1px solid #e2e5e9; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.07); }
+      figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; color: #263247; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8eaed; }
+      figcaption span { color: #7b8492; font-weight: 500; }
+      figure a { display: block; background: #eef0f3; }
+      img { display: block; width: 100%; height: auto; }
+      .mobile img { width: min(100%, 390px); margin: 0 auto; }
+      .notes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
+      .note strong { display: block; margin-bottom: 5px; font-size: 14px; }
+      .note p { font-size: 13px; }
+      @media (max-width: 900px) {
+        main { width: min(100% - 20px, 680px); padding-top: 24px; }
+        .grid, .responsive, .notes { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>V2-09A · Entradas</h1>
+        <p>Comparação da direção visual com o histórico real de lotes e o fluxo seguro de recebimento.</p>
+        <span class="status">Aguardando aprovação visual</span>
+      </header>
+
+      <section>
+        <div class="section-heading">
+          <h2>Referência × implementação</h2>
+          <p>Clique em qualquer imagem para abrir a captura original em uma nova aba.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Referência específica <span>direção visual 05</span></figcaption>
+            <a href="referencia-entradas-desktop.png" target="_blank" rel="noreferrer"><img src="referencia-entradas-desktop.png" alt="Referência aprovada da tela Entradas" /></a>
+          </figure>
+          <figure>
+            <figcaption>Implementação desktop <span>1440 px · captura completa</span></figcaption>
+            <a href="entradas-desktop-1440.png" target="_blank" rel="noreferrer"><img src="entradas-desktop-1440.png" alt="Entradas V2 em desktop" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Composição responsiva</h2>
+          <p>Desktop mantém histórico e formulário lado a lado; tablet e mobile recebem cartões e cadastro dedicado.</p>
+        </div>
+        <div class="grid responsive">
+          <figure class="mobile">
+            <figcaption>Mobile compacto <span>360 × 800</span></figcaption>
+            <a href="entradas-mobile-360.png" target="_blank" rel="noreferrer"><img src="entradas-mobile-360.png" alt="Entradas em 360 pixels" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Mobile principal <span>390 × 844</span></figcaption>
+            <a href="entradas-mobile-390.png" target="_blank" rel="noreferrer"><img src="entradas-mobile-390.png" alt="Entradas em 390 pixels" /></a>
+          </figure>
+          <figure>
+            <figcaption>Tablet <span>768 × 1024</span></figcaption>
+            <a href="entradas-tablet-768.png" target="_blank" rel="noreferrer"><img src="entradas-tablet-768.png" alt="Entradas em tablet" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Cadastro de lote</h2>
+          <p>A rota existente foi preservada para acesso direto e para o fluxo iniciado no cadastro do produto.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Formulário desktop <span>campos reais da API</span></figcaption>
+            <a href="entradas-formulario-desktop-1440.png" target="_blank" rel="noreferrer"><img src="entradas-formulario-desktop-1440.png" alt="Formulário de entrada no desktop" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Formulário mobile <span>390 px</span></figcaption>
+            <a href="entradas-formulario-mobile-390.png" target="_blank" rel="noreferrer"><img src="entradas-formulario-mobile-390.png" alt="Formulário de entrada no mobile" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Fidelidade funcional</h2></div>
+        <div class="notes">
+          <div class="note"><strong>Sem dados fictícios</strong><p>Fornecedor e responsável não foram inventados. A tela usa origem, lote, localização, validade e situação fornecidos pela API.</p></div>
+          <div class="note"><strong>Rastreabilidade</strong><p>Cada registro continua sendo um lote individual, com quantidade, data de entrada e controle de validade.</p></div>
+          <div class="note"><strong>Rotas preservadas</strong><p>O histórico ganhou <code>/stock-batches</code> e o cadastro mantém <code>/stock-batches/new</code>.</p></div>
+          <div class="note"><strong>Responsividade real</strong><p>A tabela não é comprimida no celular; cartões próprios mantêm leitura e ações seguras.</p></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -121,9 +121,15 @@ export const APP_ROUTE_CONTRACTS = [
     allowedRoles: operationsRoles,
   },
   {
+    path: "/stock-batches",
+    title: "Entradas",
+    sectionPath: "/stock-batches",
+    allowedRoles: operationsRoles,
+  },
+  {
     path: "/stock-batches/new",
     title: "Registrar entrada",
-    sectionPath: "/items",
+    sectionPath: "/stock-batches",
     allowedRoles: operationsRoles,
   },
   {
@@ -192,6 +198,11 @@ export const NAVIGATION_CONTRACTS = [
     allowedRoles: socialRoles,
   },
   { path: "/items", label: "Estoque", allowedRoles: operationsRoles },
+  {
+    path: "/stock-batches",
+    label: "Entradas",
+    allowedRoles: operationsRoles,
+  },
   {
     path: "/item-categories",
     label: "Categorias",

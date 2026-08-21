@@ -789,6 +789,11 @@ async function mockApi(page: Page, user = currentUser) {
     await fulfillJson(route, response, { "X-Total-Count": String(response.length) });
   });
   await page.route("**/stock-batches", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+
     if (route.request().method() === "POST") {
       const payload = route.request().postDataJSON();
       const createdBatch = {
@@ -970,8 +975,8 @@ test("route access groups remain equal to the approved RBAC baseline", () => {
   });
 });
 
-test("route metadata remains aligned with the 26-path contract", () => {
-  expect(APP_ROUTE_CONTRACTS).toHaveLength(26);
+test("route metadata remains aligned with the 27-path contract", () => {
+  expect(APP_ROUTE_CONTRACTS).toHaveLength(27);
 
   for (const route of APP_ROUTE_CONTRACTS) {
     expect(getRouteMeta(route.path)).toMatchObject({
@@ -1465,6 +1470,34 @@ test("item creation guides the first stock entry with conditional expiration", a
   });
   await expect(createdEntryCard).toContainText("31/12/2099");
   await expect(createdEntryCard).toContainText("LT-MOCK-");
+});
+
+test("entries history uses real batch data and registers from the desktop panel", async ({ page }) => {
+  await page.goto("/stock-batches");
+
+  await expect(page.getByRole("heading", { level: 1, name: "Entradas" })).toBeVisible();
+  const historyTable = page.getByRole("table", { name: "Histórico de lotes recebidos" });
+  await expect(historyTable).toBeVisible();
+  await expect(historyTable.getByRole("cell", { name: "LT-MOCK-001" })).toBeVisible();
+  await expect(historyTable.getByText("Doação de item", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Família Silva")).toHaveCount(0);
+  await expect(
+    page.getByLabel("Navegação principal").getByRole("link", { name: "Entradas" }),
+  ).toHaveAttribute("aria-current", "page");
+
+  const formPanel = page.getByLabel("Cadastro rápido de entrada");
+  await formPanel.getByRole("combobox", { name: "Item", exact: true }).selectOption("1");
+  await formPanel.getByLabel("Data de validade do lote").fill("2099-12-31");
+
+  const requestPromise = page.waitForRequest(
+    (request) => request.url().endsWith("/stock-batches") && request.method() === "POST",
+  );
+  await formPanel.getByRole("button", { name: "Registrar entrada" }).click();
+  await requestPromise;
+
+  await expect(
+    formPanel.getByText("Entrada registrada. O histórico e o saldo do produto foram atualizados."),
+  ).toBeVisible();
 });
 
 test("item creation persists an explicitly selected catalog image after the product", async ({

@@ -22,6 +22,7 @@ type MenuIconName =
   | "assessments"
   | "finance"
   | "items"
+  | "entries"
   | "categories"
   | "baskets"
   | "deliveries"
@@ -237,6 +238,12 @@ export function AppLayout() {
           path: "/items",
           label: "Estoque",
           icon: "items",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+        },
+        {
+          path: "/stock-batches",
+          label: "Entradas",
+          icon: "entries",
           visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
         },
         {
