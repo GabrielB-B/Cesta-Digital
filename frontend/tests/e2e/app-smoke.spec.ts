@@ -494,6 +494,69 @@ async function mockApi(page: Page, user = currentUser) {
     { ...inactiveStockItem },
   ];
 
+  const getStockOverview = (requestUrl: string) => {
+    const url = new URL(requestUrl);
+    const query = (url.searchParams.get("q") ?? "").toLocaleLowerCase("pt-BR");
+    const active = url.searchParams.get("is_active");
+    const attention = url.searchParams.get("attention");
+    const overviewItems = mockedStockSummaries.map((summary) => ({
+      ...summary,
+      next_expiration_date: summary.item_id === 1 ? "2099-12-31" : null,
+      expiring_soon_batches: 0,
+      expired_batches: summary.item_id === 1 ? 1 : 0,
+      missing_expiration_batches: summary.item_id === 1 ? 1 : 0,
+      restricted_batches: 0,
+    }));
+    const filteredItems = overviewItems.filter((entry) => {
+      const matchesQuery = !query || [
+        entry.item_name,
+        entry.category_name,
+        entry.unit_measure,
+      ].some((value) => value.toLocaleLowerCase("pt-BR").includes(query));
+      const matchesActive = active === null || entry.is_active === (active === "true");
+      const matchesAttention =
+        !attention ||
+        (attention === "estoque_baixo" && entry.is_active && entry.is_below_minimum) ||
+        (attention === "vencendo_em_breve" && entry.expiring_soon_batches > 0) ||
+        (attention === "vencido" && entry.expired_batches > 0) ||
+        (attention === "validade_ausente" && entry.missing_expiration_batches > 0) ||
+        (attention === "restrito" && entry.restricted_batches > 0);
+      return matchesQuery && matchesActive && matchesAttention;
+    });
+
+    return {
+      items: filteredItems,
+      total: filteredItems.length,
+      limit: 25,
+      offset: 0,
+      reference_date: "2026-08-20",
+      due_soon_days: 15,
+      summary: {
+        total_items: overviewItems.length,
+        active_items: overviewItems.filter((entry) => entry.is_active).length,
+        low_stock_items: overviewItems.filter(
+          (entry) => entry.is_active && entry.is_below_minimum,
+        ).length,
+        expiring_soon_batches: overviewItems.reduce(
+          (total, entry) => total + entry.expiring_soon_batches,
+          0,
+        ),
+        expired_batches: overviewItems.reduce(
+          (total, entry) => total + entry.expired_batches,
+          0,
+        ),
+        missing_expiration_batches: overviewItems.reduce(
+          (total, entry) => total + entry.missing_expiration_batches,
+          0,
+        ),
+        restricted_batches: overviewItems.reduce(
+          (total, entry) => total + entry.restricted_batches,
+          0,
+        ),
+      },
+    };
+  };
+
   const recomputeStockSummary = (itemId: number) => {
     const summary = mockedStockSummaries.find(
       (entry) => entry.item_id === itemId
@@ -711,6 +774,12 @@ async function mockApi(page: Page, user = currentUser) {
       "X-Total-Count": String(mockedStockSummaries.length),
     })
   );
+  await page.route("**/stock-overview?**", async (route) => {
+    const overview = getStockOverview(route.request().url());
+    await fulfillJson(route, overview, {
+      "X-Total-Count": String(overview.total),
+    });
+  });
   await page.route("**/stock-batches?**", async (route) => {
     const url = new URL(route.request().url());
     const itemId = Number(url.searchParams.get("item_id") ?? 0);
@@ -1246,8 +1315,8 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
   await expect(page.getByRole("button", { name: "FAM-0001", exact: true })).toBeVisible();
 
   await mainNav.getByRole("link", { name: /^Estoque$/i }).click();
-  await expect(page.getByRole("heading", { name: "Itens", exact: true })).toBeVisible();
-  await expect(page.getByText("Arroz 1kg")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Estoque", exact: true })).toBeVisible();
+  await expect(page.getByText("Arroz 1kg").first()).toBeVisible();
 
   await mainNav.getByRole("link", { name: /Entregas/i }).click();
   await expect(page.getByRole("heading", { name: "Agendamentos e entregas" })).toBeVisible();
@@ -1301,17 +1370,17 @@ test("mobile stock entry completes without document overflow", async ({ page }) 
 
   await page.goto("/items");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Itens" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Estoque" })).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Registrar entrada" }).first()
   ).toBeVisible();
-  const inactiveRow = page.getByRole("row", {
-    name: /Farinha descontinuada/,
+  const inactiveCard = page.locator("article").filter({
+    hasText: "Farinha descontinuada",
   });
-  await expect(inactiveRow.getByText("Inativo", { exact: true })).toBeVisible();
-  await expect(inactiveRow.getByText("Atenção", { exact: true })).toHaveCount(0);
+  await expect(inactiveCard.getByText("Inativo", { exact: true })).toBeVisible();
+  await expect(inactiveCard.getByText("Atenção", { exact: true })).toHaveCount(0);
   await expect(
-    inactiveRow.getByRole("link", { name: "Registrar entrada" })
+    inactiveCard.getByRole("link", { name: "Registrar entrada" })
   ).toHaveCount(0);
 });
 
@@ -1396,6 +1465,78 @@ test("item creation guides the first stock entry with conditional expiration", a
   });
   await expect(createdEntryCard).toContainText("31/12/2099");
   await expect(createdEntryCard).toContainText("LT-MOCK-");
+});
+
+test("item creation persists an explicitly selected catalog image after the product", async ({
+  page,
+}) => {
+  const barcode = "7891000100103";
+  const imageUrl =
+    "https://images.openfoodfacts.org/images/products/789/100/010/0103/front_pt.34.400.jpg";
+
+  await page.route("**/product-images/open-facts**", async (route) =>
+    fulfillJson(route, {
+      barcode,
+      found: true,
+      has_image: true,
+      product_name: "Leite Condensado Integral Moça",
+      brands: "Nestlé, Moça",
+      quantity: "395 g",
+      image_url: imageUrl,
+      source_name: "Open Food Facts",
+      attribution: "Open Food Facts contributors · CC BY-SA 3.0",
+      license_name: "CC BY-SA 3.0",
+      license_url: "https://creativecommons.org/licenses/by-sa/3.0/",
+    })
+  );
+  await page.route(imageUrl, async (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "image/png",
+      body: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII=",
+        "base64"
+      ),
+    })
+  );
+  await page.route("**/items/2/image/import-open-facts", async (route) =>
+    fulfillJson(route, {
+      item_id: 2,
+      image_path: "/public/items/2/image?v=e2e-image",
+      mime_type: "image/webp",
+      size_bytes: 1240,
+      sha256: "e2e-image-sha256",
+      source: "open_facts",
+      source_url: imageUrl,
+      attribution: "Open Food Facts contributors · CC BY-SA 3.0",
+    })
+  );
+
+  await page.goto("/items/new");
+  await page.getByLabel("Categoria").selectOption("1");
+  await page.getByLabel("Nome do item").fill("Leite Condensado Moça 395g");
+  await page.getByLabel("Código EAN/GTIN").fill(barcode);
+  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByRole("button", { name: "Usar esta foto" }).click();
+
+  const itemRequestPromise = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return url.pathname.endsWith("/items") && request.method() === "POST";
+  });
+  const imageRequestPromise = page.waitForRequest(
+    (request) =>
+      new URL(request.url()).pathname.endsWith("/items/2/image/import-open-facts") &&
+      request.method() === "POST"
+  );
+  await page.getByRole("button", { name: "Cadastrar item" }).click();
+
+  const [itemRequest, imageRequest] = await Promise.all([
+    itemRequestPromise,
+    imageRequestPromise,
+  ]);
+  expect(itemRequest.postDataJSON()).toMatchObject({ barcode });
+  expect(imageRequest.postDataJSON()).toEqual({ barcode });
+  await expect(page).toHaveURL(/\/stock-batches\/new\?itemId=2&from=item-create$/);
 });
 
 test("invalid stock entry item query never becomes a selectable payload", async ({

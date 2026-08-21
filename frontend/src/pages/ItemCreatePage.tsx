@@ -4,8 +4,13 @@ import { api } from "../api/client";
 import { FormActions } from "../components/FormActions";
 import { FormSection } from "../components/FormSection";
 import { PageHeader } from "../components/PageHeader";
+import {
+  ProductImagePicker,
+  type ProductImageSelection,
+} from "../components/ProductImagePicker";
 import { StateMessage } from "../components/StateMessage";
 import { getApiErrorMessage } from "../utils/api-error";
+import { persistProductImageSelection } from "../utils/product-image";
 import type {
   ItemCategoryResponse,
   ItemCreatePayload,
@@ -21,10 +26,14 @@ export function ItemCreatePage() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [imageSelection, setImageSelection] = useState<ProductImageSelection>({
+    kind: "unchanged",
+  });
 
   const [formData, setFormData] = useState({
     category_id: "",
     name: "",
+    barcode: "",
     unit_measure: "unidade",
     tracks_expiration: true,
     is_active: true,
@@ -101,6 +110,7 @@ export function ItemCreatePage() {
       const payload: ItemCreatePayload = {
         category_id: Number(formData.category_id),
         name: formData.name.trim(),
+        barcode: formData.barcode.trim() || null,
         unit_measure: formData.unit_measure,
         tracks_expiration: formData.tracks_expiration,
         is_active: formData.is_active,
@@ -113,6 +123,23 @@ export function ItemCreatePage() {
         "/items",
         payload
       );
+
+      try {
+        await persistProductImageSelection(response.data.id, imageSelection);
+      } catch (imageError) {
+        navigate(`/items/${response.data.id}`, {
+          state: {
+            flash: {
+              type: "error",
+              message: `Produto cadastrado, mas a imagem não foi salva. ${getApiErrorMessage(
+                imageError,
+                "Revise a imagem no cadastro do produto.",
+              )}`,
+            },
+          },
+        });
+        return;
+      }
 
       if (!response.data.is_active) {
         navigate(`/items/${response.data.id}`, {
@@ -257,6 +284,17 @@ export function ItemCreatePage() {
             />
           </label>
         </FormSection>
+
+        <ProductImagePicker
+          productName={formData.name}
+          barcode={formData.barcode}
+          onBarcodeChange={(barcode) =>
+            setFormData((previous) => ({ ...previous, barcode }))
+          }
+          selection={imageSelection}
+          onSelectionChange={setImageSelection}
+          disabled={isSubmitting}
+        />
 
         {error ? (
           <StateMessage variant="error">{error}</StateMessage>

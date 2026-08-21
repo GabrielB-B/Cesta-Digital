@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.item import Item
 from app.models.item_category import ItemCategory
+from app.models.item_image import ItemImage
 from app.models.stock_batch import StockBatch
 from app.schemas.stock_summary import StockOverviewAttention
 from app.services.stock_availability_policy import (
@@ -52,12 +53,16 @@ def _stock_overview_aggregate(
         select(
             Item.id.label("item_id"),
             Item.name.label("item_name"),
+            Item.barcode.label("barcode"),
             Item.category_id.label("category_id"),
             ItemCategory.name.label("category_name"),
             Item.unit_measure.label("unit_measure"),
             Item.tracks_expiration.label("tracks_expiration"),
             Item.is_active.label("is_active"),
             Item.minimum_stock_alert.label("minimum_stock_alert"),
+            ItemImage.sha256.label("image_sha256"),
+            ItemImage.source.label("image_source"),
+            ItemImage.attribution.label("image_attribution"),
             func.coalesce(
                 func.sum(
                     case(
@@ -94,16 +99,21 @@ def _stock_overview_aggregate(
             ),
         )
         .join(ItemCategory, Item.category_id == ItemCategory.id)
+        .outerjoin(ItemImage, ItemImage.item_id == Item.id)
         .outerjoin(StockBatch, StockBatch.item_id == Item.id)
         .group_by(
             Item.id,
             Item.name,
+            Item.barcode,
             Item.category_id,
             ItemCategory.name,
             Item.unit_measure,
             Item.tracks_expiration,
             Item.is_active,
             Item.minimum_stock_alert,
+            ItemImage.sha256,
+            ItemImage.source,
+            ItemImage.attribution,
         )
     )
 
@@ -114,6 +124,7 @@ def _stock_overview_aggregate(
         filters.append(
             or_(
                 func.lower(Item.name).like(normalized_term),
+                Item.barcode.like(f"%{search_term}%"),
                 func.lower(Item.unit_measure).like(normalized_term),
                 func.lower(ItemCategory.name).like(normalized_term),
             )
@@ -149,6 +160,7 @@ def _serialize_overview_item(row) -> dict:
     return {
         "item_id": row.item_id,
         "item_name": row.item_name,
+        "barcode": row.barcode,
         "category_id": row.category_id,
         "category_name": row.category_name,
         "unit_measure": row.unit_measure,
@@ -163,6 +175,13 @@ def _serialize_overview_item(row) -> dict:
         "expired_batches": int(row.expired_batches or 0),
         "missing_expiration_batches": int(row.missing_expiration_batches or 0),
         "restricted_batches": int(row.restricted_batches or 0),
+        "image_path": (
+            f"/public/items/{row.item_id}/image?v={row.image_sha256[:12]}"
+            if row.image_sha256
+            else None
+        ),
+        "image_source": row.image_source,
+        "image_attribution": row.image_attribution,
     }
 
 
@@ -291,6 +310,7 @@ def list_stock_summary(
         filters.append(
             or_(
                 func.lower(Item.name).like(normalized_term),
+                Item.barcode.like(f"%{search_term}%"),
                 func.lower(Item.unit_measure).like(normalized_term),
                 func.lower(ItemCategory.name).like(normalized_term),
             )
@@ -307,12 +327,16 @@ def list_stock_summary(
         select(
             Item.id.label("item_id"),
             Item.name.label("item_name"),
+            Item.barcode.label("barcode"),
             Item.category_id.label("category_id"),
             ItemCategory.name.label("category_name"),
             Item.unit_measure.label("unit_measure"),
             Item.tracks_expiration.label("tracks_expiration"),
             Item.is_active.label("is_active"),
             Item.minimum_stock_alert.label("minimum_stock_alert"),
+            ItemImage.sha256.label("image_sha256"),
+            ItemImage.source.label("image_source"),
+            ItemImage.attribution.label("image_attribution"),
             func.coalesce(
                 func.sum(
                     case(
@@ -328,16 +352,21 @@ def list_stock_summary(
             func.count(StockBatch.id).label("total_batches"),
         )
         .join(ItemCategory, Item.category_id == ItemCategory.id)
+        .outerjoin(ItemImage, ItemImage.item_id == Item.id)
         .outerjoin(StockBatch, StockBatch.item_id == Item.id)
         .group_by(
             Item.id,
             Item.name,
+            Item.barcode,
             Item.category_id,
             ItemCategory.name,
             Item.unit_measure,
             Item.tracks_expiration,
             Item.is_active,
             Item.minimum_stock_alert,
+            ItemImage.sha256,
+            ItemImage.source,
+            ItemImage.attribution,
         )
         .order_by(Item.name.asc())
     )
@@ -362,6 +391,7 @@ def list_stock_summary(
             {
                 "item_id": row.item_id,
                 "item_name": row.item_name,
+                "barcode": row.barcode,
                 "category_id": row.category_id,
                 "category_name": row.category_name,
                 "unit_measure": row.unit_measure,
@@ -371,6 +401,13 @@ def list_stock_summary(
                 "total_quantity": total_quantity,
                 "total_batches": int(row.total_batches or 0),
                 "is_below_minimum": total_quantity < minimum_stock_alert,
+                "image_path": (
+                    f"/public/items/{row.item_id}/image?v={row.image_sha256[:12]}"
+                    if row.image_sha256
+                    else None
+                ),
+                "image_source": row.image_source,
+                "image_attribution": row.image_attribution,
             }
         )
 

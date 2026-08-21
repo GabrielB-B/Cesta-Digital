@@ -226,6 +226,37 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Backend local | `compileall` aprovado; suíte completa 62/62 testes aprovados |
 | Publicação | não realizada; evidência é local e o `NO-GO` profissional permanece |
 
+### Checkpoint local V2-08B de Estoque — 20/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-estoque` a partir do contrato V2-08A (`c1041b6`) |
+| Desktop | sidebar fixa, três indicadores globais, tabela paginada e painel do item selecionado |
+| Mobile/tablet | cards próprios em 360/390/768, sem overflow; seção Estoque permanece visível e ativa |
+| Escopo | alimentos, higiene e demais produtos doados; nenhum dado de família/pessoa |
+| Integridade | saldo utilizável e riscos vêm do backend; nenhuma agregação incompleta no cliente |
+| Contratos preservados | rotas, RBAC e escritas de item/lote/movimento inalterados; sem exportação ou transferência fictícia |
+| Frontend local | lint e build aprovados; E2E 35/35; visual V2-08B 9 aprovados e 3 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Aprovação visual | conjunto V2-08B/V2-08C aprovado por Gabriel em 21/08/2026 |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-08C de imagens do Estoque — 20/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/estoque-v2-imagens-produto` sobre o V2-08B local |
+| Cadastro | EAN/GTIN único, upload próprio e consulta explícita por código de barras; nenhuma importação automática |
+| Persistência | foto validada, otimizada para WebP e salva em tabela um-para-um; listagem não depende de serviço externo |
+| Transparência | origem e atribuição visíveis para Open Facts; produto sem foto mantém fallback operacional |
+| Segurança | limite de arquivo/dimensões, remoção de metadados, allowlist HTTPS, timeout, proteção contra redirecionamento e auditoria |
+| RBAC | `admin`/`operador` autorizados; `lider_social` 403; arquivo público não expõe metadados de estoque |
+| Banco | migration aditiva `d4e5f6a7b8c9` criada localmente; publicação bloqueada até backup/restore e aprovação |
+| Backend local | `compileall`; suíte completa 67/67; contrato específico de imagens 5/5 |
+| Frontend local | lint e build; E2E 36/36; gate visual 11 aprovados e 5 skips intencionais |
+| Aprovação visual | conjunto V2-08B/V2-08C aprovado por Gabriel em 21/08/2026 |
+| Publicação | não realizada; migration permanece local e o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.

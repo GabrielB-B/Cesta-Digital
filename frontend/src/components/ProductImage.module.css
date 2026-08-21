@@ -1,0 +1,35 @@
+.frame {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: linear-gradient(145deg, #fff 10%, #f7f5fb 100%);
+  border: 1px solid #ece8f1;
+  border-radius: 0.55rem;
+}
+
+.frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+}
+
+.compact { width: 2rem; height: 2rem; }
+.card { width: 3.25rem; height: 3.25rem; border-radius: 0.75rem; }
+.detail { width: 5.5rem; height: 6.5rem; border-radius: 0.9rem; }
+
+.fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #ed1970;
+  background: #fff0f6;
+}
+
+.fallback svg { width: 48%; height: 48%; stroke-width: 1.7; }
+
+@media (max-width: 620px) {
+  .detail { width: 4.5rem; height: 5.25rem; }
+}

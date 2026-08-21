@@ -4585,6 +4585,30 @@ textarea::placeholder {
 
 }
 
+.detail-item--product-image {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 7.5rem;
+  background: linear-gradient(115deg, #fff 0%, #fdf8fb 100%);
+}
+
+.detail-item--product-image > span:last-child {
+  display: grid;
+  gap: 0.3rem;
+  color: #253147;
+  font-weight: 700;
+}
+
+.detail-item--product-image small {
+  max-width: 32rem;
+  color: var(--cd-text-muted);
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1rem;
+}
+
 @media (max-width: 700px) {
   .trace-card,
   .delivery-trace {

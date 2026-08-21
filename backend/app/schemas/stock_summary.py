@@ -9,6 +9,7 @@ class StockSummaryResponse(BaseModel):
 
     item_id: int
     item_name: str
+    barcode: str | None
     category_id: int
     category_name: str
     unit_measure: str
@@ -18,6 +19,9 @@ class StockSummaryResponse(BaseModel):
     total_quantity: int
     total_batches: int
     is_below_minimum: bool
+    image_path: str | None
+    image_source: str | None
+    image_attribution: str | None
 
 
 class StockAlertResponse(BaseModel):

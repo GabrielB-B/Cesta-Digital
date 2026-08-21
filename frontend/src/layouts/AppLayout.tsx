@@ -290,11 +290,20 @@ export function AppLayout() {
       "/deliveries",
       "/financial-summary",
     ];
-    return priorityPaths
+    const priorityItems = priorityPaths
       .map((path) => menuItems.find((item) => item.path === path))
       .filter((item): item is MenuItem => Boolean(item))
       .slice(0, 3);
-  }, [menuItems]);
+
+    if (
+      currentSection &&
+      !priorityItems.some((item) => item.path === currentSection.path)
+    ) {
+      return [...priorityItems.slice(0, 2), currentSection];
+    }
+
+    return priorityItems;
+  }, [currentSection, menuItems]);
   const primaryRole = formatRole(userRoles[0] ?? "");
   const accountInitials = getInitials(user?.name);
   const isMoreCurrent = Boolean(

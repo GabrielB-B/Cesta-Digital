@@ -41,6 +41,14 @@ class Settings(BaseSettings):
     login_rate_limit_lockout_seconds: int = 900
     extreme_poverty_max_income_per_capita: Decimal = Decimal("109")
     poverty_max_income_per_capita: Decimal = Decimal("218")
+    product_image_max_upload_bytes: int = 5 * 1024 * 1024
+    product_image_max_stored_bytes: int = 1536 * 1024
+    product_image_max_dimension: int = 1200
+    open_facts_timeout_seconds: int = 8
+    open_facts_user_agent: str = (
+        "CestaDigital/0.1 "
+        "(https://github.com/GabrielB-B/Cesta-Digital)"
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -114,6 +122,23 @@ class Settings(BaseSettings):
 
         if self.db_write_timeout_seconds < 1:
             raise ValueError("DB_WRITE_TIMEOUT_SECONDS deve ser maior que zero.")
+
+        if self.product_image_max_upload_bytes < 1024:
+            raise ValueError("PRODUCT_IMAGE_MAX_UPLOAD_BYTES deve ser maior que 1 KB.")
+
+        if self.product_image_max_stored_bytes < 1024:
+            raise ValueError("PRODUCT_IMAGE_MAX_STORED_BYTES deve ser maior que 1 KB.")
+
+        if self.product_image_max_stored_bytes > self.product_image_max_upload_bytes:
+            raise ValueError(
+                "PRODUCT_IMAGE_MAX_STORED_BYTES nao pode exceder o limite de upload."
+            )
+
+        if self.product_image_max_dimension < 320:
+            raise ValueError("PRODUCT_IMAGE_MAX_DIMENSION deve ser ao menos 320 px.")
+
+        if self.open_facts_timeout_seconds < 1:
+            raise ValueError("OPEN_FACTS_TIMEOUT_SECONDS deve ser maior que zero.")
 
         return self
 

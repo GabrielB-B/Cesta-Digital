@@ -6,6 +6,11 @@ import { FormActions } from "../components/FormActions";
 import { FormSection } from "../components/FormSection";
 import { PageHeader } from "../components/PageHeader";
 import { PanelHeader } from "../components/PanelHeader";
+import { ProductImage } from "../components/ProductImage";
+import {
+  ProductImagePicker,
+  type ProductImageSelection,
+} from "../components/ProductImagePicker";
 import { StateMessage } from "../components/StateMessage";
 import type {
   ItemCategoryResponse,
@@ -19,6 +24,7 @@ import type {
 } from "../types/item";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatCurrency, formatDateOnly } from "../utils/format";
+import { persistProductImageSelection } from "../utils/product-image";
 import {
   formatStockMovementType,
   formatStockSourceType,
@@ -63,6 +69,7 @@ export function ItemDetailPage() {
   const [editForm, setEditForm] = useState({
     category_id: "",
     name: "",
+    barcode: "",
     unit_measure: "unidade",
     tracks_expiration: true,
     is_active: true,
@@ -75,6 +82,9 @@ export function ItemDetailPage() {
   const [isSavingBatchId, setIsSavingBatchId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [imageSelection, setImageSelection] = useState<ProductImageSelection>({
+    kind: "unchanged",
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -127,6 +137,7 @@ export function ItemDetailPage() {
         setEditForm({
           category_id: String(loadedItem.category_id),
           name: loadedItem.name,
+          barcode: loadedItem.barcode ?? "",
           unit_measure: loadedItem.unit_measure,
           tracks_expiration: loadedItem.tracks_expiration,
           is_active: loadedItem.is_active,
@@ -225,6 +236,7 @@ export function ItemDetailPage() {
       const payload: ItemUpdatePayload = {
         category_id: Number(editForm.category_id),
         name: editForm.name.trim(),
+        barcode: editForm.barcode.trim() || null,
         unit_measure: editForm.unit_measure,
         tracks_expiration: editForm.tracks_expiration,
         is_active: editForm.is_active,
@@ -234,17 +246,38 @@ export function ItemDetailPage() {
       };
 
       const response = await api.put<ItemDetailResponse>(`/items/${itemId}`, payload);
+      let updatedItem = response.data;
+
+      try {
+        await persistProductImageSelection(response.data.id, imageSelection);
+        if (imageSelection.kind !== "unchanged") {
+          const refreshedItem = await api.get<ItemDetailResponse>(`/items/${itemId}`);
+          updatedItem = refreshedItem.data;
+        }
+      } catch (imageError) {
+        setItem(response.data);
+        setError(
+          `Os dados do produto foram salvos, mas a imagem não foi atualizada. ${getApiErrorMessage(
+            imageError,
+            "Tente novamente.",
+          )}`,
+        );
+        return;
+      }
+
       setSummary(null);
-      setItem(response.data);
+      setItem(updatedItem);
+      setImageSelection({ kind: "unchanged" });
       setEditForm({
-        category_id: String(response.data.category_id),
-        name: response.data.name,
-        unit_measure: response.data.unit_measure,
-        tracks_expiration: response.data.tracks_expiration,
-        is_active: response.data.is_active,
-        reference_unit_value: String(response.data.reference_unit_value),
-        minimum_stock_alert: String(response.data.minimum_stock_alert),
-        notes: response.data.notes ?? "",
+        category_id: String(updatedItem.category_id),
+        name: updatedItem.name,
+        barcode: updatedItem.barcode ?? "",
+        unit_measure: updatedItem.unit_measure,
+        tracks_expiration: updatedItem.tracks_expiration,
+        is_active: updatedItem.is_active,
+        reference_unit_value: String(updatedItem.reference_unit_value),
+        minimum_stock_alert: String(updatedItem.minimum_stock_alert),
+        notes: updatedItem.notes ?? "",
       });
 
       try {
@@ -254,7 +287,7 @@ export function ItemDetailPage() {
         );
         setSummary(
           summaryResponse.data.find(
-            (entry) => entry.item_id === response.data.id
+            (entry) => entry.item_id === updatedItem.id
           ) ?? null
         );
       } catch {
@@ -435,6 +468,13 @@ export function ItemDetailPage() {
           <PanelHeader eyebrow="Resumo" title="Dados principais" />
 
           <div className="detail-grid">
+            <div className="detail-item detail-item--product-image">
+              <ProductImage name={item.name} src={item.image_path} size="detail" eager />
+              <span>
+                {item.has_image ? "Imagem oficial do produto" : "Sem imagem cadastrada"}
+                {item.image_attribution ? <small>{item.image_attribution}</small> : null}
+              </span>
+            </div>
             <div className="detail-item">
               <span>Categoria</span>
               <strong>{item.category_name}</strong>
@@ -454,6 +494,10 @@ export function ItemDetailPage() {
             <div className="detail-item">
               <span>Total de lotes</span>
               <strong>{summary?.total_batches ?? batches.length}</strong>
+            </div>
+            <div className="detail-item">
+              <span>Código de barras</span>
+              <strong>{item.barcode || "Não informado"}</strong>
             </div>
             <div className="detail-item">
               <span>Controla validade</span>
@@ -597,6 +641,20 @@ export function ItemDetailPage() {
               />
             </label>
           </FormSection>
+
+          <ProductImagePicker
+            productName={editForm.name}
+            barcode={editForm.barcode}
+            onBarcodeChange={(barcode) =>
+              setEditForm((previous) => ({ ...previous, barcode }))
+            }
+            selection={imageSelection}
+            onSelectionChange={setImageSelection}
+            currentImagePath={item.image_path}
+            currentImageSource={item.image_source}
+            currentImageAttribution={item.image_attribution}
+            disabled={isSavingItem}
+          />
 
           {successMessage ? (
             <StateMessage variant="success">{successMessage}</StateMessage>
