@@ -271,6 +271,22 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Aprovação visual | aprovada por Gabriel em 21/08/2026; galeria local V2-09A preservada como evidência |
 | Publicação | não realizada; o `NO-GO` profissional permanece |
 
+### Checkpoint local V2-10 de Entregas — 21/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-entregas` a partir do V2-09A aprovado (`78d114a`) |
+| Contrato | `GET /delivery-operations` com contadores globais, períodos operacionais, busca e paginação calculados no servidor |
+| Desktop | sidebar fixa, quatro indicadores, agenda em tabela e painel real da entrega selecionada |
+| Mobile/tablet | indicadores e cartões próprios em 360/390/768, sem overflow horizontal |
+| Regra social | decisão de aptidão visível; o novo agendamento oferece somente famílias aptas, sem alterar silenciosamente a regra legada do backend |
+| Integridade | nenhum mapa, rota, janela de horário ou identidade inexistente foi simulada; confirmação e baixa rastreável de estoque foram preservadas |
+| Backend local | `compileall` aprovado; suíte completa 69/69 |
+| Frontend local | lint e build aprovados; E2E 37/37; visual V2-10 8 aprovados e 4 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Aprovação visual | aguardando Gabriel; galeria local V2-10 disponível e clicável |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.

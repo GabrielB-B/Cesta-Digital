@@ -1,27 +1,24 @@
 import { useEffect, useState } from "react";
+import { ArrowLeft, CalendarPlus, CheckCircle2, Info } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
-import { getApiErrorMessage } from "../utils/api-error";
-import { formatTodayForInput } from "../utils/format";
 import type { BasketTypeResponse } from "../types/basket";
 import type {
   DeliveryScheduleCreatePayload,
   DeliveryScheduleResponse,
 } from "../types/delivery";
 import type { FamilyListItemResponse } from "../types/family";
+import { getApiErrorMessage } from "../utils/api-error";
+import { formatTodayForInput } from "../utils/format";
+import styles from "./DeliveryScheduleCreatePage.module.css";
 
-/**
- * Formulário de criação de agendamento de retirada.
- */
 export function DeliveryScheduleCreatePage() {
   const navigate = useNavigate();
-
   const [families, setFamilies] = useState<FamilyListItemResponse[]>([]);
   const [basketTypes, setBasketTypes] = useState<BasketTypeResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-
   const [formData, setFormData] = useState({
     family_id: "",
     basket_type_id: "",
@@ -30,38 +27,35 @@ export function DeliveryScheduleCreatePage() {
     notes: "",
   });
 
+  const eligibleFamilies = families.filter(
+    (family) =>
+      family.status === "apta_recorrente" || family.status === "apta_emergencial",
+  );
+
   useEffect(() => {
     let isMounted = true;
 
-    async function loadOptions() {
-      try {
-        setIsLoading(true);
-        const [familiesResponse, basketTypesResponse] = await Promise.all([
-          api.get<FamilyListItemResponse[]>("/families"),
-          api.get<BasketTypeResponse[]>("/basket-types"),
-        ]);
-
-        if (isMounted) {
-          setFamilies(familiesResponse.data);
-          setBasketTypes(basketTypesResponse.data);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(
-            getApiErrorMessage(
-              err,
-              "Não foi possível carregar famílias e tipos de cesta."
-            )
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadOptions();
+    void Promise.all([
+      api.get<FamilyListItemResponse[]>("/families", { params: { limit: 200 } }),
+      api.get<BasketTypeResponse[]>("/basket-types", { params: { limit: 200 } }),
+    ])
+      .then(([familiesResponse, basketTypesResponse]) => {
+        if (!isMounted) return;
+        setFamilies(familiesResponse.data);
+        setBasketTypes(basketTypesResponse.data);
+      })
+      .catch((requestError) => {
+        if (!isMounted) return;
+        setError(
+          getApiErrorMessage(
+            requestError,
+            "Não foi possível carregar famílias e tipos de cesta.",
+          ),
+        );
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
 
     return () => {
       isMounted = false;
@@ -69,14 +63,10 @@ export function DeliveryScheduleCreatePage() {
   }, []);
 
   function handleInputChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) {
     const { name, value } = event.target;
-
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+    setFormData((previous) => ({ ...previous, [name]: value }));
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -89,7 +79,6 @@ export function DeliveryScheduleCreatePage() {
     }
 
     setIsSubmitting(true);
-
     try {
       const payload: DeliveryScheduleCreatePayload = {
         family_id: Number(formData.family_id),
@@ -98,64 +87,67 @@ export function DeliveryScheduleCreatePage() {
         status: formData.status,
         notes: formData.notes.trim() || null,
       };
-
       await api.post<DeliveryScheduleResponse>("/delivery-schedules", payload);
       navigate("/deliveries", {
         state: {
-          flash: {
-            type: "success",
-            message: "Agendamento criado com sucesso.",
-          },
+          flash: { type: "success", message: "Agendamento criado com sucesso." },
         },
       });
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Não foi possível criar o agendamento."));
+    } catch (requestError) {
+      setError(
+        getApiErrorMessage(requestError, "Não foi possível criar o agendamento."),
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <div className="page-stack">
-      <section className="hero-card">
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
+        <Link to="/deliveries" className={styles.backLink}>
+          <ArrowLeft aria-hidden="true" /> Voltar
+        </Link>
         <div>
-          <p className="eyebrow">Agendamento</p>
-          <h2>Novo agendamento</h2>
-          <p className="hero-card__description">
-            Registre uma retirada futura vinculando a família ao tipo de cesta.
-          </p>
+          <span>Agenda de distribuição</span>
+          <h1>Nova entrega</h1>
+          <p>Vincule uma família apta a uma cesta disponível para criar o agendamento.</p>
         </div>
-      </section>
+      </header>
 
-      <form onSubmit={handleSubmit} className="panel-card form-panel">
-        <div className="panel-card__header">
+      <form onSubmit={handleSubmit} className={styles.formCard}>
+        <div className={styles.formHeading}>
+          <span className={styles.formIcon}><CalendarPlus aria-hidden="true" /></span>
           <div>
-            <p className="eyebrow">Dados</p>
-            <h3>Informações do agendamento</h3>
+            <h2>Informações do agendamento</h2>
+            <p>A promessa respeita a decisão social e a capacidade real do estoque.</p>
           </div>
         </div>
 
-        <div className="form-grid">
-          <label className="form__group">
-            <span>Família</span>
+        <div className={styles.formGrid}>
+          <label className={styles.field}>
+            <span>Família apta <b>*</b></span>
             <select
               name="family_id"
               value={formData.family_id}
               onChange={handleInputChange}
-              disabled={isLoading}
+              disabled={isLoading || eligibleFamilies.length === 0}
               required
             >
               <option value="">Selecione</option>
-              {families.map((family) => (
+              {eligibleFamilies.map((family) => (
                 <option key={family.id} value={family.id}>
-                  {family.internal_code} - {family.city}/{family.state}
+                  {family.internal_code} · {family.city}/{family.state} · {family.status === "apta_recorrente" ? "Apta recorrente" : "Apta emergencial"}
                 </option>
               ))}
             </select>
+            <small>
+              A aptidão exibida é a decisão vigente da avaliação social da família.
+            </small>
           </label>
 
-          <label className="form__group">
-            <span>Tipo de cesta</span>
+          <label className={styles.field}>
+            <span>Tipo de cesta <b>*</b></span>
             <select
               name="basket_type_id"
               value={formData.basket_type_id}
@@ -165,21 +157,17 @@ export function DeliveryScheduleCreatePage() {
               required
             >
               <option value="">Selecione</option>
-              {basketTypes.map((basketType) => (
-                <option key={basketType.id} value={basketType.id}>
-                  {basketType.name}
-                </option>
+              {basketTypes.filter((basketType) => basketType.is_active).map((basketType) => (
+                <option key={basketType.id} value={basketType.id}>{basketType.name}</option>
               ))}
             </select>
-            <small id="basket-type-schedule-help" className="form__hint">
-              Tipos de cesta com agendamento ativo usam a capacidade do estoque
-              disponÃ­vel. Se nÃ£o houver receita ou itens suficientes, o sistema
-              bloqueia a promessa.
+            <small id="basket-type-schedule-help">
+              O sistema bloqueia a promessa quando não há receita ou estoque suficiente.
             </small>
           </label>
 
-          <label className="form__group">
-            <span>Data agendada</span>
+          <label className={styles.field}>
+            <span>Data agendada <b>*</b></span>
             <input
               type="date"
               name="scheduled_date"
@@ -189,42 +177,47 @@ export function DeliveryScheduleCreatePage() {
             />
           </label>
 
-          <label className="form__group">
+          <label className={styles.field}>
             <span>Status inicial</span>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-            >
-              <option value="agendado">Agendado</option>
-              <option value="cancelado">Cancelado</option>
+            <select name="status" value={formData.status} onChange={handleInputChange}>
+              <option value="agendado">Agendada</option>
+              <option value="cancelado">Cancelada</option>
             </select>
           </label>
 
-          <label className="form__group form__group--wide">
+          <label className={`${styles.field} ${styles.fieldWide}`}>
             <span>Observações</span>
             <textarea
               name="notes"
               value={formData.notes}
               onChange={handleInputChange}
               rows={4}
+              placeholder="Orientações de retirada ou observações operacionais"
             />
           </label>
         </div>
 
-        {error ? (
-          <p className="status-error" role="alert" aria-live="polite">
-            {error}
-          </p>
+        {!isLoading && eligibleFamilies.length === 0 ? (
+          <div className={styles.eligibilityWarning} role="status">
+            <Info aria-hidden="true" />
+            <div>
+              <strong>Nenhuma família apta disponível</strong>
+              <p>Conclua ou revise a avaliação social antes de criar uma entrega.</p>
+            </div>
+          </div>
         ) : null}
 
-        <div className="panel-actions">
-          <Link to="/deliveries" className="button button--secondary button--link">
-            Cancelar
-          </Link>
+        {error ? <p className={styles.error} role="alert">{error}</p> : null}
 
-          <button type="submit" className="button" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : "Criar agendamento"}
+        <div className={styles.actions}>
+          <Link to="/deliveries" className={styles.secondaryAction}>Cancelar</Link>
+          <button
+            type="submit"
+            className={styles.primaryAction}
+            disabled={isSubmitting || isLoading || eligibleFamilies.length === 0}
+          >
+            <CheckCircle2 aria-hidden="true" />
+            {isSubmitting ? "Salvando…" : "Criar agendamento"}
           </button>
         </div>
       </form>

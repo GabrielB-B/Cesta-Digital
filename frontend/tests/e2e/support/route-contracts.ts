@@ -158,13 +158,13 @@ export const APP_ROUTE_CONTRACTS = [
   },
   {
     path: "/deliveries",
-    title: "Agendamentos e entregas",
+    title: "Entregas",
     sectionPath: "/deliveries",
     allowedRoles: operationsRoles,
   },
   {
     path: "/deliveries/schedules/new",
-    title: "Novo agendamento",
+    title: "Nova entrega",
     sectionPath: "/deliveries",
     allowedRoles: operationsRoles,
   },

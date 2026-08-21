@@ -127,13 +127,13 @@ const ROUTE_META: RouteMeta[] = [
   },
   {
     pattern: "/deliveries",
-    title: "Agendamentos e entregas",
+    title: "Entregas",
     section: "Entregas",
     sectionPath: "/deliveries",
   },
   {
     pattern: "/deliveries/schedules/new",
-    title: "Novo agendamento",
+    title: "Nova entrega",
     section: "Entregas",
     sectionPath: "/deliveries",
   },

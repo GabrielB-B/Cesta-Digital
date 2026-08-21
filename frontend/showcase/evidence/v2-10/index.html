@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-10 · Entregas</title>
+    <style>
+      :root { color: #142033; background: #f5f6f8; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+      header { display: grid; gap: 8px; margin-bottom: 28px; }
+      h1, h2, p { margin: 0; }
+      h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.04em; }
+      h2 { font-size: 18px; }
+      p { color: #667085; line-height: 1.55; }
+      code { color: #3d4758; }
+      .status { width: fit-content; margin-top: 8px; padding: 7px 12px; color: #9a5b00; background: #fff3dc; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      section { margin-top: 32px; }
+      .section-heading { display: grid; gap: 4px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+      .responsive { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      figure { margin: 0; overflow: hidden; background: white; border: 1px solid #e2e5e9; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.07); }
+      figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; color: #263247; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8eaed; }
+      figcaption span { color: #7b8492; font-weight: 500; }
+      figure a { display: block; background: #eef0f3; cursor: zoom-in; }
+      img { display: block; width: 100%; height: auto; }
+      .mobile img { width: min(100%, 390px); margin: 0 auto; }
+      .notes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
+      .note strong { display: block; margin-bottom: 5px; font-size: 14px; }
+      .note p { font-size: 13px; }
+      @media (max-width: 900px) {
+        main { width: min(100% - 20px, 680px); padding-top: 24px; }
+        .grid, .responsive, .notes { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>V2-10 · Entregas</h1>
+        <p>Comparação fiel da direção visual com a agenda e a confirmação reais do Cesta Digital.</p>
+        <span class="status">Aguardando aprovação visual de Gabriel</span>
+      </header>
+
+      <section>
+        <div class="section-heading">
+          <h2>Referência × implementação</h2>
+          <p>Clique em qualquer imagem para abrir a captura original, em resolução integral, em uma nova aba.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Referência específica <span>direção visual 06</span></figcaption>
+            <a href="referencia-entregas-desktop.png" target="_blank" rel="noreferrer"><img src="referencia-entregas-desktop.png" alt="Referência aprovada da tela Entregas" /></a>
+          </figure>
+          <figure>
+            <figcaption>Implementação desktop <span>1440 px · dados reais</span></figcaption>
+            <a href="entregas-desktop-1440.png" target="_blank" rel="noreferrer"><img src="entregas-desktop-1440.png" alt="Entregas V2 em desktop" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Composição responsiva</h2>
+          <p>Desktop mantém tabela e contexto selecionado; tablet e mobile usam cartões operacionais sem comprimir colunas.</p>
+        </div>
+        <div class="grid responsive">
+          <figure class="mobile">
+            <figcaption>Mobile compacto <span>360 × 800</span></figcaption>
+            <a href="entregas-mobile-360.png" target="_blank" rel="noreferrer"><img src="entregas-mobile-360.png" alt="Entregas em 360 pixels" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Mobile principal <span>390 × 844</span></figcaption>
+            <a href="entregas-mobile-390.png" target="_blank" rel="noreferrer"><img src="entregas-mobile-390.png" alt="Entregas em 390 pixels" /></a>
+          </figure>
+          <figure>
+            <figcaption>Tablet <span>768 × 1024</span></figcaption>
+            <a href="entregas-tablet-768.png" target="_blank" rel="noreferrer"><img src="entregas-tablet-768.png" alt="Entregas em tablet" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Operação real preservada</h2>
+          <p>Histórico de movimentações e novo agendamento continuam nas rotas e contratos existentes.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Rastreabilidade desktop <span>lotes e movimentações reais</span></figcaption>
+            <a href="entregas-historico-desktop-1440.png" target="_blank" rel="noreferrer"><img src="entregas-historico-desktop-1440.png" alt="Histórico da entrega no desktop" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Rastreabilidade mobile <span>390 px</span></figcaption>
+            <a href="entregas-historico-mobile-390.png" target="_blank" rel="noreferrer"><img src="entregas-historico-mobile-390.png" alt="Histórico da entrega no mobile" /></a>
+          </figure>
+          <figure>
+            <figcaption>Nova entrega desktop <span>somente famílias aptas</span></figcaption>
+            <a href="entregas-formulario-desktop-1440.png" target="_blank" rel="noreferrer"><img src="entregas-formulario-desktop-1440.png" alt="Formulário de nova entrega no desktop" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Nova entrega mobile <span>390 px</span></figcaption>
+            <a href="entregas-formulario-mobile-390.png" target="_blank" rel="noreferrer"><img src="entregas-formulario-mobile-390.png" alt="Formulário de nova entrega no mobile" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Fidelidade funcional</h2></div>
+        <div class="notes">
+          <div class="note"><strong>Agenda verdadeira</strong><p>Períodos, busca, paginação e indicadores são calculados pelo novo contrato global do backend, não apenas pela página carregada.</p></div>
+          <div class="note"><strong>Aptidão explícita</strong><p>A decisão social atual aparece no contexto da entrega; o novo agendamento oferece somente famílias aptas.</p></div>
+          <div class="note"><strong>Sem mapa fictício</strong><p>Como não há geolocalização ou motor de rotas, o mapa ilustrativo foi substituído por um painel operacional verificável.</p></div>
+          <div class="note"><strong>Fluxos preservados</strong><p>Agendar, confirmar com baixa de estoque, cancelar, reagendar e consultar rastreabilidade continuam usando as APIs reais.</p></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -389,6 +389,40 @@ const schedule = {
   created_by_user_id: 1,
 };
 
+const deliveryOperations = {
+  items: [
+    {
+      id: 1,
+      family_id: 1,
+      family_code: "FAM-0001",
+      family_status: "apta_recorrente",
+      basket_type_id: 1,
+      basket_type_name: "Cesta padrao",
+      scheduled_date: "2026-08-21",
+      status: "agendado",
+      notes: "Retirada pela manha",
+      street: "Rua A",
+      number: "10",
+      complement: null,
+      neighborhood: "Centro",
+      city: "Aracaju",
+      state: "SE",
+    },
+  ],
+  total: 1,
+  limit: 8,
+  offset: 0,
+  reference_date: "2026-08-21",
+  period: "hoje",
+  summary: {
+    scheduled: 1,
+    rescheduled: 0,
+    completed: 0,
+    exceptions: 0,
+    total: 1,
+  },
+};
+
 const delivery = {
   id: 1,
   delivery_schedule_id: 1,
@@ -919,6 +953,9 @@ async function mockApi(page: Page, user = currentUser) {
   await page.route("**/delivery-schedules?**", async (route) =>
     fulfillJson(route, [schedule], { "X-Total-Count": "1" })
   );
+  await page.route("**/delivery-operations?**", async (route) =>
+    fulfillJson(route, deliveryOperations, { "X-Total-Count": "1" })
+  );
   await page.route("**/deliveries?**", async (route) =>
     fulfillJson(route, [delivery], { "X-Total-Count": "1" })
   );
@@ -1324,8 +1361,8 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
   await expect(page.getByText("Arroz 1kg").first()).toBeVisible();
 
   await mainNav.getByRole("link", { name: /Entregas/i }).click();
-  await expect(page.getByRole("heading", { name: "Agendamentos e entregas" })).toBeVisible();
-  await expect(page.getByLabel(/Observacao do agendamento/i)).toHaveValue(
+  await expect(page.getByRole("heading", { name: "Entregas", exact: true })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Observações" })).toHaveValue(
     "Retirada pela manha"
   );
 });
@@ -1853,7 +1890,9 @@ test("delivery history exposes item and batch trace on mobile", async ({ page })
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/deliveries");
 
-  const deliveryCard = page.locator(".delivery-trace").filter({
+  await page.getByRole("button", { name: "Histórico rastreável" }).click();
+
+  const deliveryCard = page.locator("article").filter({
     hasText: "LT-MOCK-001",
   });
   await expect(deliveryCard).toBeVisible();
