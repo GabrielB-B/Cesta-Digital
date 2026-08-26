@@ -4,7 +4,7 @@
 
 **Base aprovada:** `78d114a` (`V2-09A`)
 
-**Status:** implementação concluída localmente; aguardando aprovação visual de Gabriel
+**Status:** aprovado visualmente por Gabriel em 26/08/2026
 
 **Referência:** `referencias_por_tela/06-entregas-desktop.png`
 
@@ -77,5 +77,6 @@
 
 ## 7. Gate
 
-O marco V2-10 está pronto para inspeção visual de Gabriel. Tipos de Cesta
-(`V2-11`) não avança antes da aprovação explícita deste checkpoint.
+Gabriel aprovou o marco V2-10 em 26/08/2026 ao autorizar a continuidade dos
+passos seguintes. A decisão encerra o gate de Entregas e libera exclusivamente
+a branch própria de Tipos de Cesta (`V2-11`).
