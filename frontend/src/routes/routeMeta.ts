@@ -115,13 +115,13 @@ const ROUTE_META: RouteMeta[] = [
   },
   {
     pattern: "/basket-types/new",
-    title: "Novo tipo de cesta",
+    title: "Nova cesta",
     section: "Cestas",
     sectionPath: "/basket-types",
   },
   {
     pattern: "/basket-types/:basketTypeId",
-    title: "Detalhe da cesta",
+    title: "Editar cesta",
     section: "Cestas",
     sectionPath: "/basket-types",
   },

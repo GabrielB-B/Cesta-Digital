@@ -12,6 +12,7 @@ from app.schemas.basket_type import (
     BasketTypeItemCreate,
     BasketTypeItemResponse,
     BasketTypeItemUpdate,
+    BasketTypeOverviewItemResponse,
     BasketTypeResponse,
     BasketTypeUpdate,
 )
@@ -20,6 +21,7 @@ from app.services.basket_type_service import (
     create_basket_type,
     delete_basket_type_item,
     get_basket_type_detail,
+    list_basket_types_overview,
     list_basket_type_items,
     list_basket_types,
     update_basket_type,
@@ -54,6 +56,31 @@ def list_basket_types_endpoint(
 ):
     """Lista os tipos de cesta cadastrados."""
     basket_types, total = list_basket_types(
+        db,
+        q=q,
+        is_active=is_active,
+        limit=limit,
+        offset=offset,
+    )
+    response.headers["X-Total-Count"] = str(total)
+    return basket_types
+
+
+@router.get(
+    "/basket-types/overview",
+    response_model=list[BasketTypeOverviewItemResponse],
+)
+def list_basket_types_overview_endpoint(
+    response: Response,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    q: str | None = Query(default=None),
+    is_active: bool | None = Query(default=None),
+    limit: int = Query(default=12, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
+):
+    """Lista composições com quantidade de produtos e valor de referência."""
+    basket_types, total = list_basket_types_overview(
         db,
         q=q,
         is_active=is_active,

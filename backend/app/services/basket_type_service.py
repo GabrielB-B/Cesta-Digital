@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from fastapi import HTTPException
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
@@ -81,7 +83,12 @@ def list_basket_types(
     stmt = (
         select(BasketType)
         .options(
-            selectinload(BasketType.basket_items).selectinload(BasketTypeItem.item)
+            selectinload(BasketType.basket_items)
+            .selectinload(BasketTypeItem.item)
+            .selectinload(Item.image),
+            selectinload(BasketType.basket_items)
+            .selectinload(BasketTypeItem.item)
+            .selectinload(Item.category),
         )
         .order_by(BasketType.name.asc())
     )
@@ -96,6 +103,46 @@ def list_basket_types(
         stmt = stmt.offset(offset).limit(limit)
 
     return list(db.scalars(stmt).all()), total
+
+
+def list_basket_types_overview(
+    db: Session,
+    *,
+    q: str | None = None,
+    is_active: bool | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[dict], int]:
+    """Projeta cartões de composição sem agregar apenas a página no cliente."""
+    basket_types, total = list_basket_types(
+        db,
+        q=q,
+        is_active=is_active,
+        limit=limit,
+        offset=offset,
+    )
+    overview_items = []
+    for basket_type in basket_types:
+        estimated_value = sum(
+            (
+                basket_item.item.reference_unit_value
+                * basket_item.required_quantity
+                for basket_item in basket_type.basket_items
+            ),
+            Decimal("0.00"),
+        )
+        overview_items.append(
+            {
+                "id": basket_type.id,
+                "name": basket_type.name,
+                "is_active": basket_type.is_active,
+                "notes": basket_type.notes,
+                "item_count": len(basket_type.basket_items),
+                "estimated_value": estimated_value,
+                "updated_at": basket_type.updated_at,
+            }
+        )
+    return overview_items, total
 
 
 def update_basket_type(
@@ -306,7 +353,12 @@ def get_basket_type_detail(db: Session, basket_type_id: int) -> BasketType:
     stmt = (
         select(BasketType)
         .options(
-            selectinload(BasketType.basket_items).selectinload(BasketTypeItem.item)
+            selectinload(BasketType.basket_items)
+            .selectinload(BasketTypeItem.item)
+            .selectinload(Item.image),
+            selectinload(BasketType.basket_items)
+            .selectinload(BasketTypeItem.item)
+            .selectinload(Item.category),
         )
         .where(BasketType.id == basket_type_id)
     )

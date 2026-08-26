@@ -287,6 +287,22 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Aprovação visual | aprovada por Gabriel em 26/08/2026; galeria local V2-10 preservada como evidência |
 | Publicação | não realizada; o `NO-GO` profissional permanece |
 
+### Checkpoint local V2-11 de Tipos de Cesta — 26/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-tipos-cesta` a partir do V2-10 aprovado (`1b29ca3`) |
+| Contrato | `GET /basket-types/overview` com busca, estado, paginação, quantidade de produtos, valor de referência e atualização calculados no servidor |
+| Desktop | sidebar fixa, cartões de tipos, composição em tabela e resumo da cesta selecionada |
+| Mobile/tablet | cartões próprios em 360/390/768, marca legível e composição sem overflow horizontal |
+| Integridade | composição e imagens persistidas; valor declarado como referência; capacidade calculada pelo estoque utilizável; duplicação inexistente não foi simulada |
+| Fluxos preservados | criar, editar, ativar/desativar e alterar a receita continuam usando os contratos reais; RBAC `admin`/`operador` preservado |
+| Backend local | `compileall` aprovado; suíte completa 71/71 e contrato focado 2/2 |
+| Frontend local | lint e build aprovados; E2E 37/37; visual V2-11 8 aprovados e 4 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Aprovação visual | aguardando Gabriel; galeria local V2-11 disponível e clicável |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.

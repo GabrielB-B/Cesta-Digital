@@ -146,13 +146,13 @@ export const APP_ROUTE_CONTRACTS = [
   },
   {
     path: "/basket-types/new",
-    title: "Novo tipo de cesta",
+    title: "Nova cesta",
     sectionPath: "/basket-types",
     allowedRoles: operationsRoles,
   },
   {
     path: "/basket-types/1",
-    title: "Detalhe da cesta",
+    title: "Editar cesta",
     sectionPath: "/basket-types",
     allowedRoles: operationsRoles,
   },

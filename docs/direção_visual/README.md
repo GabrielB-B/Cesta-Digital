@@ -25,9 +25,10 @@ de 18/08/2026. Ela deve ser consultada antes de toda alteração visual.
 18. [`REGISTRO_V2_08C_IMAGENS_ESTOQUE.md`](./REGISTRO_V2_08C_IMAGENS_ESTOQUE.md) — imagens persistidas de produto por upload ou consulta explícita por código de barras.
 19. [`REGISTRO_V2_09A_ENTRADAS.md`](./REGISTRO_V2_09A_ENTRADAS.md) — histórico real de lotes, cadastro reutilizável e composição responsiva da aba Entradas.
 20. [`REGISTRO_V2_10_ENTREGAS.md`](./REGISTRO_V2_10_ENTREGAS.md) — agenda real, aptidão social explícita e confirmação rastreável em composição responsiva.
-21. [`Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./Cesta_Digital_Frontend_V2_Baseline_Desktop.png) — baseline estética geral anterior às referências por tela.
-22. [`cesta-digital-frontend-v2-design-tokens.json`](./cesta-digital-frontend-v2-design-tokens.json) — tokens canônicos.
-23. [`Cesta_Digital_Simbolo_Oficial_Transparente.png`](./Cesta_Digital_Simbolo_Oficial_Transparente.png) — símbolo oficial preservado.
+21. [`REGISTRO_V2_11_TIPOS_CESTA.md`](./REGISTRO_V2_11_TIPOS_CESTA.md) — composições, valores de referência e capacidade de estoque em experiência responsiva.
+22. [`Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./Cesta_Digital_Frontend_V2_Baseline_Desktop.png) — baseline estética geral anterior às referências por tela.
+23. [`cesta-digital-frontend-v2-design-tokens.json`](./cesta-digital-frontend-v2-design-tokens.json) — tokens canônicos.
+24. [`Cesta_Digital_Simbolo_Oficial_Transparente.png`](./Cesta_Digital_Simbolo_Oficial_Transparente.png) — símbolo oficial preservado.
 
 O PDF é a versão diagramada do plano mestre. O CSS canônico de tokens foi
 materializado no frontend no marco de fundação V2-02.

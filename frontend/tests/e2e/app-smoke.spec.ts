@@ -379,6 +379,56 @@ const basketType = {
   notes: null,
 };
 
+const basketTypeOverview = {
+  ...basketType,
+  item_count: 2,
+  estimated_value: "23.50",
+  updated_at: "2026-08-26T09:30:00",
+};
+
+const basketTypeDetail = {
+  ...basketType,
+  basket_items: [
+    {
+      id: 1,
+      item_id: 1,
+      item_name: "Arroz 1kg",
+      category_name: "Alimentos",
+      unit_measure: "pacote",
+      tracks_expiration: true,
+      reference_unit_value: "7.50",
+      image_path: null,
+      image_source: null,
+      image_attribution: null,
+      required_quantity: 1,
+    },
+    {
+      id: 2,
+      item_id: 2,
+      item_name: "Feijao 1kg",
+      category_name: "Alimentos",
+      unit_measure: "pacote",
+      tracks_expiration: true,
+      reference_unit_value: "8.00",
+      image_path: null,
+      image_source: null,
+      image_attribution: null,
+      required_quantity: 2,
+    },
+  ],
+};
+
+const basketAvailability = {
+  basket_type_id: 1,
+  basket_type_name: "Cesta padrao",
+  possible_baskets: 4,
+  limiting_item_ids: [1],
+  items: [
+    { item_id: 1, item_name: "Arroz 1kg", unit_measure: "pacote", required_quantity: 1, available_quantity: 4, possible_from_item: 4, missing_for_next_basket: 1 },
+    { item_id: 2, item_name: "Feijao 1kg", unit_measure: "pacote", required_quantity: 2, available_quantity: 10, possible_from_item: 5, missing_for_next_basket: 2 },
+  ],
+};
+
 const schedule = {
   id: 1,
   family_id: 1,
@@ -950,6 +1000,20 @@ async function mockApi(page: Page, user = currentUser) {
   await page.route("**/basket-types?**", async (route) =>
     fulfillJson(route, [basketType], { "X-Total-Count": "1" })
   );
+  await page.route("**/basket-types/overview?**", async (route) =>
+    fulfillJson(route, [basketTypeOverview], { "X-Total-Count": "1" })
+  );
+  await page.route(/\/basket-types\/\d+\/availability(?:\?.*)?$/, async (route) =>
+    fulfillJson(route, basketAvailability)
+  );
+  await page.route(/\/basket-types\/\d+(?:\?.*)?$/, async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+
+    await fulfillJson(route, basketTypeDetail);
+  });
   await page.route("**/delivery-schedules?**", async (route) =>
     fulfillJson(route, [schedule], { "X-Total-Count": "1" })
   );
