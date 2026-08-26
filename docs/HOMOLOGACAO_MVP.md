@@ -300,7 +300,7 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Backend local | `compileall` aprovado; suíte completa 71/71 e contrato focado 2/2 |
 | Frontend local | lint e build aprovados; E2E 37/37; visual V2-11 8 aprovados e 4 skips intencionais |
 | Banco | nenhuma migration ou alteração de tabela |
-| Aprovação visual | aguardando Gabriel; galeria local V2-11 disponível e clicável |
+| Aprovação visual | aprovada por Gabriel em 26/08/2026; galeria local V2-11 preservada como evidência |
 | Publicação | não realizada; o `NO-GO` profissional permanece |
 
 ## 3. Pré-condições

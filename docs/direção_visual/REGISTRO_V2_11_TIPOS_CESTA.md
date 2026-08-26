@@ -4,7 +4,7 @@
 
 **Base aprovada:** `1b29ca3` (`V2-10`)
 
-**Status:** implementação concluída; aguardando aprovação visual de Gabriel
+**Status:** aprovado visualmente por Gabriel em 26/08/2026
 
 **Referência:** `referencias_por_tela/07-tipos-de-cesta-desktop.png`
 
@@ -79,5 +79,6 @@
 
 ## 7. Gate
 
-O marco V2-11 está tecnicamente concluído e aguarda avaliação visual de
-Gabriel. Relatórios (`V2-12`) não deve iniciar antes dessa aprovação explícita.
+Gabriel aprovou o marco V2-11 em 26/08/2026 ao autorizar a continuidade. A
+decisão encerra o gate de Tipos de Cesta e libera exclusivamente a branch
+própria de Relatórios (`V2-12`).
