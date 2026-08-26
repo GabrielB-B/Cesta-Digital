@@ -498,6 +498,25 @@ const delivery = {
   ],
 };
 
+const reportsOverview = {
+  start_date: "2026-08-01",
+  end_date: "2026-08-26",
+  generated_at: "2026-08-26T10:30:00",
+  kpis: {
+    families_served: 1248,
+    baskets_delivered: 342,
+    items_distributed: 7856,
+  },
+  available_reports: [
+    { key: "attendances", title: "Atendimentos por período", description: "Famílias atendidas e recorrência de entregas no período.", format: "csv", uses_period: true },
+    { key: "deliveries", title: "Cestas entregues", description: "Entregas concluídas por data, família e tipo de cesta.", format: "csv", uses_period: true },
+    { key: "stock_movements", title: "Estoque movimentado", description: "Entradas, saídas, perdas e ajustes registrados no período.", format: "csv", uses_period: true },
+    { key: "benefits", title: "Benefícios concedidos", description: "Benefícios iniciados no período, com valor e situação.", format: "csv", uses_period: true },
+    { key: "families", title: "Famílias cadastradas", description: "Cadastros realizados no período, por situação e região.", format: "csv", uses_period: true },
+    { key: "stock_alerts", title: "Alertas de estoque", description: "Posição atual dos itens abaixo do estoque mínimo.", format: "csv", uses_period: false },
+  ],
+};
+
 const users = [
   {
     ...currentUser,
@@ -1030,6 +1049,19 @@ async function mockApi(page: Page, user = currentUser) {
       body: JSON.stringify({ ...delivery, id: 2 }),
     });
   });
+  await page.route("**/reports/overview?**", async (route) =>
+    fulfillJson(route, reportsOverview)
+  );
+  await page.route("**/reports/*/export?**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "text/csv; charset=utf-8",
+      headers: {
+        "Content-Disposition": 'attachment; filename="relatorio-periodo.csv"',
+      },
+      body: "codigo;quantidade\nFAM-0001;1\n",
+    });
+  });
   await page.route("**/users/roles", async (route) =>
     fulfillJson(route, roleOptions)
   );
@@ -1076,8 +1108,8 @@ test("route access groups remain equal to the approved RBAC baseline", () => {
   });
 });
 
-test("route metadata remains aligned with the 27-path contract", () => {
-  expect(APP_ROUTE_CONTRACTS).toHaveLength(27);
+test("route metadata remains aligned with the 28-path contract", () => {
+  expect(APP_ROUTE_CONTRACTS).toHaveLength(28);
 
   for (const route of APP_ROUTE_CONTRACTS) {
     expect(getRouteMeta(route.path)).toMatchObject({
@@ -2121,6 +2153,26 @@ test("audit page uses administrative language with technical details on demand",
   await expect(detailsDialog.getByText("auth.login_succeeded", { exact: true })).toBeVisible();
   await expect(detailsDialog.getByText("Perfis", { exact: true })).toBeVisible();
   await expect(detailsDialog.getByText("Administrador", { exact: true })).toBeVisible();
+});
+
+test("reports preserve period filters and generate a real CSV download", async ({ page }) => {
+  await page.goto("/reports?start_date=2026-08-01&end_date=2026-08-26");
+
+  await expect(page.getByRole("heading", { name: "Relatórios", exact: true })).toBeVisible();
+  await expect(page.getByText("1.248")).toBeVisible();
+  await expect(page.getByText("7.856")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Baixar Atendimentos por período/ })).toBeVisible();
+
+  await page.getByLabel("Tipo de relatório").selectOption("deliveries");
+  await expect(page).toHaveURL(/type=deliveries/);
+  const reportsPanel = page.locator('section[aria-labelledby="available-reports-title"]');
+  await expect(reportsPanel.getByText("Cestas entregues", { exact: true })).toBeVisible();
+  await expect(reportsPanel.getByText("Estoque movimentado", { exact: true })).toHaveCount(0);
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: /Baixar Cestas entregues/ }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("deliveries-2026-08-01-2026-08-26.csv");
 });
 
 test("password recovery request shows safe feedback", async ({ page }) => {

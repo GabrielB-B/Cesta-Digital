@@ -3,6 +3,7 @@ type AppIconName =
   | "families"
   | "assessments"
   | "finance"
+  | "reports"
   | "items"
   | "entries"
   | "categories"
@@ -70,6 +71,15 @@ export function AppIcon({ name, className }: AppIconProps) {
           <path d="M12 12 4 7.5" />
           <path d="M12 12l8-4.5" />
           <path d="M12 21v-9" />
+        </>
+      ) : null}
+
+      {name === "reports" ? (
+        <>
+          <path d="M5 20V10" />
+          <path d="M12 20V4" />
+          <path d="M19 20v-7" />
+          <path d="M3 20h18" />
         </>
       ) : null}
 

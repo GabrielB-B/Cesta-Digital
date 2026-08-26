@@ -169,9 +169,15 @@ export const APP_ROUTE_CONTRACTS = [
     allowedRoles: operationsRoles,
   },
   {
+    path: "/reports",
+    title: "Relatórios",
+    sectionPath: "/reports",
+    allowedRoles: allRoles,
+  },
+  {
     path: "/financial-summary",
-    title: "Resumo financeiro",
-    sectionPath: "/financial-summary",
+    title: "Relatórios",
+    sectionPath: "/reports",
     allowedRoles: socialRoles,
   },
   {
@@ -193,9 +199,9 @@ export const NAVIGATION_CONTRACTS = [
   { path: "/families", label: "Famílias", allowedRoles: socialRoles },
   { path: "/assessments", label: "Avaliações", allowedRoles: socialRoles },
   {
-    path: "/financial-summary",
-    label: "Financeiro",
-    allowedRoles: socialRoles,
+    path: "/reports",
+    label: "Relatórios",
+    allowedRoles: allRoles,
   },
   { path: "/items", label: "Estoque", allowedRoles: operationsRoles },
   {

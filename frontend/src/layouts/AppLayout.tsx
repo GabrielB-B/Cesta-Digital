@@ -21,6 +21,7 @@ type MenuIconName =
   | "families"
   | "assessments"
   | "finance"
+  | "reports"
   | "items"
   | "entries"
   | "categories"
@@ -229,12 +230,6 @@ export function AppLayout() {
           visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
         },
         {
-          path: "/financial-summary",
-          label: "Financeiro",
-          icon: "finance",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
-        },
-        {
           path: "/items",
           label: "Estoque",
           icon: "items",
@@ -253,16 +248,22 @@ export function AppLayout() {
           visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
         },
         {
+          path: "/deliveries",
+          label: "Entregas",
+          icon: "deliveries",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+        },
+        {
           path: "/basket-types",
           label: "Tipos de Cesta",
           icon: "baskets",
           visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
         },
         {
-          path: "/deliveries",
-          label: "Entregas",
-          icon: "deliveries",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+          path: "/reports",
+          label: "Relatórios",
+          icon: "reports",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.authenticated),
         },
         {
           path: "/users",
@@ -295,7 +296,7 @@ export function AppLayout() {
       "/assessments",
       "/items",
       "/deliveries",
-      "/financial-summary",
+      "/reports",
     ];
     const priorityItems = priorityPaths
       .map((path) => menuItems.find((item) => item.path === path))

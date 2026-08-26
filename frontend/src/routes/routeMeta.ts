@@ -138,10 +138,16 @@ const ROUTE_META: RouteMeta[] = [
     sectionPath: "/deliveries",
   },
   {
+    pattern: "/reports",
+    title: "Relatórios",
+    section: "Relatórios",
+    sectionPath: "/reports",
+  },
+  {
     pattern: "/financial-summary",
-    title: "Resumo financeiro",
-    section: "Financeiro",
-    sectionPath: "/financial-summary",
+    title: "Relatórios",
+    section: "Relatórios",
+    sectionPath: "/reports",
   },
   { pattern: "/users", title: "Usuarios", section: "Usuarios", sectionPath: "/users" },
   {

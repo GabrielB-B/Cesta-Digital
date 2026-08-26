@@ -14,6 +14,7 @@ from app.api.routes.items import router as items_router
 from app.api.routes.item_images import public_router as public_item_images_router
 from app.api.routes.item_images import router as item_images_router
 from app.api.routes.people import router as people_router
+from app.api.routes.reports import router as reports_router
 from app.api.routes.social_assessments import router as social_assessments_router
 from app.api.routes.stock_batches import router as stock_batches_router
 from app.api.routes.stock_movements import router as stock_movements_router
@@ -40,3 +41,4 @@ api_router.include_router(basket_availability_router)
 api_router.include_router(deliveries_router)
 api_router.include_router(dashboard_router)
 api_router.include_router(financial_summary_router)
+api_router.include_router(reports_router)

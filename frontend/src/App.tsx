@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { PageLifecycle } from "./components/PageLifecycle";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AppLayout } from "./layouts/AppLayout";
@@ -10,7 +10,7 @@ import { AuditLogsPage } from "./pages/AuditLogsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DeliveriesPage } from "./pages/DeliveriesPage";
 import { DeliveryScheduleCreatePage } from "./pages/DeliveryScheduleCreatePage";
-import { FinancialSummaryPage } from "./pages/FinancialSummaryPage";
+import { ReportsPage } from "./pages/ReportsPage";
 import { FamiliesPage } from "./pages/FamiliesPage";
 import { FamilyAssessmentCreatePage } from "./pages/FamilyAssessmentCreatePage";
 import { FamilyBenefitCreatePage } from "./pages/FamilyBenefitCreatePage";
@@ -228,10 +228,18 @@ function App() {
               }
             />
             <Route
+              path="reports"
+              element={
+                <RoleRoute allowedRoles={ROUTE_ACCESS.authenticated}>
+                  <ReportsPage />
+                </RoleRoute>
+              }
+            />
+            <Route
               path="financial-summary"
               element={
                 <RoleRoute allowedRoles={ROUTE_ACCESS.social}>
-                  <FinancialSummaryPage />
+                  <Navigate to="/reports" replace />
                 </RoleRoute>
               }
             />

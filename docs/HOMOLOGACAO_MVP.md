@@ -303,6 +303,23 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Aprovação visual | aprovada por Gabriel em 26/08/2026; galeria local V2-11 preservada como evidência |
 | Publicação | não realizada; o `NO-GO` profissional permanece |
 
+### Checkpoint local V2-12 de Relatórios — 26/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-relatorios` a partir do V2-11 aprovado (`9b9beb2`) |
+| Contrato | `GET /reports/overview` e `GET /reports/{report_key}/export` com período máximo de 367 dias, dados calculados no servidor e CSV real |
+| Desktop | sidebar fixa, filtros, três indicadores e seis downloads para administrador na composição da referência 08 |
+| Mobile/tablet | filtros e cartões próprios em 360/390/768, marca legível e navegação ativa sem overflow horizontal |
+| RBAC | overview agregado para perfis autenticados; relatórios sociais somente para `admin`/`lider_social` e operacionais somente para `admin`/`operador` |
+| Integridade | sem tendências fictícias; alertas declarados como posição atual; CSV protegido contra células de fórmula; cada exportação é auditada |
+| Compatibilidade | `/financial-summary` preservado como redirect social; endpoint financeiro anterior permanece intacto; matriz passa a 28 paths |
+| Backend local | `compileall` aprovado; suíte completa 74/74 e contrato focado 3/3 |
+| Frontend local | lint e build aprovados; E2E 38/38; visual V2-12 6 aprovados e 2 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Aprovação visual | aguardando Gabriel; galeria local V2-12 disponível e clicável |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.
