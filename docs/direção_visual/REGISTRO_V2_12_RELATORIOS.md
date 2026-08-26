@@ -88,6 +88,6 @@
 
 ## 7. Gate
 
-O marco V2-12 está tecnicamente concluído e aguarda avaliação visual de
-Gabriel. Administração (`V2-13`) não deve iniciar antes dessa aprovação
-explícita.
+Gabriel aprovou o marco V2-12 em 26/08/2026 ao autorizar a continuidade. A
+decisão encerra o gate de Relatórios e libera exclusivamente a branch própria
+de Administração (`V2-13`).
