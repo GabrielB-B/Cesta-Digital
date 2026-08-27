@@ -4,7 +4,7 @@
 
 **Base aprovada:** `9b9beb2` (`V2-11`)
 
-**Status:** implementação concluída; aguardando aprovação visual de Gabriel
+**Status:** implementação e aprovação visual concluídas por Gabriel em 26/08/2026
 
 **Referência:** `referencias_por_tela/08-relatorios-desktop.png`
 

@@ -2121,8 +2121,7 @@ test("admin pages stay restricted for non-admin users", async ({ page }) => {
   await page.goto("/");
 
   const mainNav = page.getByLabel("Navegação principal");
-  await expect(mainNav.getByRole("link", { name: /Usuários/i })).toHaveCount(0);
-  await expect(mainNav.getByRole("link", { name: /Auditoria/i })).toHaveCount(0);
+  await expect(mainNav.getByRole("link", { name: /Administração/i })).toHaveCount(0);
 
   await page.goto("/users");
   await expect(page.getByRole("heading", { name: "Acesso restrito" })).toBeVisible();
@@ -2142,14 +2141,14 @@ test("audit page uses administrative language with technical details on demand",
   await expect(auditTable.getByText("Login realizado", { exact: true })).toBeVisible();
   await expect(auditTable.getByText("Tentativa de login falhou", { exact: true })).toBeVisible();
   await expect(auditTable.getByText("Sucesso", { exact: true })).toBeVisible();
-  await expect(page.locator(".audit-panel .table-wrapper")).not.toContainText("auth.login_succeeded");
-  await expect(page.locator(".audit-panel .table-wrapper")).not.toContainText('{"roles"');
+  await expect(auditTable).not.toContainText("auth.login_succeeded");
+  await expect(auditTable).not.toContainText('{"roles"');
 
   await page.getByRole("button", { name: "Ver detalhes" }).first().click();
 
   const detailsDialog = page.getByRole("dialog", { name: "Login realizado" });
   await expect(detailsDialog).toBeVisible();
-  await expect(page.getByText("Codigo tecnico")).toBeVisible();
+  await expect(page.getByText("Código do evento")).toBeVisible();
   await expect(detailsDialog.getByText("auth.login_succeeded", { exact: true })).toBeVisible();
   await expect(detailsDialog.getByText("Perfis", { exact: true })).toBeVisible();
   await expect(detailsDialog.getByText("Administrador", { exact: true })).toBeVisible();

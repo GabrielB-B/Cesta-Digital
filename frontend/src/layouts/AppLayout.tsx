@@ -27,7 +27,6 @@ type MenuIconName =
   | "categories"
   | "baskets"
   | "deliveries"
-  | "audit"
   | "users";
 
 type FlashMessage = {
@@ -267,14 +266,8 @@ export function AppLayout() {
         },
         {
           path: "/users",
-          label: "Usuários",
+          label: "Administração",
           icon: "users",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.administration),
-        },
-        {
-          path: "/audit-logs",
-          label: "Auditoria",
-          icon: "audit",
           visible: userHasAnyRole(userRoles, ROUTE_ACCESS.administration),
         },
       ].filter((item) => item.visible) as MenuItem[],

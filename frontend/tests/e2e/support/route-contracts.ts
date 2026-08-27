@@ -182,14 +182,14 @@ export const APP_ROUTE_CONTRACTS = [
   },
   {
     path: "/users",
-    title: "Usuarios",
+    title: "Administração",
     sectionPath: "/users",
     allowedRoles: administrationRoles,
   },
   {
     path: "/audit-logs",
     title: "Auditoria",
-    sectionPath: "/audit-logs",
+    sectionPath: "/users",
     allowedRoles: administrationRoles,
   },
 ] as const satisfies readonly RouteContract[];
@@ -226,12 +226,7 @@ export const NAVIGATION_CONTRACTS = [
   },
   {
     path: "/users",
-    label: "Usuários",
-    allowedRoles: administrationRoles,
-  },
-  {
-    path: "/audit-logs",
-    label: "Auditoria",
+    label: "Administração",
     allowedRoles: administrationRoles,
   },
 ] as const satisfies readonly NavigationContract[];

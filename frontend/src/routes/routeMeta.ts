@@ -149,12 +149,12 @@ const ROUTE_META: RouteMeta[] = [
     section: "Relatórios",
     sectionPath: "/reports",
   },
-  { pattern: "/users", title: "Usuarios", section: "Usuarios", sectionPath: "/users" },
+  { pattern: "/users", title: "Administração", section: "Administração", sectionPath: "/users" },
   {
     pattern: "/audit-logs",
     title: "Auditoria",
-    section: "Auditoria",
-    sectionPath: "/audit-logs",
+    section: "Administração",
+    sectionPath: "/users",
   },
 ];
 
