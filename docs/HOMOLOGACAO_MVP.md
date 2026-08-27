@@ -656,6 +656,16 @@ Provocar falha controlada de frontend, API, banco e entrega.
 - [x] Aviso visual coberto no login e na área autenticada por E2E.
 - [ ] Base revisada e confirmada sem dados reais.
 
+### Rodada local Frontend V2 — 27/08/2026
+
+O sandbox persistente isolado descrito em
+[`HOMOLOGACAO_LOCAL_UX_2026-08-27.md`](./HOMOLOGACAO_LOCAL_UX_2026-08-27.md)
+foi iniciado com dados sintéticos. Login e cadastro de produto passaram pela
+API real; 10/10 rotas autenticadas foram percorridas em 1440×900 e 390×844, sem
+HTTP 500, erro JavaScript de página ou overflow horizontal documental. Esta é
+evidência preparatória para o teste manual de Gabriel, não aprovação dos gates
+profissionais abaixo.
+
 ## 9. Regressão por perfil
 
 ### Admin

@@ -27,7 +27,7 @@
 - PyJWT `2.13.0`
 - python-multipart `0.0.31`
 - Mako `1.3.12`
-- cryptography `48.0.1`
+- cryptography `50.0.1`
 - passlib `1.7.4`
 - bcrypt `4.0.1`
 - Uvicorn `0.42.0`
