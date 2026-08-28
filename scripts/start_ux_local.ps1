@@ -1,5 +1,6 @@
 param(
     [string]$Address,
+    [string]$BrowserHost = "127.0.0.1",
     [int]$FrontendPort = 5173,
     [int]$ApiPort = 8010
 )
@@ -35,6 +36,11 @@ if (-not [System.Net.IPAddress]::TryParse($Address, [ref]([System.Net.IPAddress]
     throw "Endereco IPv4 invalido: $Address"
 }
 
+$allowedBrowserHosts = @("127.0.0.1", "localhost", $computerHostName, $Address)
+if ($BrowserHost.ToLowerInvariant() -notin $allowedBrowserHosts) {
+    throw "BrowserHost invalido. Use 127.0.0.1, localhost, $computerHostName ou $Address."
+}
+
 foreach ($port in @($FrontendPort, $ApiPort)) {
     $listener = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue
     if ($listener) {
@@ -45,10 +51,10 @@ foreach ($port in @($FrontendPort, $ApiPort)) {
 
 New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
 
-$apiUrl = "http://${computerHostName}:$ApiPort"
-$apiIpUrl = "http://${Address}:$ApiPort"
-$frontendUrl = "http://${computerHostName}:$FrontendPort"
-$frontendIpUrl = "http://${Address}:$FrontendPort"
+$apiUrl = "http://${BrowserHost}:$ApiPort"
+$apiNetworkUrl = "http://${Address}:$ApiPort"
+$frontendUrl = "http://${BrowserHost}:$FrontendPort"
+$frontendNetworkUrl = "http://${Address}:$FrontendPort"
 $backendOutput = Join-Path $runtimeDir "backend.out.log"
 $backendError = Join-Path $runtimeDir "backend.err.log"
 $frontendOutput = Join-Path $runtimeDir "frontend.out.log"
@@ -86,7 +92,8 @@ try {
             "--host", "0.0.0.0",
             "--port", "$ApiPort",
             "--frontend-origin", $frontendUrl,
-            "--frontend-origin", $frontendIpUrl
+            "--frontend-origin", $frontendNetworkUrl,
+            "--frontend-origin", "http://${computerHostName}:$FrontendPort"
         ) `
         -WorkingDirectory $backendDir `
         -RedirectStandardOutput $backendOutput `
@@ -143,10 +150,11 @@ try {
 
     $state = [ordered]@{
         address = $Address
+        browser_host = $BrowserHost
         frontend_url = $frontendUrl
-        frontend_ip_url = $frontendIpUrl
+        frontend_network_url = $frontendNetworkUrl
         api_url = $apiUrl
-        api_ip_url = $apiIpUrl
+        api_network_url = $apiNetworkUrl
         backend = [ordered]@{
             id = $backendProcess.Id
             started_at = $backendProcess.StartTime.ToUniversalTime().ToString("o")
@@ -160,9 +168,9 @@ try {
 
     [pscustomobject]@{
         Frontend = $frontendUrl
-        FrontendIP = $frontendIpUrl
         API = $apiUrl
         Health = "$apiUrl/health/db"
+        Modo = if ($BrowserHost -eq $Address) { "rede local" } else { "este computador" }
         Estado = $statePath
     } | Format-List
 }

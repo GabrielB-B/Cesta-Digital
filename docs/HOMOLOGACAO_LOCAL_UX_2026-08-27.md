@@ -13,15 +13,14 @@ endereços, documentos ou operações de pessoas reais.
 
 | Recurso | Endereço |
 |---|---|
-| Frontend recomendado neste computador | `http://finan002:5173` |
-| Frontend por IPv4, para outro dispositivo na mesma rede | `http://172.23.18.136:5173` |
-| API recomendada neste computador | `http://finan002:8010` |
-| Healthcheck | `http://finan002:8010/health/db` |
+| Frontend recomendado neste computador | `http://127.0.0.1:5173` |
+| API recomendada neste computador | `http://127.0.0.1:8010` |
+| Healthcheck | `http://127.0.0.1:8010/health/db` |
 
-O hostname é o endereço recomendado nesta estação porque a política corporativa
-do navegador intercepta URLs HTTP com IPv4 privado. O Vite autoriza apenas o
-hostname local informado pelo inicializador; não foi usada liberação ampla de
-hosts.
+Frontend e API usam o mesmo host para que o cookie HttpOnly com `SameSite=lax`
+permaneça válido. Misturar `127.0.0.1`, hostname e IPv4 no mesmo acesso faz o
+navegador descartar a sessão após o login. Não foi usada liberação ampla de
+hosts no Vite.
 
 O login administrativo é `ux.admin`. A senha é gerada localmente no primeiro
 início e pode ser consultada, sem ser versionada, com:
@@ -36,6 +35,14 @@ Na raiz do repositório:
 
 ```powershell
 .\scripts\start_ux_local.ps1
+```
+
+Para testar em outro dispositivo na mesma rede, reinicie escolhendo o IPv4 como
+host do navegador e abra o endereço exibido pelo comando:
+
+```powershell
+.\scripts\stop_ux_local.ps1
+.\scripts\start_ux_local.ps1 -BrowserHost 172.23.18.136
 ```
 
 Para encerrar somente os processos registrados pelo sandbox:
@@ -75,6 +82,10 @@ agendamentos, uma entrega concluída e eventos de auditoria.
 | Erros JavaScript de página durante navegação desktop | 0 |
 | Rotas verificadas em 390 × 844 | 10/10 |
 | Overflow horizontal documental em 390 × 844 | 0 |
+
+Em 28/08/2026, o inicializador passou a alinhar API e frontend em
+`127.0.0.1` por padrão após a reprodução de login 200 seguido por `/auth/me`
+401 quando hosts diferentes eram misturados.
 
 Rotas percorridas: Início, Famílias, Avaliações, Estoque, Entradas, Entregas,
 Tipos de cesta, Relatórios, Usuários e Auditoria.
