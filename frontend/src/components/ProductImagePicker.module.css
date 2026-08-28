@@ -15,9 +15,7 @@
 }
 
 .header > div { min-width: 0; }
-.header span { color: #ed1970; font-size: 0.68rem; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
-.header h3 { margin: 0.2rem 0 0; color: #19253a; font-size: 1rem; }
-.header p { max-width: 35rem; margin: 0.3rem 0 0; color: #69758a; font-size: 0.76rem; line-height: 1.2rem; }
+.header h3 { margin: 0; color: #19253a; font-size: 1rem; }
 
 .options { display: grid; grid-template-columns: 1fr 1.25fr; gap: 0.75rem; }
 .option {
@@ -58,7 +56,7 @@
 
 .barcodeRow { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 0.5rem; }
 .barcodeRow label { display: grid; gap: 0.35rem; color: #4d596d; font-size: 0.67rem; font-weight: 650; }
-.barcodeRow input { width: 100%; min-height: 2.5rem; padding: 0.55rem 0.7rem; color: #253147; border: 1px solid #d9dce3; border-radius: 0.6rem; }
+.barcodeRow input { width: 100%; min-height: 2.5rem; padding: 0.55rem 0.7rem; color: #253147; background: #fff; border: 1px solid #d9dce3; border-radius: 0.6rem; color-scheme: light; }
 .barcodeRow button,
 .candidate button {
   min-height: 2.5rem;

@@ -114,9 +114,7 @@ export function ProductImagePicker({
     <section className={styles.picker} aria-labelledby={`${uploadId}-title`}>
       <header className={styles.header}>
         <div>
-          <span>Identificação visual</span>
           <h3 id={`${uploadId}-title`}>Imagem do produto</h3>
-          <p>Envie a foto oficial do item ou consulte um catálogo pelo código de barras.</p>
         </div>
         <ProductImage name={displayedName} src={displayedImage} size="detail" eager />
       </header>
@@ -126,7 +124,7 @@ export function ProductImagePicker({
           <span className={styles.optionIcon}><Upload aria-hidden="true" /></span>
           <div>
             <strong>Enviar foto própria</strong>
-            <p>JPEG, PNG ou WebP, até 5 MB. A imagem será otimizada e os metadados removidos.</p>
+            <p>JPEG, PNG ou WebP · até 5 MB.</p>
           </div>
           <label className={styles.uploadButton} htmlFor={uploadId}>
             <ImagePlus aria-hidden="true" /> Escolher imagem
@@ -148,7 +146,7 @@ export function ProductImagePicker({
           <span className={styles.optionIcon}><Search aria-hidden="true" /></span>
           <div>
             <strong>Buscar pelo código de barras</strong>
-            <p>Consulta manual ao Open Facts. A imagem escolhida será salva no Cesta Digital.</p>
+            <p>Consulta manual ao Open Facts.</p>
           </div>
           <div className={styles.barcodeRow}>
             <label>
@@ -158,7 +156,6 @@ export function ProductImagePicker({
                 autoComplete="off"
                 value={barcode}
                 onChange={(event) => handleBarcodeChange(event.target.value)}
-                placeholder="Ex.: 7891000100103"
                 disabled={disabled}
               />
             </label>

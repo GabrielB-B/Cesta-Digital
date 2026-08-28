@@ -2639,7 +2639,6 @@ textarea {
 }
 
 .hero-status-card,
-.hero-badge,
 .pill {
   box-shadow: inset 0 1px 0 rgba(248, 245, 237, 0.055);
 }
@@ -2655,46 +2654,6 @@ textarea {
 .hero-status-card__text {
   margin: 8px 0 0;
   color: var(--text-soft);
-}
-
-.hero-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border-radius: var(--radius);
-  padding: 10px 14px;
-  background:
-    linear-gradient(90deg, var(--module-accent-soft), var(--module-accent-warm)),
-    rgba(248, 245, 237, 0.04);
-  color: var(--text);
-  border: 1px solid var(--module-line);
-  white-space: nowrap;
-}
-
-.hero-badge::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  flex-shrink: 0;
-  border-radius: 2px;
-  background: var(--module-accent);
-}
-
-.hero-badge--danger {
-  color: #ffc2cb;
-  border-color: rgba(255, 107, 129, 0.28);
-  background: rgba(255, 107, 129, 0.12);
-}
-
-.hero-badge--danger::before {
-  background: var(--danger);
 }
 
 .operation-flow {
@@ -3216,13 +3175,11 @@ textarea {
   line-height: 1.55;
 }
 
-.trace-card-list,
 .delivery-trace-list {
   display: grid;
   gap: 14px;
 }
 
-.trace-card,
 .delivery-trace {
   position: relative;
   overflow: hidden;
@@ -3232,7 +3189,6 @@ textarea {
   box-shadow: inset 0 1px 0 rgba(248, 245, 237, 0.045);
 }
 
-.trace-card::before,
 .delivery-trace::before {
   content: "";
   position: absolute;
@@ -3241,11 +3197,6 @@ textarea {
   background: var(--module-accent);
 }
 
-.trace-card {
-  padding: 18px 18px 16px 21px;
-}
-
-.trace-card__header,
 .delivery-trace__header {
   display: flex;
   align-items: flex-start;
@@ -3253,7 +3204,6 @@ textarea {
   gap: 16px;
 }
 
-.trace-card__header h3,
 .delivery-trace__header h3 {
   margin: 2px 0 0;
   font-size: 1.05rem;
@@ -3261,7 +3211,6 @@ textarea {
   overflow-wrap: anywhere;
 }
 
-.trace-card__label,
 .delivery-trace__eyebrow {
   color: var(--module-accent);
   font-size: 0.72rem;
@@ -3270,21 +3219,6 @@ textarea {
   text-transform: uppercase;
 }
 
-.trace-card__facts {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.trace-card__facts > div {
-  min-width: 0;
-  padding: 11px 12px;
-  border-left: 1px solid rgba(232, 184, 74, 0.3);
-  background: rgba(248, 245, 237, 0.025);
-}
-
-.trace-card__facts span,
 .delivery-trace__validity span {
   display: block;
   margin-bottom: 4px;
@@ -3292,67 +3226,11 @@ textarea {
   font-size: 0.78rem;
 }
 
-.trace-card__facts strong,
 .delivery-trace__validity strong {
   display: block;
   color: var(--text);
   font-size: 0.92rem;
   overflow-wrap: anywhere;
-}
-
-.trace-card__signals {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 9px;
-  margin-top: 14px;
-}
-
-.trace-card__source {
-  color: var(--text-muted);
-  font-size: 0.86rem;
-}
-
-.trace-card__restriction {
-  margin: 14px 0 0;
-  padding: 11px 13px;
-  border: 1px solid rgba(232, 184, 74, 0.22);
-  border-radius: var(--radius);
-  background: rgba(232, 184, 74, 0.06);
-  color: var(--text-soft);
-  line-height: 1.5;
-}
-
-.trace-card__details {
-  margin-top: 15px;
-  border-top: 1px solid var(--surface-line);
-  padding-top: 13px;
-}
-
-.trace-card__details summary {
-  width: fit-content;
-  color: var(--module-accent);
-  cursor: pointer;
-  font-weight: 650;
-}
-
-.trace-card__details summary:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 4px;
-  border-radius: 2px;
-}
-
-.trace-card__form {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 16px;
-}
-
-.trace-card__actions {
-  display: flex;
-  justify-content: flex-end;
-  grid-column: 1 / -1;
 }
 
 .delivery-trace {
@@ -4512,8 +4390,7 @@ textarea::placeholder {
     width: 100%;
   }
 
-  .hero-card__side,
-  .hero-badges {
+  .hero-card__side {
     align-items: flex-start;
     justify-content: flex-start;
   }
@@ -4610,30 +4487,14 @@ textarea::placeholder {
 }
 
 @media (max-width: 700px) {
-  .trace-card,
   .delivery-trace {
     padding: 16px 14px 15px 17px;
   }
 
-  .trace-card__header,
   .delivery-trace__header {
     align-items: flex-start;
     flex-direction: column;
     gap: 10px;
-  }
-
-  .trace-card__facts,
-  .trace-card__form {
-    grid-template-columns: 1fr;
-  }
-
-  .trace-card__form .form__group--wide,
-  .trace-card__actions {
-    grid-column: span 1;
-  }
-
-  .trace-card__actions .button {
-    width: 100%;
   }
 
   .delivery-trace__items li {

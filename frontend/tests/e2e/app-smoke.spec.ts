@@ -1597,10 +1597,13 @@ test("item creation guides the first stock entry with conditional expiration", a
   await expect(
     page.getByRole("link", { name: "Registrar entrada" }).first()
   ).toBeVisible();
-  await expect(page.getByText("Saldo utilizável: 7")).toBeVisible();
-  const createdEntryCard = page.locator(".trace-card").filter({
-    hasText: "Compra com recursos da instituição",
-  });
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("Saldo utilizável");
+  await expect(itemBalance.locator("strong").first()).toHaveText(/7\s+unidade/);
+  const createdEntryCard = page
+    .getByLabel("Lotes do item")
+    .getByRole("article")
+    .filter({ hasText: "Compra com recursos da instituição" });
   await expect(createdEntryCard).toContainText("31/12/2099");
   await expect(createdEntryCard).toContainText("LT-MOCK-");
 });
@@ -1731,10 +1734,10 @@ test("batch traceability can quarantine stock without mobile overflow", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/items/1");
 
-  const batchCard = page.locator(".trace-card").filter({ hasText: "LT-MOCK-001" });
+  const batchCard = page.getByRole("article", { name: "Lote LT-MOCK-001" });
   await expect(batchCard).toBeVisible();
   await expect(batchCard).toContainText("Prateleira A1");
-  await batchCard.getByText("Corrigir identificação ou situação").click();
+  await batchCard.getByText("Editar rastreabilidade").click();
 
   await batchCard.getByLabel("Situação física").selectOption("quarentena");
   await batchCard.getByLabel("Localização").fill("Mesa de triagem");
@@ -1756,12 +1759,12 @@ test("batch traceability can quarantine stock without mobile overflow", async ({
   });
 
   await expect(
-    batchCard.locator(".trace-card__header .pill").filter({
-      hasText: "Em quarentena",
-    })
+    batchCard.locator("span").filter({ hasText: /^Em quarentena$/ })
   ).toBeVisible();
   await expect(batchCard).toContainText("Em conferência de integridade");
-  await expect(page.getByText("Saldo utilizável: 0")).toBeVisible();
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("Saldo utilizável");
+  await expect(itemBalance.locator("strong").first()).toHaveText(/0\s+pacote/);
   const hasNoDocumentOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth <= document.documentElement.clientWidth
   );
@@ -1790,28 +1793,35 @@ test("inactive item creation stays on detail without stock entry CTA", async ({ 
   await expect(
     page.getByText("Item inativo cadastrado. Ative-o antes de registrar uma entrada de estoque.")
   ).toBeVisible();
-  await expect(page.getByText("Saldo utilizável: 0")).toBeVisible();
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("Saldo utilizável");
+  await expect(itemBalance.locator("strong").first()).toHaveText(/0\s+unidade/);
   await expect(page.getByRole("link", { name: "Registrar entrada" })).toHaveCount(0);
 });
 
 test("deactivating and reactivating an item recomputes usable stock", async ({ page }) => {
   await page.goto("/items/1");
 
-  await expect(page.getByText("Saldo utilizável: 8")).toBeVisible();
-  await page.getByLabel("Item ativo").uncheck();
-  await page.getByRole("button", { name: "Salvar item" }).click();
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("8 pacote");
+  await page.getByRole("button", { name: "Editar produto" }).click();
+  await page.getByText("Produto ativo", { exact: true }).click();
+  await expect(page.getByLabel("Produto ativo")).not.toBeChecked();
+  await page.getByRole("button", { name: "Salvar produto" }).click();
 
-  await expect(page.getByText("Item atualizado com auditoria registrada.")).toBeVisible();
-  await expect(page.getByText("Saldo utilizável: 0")).toBeVisible();
-  await expect(page.getByText("Status: Inativo")).toBeVisible();
+  await expect(page.getByText("Produto atualizado.")).toBeVisible();
+  await expect(itemBalance).toContainText("0 pacote");
+  await expect(page.getByText("Inativo", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Registrar entrada" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Ajustar saldo" })).toHaveCount(0);
 
-  await page.getByLabel("Item ativo").check();
-  await page.getByRole("button", { name: "Salvar item" }).click();
+  await page.getByRole("button", { name: "Editar produto" }).click();
+  await page.getByText("Produto ativo", { exact: true }).click();
+  await expect(page.getByLabel("Produto ativo")).toBeChecked();
+  await page.getByRole("button", { name: "Salvar produto" }).click();
 
-  await expect(page.getByText("Saldo utilizável: 8")).toBeVisible();
-  await expect(page.getByText("Status: Ativo")).toBeVisible();
+  await expect(itemBalance).toContainText("8 pacote");
+  await expect(page.getByText("Ativo", { exact: true }).first()).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Registrar entrada" }).first()
   ).toBeVisible();
@@ -1825,22 +1835,23 @@ test("item detail explains expiration and highlights critical batches", async ({
   await page.goto("/items/1");
 
   await expect(page.getByRole("heading", { name: "Arroz 1kg" })).toBeVisible();
-  await expect(page.getByText("Saldo utilizável: 8")).toBeVisible();
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("8 pacote");
   await expect(page.getByText("2 lotes com validade crítica")).toBeVisible();
   await expect(page.getByText("1 lote com entrada futura")).toBeVisible();
 
   const batchesList = page.getByLabel("Lotes do item");
   await expect(batchesList.getByText("Doação de item")).toHaveCount(2);
   await expect(
-    batchesList.locator(".trace-card").filter({ hasText: "Vencido" })
+    batchesList.getByRole("article").filter({ hasText: "Vencido" })
   ).toBeVisible();
   await expect(
-    batchesList.locator(".trace-card").filter({
+    batchesList.getByRole("article").filter({
       hasText: "Validade não informada",
     })
   ).toBeVisible();
   await expect(
-    batchesList.locator(".trace-card").filter({ hasText: "Entrada futura" })
+    batchesList.getByRole("article").filter({ hasText: "Entrada futura" })
   ).toBeVisible();
 });
 
@@ -1907,8 +1918,8 @@ test("manual stock exit follows FEFO and keeps expired batch available for dispo
     movement_type: "perda_validade",
   });
   await expect(page).toHaveURL(/\/items\/1$/);
-  const updatedExpiredBatchCard = page.locator(".trace-card").filter({
-    hasText: "LT-MOCK-002",
+  const updatedExpiredBatchCard = page.getByRole("article", {
+    name: "Lote LT-MOCK-002",
   });
   await expect(updatedExpiredBatchCard).toContainText("1 de 2 pacote");
   await expect(
