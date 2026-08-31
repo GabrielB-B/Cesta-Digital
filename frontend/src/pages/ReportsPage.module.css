@@ -25,7 +25,7 @@
 .typeField,
 .periodFields label { display: grid; gap: 0.5rem; min-width: 0; }
 .typeField > span,
-.periodFields legend { color: #3f4b5e; font-size: 0.72rem; font-weight: 620; }
+.periodFields legend { color: #3f4b5e; font-size: 0.75rem; font-weight: 620; }
 .typeField select,
 .dateControl {
   width: 100%;
@@ -41,14 +41,14 @@
 
 .periodFields { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 0.65rem; align-items: end; min-width: 0; margin: 0; padding: 0; border: 0; }
 .periodFields legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.periodFields label > span:first-child { color: #3f4b5e; font-size: 0.72rem; font-weight: 620; }
+.periodFields label > span:first-child { color: #3f4b5e; font-size: 0.75rem; font-weight: 620; }
 .dateControl { display: flex; align-items: center; gap: 0.5rem; padding: 0 0.75rem; }
 .dateControl svg { width: 1rem; height: 1rem; flex: 0 0 auto; color: #68768a; }
 .dateControl input { width: 100%; min-width: 0; min-height: 2.75rem; padding: 0; color: #263348; font: inherit; font-size: 0.75rem; background: transparent; border: 0; outline: 0; }
-.periodSeparator { align-self: center; padding-top: 1.2rem; color: #8a94a4; font-size: 0.68rem; }
+.periodSeparator { align-self: center; padding-top: 1.2rem; color: #8a94a4; font-size: 0.75rem; }
 
 .filterActions { display: flex; gap: 0.55rem; }
-.filterActions button { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 2.9rem; padding: 0.65rem 0.9rem; font-size: 0.72rem; font-weight: 650; border-radius: var(--cd-radius-md); cursor: pointer; }
+.filterActions button { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 2.9rem; padding: 0.65rem 0.9rem; font-size: 0.75rem; font-weight: 650; border-radius: var(--cd-radius-md); cursor: pointer; }
 .filterActions svg { width: 1rem; height: 1rem; }
 .applyButton { color: #fff; background: var(--cd-brand-action); border: 1px solid var(--cd-brand-action); }
 .clearButton { color: #445166; background: #fff; border: 1px solid var(--cd-border-strong); }
@@ -63,13 +63,13 @@
 .kpiCard > div { display: grid; min-width: 0; }
 .kpiCard span:not(.kpiIcon) { color: #3d495c; font-size: 0.76rem; }
 .kpiCard strong { margin-top: 0.25rem; color: #142033; font-size: 1.7rem; line-height: 1.1; letter-spacing: -0.035em; }
-.kpiCard small { margin-top: 0.45rem; overflow: hidden; color: #758195; font-size: 0.65rem; line-height: 1rem; text-overflow: ellipsis; white-space: nowrap; }
+.kpiCard small { margin-top: 0.45rem; overflow: hidden; color: #758195; font-size: 0.75rem; line-height: 1rem; text-overflow: ellipsis; white-space: nowrap; }
 
 .reportsPanel { min-width: 0; padding: 1.25rem; background: #fff; border: 1px solid var(--cd-border); border-radius: var(--cd-radius-lg); box-shadow: var(--cd-shadow-sm); }
 .panelHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
 .panelHeader h2 { margin: 0; color: #1d293d; font-size: 1rem; font-weight: 700; }
-.panelHeader p { margin: 0.25rem 0 0; color: var(--cd-text-muted); font-size: 0.68rem; line-height: 1rem; }
-.panelHeader > span { min-height: 1.55rem; padding: 0.25rem 0.55rem; color: #6f5ad1; font-size: 0.62rem; font-weight: 650; background: #f1efff; border-radius: 999px; white-space: nowrap; }
+.panelHeader p { margin: 0.25rem 0 0; color: var(--cd-text-muted); font-size: 0.75rem; line-height: 1rem; }
+.panelHeader > span { min-height: 1.55rem; padding: 0.25rem 0.55rem; color: #6f5ad1; font-size: 0.75rem; font-weight: 650; background: #f1efff; border-radius: 999px; white-space: nowrap; }
 
 .reportGrid,
 .loadingGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1rem; }
@@ -84,8 +84,8 @@
 .reportIcon5 { color: #ed1970; background: #ffedf4; }
 .reportCopy { display: grid; min-width: 0; }
 .reportCopy strong { overflow: hidden; color: #223047; font-size: 0.78rem; font-weight: 680; text-overflow: ellipsis; white-space: nowrap; }
-.reportCopy p { display: -webkit-box; margin: 0.25rem 0 0; overflow: hidden; color: #647187; font-size: 0.67rem; line-height: 1rem; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.reportCopy small { margin-top: 0.35rem; color: #8a94a4; font-size: 0.57rem; font-weight: 620; text-transform: uppercase; letter-spacing: 0.035em; }
+.reportCopy p { display: -webkit-box; margin: 0.25rem 0 0; overflow: hidden; color: #647187; font-size: 0.75rem; line-height: 1rem; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.reportCopy small { margin-top: 0.35rem; color: #8a94a4; font-size: 0.75rem; font-weight: 620; text-transform: uppercase; letter-spacing: 0.035em; }
 .downloadButton { display: grid; place-items: center; width: 2.85rem; height: 2.85rem; padding: 0; color: #415067; background: #fff; border: 1px solid var(--cd-border); border-radius: var(--cd-radius-md); cursor: pointer; }
 .downloadButton:hover:not(:disabled) { color: var(--cd-brand-action); border-color: color-mix(in srgb, var(--cd-brand-action) 45%, var(--cd-border)); background: var(--cd-brand-soft); }
 .downloadButton:disabled { opacity: 0.58; cursor: wait; }
@@ -93,19 +93,19 @@
 
 .formatNotice { display: flex; align-items: center; gap: 0.65rem; min-height: 2.75rem; margin-top: 1rem; padding: 0.65rem 0.85rem; color: #4c5a70; background: #f7f8fa; border-radius: var(--cd-radius-md); }
 .formatNotice svg { width: 1rem; height: 1rem; flex: 0 0 auto; color: #2c9ee8; }
-.formatNotice p { margin: 0; font-size: 0.65rem; line-height: 1rem; }
+.formatNotice p { margin: 0; font-size: 0.75rem; line-height: 1rem; }
 .downloadError,
 .errorState { color: #9f2342; background: #fff1f4; border: 1px solid #f5c7d3; border-radius: var(--cd-radius-md); }
-.downloadError { margin: 0 0 1rem; padding: 0.7rem 0.85rem; font-size: 0.7rem; }
+.downloadError { margin: 0 0 1rem; padding: 0.7rem 0.85rem; font-size: 0.75rem; }
 .errorState { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; }
 .errorState svg { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; }
 .errorState strong { font-size: 0.75rem; }
-.errorState p { margin: 0.2rem 0 0; font-size: 0.68rem; }
+.errorState p { margin: 0.2rem 0 0; font-size: 0.75rem; }
 .loadingGrid span { min-height: 6rem; background: linear-gradient(100deg, #f6f7f9, #fff, #f6f7f9); background-size: 200% 100%; border: 1px solid var(--cd-border); border-radius: var(--cd-radius-md); animation: loading 1.3s linear infinite; }
 .emptyState { display: grid; justify-items: center; gap: 0.4rem; min-height: 14rem; padding: 2rem; color: var(--cd-text-muted); text-align: center; }
 .emptyState svg { width: 2rem; height: 2rem; color: #9aa4b2; }
 .emptyState strong { color: #344054; font-size: 0.8rem; }
-.emptyState p { max-width: 25rem; margin: 0; font-size: 0.68rem; line-height: 1rem; }
+.emptyState p { max-width: 25rem; margin: 0; font-size: 0.75rem; line-height: 1rem; }
 .spinning { animation: spin 0.8s linear infinite; }
 
 .filters button:focus-visible,

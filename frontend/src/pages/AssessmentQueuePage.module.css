@@ -147,7 +147,7 @@
 
 .statusCopy small {
   color: var(--cd-text-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1rem;
 }
 
@@ -286,7 +286,7 @@
 .desktopTable td {
   padding: 0.72rem 0.75rem;
   color: #344054;
-  font-size: 0.71875rem;
+  font-size: 0.75rem;
   line-height: 1.1rem;
   text-align: left;
   vertical-align: middle;
@@ -347,7 +347,7 @@
 
 .familyButton span {
   color: var(--cd-text-muted);
-  font-size: 0.65625rem;
+  font-size: 0.75rem;
 }
 
 .queueBadge,
@@ -357,7 +357,7 @@
   width: fit-content;
   min-height: 1.625rem;
   padding: 0.25rem 0.55rem;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 670;
   line-height: 1rem;
   border-radius: var(--cd-radius-sm);
@@ -509,7 +509,7 @@
 .detailEyebrow,
 .decisionBlock > span {
   color: var(--cd-text-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 620;
 }
 
@@ -532,7 +532,7 @@
   align-items: flex-start;
   gap: 0.5rem;
   color: #4a5669;
-  font-size: 0.71875rem;
+  font-size: 0.75rem;
   line-height: 1.1rem;
 }
 
@@ -582,7 +582,7 @@
 .sectionTitle span,
 .readingCard p {
   color: var(--cd-text-muted);
-  font-size: 0.65625rem;
+  font-size: 0.75rem;
   line-height: 1rem;
 }
 
@@ -611,14 +611,14 @@
 .readingCard dt,
 .decisionBlock dt {
   color: var(--cd-text-muted);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 
 .readingCard dd,
 .decisionBlock dd {
   margin: 0;
   color: #344054;
-  font-size: 0.71875rem;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 
@@ -673,12 +673,12 @@
 }
 
 .divergenceAlert strong {
-  font-size: 0.71875rem;
+  font-size: 0.75rem;
 }
 
 .divergenceAlert span,
 .queueReason span {
-  font-size: 0.65625rem;
+  font-size: 0.75rem;
   line-height: 1rem;
 }
 
@@ -824,7 +824,7 @@
   .desktopTable th,
   .desktopTable td {
     padding-inline: 0.55rem;
-    font-size: 0.65625rem;
+    font-size: 0.75rem;
   }
 
   .statusCard {
@@ -898,7 +898,7 @@
   .cardTop > div span,
   .cardRegion {
     color: var(--cd-text-muted);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     line-height: 1rem;
   }
 
@@ -931,13 +931,13 @@
 
   .cardFacts dt {
     color: var(--cd-text-muted);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
   }
 
   .cardFacts dd {
     margin: 0;
     color: #344054;
-    font-size: 0.71875rem;
+    font-size: 0.75rem;
     font-weight: 640;
   }
 
@@ -948,7 +948,7 @@
     margin: 0;
     padding: 0.6rem;
     color: #8a4a05;
-    font-size: 0.65625rem;
+    font-size: 0.75rem;
     line-height: 1rem;
     background: #fff7e8;
     border-radius: var(--cd-radius-sm);
@@ -968,7 +968,7 @@
     min-height: 2.65rem;
     padding: 0.55rem;
     color: #4a5669;
-    font-size: 0.71875rem;
+    font-size: 0.75rem;
     font-weight: 650;
     border: 1px solid var(--cd-border);
     border-radius: var(--cd-radius-md);

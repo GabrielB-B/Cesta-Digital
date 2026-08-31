@@ -11,13 +11,13 @@
 .panelIcon { display: grid; place-items: center; flex: 0 0 auto; width: 2.4rem; height: 2.4rem; color: var(--cd-brand-action); background: var(--cd-brand-soft); border-radius: 50%; }
 .panelIcon svg { width: 1.1rem; height: 1.1rem; }
 .panelHeading h2 { margin: 0; color: #1a2639; font-size: 0.86rem; font-weight: 700; }
-.panelHeading p { margin: 0.12rem 0 0; color: var(--cd-text-muted); font-size: 0.66rem; }
+.panelHeading p { margin: 0.12rem 0 0; color: var(--cd-text-muted); font-size: 0.75rem; }
 
 .desktopTable { overflow-x: auto; }
 .desktopTable table { width: 100%; min-width: 40rem; border-collapse: collapse; table-layout: fixed; }
 .desktopTable th,
-.desktopTable td { padding: 0.72rem 0.62rem; color: #344054; font-size: 0.66rem; line-height: 1rem; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--cd-border); }
-.desktopTable th { height: 2.8rem; color: #29364a; font-size: 0.63rem; font-weight: 680; background: var(--cd-surface-muted); }
+.desktopTable td { padding: 0.72rem 0.62rem; color: #344054; font-size: 0.75rem; line-height: 1rem; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--cd-border); }
+.desktopTable th { height: 2.8rem; color: #29364a; font-size: 0.75rem; font-weight: 680; background: var(--cd-surface-muted); }
 .desktopTable th:nth-child(1) { width: 10%; }
 .desktopTable th:nth-child(2) { width: 23%; }
 .desktopTable th:nth-child(3) { width: 15%; }
@@ -32,22 +32,22 @@
 .productCell > span:last-child { display: grid; min-width: 0; }
 .productCell strong,
 .productCell small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.productCell strong { color: #263247; font-size: 0.67rem; }
-.productCell small { color: var(--cd-text-muted); font-size: 0.57rem; }
+.productCell strong { color: #263247; font-size: 0.75rem; }
+.productCell small { color: var(--cd-text-muted); font-size: 0.75rem; }
 .batchCode { font-variant-numeric: tabular-nums; }
-.quantity { color: #263247; font-size: 0.67rem; font-weight: 700; white-space: nowrap; }
+.quantity { color: #263247; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
 .expirationCell { display: grid; gap: 0.15rem; }
-.expirationCell small { font-size: 0.55rem; font-weight: 620; }
+.expirationCell small { font-size: 0.75rem; font-weight: 620; }
 .expirationDanger { color: #b4233a; }
 .expirationWarning { color: #a85a00; }
 .expirationNeutral { color: var(--cd-text-muted); }
-.statusBadge { display: inline-flex; align-items: center; width: fit-content; min-height: 1.45rem; padding: 0.18rem 0.48rem; font-size: 0.58rem; font-weight: 650; line-height: 0.9rem; white-space: nowrap; border-radius: var(--cd-radius-sm); }
+.statusBadge { display: inline-flex; align-items: center; width: fit-content; min-height: 1.45rem; padding: 0.18rem 0.48rem; font-size: 0.75rem; font-weight: 650; line-height: 0.9rem; white-space: nowrap; border-radius: var(--cd-radius-sm); }
 .statusSuccess { color: #137a38; background: #eaf8ef; }
 .statusWarning { color: #a85a00; background: #fff2dc; }
 .statusDanger { color: #b4233a; background: #fff0f3; }
 
 .mobileList { display: none; }
-.pagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4rem; padding: 0.75rem 1rem; color: var(--cd-text-muted); font-size: 0.67rem; }
+.pagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4rem; padding: 0.75rem 1rem; color: var(--cd-text-muted); font-size: 0.75rem; }
 .pagination nav { display: flex; align-items: center; gap: 0.55rem; }
 .pagination button { display: grid; place-items: center; width: 2.1rem; height: 2.1rem; padding: 0; color: #344054; background: var(--cd-surface); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-sm); cursor: pointer; }
 .pagination button:disabled { color: #b5bdc9; background: var(--cd-neutral-100); cursor: not-allowed; }
@@ -61,7 +61,7 @@
 .stateMessage strong { color: #253248; font-size: 1rem; }
 .stateMessage p { max-width: 24rem; margin: 0; font-size: 0.75rem; line-height: 1.15rem; }
 .stateMessage button,
-.stateMessage a { margin-top: 0.7rem; padding: 0.65rem 0.85rem; color: #fff; font-size: 0.7rem; font-weight: 650; text-decoration: none; background: var(--cd-brand-action); border: 0; border-radius: var(--cd-radius-md); cursor: pointer; }
+.stateMessage a { margin-top: 0.7rem; padding: 0.65rem 0.85rem; color: #fff; font-size: 0.75rem; font-weight: 650; text-decoration: none; background: var(--cd-brand-action); border: 0; border-radius: var(--cd-radius-md); cursor: pointer; }
 
 .primaryAction:focus-visible,
 .pagination button:focus-visible,
@@ -73,7 +73,7 @@
 @media (max-width: 1240px) {
   .workspace { grid-template-columns: minmax(0, 1fr) 22.5rem; }
   .desktopTable th,
-  .desktopTable td { padding-inline: 0.5rem; font-size: 0.61rem; }
+  .desktopTable td { padding-inline: 0.5rem; font-size: 0.75rem; }
 }
 
 @media (max-width: 1099px) {
@@ -87,13 +87,13 @@
   .entryCard header { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.7rem; }
   .entryCard header > div { min-width: 0; }
   .entryCard h2 { overflow: hidden; margin: 0; color: #1d2a40; font-size: 0.82rem; text-overflow: ellipsis; white-space: nowrap; }
-  .entryCard header p { margin: 0.15rem 0 0; color: var(--cd-text-muted); font-size: 0.62rem; line-height: 0.95rem; }
+  .entryCard header p { margin: 0.15rem 0 0; color: var(--cd-text-muted); font-size: 0.75rem; line-height: 0.95rem; }
   .entryCard header .statusBadge { grid-column: 1 / -1; }
   .entryCard dl { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin: 0; padding: 0.8rem; background: var(--cd-surface-muted); border-radius: var(--cd-radius-md); }
   .entryCard dl div { display: grid; gap: 0.18rem; min-width: 0; }
-  .entryCard dt { color: var(--cd-text-muted); font-size: 0.6rem; }
-  .entryCard dd { overflow: hidden; margin: 0; color: #344054; font-size: 0.68rem; font-weight: 620; text-overflow: ellipsis; white-space: nowrap; }
-  .location { display: flex; align-items: center; gap: 0.35rem; margin: 0; padding-top: 0.75rem; color: var(--cd-text-muted); font-size: 0.65rem; border-top: 1px solid var(--cd-border); }
+  .entryCard dt { color: var(--cd-text-muted); font-size: 0.75rem; }
+  .entryCard dd { overflow: hidden; margin: 0; color: #344054; font-size: 0.75rem; font-weight: 620; text-overflow: ellipsis; white-space: nowrap; }
+  .location { display: flex; align-items: center; gap: 0.35rem; margin: 0; padding-top: 0.75rem; color: var(--cd-text-muted); font-size: 0.75rem; border-top: 1px solid var(--cd-border); }
   .location svg { flex: 0 0 auto; width: 0.9rem; height: 0.9rem; color: var(--cd-brand-action); }
   .pagination { margin-top: 0.875rem; background: var(--cd-surface); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-lg); box-shadow: var(--cd-shadow-xs); }
 }

@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "build:showcase": "tsc -b && vite build --config vite.showcase.config.ts",
     "lint": "eslint .",
+    "test:ui:font-scale": "node scripts/check-font-scale.mjs",
     "preview": "vite preview",
     "showcase": "vite --host 127.0.0.1 --port 4174 --strictPort",
     "test:e2e": "playwright test",

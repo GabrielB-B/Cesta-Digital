@@ -130,10 +130,10 @@
 .cardOrange .basketIcon { color: #e77a00; background: #fff1df; }
 .cardContent { display: grid; align-content: start; gap: 0.75rem; min-width: 0; }
 .cardContent > strong { overflow: hidden; color: #172338; font-size: 0.98rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.cardMetrics { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: center; min-width: 0; color: var(--cd-text-muted); font-size: 0.72rem; }
+.cardMetrics { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: center; min-width: 0; color: var(--cd-text-muted); font-size: 0.75rem; }
 .cardMetrics > span + span { display: grid; gap: 0.12rem; padding-left: 1rem; border-left: 1px solid var(--cd-border); }
 .cardMetrics b { color: #344054; font-size: 0.8rem; font-weight: 650; }
-.cardMetrics small { color: #8791a1; font-size: 0.63rem; }
+.cardMetrics small { color: #8791a1; font-size: 0.75rem; }
 .selectedCheck { position: absolute; top: 0.85rem; right: 0.85rem; display: grid; place-items: center; width: 1.55rem; height: 1.55rem; color: #fff; background: var(--cd-brand-action); border-radius: 50%; }
 .selectedCheck svg { width: 0.95rem; height: 0.95rem; stroke-width: 2.5; }
 
@@ -144,7 +144,7 @@
   width: fit-content;
   min-height: 1.5rem;
   padding: 0.2rem 0.55rem;
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   font-weight: 680;
   line-height: 1rem;
   border-radius: var(--cd-radius-sm);
@@ -153,7 +153,7 @@
 .statusInactive { color: #596579; background: #f1f3f6; }
 
 .cardSkeleton { min-height: 10.25rem; background: var(--cd-neutral-100); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-lg); animation: pulse 1.2s ease-in-out infinite alternate; }
-.cardPagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--cd-text-muted); font-size: 0.7rem; }
+.cardPagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--cd-text-muted); font-size: 0.75rem; }
 .cardPagination nav { display: flex; align-items: center; gap: 0.6rem; }
 .cardPagination button { display: grid; place-items: center; width: 2rem; height: 2rem; color: #465368; background: var(--cd-surface); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-sm); cursor: pointer; }
 .cardPagination button:disabled { color: #b5bdc9; background: var(--cd-neutral-100); cursor: not-allowed; }
@@ -166,15 +166,15 @@
 .compositionPanel { overflow: hidden; }
 .panelHeading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4.5rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--cd-border); }
 .panelHeading > div { display: grid; gap: 0.18rem; }
-.panelHeading span { color: var(--cd-text-muted); font-size: 0.65rem; font-weight: 620; text-transform: uppercase; letter-spacing: 0.06em; }
+.panelHeading span { color: var(--cd-text-muted); font-size: 0.75rem; font-weight: 620; text-transform: uppercase; letter-spacing: 0.06em; }
 .panelHeading h2 { margin: 0; color: #1c293d; font-size: 1rem; font-weight: 700; }
-.compactEdit { min-height: 2.3rem; padding: 0.5rem 0.7rem; color: #465368; font-size: 0.68rem; border: 1px solid var(--cd-border); }
+.compactEdit { min-height: 2.3rem; padding: 0.5rem 0.7rem; color: #465368; font-size: 0.75rem; border: 1px solid var(--cd-border); }
 
 .desktopTable { overflow-x: auto; }
 .desktopTable table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .desktopTable caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .desktopTable th,
-.desktopTable td { padding: 0.68rem 0.75rem; color: #344054; font-size: 0.68rem; line-height: 1rem; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--cd-border); }
+.desktopTable td { padding: 0.68rem 0.75rem; color: #344054; font-size: 0.75rem; line-height: 1rem; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--cd-border); }
 .desktopTable th { height: 2.9rem; color: #283449; font-weight: 680; background: var(--cd-surface-muted); }
 .desktopTable th:nth-child(1) { width: 34%; }
 .desktopTable th:nth-child(2) { width: 14%; }
@@ -189,19 +189,19 @@
 .summaryPanel { position: sticky; top: calc(var(--cd-topbar-height) + 1.25rem); padding: 1.25rem; }
 .summaryPanel > h2 { margin: 0; padding-bottom: 1rem; color: #1b273a; font-size: 1rem; font-weight: 700; border-bottom: 1px solid var(--cd-border); }
 .summaryValue { display: grid; gap: 0.28rem; padding: 1rem 0; border-bottom: 1px solid var(--cd-border); }
-.summaryValue span { color: var(--cd-text-muted); font-size: 0.72rem; }
+.summaryValue span { color: var(--cd-text-muted); font-size: 0.75rem; }
 .summaryValue strong { color: #172338; font-size: 1.65rem; line-height: 1.15; letter-spacing: -0.03em; }
-.summaryValue small { color: #8791a1; font-size: 0.61rem; line-height: 0.9rem; }
+.summaryValue small { color: #8791a1; font-size: 0.75rem; line-height: 0.9rem; }
 .summaryDetails { display: grid; gap: 0.9rem; margin: 0; padding: 1rem 0; border-bottom: 1px solid var(--cd-border); }
 .summaryDetails div { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .summaryDetails dt,
-.summaryDetails dd { margin: 0; font-size: 0.7rem; }
+.summaryDetails dd { margin: 0; font-size: 0.75rem; }
 .summaryDetails dt { color: var(--cd-text-muted); }
 .summaryDetails dd { color: #283449; font-weight: 620; text-align: right; }
-.summaryNotes { margin: 1rem 0 0; padding: 0.8rem; color: #596579; font-size: 0.68rem; line-height: 1.05rem; background: var(--cd-surface-muted); border-radius: var(--cd-radius-md); }
+.summaryNotes { margin: 1rem 0 0; padding: 0.8rem; color: #596579; font-size: 0.75rem; line-height: 1.05rem; background: var(--cd-surface-muted); border-radius: var(--cd-radius-md); }
 .summaryActions { display: grid; gap: 0.55rem; padding-top: 1rem; }
 .summaryActions a,
-.summaryActions button { min-height: 2.7rem; padding: 0.6rem 0.8rem; font-size: 0.7rem; background: var(--cd-surface); border: 1px solid var(--cd-border-strong); cursor: pointer; }
+.summaryActions button { min-height: 2.7rem; padding: 0.6rem 0.8rem; font-size: 0.75rem; background: var(--cd-surface); border: 1px solid var(--cd-border-strong); cursor: pointer; }
 .summaryActions a { color: #465368; }
 .summaryActions a svg { color: var(--cd-brand-action); }
 .summaryActions .deactivateAction { color: #d92d50; border-color: transparent; border-top-color: var(--cd-border); border-radius: 0; }
@@ -213,7 +213,7 @@
 .compositionEmpty { min-height: 22rem; padding: 1.25rem; }
 .detailLoading { color: var(--cd-text-muted); font-size: 0.75rem; background: linear-gradient(100deg, #f8f9fb, #fff, #f8f9fb); background-size: 200% 100%; animation: loading 1.4s linear infinite; }
 .detailError,
-.compositionEmpty { display: grid; place-content: center; justify-items: center; gap: 0.5rem; color: var(--cd-text-muted); font-size: 0.72rem; text-align: center; }
+.compositionEmpty { display: grid; place-content: center; justify-items: center; gap: 0.5rem; color: var(--cd-text-muted); font-size: 0.75rem; text-align: center; }
 .detailError { color: #9f2342; }
 .detailError svg,
 .compositionEmpty svg,
@@ -257,9 +257,9 @@
   .mobileComposition { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; padding: 1rem; }
   .productCard { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.7rem; min-width: 0; padding: 0.8rem; background: var(--cd-surface-muted); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-md); }
   .productCard > div { display: grid; gap: 0.18rem; min-width: 0; }
-  .productCard strong { overflow: hidden; color: #253248; font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
-  .productCard span { overflow: hidden; color: var(--cd-text-muted); font-size: 0.61rem; text-overflow: ellipsis; white-space: nowrap; }
-  .productCard b { color: #344054; font-size: 0.7rem; white-space: nowrap; }
+  .productCard strong { overflow: hidden; color: #253248; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+  .productCard span { overflow: hidden; color: var(--cd-text-muted); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+  .productCard b { color: #344054; font-size: 0.75rem; white-space: nowrap; }
 }
 
 @media (max-width: 899px) {

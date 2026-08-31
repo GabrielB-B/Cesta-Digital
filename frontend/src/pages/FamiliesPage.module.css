@@ -120,7 +120,7 @@
   color: var(--cd-text-inverse);
   background: var(--cd-brand-action);
   border-radius: var(--cd-radius-pill);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .primaryAction {
@@ -327,7 +327,7 @@
 
 .regionCell span {
   color: var(--cd-text-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 .statusBadge {
@@ -336,7 +336,7 @@
   width: fit-content;
   min-height: 1.625rem;
   padding: 0.25rem 0.6rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 650;
   line-height: 1rem;
   border-radius: var(--cd-radius-sm);
@@ -490,7 +490,7 @@
   align-items: center;
   gap: 0.5rem;
   color: var(--cd-text-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 610;
 }
 
@@ -610,7 +610,7 @@
   .desktopTable th,
   .desktopTable td {
     padding-inline: 0.625rem;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -688,7 +688,7 @@
     flex-wrap: wrap;
     gap: 0.5rem 1rem;
     color: var(--cd-text-muted);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
   }
 
   .familyCardMeta span {

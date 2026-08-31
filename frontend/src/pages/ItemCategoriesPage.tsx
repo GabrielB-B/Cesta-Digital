@@ -1,27 +1,78 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  Archive,
+  CheckCircle2,
+  FolderTree,
+  Pencil,
+  Plus,
+  Save,
+  Search,
+  Tag,
+  X,
+} from "lucide-react";
 import { api } from "../api/client";
 import type { ItemCategoryPayload, ItemCategoryResponse } from "../types/item";
 import { getApiErrorMessage } from "../utils/api-error";
+import styles from "./ItemCategoriesPage.module.css";
+
+interface CategoryFormData {
+  id: number | null;
+  name: string;
+  description: string;
+  is_active: boolean;
+}
+
+const EMPTY_FORM: CategoryFormData = {
+  id: null,
+  name: "",
+  description: "",
+  is_active: true,
+};
+
+function toFormData(category: ItemCategoryResponse): CategoryFormData {
+  return {
+    id: category.id,
+    name: category.name,
+    description: category.description ?? "",
+    is_active: category.is_active,
+  };
+}
+
+function normalizeSearch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR")
+    .trim();
+}
 
 export function ItemCategoriesPage() {
   const [categories, setCategories] = useState<ItemCategoryResponse[]>([]);
-  const [formData, setFormData] = useState({
-    id: null as number | null,
-    name: "",
-    description: "",
-    is_active: true,
-  });
+  const [formData, setFormData] = useState<CategoryFormData>(EMPTY_FORM);
+  const [savedFormData, setSavedFormData] = useState<CategoryFormData>(EMPTY_FORM);
+  const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const editorRef = useRef<HTMLElement>(null);
+  const editorHeadingRef = useRef<HTMLHeadingElement>(null);
 
-  async function loadCategories() {
+  async function reloadCategories() {
+    setIsLoading(true);
     try {
       const response = await api.get<ItemCategoryResponse[]>("/item-categories");
       setCategories(response.data);
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel carregar as categorias."));
+      setError("");
+    } catch (requestError) {
+      setError(
+        getApiErrorMessage(requestError, "Não foi possível carregar as categorias."),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -35,12 +86,16 @@ export function ItemCategoriesPage() {
       .then((response) => {
         if (isCurrent) {
           setCategories(response.data);
+          setError("");
         }
       })
-      .catch((err) => {
+      .catch((requestError) => {
         if (isCurrent) {
           setError(
-            getApiErrorMessage(err, "Nao foi possivel carregar as categorias.")
+            getApiErrorMessage(
+              requestError,
+              "Não foi possível carregar as categorias.",
+            ),
           );
         }
       })
@@ -55,13 +110,72 @@ export function ItemCategoriesPage() {
     };
   }, []);
 
-  function resetForm() {
-    setFormData({
-      id: null,
-      name: "",
-      description: "",
-      is_active: true,
+  const isDirty = useMemo(
+    () => JSON.stringify(formData) !== JSON.stringify(savedFormData),
+    [formData, savedFormData],
+  );
+
+  useEffect(() => {
+    if (!isDirty) {
+      return undefined;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  const filteredCategories = useMemo(() => {
+    const query = normalizeSearch(search);
+    if (!query) {
+      return categories;
+    }
+
+    return categories.filter((category) =>
+      normalizeSearch(`${category.name} ${category.description ?? ""}`).includes(query),
+    );
+  }, [categories, search]);
+
+  const activeCount = categories.filter((category) => category.is_active).length;
+  const inactiveCount = categories.length - activeCount;
+
+  function canDiscardChanges() {
+    return !isDirty || window.confirm("Descartar as alterações ainda não salvas?");
+  }
+
+  function focusEditor() {
+    window.requestAnimationFrame(() => {
+      editorRef.current?.scrollIntoView({ block: "nearest" });
+      editorHeadingRef.current?.focus();
     });
+  }
+
+  function startCreate() {
+    if (!canDiscardChanges()) {
+      return;
+    }
+
+    setFormData(EMPTY_FORM);
+    setSavedFormData(EMPTY_FORM);
+    setError("");
+    setSuccessMessage("");
+    focusEditor();
+  }
+
+  function handleEdit(category: ItemCategoryResponse) {
+    if (category.id !== formData.id && !canDiscardChanges()) {
+      return;
+    }
+
+    const nextFormData = toFormData(category);
+    setFormData(nextFormData);
+    setSavedFormData(nextFormData);
+    setError("");
+    setSuccessMessage("");
+    focusEditor();
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -86,182 +200,203 @@ export function ItemCategoriesPage() {
       if (formData.id) {
         await api.put<ItemCategoryResponse>(
           `/item-categories/${formData.id}`,
-          payload
+          payload,
         );
-        setSuccessMessage("Categoria atualizada com auditoria registrada.");
+        setSuccessMessage("Categoria atualizada.");
       } else {
         await api.post<ItemCategoryResponse>("/item-categories", payload);
         setSuccessMessage("Categoria cadastrada.");
       }
 
-      resetForm();
-      setIsLoading(true);
-      setError("");
-      await loadCategories();
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel salvar a categoria."));
+      setFormData(EMPTY_FORM);
+      setSavedFormData(EMPTY_FORM);
+      await reloadCategories();
+    } catch (requestError) {
+      setError(
+        getApiErrorMessage(requestError, "Não foi possível salvar a categoria."),
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  function handleEdit(category: ItemCategoryResponse) {
-    setError("");
-    setSuccessMessage("");
-    setFormData({
-      id: category.id,
-      name: category.name,
-      description: category.description ?? "",
-      is_active: category.is_active,
-    });
-  }
-
   return (
-    <div className="page-stack">
-      <section className="hero-card">
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
         <div>
-          <p className="eyebrow">Catalogo</p>
-          <h2>Categorias de item</h2>
-          <p className="hero-card__description">
-            Organize categorias, edite nomes e inative grupos sem perder
-            historico operacional.
-          </p>
+          <h1>Categorias</h1>
+          <p>Organize os grupos usados no cadastro de produtos.</p>
         </div>
-      </section>
+      </header>
 
-      <section className="content-grid">
-        <form onSubmit={handleSubmit} className="panel-card form-panel">
-          <div className="panel-card__header">
+      {error ? <p className={styles.feedbackError} role="alert">{error}</p> : null}
+      {successMessage ? (
+        <p className={styles.feedbackSuccess} role="status">{successMessage}</p>
+      ) : null}
+
+      <div className={styles.workspace}>
+        <section className={styles.listPanel} aria-labelledby="category-list-title">
+          <header className={styles.panelHeader}>
             <div>
-              <p className="eyebrow">
-                {formData.id ? "Edicao" : "Novo cadastro"}
+              <h2 id="category-list-title">Categorias cadastradas</h2>
+              <p>
+                {categories.length} no total · {activeCount} ativa{activeCount === 1 ? "" : "s"}
+                {inactiveCount ? ` · ${inactiveCount} inativa${inactiveCount === 1 ? "" : "s"}` : ""}
               </p>
-              <h3>{formData.id ? "Editar categoria" : "Nova categoria"}</h3>
             </div>
-          </div>
+            <FolderTree aria-hidden="true" />
+          </header>
 
-          <div className="form-grid">
-            <label className="form__group">
+          <label className={styles.searchField}>
+            <Search aria-hidden="true" />
+            <span className="sr-only">Buscar categorias</span>
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar categoria"
+              autoComplete="off"
+            />
+          </label>
+
+          {isLoading ? (
+            <div className={styles.loadingState} aria-live="polite">
+              <span>Carregando categorias…</span>
+              {Array.from({ length: 3 }, (_, index) => (
+                <span className={styles.skeletonRow} key={index} aria-hidden="true" />
+              ))}
+            </div>
+          ) : filteredCategories.length === 0 ? (
+            <div className={styles.emptyState}>
+              <Archive aria-hidden="true" />
+              <strong>Nenhuma categoria encontrada</strong>
+              <span>{search ? "Revise a busca." : "Cadastre a primeira categoria."}</span>
+            </div>
+          ) : (
+            <div className={styles.categoryList}>
+              {filteredCategories.map((category) => {
+                const isSelected = formData.id === category.id;
+                return (
+                  <article
+                    key={category.id}
+                    className={`${styles.categoryRow}${isSelected ? ` ${styles.categoryRowSelected}` : ""}`}
+                    aria-label={`Categoria ${category.name}`}
+                  >
+                    <span className={styles.categoryIcon}>
+                      <Tag aria-hidden="true" />
+                    </span>
+                    <div className={styles.categoryIdentity}>
+                      <h3>{category.name}</h3>
+                      <p>{category.description || "Descrição não informada"}</p>
+                    </div>
+                    <span
+                      className={`${styles.statusBadge} ${
+                        category.is_active ? styles.statusActive : styles.statusInactive
+                      }`}
+                    >
+                      {category.is_active ? <CheckCircle2 aria-hidden="true" /> : null}
+                      {category.is_active ? "Ativa" : "Inativa"}
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.editAction}
+                      onClick={() => handleEdit(category)}
+                      aria-label={`Editar ${category.name}`}
+                    >
+                      <Pencil aria-hidden="true" /> Editar
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        <aside
+          ref={editorRef}
+          className={styles.editorPanel}
+          aria-labelledby="category-editor-title"
+        >
+          <header className={styles.editorHeader}>
+            <span className={styles.editorIcon}>
+              {formData.id ? <Pencil aria-hidden="true" /> : <Plus aria-hidden="true" />}
+            </span>
+            <div>
+              <h2 id="category-editor-title" ref={editorHeadingRef} tabIndex={-1}>
+                {formData.id ? "Editar categoria" : "Nova categoria"}
+              </h2>
+              {formData.id ? <p>Atualizando “{savedFormData.name}”</p> : null}
+            </div>
+            {formData.id ? (
+              <button type="button" onClick={startCreate} aria-label="Cancelar edição">
+                <X aria-hidden="true" />
+              </button>
+            ) : null}
+          </header>
+
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <label className={styles.field}>
               <span>Nome</span>
               <input
                 value={formData.name}
                 onChange={(event) =>
-                  setFormData((previous) => ({
-                    ...previous,
-                    name: event.target.value,
-                  }))
+                  setFormData((current) => ({ ...current, name: event.target.value }))
                 }
-                placeholder="Ex.: alimentos"
+                autoComplete="off"
                 required
               />
             </label>
 
-            <label className="checkbox-card">
+            <label className={styles.field}>
+              <span>Descrição <small>(opcional)</small></span>
+              <textarea
+                value={formData.description}
+                onChange={(event) =>
+                  setFormData((current) => ({
+                    ...current,
+                    description: event.target.value,
+                  }))
+                }
+                rows={5}
+              />
+            </label>
+
+            <label className={styles.switchField}>
               <input
                 type="checkbox"
                 checked={formData.is_active}
                 onChange={(event) =>
-                  setFormData((previous) => ({
-                    ...previous,
+                  setFormData((current) => ({
+                    ...current,
                     is_active: event.target.checked,
                   }))
                 }
               />
-              Categoria ativa
+              <span>
+                <strong>Categoria ativa</strong>
+                <small>Disponível para novos produtos</small>
+              </span>
+              <i aria-hidden="true" />
             </label>
 
-            <label className="form__group form__group--wide">
-              <span>Descricao</span>
-              <textarea
-                value={formData.description}
-                onChange={(event) =>
-                  setFormData((previous) => ({
-                    ...previous,
-                    description: event.target.value,
-                  }))
-                }
-                rows={4}
-                placeholder="Descreva o uso desta categoria"
-              />
-            </label>
-          </div>
-
-          {error ? (
-            <p className="status-error" role="alert" aria-live="polite">
-              {error}
-            </p>
-          ) : null}
-          {successMessage ? (
-            <p className="status-success" role="status" aria-live="polite">
-              {successMessage}
-            </p>
-          ) : null}
-
-          <div className="panel-actions">
-            {formData.id ? (
-              <button
-                type="button"
-                className="button button--secondary"
-                onClick={resetForm}
-                disabled={isSubmitting}
-              >
-                Cancelar edicao
+            <div className={styles.formActions}>
+              {formData.id ? (
+                <button type="button" onClick={startCreate} disabled={isSubmitting}>
+                  Cancelar
+                </button>
+              ) : null}
+              <button type="submit" className={styles.saveAction} disabled={isSubmitting}>
+                <Save aria-hidden="true" />
+                {isSubmitting
+                  ? "Salvando…"
+                  : formData.id
+                    ? "Salvar categoria"
+                    : "Cadastrar categoria"}
               </button>
-            ) : null}
-
-            <button type="submit" className="button" disabled={isSubmitting}>
-              {isSubmitting
-                ? "Salvando..."
-                : formData.id
-                  ? "Salvar categoria"
-                  : "Cadastrar categoria"}
-            </button>
-          </div>
-        </form>
-
-        <section className="panel-card">
-          <div className="panel-card__header">
-            <div>
-              <p className="eyebrow">Consulta</p>
-              <h3>Categorias cadastradas</h3>
             </div>
-          </div>
-
-          {isLoading ? (
-            <p className="empty-state">Carregando categorias...</p>
-          ) : categories.length === 0 ? (
-            <p className="empty-state">Nenhuma categoria cadastrada ainda.</p>
-          ) : (
-            <div className="stack-list">
-              {categories.map((category) => (
-                <div key={category.id} className="stack-item">
-                  <div>
-                    <strong>{category.name}</strong>
-                    <p className="stack-item__muted">
-                      {category.description || "Sem descricao"}
-                    </p>
-                  </div>
-
-                  <div className="stack-item__actions">
-                    {category.is_active ? (
-                      <span className="pill pill--success">Ativa</span>
-                    ) : (
-                      <span className="pill">Inativa</span>
-                    )}
-                    <button
-                      type="button"
-                      className="button button--secondary button--small"
-                      onClick={() => handleEdit(category)}
-                    >
-                      Editar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </section>
+          </form>
+        </aside>
+      </div>
     </div>
   );
 }

@@ -32,7 +32,7 @@
 .draftBadge,
 .reviewEyebrow {
   color: var(--cd-brand-action);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 720;
   letter-spacing: 0.055em;
   text-transform: uppercase;
@@ -105,7 +105,7 @@
   width: 1.85rem;
   height: 1.85rem;
   color: var(--cd-brand-action);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 720;
   background: var(--cd-brand-soft);
   border: 1px solid var(--cd-brand-soft-strong);
@@ -114,7 +114,7 @@
 
 .flowGuide li > div { display: grid; min-width: 0; }
 .flowGuide strong { color: #263247; font-size: 0.75rem; }
-.flowGuide small { color: var(--cd-text-muted); font-size: 0.625rem; }
+.flowGuide small { color: var(--cd-text-muted); font-size: 0.75rem; }
 
 .assessmentForm {
   display: grid;
@@ -156,13 +156,13 @@
 .sectionHeading p {
   margin: 0.15rem 0 0;
   color: var(--cd-text-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.05rem;
 }
 
 .sectionHeading > a {
   color: var(--cd-brand-action);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 
@@ -173,7 +173,7 @@
   min-height: 1.75rem;
   padding: 0.35rem 0.55rem;
   color: #156b37;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 650;
   background: #edf9f1;
   border-radius: var(--cd-radius-pill);
@@ -209,7 +209,7 @@
 .familyIdentity svg { width: 1.35rem; height: 1.35rem; }
 .familyIdentity > div { display: grid; }
 .familyIdentity strong { color: #1b2840; font-size: 0.875rem; }
-.familyIdentity small { color: var(--cd-text-muted); font-size: 0.6875rem; }
+.familyIdentity small { color: var(--cd-text-muted); font-size: 0.75rem; }
 
 .familySummary dl {
   display: grid;
@@ -230,7 +230,7 @@
   align-items: center;
   gap: 0.35rem;
   color: var(--cd-text-muted);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 
 .familySummary dt svg { width: 0.85rem; height: 0.85rem; }
@@ -239,7 +239,7 @@
   margin: 0;
   overflow: hidden;
   color: #344054;
-  font-size: 0.71875rem;
+  font-size: 0.75rem;
   font-weight: 640;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -277,7 +277,7 @@
 .thresholds > span,
 .factors > span {
   color: var(--cd-text-muted);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 
@@ -295,7 +295,7 @@
 .priorityCard small {
   margin: 0;
   color: var(--cd-text-muted);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   line-height: 0.95rem;
 }
 
@@ -314,7 +314,7 @@
   margin: 0;
   padding: 0.45rem 0.6rem;
   color: var(--cd-text-muted);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   background: var(--cd-surface-muted);
   border: 1px solid var(--cd-border);
   border-radius: var(--cd-radius-sm);
@@ -342,14 +342,14 @@
   min-height: 1.75rem;
   padding: 0.3rem 0.55rem;
   color: #4c5768;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   background: #f7f8fa;
   border: 1px solid var(--cd-border);
   border-radius: var(--cd-radius-pill);
 }
 
 .factors li svg { width: 0.75rem; height: 0.75rem; color: #169b4a; }
-.factors > p { margin: 0; color: var(--cd-text-muted); font-size: 0.6875rem; }
+.factors > p { margin: 0; color: var(--cd-text-muted); font-size: 0.75rem; }
 
 .formGrid {
   display: grid;
@@ -363,7 +363,7 @@
   gap: 0.4rem;
   min-width: 0;
   color: #344054;
-  font-size: 0.71875rem;
+  font-size: 0.75rem;
   font-weight: 650;
 }
 
@@ -395,7 +395,7 @@
 
 .field small {
   color: var(--cd-text-muted);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 450;
   line-height: 0.95rem;
 }
@@ -426,12 +426,12 @@
 
 .divergenceNotice > div { display: grid; gap: 0.1rem; }
 .divergenceNotice strong,
-.returnExplanation strong { font-size: 0.6875rem; }
+.returnExplanation strong { font-size: 0.75rem; }
 
 .divergenceNotice span,
 .returnExplanation p {
   margin: 0;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   line-height: 0.95rem;
 }
 
@@ -460,7 +460,7 @@
 
 .reviewSummary { display: grid; gap: 0.8rem; margin: 0; }
 .reviewSummary > div { display: grid; gap: 0.1rem; }
-.reviewSummary dt { color: var(--cd-text-muted); font-size: 0.625rem; }
+.reviewSummary dt { color: var(--cd-text-muted); font-size: 0.75rem; }
 
 .reviewSummary dd {
   margin: 0;
@@ -489,13 +489,13 @@
 }
 
 .ownershipNotice p,
-.auditNote { margin: 0; font-size: 0.625rem; line-height: 0.95rem; }
+.auditNote { margin: 0; font-size: 0.75rem; line-height: 0.95rem; }
 
 .formError {
   margin: 0 0 1rem;
   padding: 0.75rem;
   color: #a52b3f;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1rem;
   background: #fff1f3;
   border: 1px solid #f3ccd4;

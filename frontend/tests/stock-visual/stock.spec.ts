@@ -1,8 +1,10 @@
 import path from "node:path";
+import { mkdir } from "node:fs/promises";
 import { expect, test, type Route } from "@playwright/test";
 import { openFactsProductImageBase64 } from "./fixtures";
 
 const evidenceDirectory = path.resolve("showcase/evidence/v2-08");
+const polishEvidenceDirectory = path.resolve("showcase/evidence/v2-14");
 const openFactsImageUrl =
   "https://images.openfoodfacts.org/images/products/789/100/010/0103/front_pt.34.400.jpg";
 const persistedProductImagePath = "/public/items/1/image?v=visual-fixture";
@@ -342,4 +344,85 @@ test("seleção desktop troca o contexto sem inventar operações", async ({ pag
     "href",
     "/stock-movements/new?itemId=2",
   );
+});
+
+test("estoque amplia a leitura operacional em monitores Full HD", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== "desktop-1440",
+    "Evidência Full HD concentrada no projeto desktop.",
+  );
+
+  await page.setViewportSize({ width: 1920, height: 950 });
+  await page.goto("/items");
+  await expect(page.getByRole("heading", { name: "Estoque", exact: true })).toBeVisible();
+
+  const table = page.getByRole("table", { name: "Produtos e saldos disponíveis" });
+  await expect(table).toBeVisible();
+  const dimensions = await table.evaluate((element) => {
+    const firstCell = element.querySelector("tbody td");
+    const firstRow = element.querySelector("tbody tr");
+    return {
+      fontSize: firstCell ? Number.parseFloat(getComputedStyle(firstCell).fontSize) : 0,
+      rowHeight: firstRow?.getBoundingClientRect().height ?? 0,
+    };
+  });
+
+  expect(dimensions.fontSize).toBeGreaterThanOrEqual(13);
+  expect(dimensions.rowHeight).toBeGreaterThanOrEqual(74);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(polishEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(polishEvidenceDirectory, "estoque-escala-desktop-1920.png"),
+    fullPage: true,
+  });
+});
+
+test("categorias abandona o legado escuro em desktop e mobile", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência de Categorias concentrada nos viewports de aprovação.",
+  );
+
+  await page.route("**/item-categories**", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+    await fulfillJson(route, [
+      { id: 1, name: "Alimentos", description: "Alimentos e itens essenciais de cesta.", is_active: true },
+      { id: 2, name: "Higiene", description: "Produtos de higiene pessoal.", is_active: true },
+      { id: 3, name: "Limpeza", description: "Produtos de limpeza doméstica.", is_active: true },
+      { id: 4, name: "Vestuário", description: null, is_active: false },
+    ]);
+  });
+
+  if (testInfo.project.name === "desktop-1440") {
+    await page.setViewportSize({ width: 1920, height: 950 });
+  }
+
+  await page.goto("/item-categories");
+  await expect(page.getByRole("heading", { level: 1, name: "Categorias" })).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+  await expect(page.getByRole("article", { name: "Categoria Alimentos" })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(polishEvidenceDirectory, { recursive: true });
+  const suffix = testInfo.project.name === "desktop-1440" ? "desktop-1920" : "mobile-390";
+  await page.screenshot({
+    path: path.join(polishEvidenceDirectory, `categorias-${suffix}.png`),
+    fullPage: testInfo.project.name === "desktop-1440",
+  });
 });

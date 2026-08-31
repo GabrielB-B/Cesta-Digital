@@ -2,7 +2,7 @@
 .pageHeader { display: grid; gap: 0.75rem; padding-top: 0.2rem; }
 .pageHeader h1 { margin: 0; color: #142033; font-size: clamp(1.75rem, 2.3vw, 2.125rem); font-weight: 720; line-height: 1.18; letter-spacing: -0.035em; }
 .pageHeader p { max-width: 48rem; margin: 0.3rem 0 0; color: var(--cd-text-muted); font-size: 0.88rem; line-height: 1.4rem; }
-.backLink { display: inline-flex; align-items: center; gap: 0.4rem; width: fit-content; color: #596579; font-size: 0.72rem; font-weight: 650; text-decoration: none; }
+.backLink { display: inline-flex; align-items: center; gap: 0.4rem; width: fit-content; color: #596579; font-size: 0.75rem; font-weight: 650; text-decoration: none; }
 .backLink svg { width: 1rem; height: 1rem; }
 .detailTitle { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.9rem; }
 .headingIcon,
@@ -26,14 +26,14 @@
 .cardHeading { display: flex; align-items: center; gap: 0.85rem; min-height: 4.75rem; padding: 1rem 1.2rem; border-bottom: 1px solid var(--cd-border); }
 .cardHeading > div { display: grid; gap: 0.18rem; min-width: 0; }
 .cardHeading h2 { margin: 0; color: #1d2a40; font-size: 0.95rem; font-weight: 700; }
-.cardHeading p { margin: 0; color: var(--cd-text-muted); font-size: 0.68rem; line-height: 1.05rem; }
+.cardHeading p { margin: 0; color: var(--cd-text-muted); font-size: 0.75rem; line-height: 1.05rem; }
 .cardHeading .headingIcon,
 .cardHeading .secondaryHeadingIcon { width: 2.85rem; height: 2.85rem; }
 .cardHeading .headingIcon svg,
 .cardHeading .secondaryHeadingIcon svg { width: 1.3rem; height: 1.3rem; }
 
 .formGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; padding: 1.2rem; }
-.field { display: grid; gap: 0.42rem; color: #344054; font-size: 0.7rem; font-weight: 650; }
+.field { display: grid; gap: 0.42rem; color: #344054; font-size: 0.75rem; font-weight: 650; }
 .fieldWide { grid-column: 1 / -1; }
 .field span b { color: var(--cd-brand-action); }
 .field input,
@@ -48,8 +48,8 @@
 
 .switchField { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4rem; padding: 0.85rem; color: #344054; background: var(--cd-surface-muted); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-md); cursor: pointer; }
 .switchField > span { display: grid; gap: 0.15rem; }
-.switchField strong { font-size: 0.7rem; }
-.switchField small { color: var(--cd-text-muted); font-size: 0.62rem; font-weight: 500; }
+.switchField strong { font-size: 0.75rem; }
+.switchField small { color: var(--cd-text-muted); font-size: 0.75rem; font-weight: 500; }
 .switchField input { position: absolute; opacity: 0; pointer-events: none; }
 .switchField i { position: relative; flex: 0 0 auto; width: 2.3rem; height: 1.25rem; background: #c7cdd6; border-radius: 999px; transition: background var(--cd-motion-fast) var(--cd-ease-standard); }
 .switchField i::after { position: absolute; top: 0.16rem; left: 0.18rem; width: 0.92rem; height: 0.92rem; content: ""; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(23, 35, 56, 0.2); transition: transform var(--cd-motion-fast) var(--cd-ease-standard); }
@@ -61,7 +61,7 @@
 .inlineActions { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.2rem; border-top: 1px solid var(--cd-border); }
 .formActions a,
 .formActions button,
-.inlineActions button { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 2.75rem; padding: 0.65rem 0.9rem; font-size: 0.7rem; font-weight: 650; text-decoration: none; border-radius: var(--cd-radius-md); }
+.inlineActions button { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 2.75rem; padding: 0.65rem 0.9rem; font-size: 0.75rem; font-weight: 650; text-decoration: none; border-radius: var(--cd-radius-md); }
 .formActions a { color: #465368; background: var(--cd-surface); border: 1px solid var(--cd-border-strong); }
 .formActions button,
 .inlineActions button { color: #fff; background: linear-gradient(100deg, #ed1970, #cf277e 70%, #9b48bd); border: 1px solid transparent; cursor: pointer; box-shadow: 0 5px 12px rgba(213, 38, 119, 0.14); }
@@ -75,40 +75,40 @@
 .guidanceCard ol { display: grid; gap: 0; width: 100%; margin: 0; padding: 0; list-style: none; }
 .guidanceCard li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.65rem; padding: 0.9rem 0; border-bottom: 1px solid var(--cd-border); }
 .guidanceCard li:last-child { border-bottom: 0; }
-.guidanceCard li > b { display: grid; place-items: center; width: 1.45rem; height: 1.45rem; color: var(--cd-brand-action); font-size: 0.65rem; background: var(--cd-brand-soft); border-radius: 50%; }
+.guidanceCard li > b { display: grid; place-items: center; width: 1.45rem; height: 1.45rem; color: var(--cd-brand-action); font-size: 0.75rem; background: var(--cd-brand-soft); border-radius: 50%; }
 .guidanceCard li span { display: grid; gap: 0.18rem; }
-.guidanceCard li strong { color: #344054; font-size: 0.7rem; }
-.guidanceCard li small { color: var(--cd-text-muted); font-size: 0.62rem; line-height: 0.95rem; }
+.guidanceCard li strong { color: #344054; font-size: 0.75rem; }
+.guidanceCard li small { color: var(--cd-text-muted); font-size: 0.75rem; line-height: 0.95rem; }
 
 .statusActive,
-.statusInactive { display: inline-flex; align-items: center; width: fit-content; min-height: 1.5rem; padding: 0.2rem 0.55rem; font-size: 0.64rem; font-weight: 680; border-radius: var(--cd-radius-sm); }
+.statusInactive { display: inline-flex; align-items: center; width: fit-content; min-height: 1.5rem; padding: 0.2rem 0.55rem; font-size: 0.75rem; font-weight: 680; border-radius: var(--cd-radius-sm); }
 .statusActive { color: #137a38; background: #eaf8ef; }
 .statusInactive { color: #596579; background: #f1f3f6; }
 .summaryStrip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
 .summaryStrip > div { display: grid; gap: 0.25rem; min-height: 5.5rem; padding: 1rem 1.2rem; border-right: 1px solid var(--cd-border); }
 .summaryStrip > div:last-child { border-right: 0; }
-.summaryStrip span { color: var(--cd-text-muted); font-size: 0.67rem; }
+.summaryStrip span { color: var(--cd-text-muted); font-size: 0.75rem; }
 .summaryStrip strong { color: #172338; font-size: 1.15rem; line-height: 1.2; }
 
-.inlineNotice { margin: 0 1.2rem 1rem; padding: 0.75rem; color: #765220; font-size: 0.68rem; background: #fff8ec; border: 1px solid #f4dfbd; border-radius: var(--cd-radius-md); }
+.inlineNotice { margin: 0 1.2rem 1rem; padding: 0.75rem; color: #765220; font-size: 0.75rem; background: #fff8ec; border: 1px solid #f4dfbd; border-radius: var(--cd-radius-md); }
 .recipeCard,
 .availabilityCard { overflow: hidden; }
 .recipeList { display: grid; }
 .recipeRow { display: grid; grid-template-columns: auto minmax(12rem, 1fr) 7rem 7rem auto; align-items: center; gap: 0.8rem; min-width: 0; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--cd-border); }
 .recipeRow:last-child { border-bottom: 0; }
 .recipeIdentity { display: grid; gap: 0.15rem; min-width: 0; }
-.recipeIdentity strong { overflow: hidden; color: #283449; font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
+.recipeIdentity strong { overflow: hidden; color: #283449; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
 .recipeIdentity span,
-.recipeIdentity small { overflow: hidden; color: var(--cd-text-muted); font-size: 0.61rem; text-overflow: ellipsis; white-space: nowrap; }
-.quantityField { display: grid; gap: 0.28rem; color: var(--cd-text-muted); font-size: 0.58rem; }
-.quantityField input { width: 100%; min-height: 2.25rem; padding: 0.45rem 0.55rem; color: #344054; font-size: 0.7rem; background: var(--cd-surface); border: 1px solid var(--cd-border-strong); border-radius: var(--cd-radius-sm); }
-.lineValue { color: #344054; font-size: 0.7rem; text-align: right; white-space: nowrap; }
+.recipeIdentity small { overflow: hidden; color: var(--cd-text-muted); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+.quantityField { display: grid; gap: 0.28rem; color: var(--cd-text-muted); font-size: 0.75rem; }
+.quantityField input { width: 100%; min-height: 2.25rem; padding: 0.45rem 0.55rem; color: #344054; font-size: 0.75rem; background: var(--cd-surface); border: 1px solid var(--cd-border-strong); border-radius: var(--cd-radius-sm); }
+.lineValue { color: #344054; font-size: 0.75rem; text-align: right; white-space: nowrap; }
 .recipeActions { display: flex; gap: 0.35rem; }
 .recipeActions button { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; color: #596579; background: var(--cd-surface); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-sm); cursor: pointer; }
 .recipeActions button:last-child { color: #d92d50; }
 .recipeActions button:disabled { opacity: 0.5; cursor: not-allowed; }
 .recipeActions svg { width: 0.95rem; height: 0.95rem; }
-.recipeEmpty { display: grid; place-content: center; justify-items: center; gap: 0.45rem; min-height: 14rem; padding: 1.5rem; color: var(--cd-text-muted); font-size: 0.7rem; text-align: center; }
+.recipeEmpty { display: grid; place-content: center; justify-items: center; gap: 0.45rem; min-height: 14rem; padding: 1.5rem; color: var(--cd-text-muted); font-size: 0.75rem; text-align: center; }
 .recipeEmpty svg { width: 2rem; height: 2rem; color: #ad6a91; }
 .recipeEmpty strong { color: #253248; font-size: 0.9rem; }
 .recipeEmpty p { margin: 0; }
@@ -116,10 +116,10 @@
 .availabilityGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; padding: 1.2rem; }
 .availabilityGrid article { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.35rem 0.75rem; padding: 0.85rem; background: var(--cd-surface-muted); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-md); }
 .availabilityGrid article > div { display: grid; gap: 0.15rem; min-width: 0; }
-.availabilityGrid strong { overflow: hidden; color: #344054; font-size: 0.68rem; text-overflow: ellipsis; white-space: nowrap; }
+.availabilityGrid strong { overflow: hidden; color: #344054; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
 .availabilityGrid span,
-.availabilityGrid small { color: var(--cd-text-muted); font-size: 0.6rem; }
-.availabilityGrid b { color: #344054; font-size: 0.68rem; white-space: nowrap; }
+.availabilityGrid small { color: var(--cd-text-muted); font-size: 0.75rem; }
+.availabilityGrid b { color: #344054; font-size: 0.75rem; white-space: nowrap; }
 .availabilityGrid small { grid-column: 1 / -1; }
 .availabilityGrid .availabilityLimiting { background: #fff8ec; border-color: #f2d8aa; }
 .availabilityGrid .availabilityLimiting b,

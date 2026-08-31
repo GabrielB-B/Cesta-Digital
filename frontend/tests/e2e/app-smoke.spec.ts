@@ -1478,6 +1478,106 @@ test("homologation warning remains visible before and after login", async ({ pag
   await expect(page.getByRole("note", { name: "Aviso do ambiente" })).toBeVisible();
 });
 
+test("categories keep create and edit contracts in the V2 responsive layout", async ({
+  page,
+}) => {
+  let categories = [
+    {
+      id: 1,
+      name: "Alimentos",
+      description: "Itens essenciais de cesta.",
+      is_active: true,
+    },
+    {
+      id: 2,
+      name: "Higiene",
+      description: "Produtos de higiene pessoal.",
+      is_active: true,
+    },
+  ];
+
+  await page.route("**/item-categories**", async (route) => {
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+
+    if (request.resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+
+    if (request.method() === "POST") {
+      const payload = request.postDataJSON();
+      const created = { id: 3, ...payload };
+      categories = [...categories, created];
+      await fulfillJson(route, created);
+      return;
+    }
+
+    if (request.method() === "PUT") {
+      const categoryId = Number(pathname.split("/").at(-1));
+      const payload = request.postDataJSON();
+      const updated = { id: categoryId, ...payload };
+      categories = categories.map((category) =>
+        category.id === categoryId ? updated : category,
+      );
+      await fulfillJson(route, updated);
+      return;
+    }
+
+    await fulfillJson(route, categories);
+  });
+
+  await page.goto("/item-categories");
+  await expect(page.getByRole("heading", { level: 1, name: "Categorias" })).toBeVisible();
+  await expect(page.getByText("2 no total · 2 ativas")).toBeVisible();
+
+  await page.getByLabel("Nome").fill("Bebidas");
+  await page.getByLabel("Descrição (opcional)").fill("Bebidas não alcoólicas.");
+  const createRequestPromise = page.waitForRequest(
+    (request) =>
+      new URL(request.url()).pathname.endsWith("/item-categories") &&
+      request.method() === "POST",
+  );
+  await page.getByRole("button", { name: "Cadastrar categoria" }).click();
+  const createRequest = await createRequestPromise;
+  expect(createRequest.postDataJSON()).toEqual({
+    name: "Bebidas",
+    description: "Bebidas não alcoólicas.",
+    is_active: true,
+  });
+  await expect(page.getByText("Categoria cadastrada.")).toBeVisible();
+  await expect(page.getByRole("article", { name: "Categoria Bebidas" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Editar Bebidas" }).click();
+  await page.getByLabel("Descrição (opcional)").fill("Bebidas e sucos.");
+  await page.getByText("Categoria ativa", { exact: true }).click();
+  await expect(page.getByLabel("Categoria ativa")).not.toBeChecked();
+  const updateRequestPromise = page.waitForRequest(
+    (request) =>
+      new URL(request.url()).pathname.endsWith("/item-categories/3") &&
+      request.method() === "PUT",
+  );
+  await page.getByRole("button", { name: "Salvar categoria" }).click();
+  const updateRequest = await updateRequestPromise;
+  expect(updateRequest.postDataJSON()).toEqual({
+    name: "Bebidas",
+    description: "Bebidas e sucos.",
+    is_active: false,
+  });
+  await expect(page.getByText("Categoria atualizada.")).toBeVisible();
+  await expect(page.getByRole("article", { name: "Categoria Bebidas" })).toContainText(
+    "Inativa",
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/item-categories");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+});
+
 test("mobile stock entry completes without document overflow", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

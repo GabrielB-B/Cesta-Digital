@@ -3,7 +3,7 @@
   font-family: var(--font-body);
   color: #f8f5ed;
   background: #0d1110;
-  font-size: 16px;
+  font-size: clamp(16px, calc(15px + 0.1vw), 18px);
   line-height: 1.55;
   font-weight: 400;
 
