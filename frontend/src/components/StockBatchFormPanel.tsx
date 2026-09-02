@@ -315,12 +315,6 @@ export function StockBatchFormPanel({
         </div>
       </header>
 
-      {cameFromItemCreation && requestedItemIsValid ? (
-        <p className={styles.successMessage} role="status">
-          Item cadastrado. Registre agora a primeira entrada para adicionar quantidade ao estoque.
-        </p>
-      ) : null}
-
       <form ref={formRef} className={styles.form} onSubmit={handleSubmit} noValidate>
         <label className={styles.fieldWide}>
           <span>Produto <b aria-hidden="true">*</b></span>
@@ -537,7 +531,7 @@ export function StockBatchFormPanel({
             </button>
           ) : (
             <Link className={styles.secondaryButton} to={cancelDestination}>
-              {cameFromItemCreation && requestedItemIsValid ? "Agora não, ver item" : "Cancelar"}
+              {cameFromItemCreation && requestedItemIsValid ? "Agora não, ver produto" : "Cancelar"}
             </Link>
           )}
           <button

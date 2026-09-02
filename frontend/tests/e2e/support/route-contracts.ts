@@ -104,7 +104,7 @@ export const APP_ROUTE_CONTRACTS = [
   },
   {
     path: "/items/new",
-    title: "Cadastrar item",
+    title: "Novo produto",
     sectionPath: "/items",
     allowedRoles: operationsRoles,
   },

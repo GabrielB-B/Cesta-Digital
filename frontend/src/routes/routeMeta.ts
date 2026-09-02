@@ -73,7 +73,7 @@ const ROUTE_META: RouteMeta[] = [
   { pattern: "/items", title: "Itens", section: "Estoque", sectionPath: "/items" },
   {
     pattern: "/items/new",
-    title: "Cadastrar item",
+    title: "Novo produto",
     section: "Estoque",
     sectionPath: "/items",
   },

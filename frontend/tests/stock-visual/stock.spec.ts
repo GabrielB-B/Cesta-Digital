@@ -5,6 +5,7 @@ import { openFactsProductImageBase64 } from "./fixtures";
 
 const evidenceDirectory = path.resolve("showcase/evidence/v2-08");
 const polishEvidenceDirectory = path.resolve("showcase/evidence/v2-14");
+const itemCreateEvidenceDirectory = path.resolve("showcase/evidence/v2-15");
 const openFactsImageUrl =
   "https://images.openfoodfacts.org/images/products/789/100/010/0103/front_pt.34.400.jpg";
 const persistedProductImagePath = "/public/items/1/image?v=visual-fixture";
@@ -297,7 +298,7 @@ test("cadastro mostra upload, consulta assistida e fallback de forma responsiva"
   );
 
   await page.goto("/items/new");
-  await page.getByLabel("Nome do item").fill("Leite Condensado Moça 395g");
+  await page.getByLabel("Nome do produto").fill("Leite Condensado Moça 395g");
   await page.getByLabel("Código EAN/GTIN").fill("7891000100103");
   await page.getByRole("button", { name: "Consultar" }).click();
   await expect(page.getByText("Leite Condensado Integral Moça")).toBeVisible();
@@ -323,6 +324,75 @@ test("cadastro mostra upload, consulta assistida e fallback de forma responsiva"
     path: path.join(evidenceDirectory, `estoque-imagens-${testInfo.project.name}.png`),
     fullPage: true,
   });
+});
+
+test("novo produto usa o formulário claro V2 sem conteúdo de exemplo", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência do cadastro concentrada nos viewports de aprovação.",
+  );
+
+  const isDesktop = testInfo.project.name === "desktop-1440";
+  await page.setViewportSize(
+    isDesktop ? { width: 1920, height: 950 } : { width: 390, height: 844 },
+  );
+  await page.route("**/item-categories**", (route) =>
+    fulfillJson(route, [
+      { id: 1, name: "Alimentos", description: null, is_active: true },
+      { id: 2, name: "Higiene", description: null, is_active: true },
+      { id: 3, name: "Descontinuada", description: null, is_active: false },
+    ]),
+  );
+
+  await page.goto("/items/new");
+  await expect(page.getByRole("heading", { level: 1, name: "Novo produto" })).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+  await expect(page.getByLabel("Nome do produto")).toHaveValue("");
+  await expect(page.getByLabel("Nome do produto")).not.toHaveAttribute("placeholder");
+  await expect(page.getByLabel("Categoria").locator("option", { hasText: "Descontinuada" })).toHaveCount(0);
+
+  const dataPanel = page.getByRole("region", { name: "Dados do produto" });
+  const imagePanel = page.getByRole("complementary", { name: "Imagem do produto" });
+  const [dataBox, imageBox] = await Promise.all([
+    dataPanel.boundingBox(),
+    imagePanel.boundingBox(),
+  ]);
+  expect(dataBox).not.toBeNull();
+  expect(imageBox).not.toBeNull();
+  if (isDesktop) {
+    expect(imageBox!.x).toBeGreaterThan(dataBox!.x + dataBox!.width);
+  } else {
+    expect(imageBox!.y).toBeGreaterThan(dataBox!.y + dataBox!.height);
+  }
+
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(itemCreateEvidenceDirectory, { recursive: true });
+  if (isDesktop) {
+    await page.screenshot({
+      path: path.join(itemCreateEvidenceDirectory, "novo-produto-desktop-1920.png"),
+      fullPage: true,
+    });
+  } else {
+    await page.screenshot({
+      path: path.join(itemCreateEvidenceDirectory, "novo-produto-mobile-390.png"),
+    });
+    await page
+      .getByRole("navigation", { name: "Atalhos principais" })
+      .evaluate((navigation) => {
+        navigation.style.display = "none";
+      });
+    await page.screenshot({
+      path: path.join(itemCreateEvidenceDirectory, "novo-produto-mobile-completo-390.png"),
+      fullPage: true,
+    });
+  }
 });
 
 test("indicadores e busca mantêm o filtro operacional na URL", async ({ page }) => {

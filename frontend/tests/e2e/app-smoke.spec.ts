@@ -1627,25 +1627,42 @@ test("item creation guides the first stock entry with conditional expiration", a
 }) => {
   await page.goto("/items/new");
 
-  await expect(
-    page.getByText(
-      "A data não pertence ao item. Ela será informada em cada entrada, conforme a embalagem recebida."
-    )
-  ).toBeVisible();
+  await expect(page.getByText("Exige validade em cada recebimento.")).toBeVisible();
 
   await page.getByLabel("Categoria").selectOption("1");
-  await page.getByLabel("Nome do item").fill("Feijao 1kg");
+  await page.getByLabel("Nome do produto").fill("Feijao 1kg");
+  await page.getByLabel("Valor estimado (R$)").fill("8.5");
+  await page.getByLabel("Estoque mínimo").fill("6");
+  const createItemRequestPromise = page.waitForRequest(
+    (request) =>
+      new URL(request.url()).pathname.endsWith("/items") &&
+      request.method() === "POST",
+  );
   const activeItemsRequestPromise = page.waitForRequest((request) => {
     const url = new URL(request.url());
     return url.pathname.endsWith("/items") && url.searchParams.get("is_active") === "true";
   });
-  await page.getByRole("button", { name: "Cadastrar item" }).click();
-  await activeItemsRequestPromise;
+  await page.getByRole("button", { name: "Salvar e registrar entrada" }).click();
+  const [createItemRequest] = await Promise.all([
+    createItemRequestPromise,
+    activeItemsRequestPromise,
+  ]);
+  expect(createItemRequest.postDataJSON()).toEqual({
+    category_id: 1,
+    name: "Feijao 1kg",
+    barcode: null,
+    unit_measure: "unidade",
+    tracks_expiration: true,
+    is_active: true,
+    reference_unit_value: 8.5,
+    minimum_stock_alert: 6,
+    notes: null,
+  });
 
   await expect(page).toHaveURL(/\/stock-batches\/new\?itemId=2&from=item-create$/);
   await expect(page.getByRole("heading", { name: "Registrar entrada" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "Item", exact: true })).toHaveValue("2");
-  await expect(page.getByText(/Item cadastrado\. Registre agora/)).toBeVisible();
+  await expect(page.getByText("Produto cadastrado. Registre a primeira entrada.")).toBeVisible();
 
   const expirationField = page.getByLabel("Data de validade do lote");
   const entryDateField = page.getByLabel("Data de entrada");
@@ -1783,7 +1800,7 @@ test("item creation persists an explicitly selected catalog image after the prod
 
   await page.goto("/items/new");
   await page.getByLabel("Categoria").selectOption("1");
-  await page.getByLabel("Nome do item").fill("Leite Condensado Moça 395g");
+  await page.getByLabel("Nome do produto").fill("Leite Condensado Moça 395g");
   await page.getByLabel("Código EAN/GTIN").fill(barcode);
   await page.getByRole("button", { name: "Consultar" }).click();
   await page.getByRole("button", { name: "Usar esta foto" }).click();
@@ -1797,7 +1814,7 @@ test("item creation persists an explicitly selected catalog image after the prod
       new URL(request.url()).pathname.endsWith("/items/2/image/import-open-facts") &&
       request.method() === "POST"
   );
-  await page.getByRole("button", { name: "Cadastrar item" }).click();
+  await page.getByRole("button", { name: "Salvar e registrar entrada" }).click();
 
   const [itemRequest, imageRequest] = await Promise.all([
     itemRequestPromise,
@@ -1806,6 +1823,37 @@ test("item creation persists an explicitly selected catalog image after the prod
   expect(itemRequest.postDataJSON()).toMatchObject({ barcode });
   expect(imageRequest.postDataJSON()).toEqual({ barcode });
   await expect(page).toHaveURL(/\/stock-batches\/new\?itemId=2&from=item-create$/);
+});
+
+test("product creation filters inactive categories and protects dirty cancellation", async ({
+  page,
+}) => {
+  await page.route("**/item-categories**", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+    await fulfillJson(route, [
+      { id: 1, name: "Alimentos", description: null, is_active: true },
+      { id: 2, name: "Arquivada", description: null, is_active: false },
+    ]);
+  });
+
+  await page.goto("/items/new");
+  await expect(page.getByLabel("Categoria").locator("option", { hasText: "Arquivada" })).toHaveCount(0);
+  await page.getByLabel("Nome do produto").fill("Produto em edição");
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.type()).toBe("confirm");
+    expect(dialog.message()).toBe("Descartar as alterações deste produto?");
+    await dialog.dismiss();
+  });
+  await page.getByRole("link", { name: "Cancelar" }).click();
+  await expect(page).toHaveURL(/\/items\/new$/);
+
+  page.once("dialog", async (dialog) => dialog.accept());
+  await page.getByRole("link", { name: "Cancelar" }).click();
+  await expect(page).toHaveURL(/\/items$/);
 });
 
 test("invalid stock entry item query never becomes a selectable payload", async ({
@@ -1882,16 +1930,16 @@ test("inactive item creation stays on detail without stock entry CTA", async ({ 
   await page.goto("/items/new");
 
   await page.getByLabel("Categoria").selectOption("1");
-  await page.getByLabel("Nome do item").fill("Farinha nova");
-  await page.getByLabel("Item ativo").uncheck();
-  await page.getByRole("button", { name: "Cadastrar item" }).click();
+  await page.getByLabel("Nome do produto").fill("Farinha nova");
+  await page.getByLabel("Produto ativo").uncheck();
+  await page.getByRole("button", { name: "Cadastrar produto" }).click();
 
   await expect(page).toHaveURL(/\/items\/2$/);
   await expect(
     page.getByRole("heading", { level: 1, name: "Farinha nova" })
   ).toBeVisible();
   await expect(
-    page.getByText("Item inativo cadastrado. Ative-o antes de registrar uma entrada de estoque.")
+    page.getByText("Produto inativo cadastrado.")
   ).toBeVisible();
   const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
   await expect(itemBalance).toContainText("Saldo utilizável");
