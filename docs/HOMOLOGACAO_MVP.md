@@ -320,6 +320,22 @@ deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 | Aprovação visual | aprovada por Gabriel em 26/08/2026; galeria local V2-12 preservada como evidência |
 | Publicação | não realizada; o `NO-GO` profissional permanece |
 
+### Checkpoint local V2-16 de Movimentação de estoque — 08/09/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-movimentacao-estoque` a partir do cadastro de produto V2 (`3508f1d`) |
+| Escopo | `/stock-movements/new` em superfícies claras, com resumo de lote e saldo projetado antes da escrita |
+| Contratos | rota, RBAC, `GET /items`, `GET /stock-batches`, `POST /stock-movements` e payload preservados |
+| Integridade | FEFO, validade, quarentena, item inativo, saldo, quantidade inteira e motivo obrigatório preservados |
+| Desktop | formulário e resumo contextual lado a lado em 1440×900 |
+| Mobile | fluxo vertical próprio em 390×844, sem overflow horizontal e com ação primária de 48 px |
+| Frontend local | lint, build e escala tipográfica aprovados; E2E 40/40; visual focado 2 aprovados e 2 skips intencionais |
+| Evidência visual | galeria clicável `frontend/showcase/evidence/v2-16/index.html` |
+| Banco/backend | nenhuma alteração ou migration |
+| Aprovação visual | aguardando Gabriel |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.

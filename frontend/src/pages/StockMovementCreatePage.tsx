@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowRightLeft, PackageSearch } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
-import { PageHeader } from "../components/PageHeader";
+import { ProductImage } from "../components/ProductImage";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateOnly } from "../utils/format";
 import {
@@ -15,6 +16,7 @@ import type {
   StockMovementCreatePayload,
   StockMovementResponse,
 } from "../types/item";
+import styles from "./StockMovementCreatePage.module.css";
 
 const movementTypeOptions = [
   { value: "saida_manual", label: "Saída manual" },
@@ -22,6 +24,13 @@ const movementTypeOptions = [
   { value: "ajuste_negativo", label: "Ajuste negativo" },
   { value: "ajuste_positivo", label: "Ajuste positivo" },
 ];
+
+const movementTypeHelp: Record<string, string> = {
+  saida_manual: "Retirada operacional de um lote disponível.",
+  perda_validade: "Baixa de lote vencido ou sem validade obrigatória.",
+  ajuste_negativo: "Correção auditada para reduzir o saldo.",
+  ajuste_positivo: "Correção auditada para aumentar o saldo.",
+};
 
 type StockMovementErrorField = "batch_id" | "quantity" | "notes" | "form";
 
@@ -98,6 +107,7 @@ export function StockMovementCreatePage() {
   const [batches, setBatches] = useState<StockBatchResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState("");
   const [errorField, setErrorField] =
     useState<StockMovementErrorField | null>(null);
@@ -232,6 +242,19 @@ export function StockMovementCreatePage() {
     );
   }, [error, errorField, isLoading]);
 
+  useEffect(() => {
+    function protectUnsavedChanges(event: BeforeUnloadEvent) {
+      if (!isDirty || isSubmitting) {
+        return;
+      }
+
+      event.preventDefault();
+    }
+
+    window.addEventListener("beforeunload", protectUnsavedChanges);
+    return () => window.removeEventListener("beforeunload", protectUnsavedChanges);
+  }, [isDirty, isSubmitting]);
+
   function reportError(message: string, field: StockMovementErrorField) {
     setError(message);
     setErrorField(field);
@@ -325,10 +348,38 @@ export function StockMovementCreatePage() {
 
   const movementRequiresReason = formData.movement_type !== "saida_manual";
 
+  const projectedQuantity = useMemo(() => {
+    const quantity = Number(formData.quantity);
+
+    if (
+      !selectedBatch ||
+      !Number.isInteger(quantity) ||
+      quantity < 1
+    ) {
+      return null;
+    }
+
+    return formData.movement_type === "ajuste_positivo"
+      ? selectedBatch.current_quantity + quantity
+      : selectedBatch.current_quantity - quantity;
+  }, [formData.movement_type, formData.quantity, selectedBatch]);
+
+  const contextItem = selectedItem ?? requestedItem;
+
+  const expirationToneClass = selectedExpirationStatus
+    ? {
+        danger: styles.statusDanger,
+        warning: styles.statusWarning,
+        success: styles.statusSuccess,
+        neutral: styles.statusNeutral,
+      }[selectedExpirationStatus.tone]
+    : styles.statusNeutral;
+
   function handleInputChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
     const { name, value } = event.target;
+    setIsDirty(true);
 
     if (name === "movement_type") {
       setFormData((previous) => {
@@ -466,6 +517,7 @@ export function StockMovementCreatePage() {
         "/stock-movements",
         payload
       );
+      setIsDirty(false);
       navigate(`/items/${response.data.item_id}`, {
         state: {
           flash: {
@@ -484,219 +536,272 @@ export function StockMovementCreatePage() {
     }
   }
 
+  function handleCancel(event: React.MouseEvent<HTMLAnchorElement>) {
+    if (
+      !isDirty ||
+      window.confirm("Descartar as alterações desta movimentação?")
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+  }
+
   return (
-    <div className="page-stack">
-      <PageHeader
-        eyebrow="Estoque"
-        title="Movimentação manual"
-        description="Registre ajustes, perdas e saídas manuais sobre um lote específico."
-      />
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
+        <h1>Registrar movimentação</h1>
+        <p>Atualize o saldo de um lote do estoque.</p>
+      </header>
 
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className="panel-card form-panel"
+        className={styles.workspace}
         noValidate
       >
-        <div className="panel-card__header">
-          <div>
-            <p className="eyebrow">Registro</p>
-            <h2>Dados da movimentação</h2>
-          </div>
-        </div>
-
-        <div className="form-grid">
-          <label className="form__group form__group--wide">
-            <span>Lote</span>
-            <select
-              name="batch_id"
-              aria-label="Lote"
-              value={formData.batch_id}
-              onChange={handleInputChange}
-              disabled={isLoading}
-              required
-              aria-invalid={errorField === "batch_id"}
-              aria-describedby={`stock-batch-help${
-                errorField === "batch_id" ? " stock-movement-form-error" : ""
-              }`}
-            >
-              <option value="">
-                {isLoading ? "Carregando lotes…" : "Selecione o lote"}
-              </option>
-              {visibleBatches.map((batch) => {
-                const batchItem = itemsById.get(batch.item_id);
-                const expirationStatus = getBatchExpirationStatus(
-                  batch,
-                  batchItem?.tracks_expiration ?? true
-                );
-                const isBlocked = isBatchBlockedForMovement(
-                  batch,
-                  batchItem,
-                  formData.movement_type
-                );
-                const batchWasReceived = isStockBatchReceived(batch);
-                const expirationLabel = batch.expiration_date
-                  ? formatDateOnly(batch.expiration_date)
-                  : batchItem?.tracks_expiration
-                    ? "não informada"
-                    : "não controlada";
-
-                return (
-                  <option
-                    key={batch.id}
-                    value={batch.id}
-                    disabled={isBlocked}
-                  >
-                    {batch.batch_code ?? `Lote legado #${batch.id}`} •{" "}
-                    {batchItem?.name ?? `Item #${batch.item_id}`} •
-                    Saldo {batch.current_quantity} • Validade {expirationLabel} •{" "}
-                    {batchItem && !batchItem.is_active
-                      ? "Item inativo"
-                      : batch.status !== "disponivel"
-                        ? batch.status === "quarentena"
-                          ? "Em quarentena"
-                          : "Bloqueado"
-                      : !batchWasReceived
-                        ? "Entrada futura"
-                      : expirationStatus.label}
-                  </option>
-                );
-              })}
-            </select>
-            <small id="stock-batch-help" className="form__hint">
-              {formData.movement_type === "saida_manual"
-                ? "Para saída manual, lotes disponíveis aparecem primeiro em ordem de validade (FEFO). Quarentena, bloqueio, entrada futura, vencimento ou validade obrigatória ausente impedem o uso."
-                : formData.movement_type === "perda_validade"
-                  ? "Somente lotes vencidos ou sem a validade obrigatória podem ser selecionados para descarte."
-                  : "Selecione o lote que receberá o ajuste de saldo."}
-            </small>
-          </label>
-
-          <label className="form__group">
-            <span>Tipo</span>
-            <select
-              name="movement_type"
-              aria-label="Tipo"
-              value={formData.movement_type}
-              onChange={handleInputChange}
-              aria-describedby="movement-type-help"
-            >
-              {movementTypeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <small id="movement-type-help" className="form__hint">
-              Use Perda por validade para descartar um lote vencido ou sem a data
-              quando ela era obrigatória.
-            </small>
-          </label>
-
-          <label className="form__group">
-            <span>Quantidade</span>
-            <input
-              type="number"
-              min="1"
-              max={
-                formData.movement_type === "ajuste_positivo"
-                  ? undefined
-                  : selectedBatch?.current_quantity
-              }
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleInputChange}
-              required
-              aria-invalid={errorField === "quantity"}
-              aria-describedby={
-                errorField === "quantity"
-                  ? "stock-movement-form-error"
-                  : undefined
-              }
-            />
-          </label>
-
-          <label className="form__group form__group--wide">
-            <span>
-              {movementRequiresReason
-                ? "Motivo da movimentação"
-                : "Observações"}
+        <section className={styles.formCard} aria-labelledby="movement-data-title">
+          <header className={styles.cardHeader}>
+            <span className={styles.cardIcon} aria-hidden="true">
+              <ArrowRightLeft />
             </span>
-            <textarea
-              name="notes"
-              aria-label={
-                movementRequiresReason
-                  ? "Motivo da movimentação"
-                  : "Observações"
-              }
-              value={formData.notes}
-              onChange={handleInputChange}
-              rows={4}
-              required={movementRequiresReason}
-              aria-invalid={errorField === "notes"}
-              aria-describedby={`movement-notes-help${
-                errorField === "notes" ? " stock-movement-form-error" : ""
-              }`}
-              placeholder={
-                movementRequiresReason
-                  ? "Descreva por que o saldo será alterado."
-                  : "Informação opcional para a auditoria."
-              }
-            />
-            <small id="movement-notes-help" className="form__hint">
-              {movementRequiresReason
-                ? "Obrigatório para perdas e ajustes. O motivo ficará registrado na auditoria."
-                : "Opcional para saída manual."}
-            </small>
-          </label>
-        </div>
+            <div>
+              <h2 id="movement-data-title">Dados da movimentação</h2>
+              <p>Selecione o lote e informe a alteração.</p>
+            </div>
+          </header>
 
-        {selectedBatch ? (
-          <div className="detail-grid">
-            <div className="detail-item">
-              <span>Item</span>
-              <strong>{selectedItem?.name ?? `Item #${selectedBatch.item_id}`}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Saldo atual</span>
-              <strong>{selectedBatch.current_quantity}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Validade</span>
-              <strong>
-                {selectedBatch.expiration_date
-                  ? formatDateOnly(selectedBatch.expiration_date)
-                  : selectedItem?.tracks_expiration
-                    ? "Não informada"
-                    : "Não controlada"}
-              </strong>
-            </div>
-            <div className="detail-item">
-              <span>Situação da validade</span>
-              <strong>
-                {selectedExpirationStatus ? (
-                  <span
-                    className={`pill${
-                      selectedExpirationStatus.tone === "neutral"
-                        ? ""
-                        : ` pill--${selectedExpirationStatus.tone}`
-                    }`}
-                  >
-                    {selectedExpirationStatus.label}
-                  </span>
-                ) : (
-                  "Não avaliada"
-                )}
-              </strong>
-            </div>
+          <div className={styles.fields}>
+            <label className={`${styles.field} ${styles.fieldWide}`}>
+              <span>Lote <b aria-hidden="true">*</b></span>
+              <select
+                name="batch_id"
+                aria-label="Lote"
+                value={formData.batch_id}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                required
+                aria-invalid={errorField === "batch_id"}
+                aria-describedby={`stock-batch-help${
+                  errorField === "batch_id" ? " stock-movement-form-error" : ""
+                }`}
+              >
+                <option value="">
+                  {isLoading ? "Carregando lotes…" : "Selecione o lote"}
+                </option>
+                {visibleBatches.map((batch) => {
+                  const batchItem = itemsById.get(batch.item_id);
+                  const expirationStatus = getBatchExpirationStatus(
+                    batch,
+                    batchItem?.tracks_expiration ?? true
+                  );
+                  const isBlocked = isBatchBlockedForMovement(
+                    batch,
+                    batchItem,
+                    formData.movement_type
+                  );
+                  const batchWasReceived = isStockBatchReceived(batch);
+                  const expirationLabel = batch.expiration_date
+                    ? formatDateOnly(batch.expiration_date)
+                    : batchItem?.tracks_expiration
+                      ? "não informada"
+                      : "não controlada";
+
+                  return (
+                    <option
+                      key={batch.id}
+                      value={batch.id}
+                      disabled={isBlocked}
+                    >
+                      {batch.batch_code ?? `Lote legado #${batch.id}`} •{" "}
+                      {batchItem?.name ?? `Item #${batch.item_id}`} •
+                      Saldo {batch.current_quantity} • Validade {expirationLabel} •{" "}
+                      {batchItem && !batchItem.is_active
+                        ? "Item inativo"
+                        : batch.status !== "disponivel"
+                          ? batch.status === "quarentena"
+                            ? "Em quarentena"
+                            : "Bloqueado"
+                        : !batchWasReceived
+                          ? "Entrada futura"
+                        : expirationStatus.label}
+                    </option>
+                  );
+                })}
+              </select>
+              <small id="stock-batch-help">
+                {formData.movement_type === "saida_manual"
+                  ? "Lotes aptos aparecem em ordem FEFO."
+                  : formData.movement_type === "perda_validade"
+                    ? "Apenas lotes vencidos ou sem validade obrigatória."
+                    : "Selecione o lote que receberá o ajuste."}
+              </small>
+            </label>
+
+            <label className={styles.field}>
+              <span>Tipo <b aria-hidden="true">*</b></span>
+              <select
+                name="movement_type"
+                aria-label="Tipo"
+                value={formData.movement_type}
+                onChange={handleInputChange}
+                aria-describedby="movement-type-help"
+              >
+                {movementTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <small id="movement-type-help">
+                {movementTypeHelp[formData.movement_type]}
+              </small>
+            </label>
+
+            <label className={styles.field}>
+              <span>Quantidade <b aria-hidden="true">*</b></span>
+              <div className={styles.quantityControl}>
+                <input
+                  type="number"
+                  min="1"
+                  max={
+                    formData.movement_type === "ajuste_positivo"
+                      ? undefined
+                      : selectedBatch?.current_quantity
+                  }
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  required
+                  aria-invalid={errorField === "quantity"}
+                  aria-describedby={
+                    errorField === "quantity"
+                      ? "stock-movement-form-error"
+                      : undefined
+                  }
+                />
+                <span aria-hidden="true">
+                  {selectedItem?.unit_measure ?? "un."}
+                </span>
+              </div>
+            </label>
+
+            <label className={`${styles.field} ${styles.fieldWide}`}>
+              <span>
+                {movementRequiresReason
+                  ? "Motivo da movimentação"
+                  : "Observações"}
+                {movementRequiresReason ? <b aria-hidden="true"> *</b> : null}
+              </span>
+              <textarea
+                name="notes"
+                aria-label={
+                  movementRequiresReason
+                    ? "Motivo da movimentação"
+                    : "Observações"
+                }
+                value={formData.notes}
+                onChange={handleInputChange}
+                rows={4}
+                required={movementRequiresReason}
+                aria-invalid={errorField === "notes"}
+                aria-describedby={
+                  errorField === "notes"
+                    ? "stock-movement-form-error"
+                    : undefined
+                }
+              />
+              {movementRequiresReason ? (
+                <small>Obrigatório para perdas e ajustes.</small>
+              ) : null}
+            </label>
           </div>
-        ) : null}
+        </section>
+
+        <aside className={styles.summaryCard} aria-label="Resumo da movimentação">
+          <header className={styles.summaryHeader}>
+            <h2>Resumo</h2>
+            <span className={selectedBatch ? styles.readyBadge : styles.waitingBadge}>
+              {selectedBatch ? "Pronto para revisar" : "Aguardando lote"}
+            </span>
+          </header>
+
+          {contextItem ? (
+            <div className={styles.productIdentity}>
+              <ProductImage
+                name={contextItem.name}
+                src={contextItem.image_path}
+                size="card"
+                eager
+              />
+              <div>
+                <strong>{contextItem.name}</strong>
+                <span>{contextItem.category_name}</span>
+              </div>
+            </div>
+          ) : null}
+
+          {selectedBatch ? (
+            <>
+              <dl className={styles.summaryDetails} aria-label="Situação do lote">
+                <div>
+                  <dt>Lote</dt>
+                  <dd>{selectedBatch.batch_code ?? `Legado #${selectedBatch.id}`}</dd>
+                </div>
+                <div>
+                  <dt>Saldo atual</dt>
+                  <dd>{selectedBatch.current_quantity} {selectedItem?.unit_measure}</dd>
+                </div>
+                <div>
+                  <dt>Validade</dt>
+                  <dd>
+                    {selectedBatch.expiration_date
+                      ? formatDateOnly(selectedBatch.expiration_date)
+                      : selectedItem?.tracks_expiration
+                        ? "Não informada"
+                        : "Não controlada"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Situação</dt>
+                  <dd>
+                    <span className={`${styles.statusBadge} ${expirationToneClass}`}>
+                      {selectedExpirationStatus?.label ?? "Não avaliada"}
+                    </span>
+                  </dd>
+                </div>
+              </dl>
+
+              <div
+                className={`${styles.balancePreview} ${
+                  projectedQuantity !== null && projectedQuantity < 0
+                    ? styles.balanceInvalid
+                    : ""
+                }`}
+                aria-label="Saldo após a movimentação"
+              >
+                <span>Saldo após movimento</span>
+                <strong>
+                  {projectedQuantity ?? "—"}
+                  <small>{selectedItem?.unit_measure}</small>
+                </strong>
+                <p>{movementTypeOptions.find((option) => option.value === formData.movement_type)?.label}</p>
+              </div>
+            </>
+          ) : (
+            <div className={styles.summaryEmpty}>
+              <PackageSearch aria-hidden="true" />
+              <strong>Selecione um lote</strong>
+              <span>O saldo projetado aparecerá aqui.</span>
+            </div>
+          )}
+        </aside>
 
         {error ? (
           <p
             ref={errorSummaryRef}
             id="stock-movement-form-error"
-            className="status-error"
+            className={styles.error}
             role="alert"
             aria-live="assertive"
             tabIndex={-1}
@@ -705,14 +810,18 @@ export function StockMovementCreatePage() {
           </p>
         ) : null}
 
-        <div className="panel-actions panel-actions--spread">
-          <Link to="/items" className="button button--secondary button--link">
+        <div className={styles.actions}>
+          <Link
+            to="/items"
+            className={styles.secondaryAction}
+            onClick={handleCancel}
+          >
             Cancelar
           </Link>
 
           <button
             type="submit"
-            className="button"
+            className={styles.primaryAction}
             disabled={
               isSubmitting ||
               isLoading ||
@@ -720,6 +829,7 @@ export function StockMovementCreatePage() {
               selectedBatchIsBlocked
             }
           >
+            <ArrowRightLeft aria-hidden="true" />
             {isSubmitting ? "Salvando…" : "Registrar movimentação"}
           </button>
         </div>

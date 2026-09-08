@@ -2008,8 +2008,18 @@ test("manual stock exit follows FEFO and keeps expired batch available for dispo
 }) => {
   await page.goto("/stock-movements/new?itemId=1");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Movimentação manual" })
+    page.getByRole("heading", { level: 1, name: "Registrar movimentação" })
   ).toBeVisible();
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.type()).toBe("confirm");
+    expect(dialog.message()).toBe("Descartar as alterações desta movimentação?");
+    await dialog.dismiss();
+  });
+  await page.getByLabel("Quantidade").fill("2");
+  await page.getByRole("link", { name: "Cancelar" }).click();
+  await expect(page).toHaveURL(/\/stock-movements\/new\?itemId=1$/);
+  await page.getByLabel("Quantidade").fill("1");
 
   const batchSelect = page.getByRole("combobox", { name: "Lote", exact: true });
   const movementType = page.getByRole("combobox", { name: "Tipo", exact: true });
@@ -2030,7 +2040,9 @@ test("manual stock exit follows FEFO and keeps expired batch available for dispo
   await expect(missingExpirationOption).not.toHaveAttribute("disabled", "");
   await expect(validOption).toHaveAttribute("disabled", "");
   await batchSelect.selectOption("2");
-  await expect(page.locator(".detail-grid .pill")).toHaveText("Vencido");
+  await expect(
+    page.getByLabel("Situação do lote").getByText("Vencido", { exact: true })
+  ).toBeVisible();
   await page.getByRole("button", { name: "Registrar movimentação" }).click();
   const movementErrorSummary = page.locator("#stock-movement-form-error");
   await expect(page.getByLabel("Motivo da movimentação")).toBeFocused();

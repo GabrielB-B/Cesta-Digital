@@ -6,6 +6,7 @@ import { openFactsProductImageBase64 } from "./fixtures";
 const evidenceDirectory = path.resolve("showcase/evidence/v2-08");
 const polishEvidenceDirectory = path.resolve("showcase/evidence/v2-14");
 const itemCreateEvidenceDirectory = path.resolve("showcase/evidence/v2-15");
+const movementEvidenceDirectory = path.resolve("showcase/evidence/v2-16");
 const openFactsImageUrl =
   "https://images.openfoodfacts.org/images/products/789/100/010/0103/front_pt.34.400.jpg";
 const persistedProductImagePath = "/public/items/1/image?v=visual-fixture";
@@ -211,9 +212,13 @@ test.beforeEach(async ({ page }) => {
   );
   await page.route("**/auth/me", (route) => fulfillJson(route, currentUser));
   await page.route("**/stock-overview**", (route) => fulfillJson(route, overview));
-  await page.route("**/stock-movements**", (route) => {
+  await page.route("**/stock-movements**", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
     const itemId = Number(new URL(route.request().url()).searchParams.get("item_id"));
-    return fulfillJson(
+    await fulfillJson(
       route,
       movements.filter((movement) => movement.item_id === itemId),
     );
@@ -390,6 +395,147 @@ test("novo produto usa o formulário claro V2 sem conteúdo de exemplo", async (
       });
     await page.screenshot({
       path: path.join(itemCreateEvidenceDirectory, "novo-produto-mobile-completo-390.png"),
+      fullPage: true,
+    });
+  }
+});
+
+test("movimentação usa contexto do lote e saldo projetado em desktop e mobile", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência da movimentação concentrada nos viewports de aprovação.",
+  );
+
+  const isDesktop = testInfo.project.name === "desktop-1440";
+  const movementItems = [
+    {
+      id: 1,
+      category_id: 1,
+      category_name: "Laticínios",
+      name: "Leite Condensado Moça 395g",
+      barcode: "7891000100103",
+      unit_measure: "un.",
+      tracks_expiration: true,
+      is_active: true,
+      reference_unit_value: "8.90",
+      minimum_stock_alert: 30,
+      notes: null,
+      has_image: true,
+      image_path: persistedProductImagePath,
+      image_source: "open_facts",
+      image_attribution: "Open Food Facts contributors · CC BY-SA 3.0",
+    },
+  ];
+  const movementBatches = [
+    {
+      id: 1,
+      item_id: 1,
+      batch_code: "LT-2026-041",
+      source_type: "doacao_item",
+      status: "disponivel",
+      entry_quantity: 24,
+      current_quantity: 24,
+      entry_date: "2026-08-20",
+      expiration_date: "2027-06-15",
+      storage_location: "Prateleira A1",
+      quarantine_reason: null,
+      estimated_unit_value: "8.90",
+      notes: null,
+      created_by_user_id: 1,
+    },
+    {
+      id: 2,
+      item_id: 1,
+      batch_code: "LT-2025-011",
+      source_type: "doacao_item",
+      status: "disponivel",
+      entry_quantity: 3,
+      current_quantity: 3,
+      entry_date: "2025-02-10",
+      expiration_date: "2025-10-10",
+      storage_location: "Área de descarte",
+      quarantine_reason: null,
+      estimated_unit_value: "8.50",
+      notes: null,
+      created_by_user_id: 1,
+    },
+  ];
+
+  await page.route("**/items", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+    await fulfillJson(route, movementItems);
+  });
+  await page.route("**/stock-batches**", (route) =>
+    fulfillJson(route, movementBatches),
+  );
+
+  await page.goto("/stock-movements/new?itemId=1");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Registrar movimentação" }),
+  ).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+
+  const formPanel = page.getByRole("region", { name: "Dados da movimentação" });
+  const summaryPanel = page.getByRole("complementary", {
+    name: "Resumo da movimentação",
+  });
+  await expect(formPanel).toBeVisible();
+  await expect(summaryPanel).toBeVisible();
+  await expect(page.getByLabel("Lote", { exact: true })).toHaveValue("1");
+  await page.getByLabel("Quantidade").fill("4");
+  await expect(page.getByLabel("Saldo após a movimentação")).toContainText(
+    "20",
+  );
+  await expect(page.getByLabel("Observações")).not.toHaveAttribute("placeholder");
+
+  const [formBox, summaryBox] = await Promise.all([
+    formPanel.boundingBox(),
+    summaryPanel.boundingBox(),
+  ]);
+  expect(formBox).not.toBeNull();
+  expect(summaryBox).not.toBeNull();
+  if (isDesktop) {
+    expect(summaryBox!.x).toBeGreaterThan(formBox!.x + formBox!.width);
+  } else {
+    expect(summaryBox!.y).toBeGreaterThan(formBox!.y + formBox!.height);
+  }
+
+  const fieldFontSize = await page
+    .getByLabel("Tipo", { exact: true })
+    .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
+  expect(fieldFontSize).toBeGreaterThanOrEqual(14);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(movementEvidenceDirectory, { recursive: true });
+  if (isDesktop) {
+    await page.screenshot({
+      path: path.join(movementEvidenceDirectory, "movimentacao-desktop-1440.png"),
+      fullPage: true,
+    });
+  } else {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({
+      path: path.join(movementEvidenceDirectory, "movimentacao-mobile-390.png"),
+    });
+    await page
+      .getByRole("navigation", { name: "Atalhos principais" })
+      .evaluate((navigation) => {
+        navigation.style.display = "none";
+      });
+    await page.screenshot({
+      path: path.join(
+        movementEvidenceDirectory,
+        "movimentacao-mobile-completo-390.png",
+      ),
       fullPage: true,
     });
   }

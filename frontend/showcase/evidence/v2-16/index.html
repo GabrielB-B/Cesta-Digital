@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-16 · Movimentação de estoque</title>
+    <style>
+      :root { color: #142033; background: #f5f6f8; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+      header { display: grid; gap: 8px; margin-bottom: 28px; }
+      h1, h2, p { margin: 0; }
+      h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.04em; }
+      h2 { font-size: 18px; }
+      p { color: #667085; line-height: 1.55; }
+      .status { width: fit-content; margin-top: 8px; padding: 7px 12px; color: #9a5b00; background: #fff2dc; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      section { margin-top: 32px; }
+      .section-heading { display: grid; gap: 4px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+      figure { margin: 0; overflow: hidden; background: white; border: 1px solid #e2e5e9; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.07); }
+      figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; color: #263247; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8eaed; }
+      figcaption span { color: #7b8492; font-weight: 500; }
+      figure a { display: block; background: #eef0f3; }
+      img { display: block; width: 100%; height: auto; }
+      .mobile img { width: min(100%, 390px); margin: 0 auto; }
+      .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
+      .note strong { display: block; margin-bottom: 5px; font-size: 14px; }
+      .note p { font-size: 13px; }
+      @media (max-width: 900px) {
+        main { width: min(100% - 20px, 680px); padding-top: 24px; }
+        .grid, .notes { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>V2-16 · Movimentação de estoque</h1>
+        <p>Comparação entre a direção aprovada do Estoque e o fluxo real de saída, perda e ajuste.</p>
+        <span class="status">Aguardando aprovação visual</span>
+      </header>
+
+      <section>
+        <div class="section-heading">
+          <h2>Referência × implementação</h2>
+          <p>Clique em qualquer imagem para abrir a captura original em uma nova aba.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Referência Estoque <span>direção visual aprovada</span></figcaption>
+            <a href="../v2-08/referencia-estoque-desktop.png" target="_blank" rel="noreferrer"><img src="../v2-08/referencia-estoque-desktop.png" alt="Referência aprovada da tela Estoque" /></a>
+          </figure>
+          <figure>
+            <figcaption>Implementação desktop <span>1440 × 900</span></figcaption>
+            <a href="movimentacao-desktop-1440.png" target="_blank" rel="noreferrer"><img src="movimentacao-desktop-1440.png" alt="Movimentação de estoque V2 em desktop" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Fluxo mobile</h2>
+          <p>A primeira captura representa o viewport real; a segunda apresenta o fluxo completo sem repetir a navegação fixa.</p>
+        </div>
+        <div class="grid">
+          <figure class="mobile">
+            <figcaption>Viewport mobile <span>390 × 844</span></figcaption>
+            <a href="movimentacao-mobile-390.png" target="_blank" rel="noreferrer"><img src="movimentacao-mobile-390.png" alt="Movimentação de estoque no viewport mobile" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Fluxo completo <span>390 px</span></figcaption>
+            <a href="movimentacao-mobile-completo-390.png" target="_blank" rel="noreferrer"><img src="movimentacao-mobile-completo-390.png" alt="Fluxo completo da movimentação de estoque no mobile" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="notes">
+          <div class="note"><strong>Contratos preservados</strong><p>Mesma rota, RBAC, endpoints, payload e retorno ao produto.</p></div>
+          <div class="note"><strong>Operação segura</strong><p>FEFO, validade, quarentena, item inativo e limites de saldo continuam ativos.</p></div>
+          <div class="note"><strong>Leitura antes de salvar</strong><p>O painel confirma produto, lote, validade e saldo projetado sem criar dados novos.</p></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
