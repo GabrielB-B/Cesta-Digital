@@ -1,4 +1,8 @@
+import path from "node:path";
+import { mkdir } from "node:fs/promises";
 import { expect, test, type Route } from "@playwright/test";
+
+const familyFormsEvidenceDirectory = path.resolve("showcase/evidence/v2-17");
 
 const currentUser = {
   id: 1,
@@ -171,29 +175,27 @@ async function fulfillJson(route: Route, body: unknown, headers = {}) {
 
 test.beforeEach(async ({ page }) => {
   await page.route("**/auth/me", (route) => fulfillJson(route, currentUser));
-  await page.route("**/families?**", (route) =>
+  await page.route(/^http:\/\/127\.0\.0\.1:8000\/families(?:\?.*)?$/, (route) =>
     fulfillJson(route, familyRows, { "X-Total-Count": "248" }),
   );
-  await page.route("**/families/*/eligibility-preview", (route) =>
-    fulfillJson(route, {
-      family_id: 1,
-      internal_code: "FAM-01248",
-      income_per_capita: "300.00",
-      extreme_poverty_limit: "109.00",
-      poverty_limit: "218.00",
-      system_suggestion: "apta_recorrente",
-      poverty_band: "baixa_renda",
-      economic_reason: "Renda e fatores sociais indicam continuidade do atendimento.",
-      social_weight_score: 7,
-      social_aggravating_factors: ["Há desemprego na família"],
-      priority_level: "media",
-    }),
+  await page.route(
+    /^http:\/\/127\.0\.0\.1:8000\/families\/\d+\/eligibility-preview$/,
+    (route) =>
+      fulfillJson(route, {
+        family_id: 1,
+        internal_code: "FAM-01248",
+        income_per_capita: "300.00",
+        extreme_poverty_limit: "109.00",
+        poverty_limit: "218.00",
+        system_suggestion: "apta_recorrente",
+        poverty_band: "baixa_renda",
+        economic_reason: "Renda e fatores sociais indicam continuidade do atendimento.",
+        social_weight_score: 7,
+        social_aggravating_factors: ["Há desemprego na família"],
+        priority_level: "media",
+      }),
   );
-  await page.route("**/families/*", async (route) => {
-    if (route.request().resourceType() === "document") {
-      await route.fallback();
-      return;
-    }
+  await page.route(/^http:\/\/127\.0\.0\.1:8000\/families\/\d+$/, async (route) => {
     const match = new URL(route.request().url()).pathname.match(/\/families\/(\d+)$/);
     await fulfillJson(route, detailFor(Number(match?.[1] ?? 1)));
   });
@@ -254,5 +256,101 @@ test("detalhe separa cálculo, decisão e conteúdo social", async ({ page }, te
   await page.screenshot({
     path: testInfo.outputPath(`familia-detalhe-${testInfo.project.name}.png`),
     fullPage: (page.viewportSize()?.width ?? 0) >= 1100,
+  });
+});
+
+test("cadastro de família usa etapas legíveis sem placeholders ou overflow", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência dos formulários concentrada nos viewports de aprovação.",
+  );
+
+  const isDesktop = testInfo.project.name === "desktop-1440";
+  await page.goto("/families/new");
+  await page.evaluate(() => document.fonts.ready);
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Cadastrar família" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Cadastro e endereço" }),
+  ).toBeVisible();
+  await expect(page.locator("input[placeholder], textarea[placeholder]")).toHaveCount(0);
+
+  const stepNavigation = page.getByRole("navigation", {
+    name: "Etapas do cadastro da família",
+  });
+  if (isDesktop) {
+    await expect(
+      stepNavigation.getByRole("button", { name: "Etapa 5: Revisão" }),
+    ).toBeVisible();
+  } else {
+    await expect(stepNavigation.getByText("Etapa 1 de 5")).toBeVisible();
+  }
+
+  const fieldFontSize = await page
+    .getByRole("textbox", { name: "Rua" })
+    .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
+  expect(fieldFontSize).toBeGreaterThanOrEqual(isDesktop ? 15 : 16);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(familyFormsEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(
+      familyFormsEvidenceDirectory,
+      isDesktop
+        ? "familia-cadastro-desktop-1440.png"
+        : "familia-cadastro-mobile-390.png",
+    ),
+  });
+});
+
+test("edição preserva o contexto da avaliação até a revisão", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência dos formulários concentrada nos viewports de aprovação.",
+  );
+
+  const isDesktop = testInfo.project.name === "desktop-1440";
+  await page.goto("/families/1/edit");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Editar família" }),
+  ).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Status do cadastro" })).toHaveValue(
+    "apta_recorrente",
+  );
+
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Moradores e moradia" })).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Renda e condições sociais" })).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Contato e rede de apoio" })).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Revisão e observações" })).toBeVisible();
+  await expect(page.getByText("R$ 300,00 por pessoa")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Salvar alterações" })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(familyFormsEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(
+      familyFormsEvidenceDirectory,
+      isDesktop
+        ? "familia-edicao-revisao-desktop-1440.png"
+        : "familia-edicao-revisao-mobile-390.png",
+    ),
   });
 });

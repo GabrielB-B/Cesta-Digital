@@ -2173,25 +2173,148 @@ test("delivery history exposes item and batch trace on mobile", async ({ page })
 });
 
 test("family creation makes church and UPG relationship easy to fill", async ({ page }) => {
+  let createPayload: Record<string, unknown> | null = null;
+  await page.route(/\/families$/, async (route) => {
+    if (route.request().method() !== "POST") {
+      await route.fallback();
+      return;
+    }
+
+    createPayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...family, id: 45, ...createPayload });
+  });
   await page.goto("/families/new");
 
-  await expect(page.getByRole("heading", { name: "Igreja, UPG e participacao" })).toBeVisible();
-  await expect(page.getByText("Frequenta igreja ou UPG")).toBeVisible();
+  await page.getByRole("textbox", { name: "Rua" }).fill("Rua das Flores");
+  await page.getByRole("textbox", { name: "Número" }).fill("123");
+  await page.getByRole("textbox", { name: "Bairro" }).fill("Centro");
+  await page.getByRole("textbox", { name: "Cidade" }).fill("Aracaju");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByRole("button", { name: "Próximo" }).click();
 
   const incomeField = page.getByRole("spinbutton", { name: "Renda mensal total" });
-  const churchNameField = page.getByRole("textbox", { name: "Igreja ou UPG" });
-  const communityRelationshipField = page.getByRole("textbox", {
-    name: "O que faz ou qual vinculo possui",
-  });
-
   await incomeField.fill("850");
   await incomeField.blur();
+  await page.getByRole("button", { name: "Próximo" }).click();
+
+  const churchGroup = page.getByRole("group", {
+    name: "Igreja, UPG e participação",
+  });
+  await expect(churchGroup.getByText("Frequenta igreja ou UPG")).toBeVisible();
+
+  const churchNameField = churchGroup.getByRole("textbox", {
+    name: "Igreja ou UPG",
+  });
+  const communityRelationshipField = churchGroup.getByRole("textbox", {
+    name: "Participação ou vínculo",
+  });
+  await expect(churchNameField).toBeDisabled();
+  await churchGroup.getByLabel("Frequenta igreja ou UPG").check();
   await churchNameField.fill("UPG Central");
   await communityRelationshipField.fill("Voluntaria no acolhimento");
 
+  await page.getByRole("button", { name: "Anterior" }).click();
   await expect(incomeField).toHaveValue("850.00");
+  await page.getByRole("button", { name: "Próximo" }).click();
   await expect(churchNameField).toHaveValue("UPG Central");
   await expect(communityRelationshipField).toHaveValue("Voluntaria no acolhimento");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Revisão e observações" })).toBeVisible();
+  await page.getByRole("button", { name: "Cadastrar família" }).click();
+
+  await expect.poll(() => createPayload).not.toBeNull();
+  expect(createPayload?.status).toBe("em_analise");
+  expect(createPayload?.total_residents).toBe(1);
+  expect(createPayload?.income_per_capita).toBe(850);
+  expect(createPayload).not.toHaveProperty("internal_code");
+});
+
+test("family wizard focuses the first error and warns before unloading unsaved data", async ({ page }) => {
+  await page.goto("/families/new");
+
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("textbox", { name: "Rua" })).toBeFocused();
+  await expect(page.getByText("Informe a rua da família.")).toBeVisible();
+
+  await page.getByRole("textbox", { name: "Rua" }).fill("Rua Segura");
+  await expect(page.locator('form[data-unsaved-changes="true"]')).toBeVisible();
+  expect(
+    await page.evaluate(() => {
+      const event = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    })
+  ).toBe(true);
+  await expect(page.getByRole("textbox", { name: "Rua" })).toHaveValue(
+    "Rua Segura"
+  );
+});
+
+test("family edit keeps additional contacts and assessment-owned status", async ({ page }) => {
+  const additionalContact = {
+    id: 2,
+    contact_name: "João Silva",
+    phone: "79999991111",
+    contact_type: "parente",
+    is_whatsapp: false,
+    notes: "Contato alternativo",
+  };
+  let updatePayload: Record<string, unknown> | null = null;
+
+  await page.route(/\/families\/1$/, async (route) => {
+    if (route.request().method() === "PUT") {
+      updatePayload = route.request().postDataJSON() as Record<string, unknown>;
+      await fulfillJson(route, { ...familyDetail, ...updatePayload });
+      return;
+    }
+
+    await fulfillJson(route, {
+      ...familyDetail,
+      last_evaluation_date: "2026-05-15",
+      contacts: [...familyDetail.contacts, additionalContact],
+    });
+  });
+
+  await page.goto("/families/1/edit");
+
+  const statusField = page.getByRole("combobox", { name: "Status do cadastro" });
+  await expect(statusField).toHaveValue("apta_recorrente");
+  await expect(statusField.locator('option[value="apta_recorrente"]')).toHaveAttribute(
+    "disabled",
+    ""
+  );
+  await expect(statusField.locator('option[value="apta_emergencial"]')).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Moradores e moradia" })).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Renda e condições sociais" })).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Contato e rede de apoio" })).toBeVisible();
+  await page.getByRole("textbox", { name: "Nome do contato" }).fill("Maria Atualizada");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Revisão e observações" })).toBeVisible();
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+
+  await expect.poll(() => updatePayload).not.toBeNull();
+  expect(updatePayload?.status).toBe("apta_recorrente");
+  expect(updatePayload?.last_evaluation_date).toBe("2026-05-15");
+  expect(updatePayload?.contacts).toEqual([
+    {
+      contact_name: "Maria Atualizada",
+      phone: "79999990000",
+      contact_type: "principal",
+      is_whatsapp: true,
+      notes: null,
+    },
+    {
+      contact_name: "João Silva",
+      phone: "79999991111",
+      contact_type: "parente",
+      is_whatsapp: false,
+      notes: "Contato alternativo",
+    },
+  ]);
 });
 
 test("family detail highlights system suggestion and church shortcut", async ({ page }) => {

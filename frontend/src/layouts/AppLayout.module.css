@@ -279,7 +279,7 @@
   justify-content: space-between;
   min-height: 5.5rem;
   padding: 0 2.5rem;
-  background: color-mix(in srgb, var(--cd-surface) 97%, transparent);
+  background: var(--cd-surface);
   border-bottom: 1px solid var(--cd-border);
 }
 
@@ -609,7 +609,7 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     min-height: calc(4.5rem + env(safe-area-inset-bottom));
     padding: 0.375rem 0.5rem env(safe-area-inset-bottom);
-    background: color-mix(in srgb, var(--cd-surface) 97%, transparent);
+    background: var(--cd-surface);
     border-top: 1px solid var(--cd-border);
   }
 
