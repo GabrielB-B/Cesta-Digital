@@ -3,6 +3,7 @@ import { mkdir } from "node:fs/promises";
 import { expect, test, type Route } from "@playwright/test";
 
 const familyFormsEvidenceDirectory = path.resolve("showcase/evidence/v2-17");
+const memberFormsEvidenceDirectory = path.resolve("showcase/evidence/v2-18");
 
 const currentUser = {
   id: 1,
@@ -352,5 +353,69 @@ test("edição preserva o contexto da avaliação até a revisão", async ({
         ? "familia-edicao-revisao-desktop-1440.png"
         : "familia-edicao-revisao-mobile-390.png",
     ),
+  });
+});
+
+test("cadastro de membro mantém o formulário claro e legível nos dois layouts", async ({ page }, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência dos membros concentrada nos viewports de aprovação.",
+  );
+
+  const isDesktop = testInfo.project.name === "desktop-1440";
+  await page.goto("/families/1/people/new");
+  await page.evaluate(() => document.fonts.ready);
+  await expect(page.getByRole("heading", { level: 1, name: "Novo membro" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dados do membro" })).toBeVisible();
+  await expect(page.locator("form input[placeholder], form textarea[placeholder]")).toHaveCount(0);
+
+  const fontSize = await page.getByRole("textbox", { name: "Nome completo" })
+    .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
+  expect(fontSize).toBeGreaterThanOrEqual(isDesktop ? 15 : 16);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+  if (isDesktop) {
+    await expect(page.getByRole("navigation", { name: "Etapas do membro" })
+      .getByRole("button", { name: "Etapa 3: Revisão" })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: "Resumo do membro" })).toBeVisible();
+  } else {
+    await expect(page.getByText("Etapa 1 de 3")).toBeVisible();
+    await expect(page.getByRole("complementary", { name: "Resumo do membro" })).toBeHidden();
+  }
+
+  await mkdir(memberFormsEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(memberFormsEvidenceDirectory, `membro-cadastro-${testInfo.project.name}.png`),
+    fullPage: isDesktop,
+  });
+});
+
+test("edição de membro preserva dados existentes e chega à revisão sem salvar", async ({ page }, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência dos membros concentrada nos viewports de aprovação.",
+  );
+
+  await page.goto("/families/1/people/1/edit");
+  await expect(page.getByRole("heading", { level: 1, name: "Editar membro" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Escolaridade" })).toHaveValue("médio");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Trabalho e condições" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Igreja ou UPG" })).toHaveValue("UPG Central");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+  await mkdir(memberFormsEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(memberFormsEvidenceDirectory, `membro-edicao-condicoes-${testInfo.project.name}.png`),
+    fullPage: testInfo.project.name === "desktop-1440",
+  });
+
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Revisar membro" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Salvar alterações" })).toBeVisible();
+  await expect(page).toHaveURL(/\/people\/1\/edit$/);
+  await page.screenshot({
+    path: path.join(memberFormsEvidenceDirectory, `membro-edicao-revisao-${testInfo.project.name}.png`),
+    fullPage: testInfo.project.name === "desktop-1440",
   });
 });

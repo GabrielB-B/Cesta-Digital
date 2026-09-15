@@ -2329,20 +2329,104 @@ test("family detail highlights system suggestion and church shortcut", async ({ 
   await expect(page.getByRole("link", { name: "Registrar avaliação" })).toBeVisible();
 });
 
-test("family member edit has its own church link separate from income", async ({ page }) => {
+test("family member create validates fields and preserves the person payload", async ({ page }) => {
+  let createdPayload: Record<string, unknown> | null = null;
+  await page.route(/\/families\/1\/people$/, async (route) => {
+    createdPayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...familyDetail.people[0], id: 2, ...createdPayload });
+  });
+
+  await page.goto("/families/1/people/new");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("textbox", { name: "Nome completo" })).toBeFocused();
+
+  await page.getByRole("textbox", { name: "Nome completo" }).fill("Lucas Silva");
+  await page.getByLabel("Data de nascimento").fill("2014-03-11");
+  await page.getByRole("textbox", { name: "Parentesco" }).fill("filho");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByRole("spinbutton", { name: "Renda individual" }).fill("125");
+  await page.getByLabel("Está estudando").check();
+  await page.getByLabel("Frequenta igreja ou UPG").check();
+  await page.getByRole("textbox", { name: "Igreja ou UPG" }).fill("UPG Central");
+  await page.getByRole("textbox", { name: "Participação ou vínculo" }).fill("Visitante");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Revisar membro" })).toBeVisible();
+  await page.getByRole("button", { name: "Cadastrar membro" }).click();
+
+  await expect.poll(() => createdPayload).not.toBeNull();
+  expect(createdPayload).toMatchObject({
+    full_name: "Lucas Silva",
+    birth_date: "2014-03-11",
+    kinship: "filho",
+    individual_income: 125,
+    is_currently_studying: true,
+    attends_church: true,
+    church_name: "UPG Central",
+    church_role: "Visitante",
+    is_family_responsible: false,
+  });
+  expect(createdPayload).not.toHaveProperty("id");
+});
+
+test("family member edit keeps its church link, income and unsaved protection", async ({ page }) => {
+  let updatePayload: Record<string, unknown> | null = null;
+  await page.route(/\/people\/1$/, async (route) => {
+    updatePayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...familyDetail.people[0], ...updatePayload });
+  });
   await page.goto("/families/1/people/1/edit");
 
-  await expect(
-    page.getByRole("heading", { name: "Igreja, UPG e participacao do membro" })
-  ).toBeVisible();
-  await expect(page.getByRole("spinbutton", { name: "Renda individual" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dados do membro" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Escolaridade" })).toHaveValue("medio");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Trabalho e condições" })).toBeVisible();
+  await expect(page.getByRole("spinbutton", { name: "Renda individual" })).toHaveValue("600.00");
   await expect(page.getByLabel("Frequenta igreja ou UPG")).toBeChecked();
   await expect(page.getByRole("textbox", { name: "Igreja ou UPG" })).toHaveValue(
     "UPG Central"
   );
-  await expect(page.getByRole("textbox", { name: "Cargo, funcao ou vinculo" })).toHaveValue(
+  await expect(page.getByRole("textbox", { name: "Participação ou vínculo" })).toHaveValue(
     "Voluntaria"
   );
+  await page.getByRole("textbox", { name: "Participação ou vínculo" }).fill("Voluntária titular");
+  await expect(page.locator('form[data-unsaved-changes="true"]')).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+
+  await expect.poll(() => updatePayload).not.toBeNull();
+  expect(updatePayload).toMatchObject({
+    full_name: "Maria Silva",
+    individual_income: 600,
+    education_level: "medio",
+    church_name: "UPG Central",
+    church_role: "Voluntária titular",
+    is_family_responsible: true,
+  });
+});
+
+test("family member delete requires explicit confirmation", async ({ page }) => {
+  let deleteCalls = 0;
+  await page.route(/\/people\/1$/, async (route) => {
+    deleteCalls += 1;
+    await route.fulfill({ status: 204 });
+  });
+  await page.goto("/families/1/people/1/edit");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByRole("button", { name: "Próximo" }).click();
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.type()).toBe("confirm");
+    expect(dialog.message()).toContain("não pode ser desfeita");
+    await dialog.dismiss();
+  });
+  await page.getByRole("button", { name: "Excluir membro" }).click();
+  expect(deleteCalls).toBe(0);
+  await expect(page).toHaveURL(/\/people\/1\/edit$/);
+
+  page.once("dialog", async (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Excluir membro" }).click();
+  await expect.poll(() => deleteCalls).toBe(1);
+  await expect(page).toHaveURL(/\/families\/1$/);
 });
 
 test("mobile shell opens drawer navigation and compact account menu", async ({ page }) => {
