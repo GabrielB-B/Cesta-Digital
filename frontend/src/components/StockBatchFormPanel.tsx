@@ -438,7 +438,7 @@ export function StockBatchFormPanel({
                 name="storage_location"
                 value={formData.storage_location}
                 onChange={handleInputChange}
-                placeholder="Ex.: Prateleira A · nível 2"
+                placeholder="Local de armazenamento"
                 maxLength={120}
                 aria-invalid={errorField === "storage_location"}
               />

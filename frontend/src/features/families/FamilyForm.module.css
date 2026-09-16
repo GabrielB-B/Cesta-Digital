@@ -330,14 +330,6 @@
   font-weight: 620;
 }
 
-.field :global(.currency-input__prefix) {
-  color: var(--cd-text-muted);
-  font-weight: 650;
-}
-
-.field :global(.currency-input) input {
-  padding-left: 2.75rem;
-}
 
 .readOnlyField {
   padding: 0.75rem 0.9rem;

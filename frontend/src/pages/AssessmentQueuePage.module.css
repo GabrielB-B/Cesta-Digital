@@ -548,7 +548,7 @@
   gap: 0.85rem;
   margin: 1rem 0;
   padding: 1rem;
-  background: linear-gradient(145deg, #fff9fc, #faf8ff);
+  background: #fff9fc;
   border: 1px solid #f2dce8;
   border-radius: var(--cd-radius-md);
 }

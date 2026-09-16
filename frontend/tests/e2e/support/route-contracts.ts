@@ -38,7 +38,7 @@ export const APP_ROUTE_CONTRACTS = [
   },
   {
     path: "/families",
-    title: "Familias",
+    title: "Famílias",
     sectionPath: "/families",
     allowedRoles: socialRoles,
   },
@@ -50,19 +50,19 @@ export const APP_ROUTE_CONTRACTS = [
   },
   {
     path: "/families/new",
-    title: "Cadastrar familia",
+    title: "Cadastrar família",
     sectionPath: "/families",
     allowedRoles: socialRoles,
   },
   {
     path: "/families/1",
-    title: "Detalhe da familia",
+    title: "Detalhe da família",
     sectionPath: "/families",
     allowedRoles: socialRoles,
   },
   {
     path: "/families/1/edit",
-    title: "Editar familia",
+    title: "Editar família",
     sectionPath: "/families",
     allowedRoles: socialRoles,
   },
@@ -80,13 +80,13 @@ export const APP_ROUTE_CONTRACTS = [
   },
   {
     path: "/families/1/benefits/new",
-    title: "Cadastrar beneficio",
+    title: "Cadastrar benefício",
     sectionPath: "/families",
     allowedRoles: socialRoles,
   },
   {
     path: "/families/1/benefits/1/edit",
-    title: "Editar beneficio",
+    title: "Editar benefício",
     sectionPath: "/families",
     allowedRoles: socialRoles,
   },
@@ -134,7 +134,7 @@ export const APP_ROUTE_CONTRACTS = [
   },
   {
     path: "/stock-movements/new",
-    title: "Registrar movimentacao",
+    title: "Registrar movimentação",
     sectionPath: "/items",
     allowedRoles: operationsRoles,
   },

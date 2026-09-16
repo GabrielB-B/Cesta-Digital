@@ -1,4 +1,8 @@
+import path from "node:path";
+import { mkdir } from "node:fs/promises";
 import { expect, test, type Route } from "@playwright/test";
+
+const finalAuditEvidenceDirectory = path.resolve("showcase/evidence/v2-20");
 
 const currentUser = {
   id: 1,
@@ -155,4 +159,47 @@ test("rota filha mantém a seção correta ativa", async ({ page }) => {
   await expect(
     page.getByRole("navigation", { name: "Atalhos principais" }).locator('[aria-current="page"]'),
   ).toHaveCount(0);
+});
+
+test("estados de sistema não reutilizam a identidade visual legada", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência final concentrada nos dois viewports de aprovação.",
+  );
+
+  await mkdir(finalAuditEvidenceDirectory, { recursive: true });
+  await page.goto("/rota-inexistente");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Este caminho não existe" }),
+  ).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+  await page.screenshot({
+    path: path.join(
+      finalAuditEvidenceDirectory,
+      `pagina-nao-encontrada-${testInfo.project.name}.png`,
+    ),
+    fullPage: true,
+  });
+
+  await page.unroute("**/auth/me");
+  await page.route("**/auth/me", (route) =>
+    fulfillJson(route, {
+      ...currentUser,
+      roles: ["operador"],
+    }),
+  );
+  await page.goto("/users");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Acesso restrito" }),
+  ).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+  await page.screenshot({
+    path: path.join(
+      finalAuditEvidenceDirectory,
+      `acesso-restrito-${testInfo.project.name}.png`,
+    ),
+    fullPage: true,
+  });
 });

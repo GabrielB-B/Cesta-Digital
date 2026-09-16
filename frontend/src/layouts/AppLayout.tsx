@@ -482,7 +482,9 @@ export function AppLayout() {
             <EnvironmentNotice compact />
             {routeFlash ? (
               <p
-                className={`flash-message flash-message--${routeFlash.type}`}
+                className={`${styles.flashMessage} ${
+                  routeFlash.type === "error" ? styles.flashError : styles.flashSuccess
+                }`}
                 role={routeFlash.type === "error" ? "alert" : "status"}
                 aria-live="polite"
               >

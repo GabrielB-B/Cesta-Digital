@@ -1,4 +1,4 @@
-import { BrandLockup } from "./BrandLockup";
+import styles from "./AppLoading.module.css";
 
 interface AppLoadingProps {
   label?: string;
@@ -9,13 +9,19 @@ export function AppLoading({
   label = "Carregando Cesta Digital...",
   fullScreen = true,
 }: AppLoadingProps) {
-  const className = ["app-loading", fullScreen ? "app-loading--fullscreen" : null]
+  const className = [styles.loading, fullScreen ? styles.fullScreen : null]
     .filter(Boolean)
     .join(" ");
 
   return (
     <div className={className} role="status" aria-live="polite" aria-label={label}>
-      <BrandLockup variant="compact" title="Cesta Digital" subtitle="" markOnly />
+      <img
+        className={styles.mark}
+        src="/brand/cesta-digital-symbol.png"
+        alt=""
+        width="72"
+        height="72"
+      />
       <span className="sr-only">{label}</span>
     </div>
   );

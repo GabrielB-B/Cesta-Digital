@@ -185,8 +185,6 @@
 .field textarea { min-height: 7rem; resize: vertical; }
 .field input[aria-invalid="true"] { border-color: #d92d50; box-shadow: 0 0 0 3px rgba(217, 45, 80, 0.1); }
 .fieldError { min-height: 1.15rem; color: #b42318; font-size: 0.75rem; font-weight: 620; line-height: 1.15rem; }
-.field :global(.currency-input__prefix) { color: var(--cd-text-muted); font-weight: 650; }
-.field :global(.currency-input) input { padding-left: 2.75rem; }
 
 .checkRow {
   display: flex;

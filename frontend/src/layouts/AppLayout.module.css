@@ -37,6 +37,32 @@
   transform: translateY(0);
 }
 
+.flashMessage {
+  margin: 0 0 1rem;
+  padding: 0.8rem 0.95rem;
+  color: #1f2d42;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-left-width: 0.25rem;
+  border-radius: var(--cd-radius-md);
+  box-shadow: var(--cd-shadow-xs);
+  font-size: 0.875rem;
+  font-weight: 620;
+  line-height: 1.25rem;
+}
+
+.flashSuccess {
+  color: #126b34;
+  background: var(--cd-success-soft);
+  border-color: #a9dfbd;
+}
+
+.flashError {
+  color: #a11b2f;
+  background: var(--cd-danger-soft);
+  border-color: #f3b8c0;
+}
+
 .sidebar {
   position: sticky;
   top: 0;

@@ -429,8 +429,7 @@ a.metricCard:focus-visible,
 .skeletonTitle,
 .skeletonSubtitle,
 .skeletonCard {
-  background: linear-gradient(90deg, #eef0f3 25%, #f7f8fa 50%, #eef0f3 75%);
-  background-size: 200% 100%;
+  background: #eef0f3;
   border-radius: var(--cd-radius-md);
   animation: skeleton 1.3s ease-in-out infinite;
 }
@@ -463,12 +462,7 @@ a.metricCard:focus-visible,
 }
 
 @keyframes skeleton {
-  from {
-    background-position: 200% 0;
-  }
-  to {
-    background-position: -200% 0;
-  }
+  50% { opacity: 0.58; }
 }
 
 @media (max-width: 1180px) {

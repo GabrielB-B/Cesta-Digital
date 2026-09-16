@@ -7,6 +7,7 @@ const evidenceDirectory = path.resolve("showcase/evidence/v2-08");
 const polishEvidenceDirectory = path.resolve("showcase/evidence/v2-14");
 const itemCreateEvidenceDirectory = path.resolve("showcase/evidence/v2-15");
 const movementEvidenceDirectory = path.resolve("showcase/evidence/v2-16");
+const finalAuditEvidenceDirectory = path.resolve("showcase/evidence/v2-20");
 const openFactsImageUrl =
   "https://images.openfoodfacts.org/images/products/789/100/010/0103/front_pt.34.400.jpg";
 const persistedProductImagePath = "/public/items/1/image?v=visual-fixture";
@@ -640,5 +641,89 @@ test("categorias abandona o legado escuro em desktop e mobile", async ({
   await page.screenshot({
     path: path.join(polishEvidenceDirectory, `categorias-${suffix}.png`),
     fullPage: testInfo.project.name === "desktop-1440",
+  });
+});
+
+test("detalhe do item permanece claro e coerente no desktop e no mobile", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência final concentrada nos dois viewports de aprovação.",
+  );
+
+  const itemDetail = {
+    id: 1,
+    category_id: 1,
+    category_name: "Laticínios",
+    name: "Leite Condensado Moça 395g",
+    barcode: "7891000100103",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    reference_unit_value: "8.90",
+    minimum_stock_alert: 30,
+    notes: null,
+    image_path: persistedProductImagePath,
+    image_source: "open_facts",
+    image_attribution: "Open Food Facts contributors · CC BY-SA 3.0",
+  };
+  const batches = [
+    {
+      id: 1,
+      item_id: 1,
+      batch_code: "LT-2026-041",
+      source_type: "doacao_item",
+      status: "disponivel",
+      entry_quantity: 24,
+      current_quantity: 24,
+      entry_date: "2026-08-20",
+      expiration_date: "2027-06-15",
+      storage_location: "Prateleira A1",
+      quarantine_reason: null,
+      estimated_unit_value: "8.90",
+      notes: null,
+      created_by_user_id: 1,
+    },
+  ];
+
+  await page.route("**/items/1", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+    await fulfillJson(route, itemDetail);
+  });
+  await page.route("**/stock-summary**", (route) =>
+    fulfillJson(route, [{ ...stockItems[0], total_batches: 1 }]),
+  );
+  await page.route("**/stock-batches**", (route) => fulfillJson(route, batches));
+  await page.route("**/item-categories", (route) =>
+    fulfillJson(route, [
+      { id: 1, name: "Laticínios", description: null, is_active: true },
+      { id: 2, name: "Higiene", description: null, is_active: true },
+    ]),
+  );
+
+  await page.goto("/items/1");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Leite Condensado Moça 395g" }),
+  ).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+  await expect(page.getByLabel("Resumo do produto")).toBeVisible();
+  await expect(page.getByLabel("Lotes do item")).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(finalAuditEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(
+      finalAuditEvidenceDirectory,
+      `detalhe-item-${testInfo.project.name}.png`,
+    ),
+    fullPage: true,
   });
 });

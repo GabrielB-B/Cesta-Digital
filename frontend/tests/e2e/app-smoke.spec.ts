@@ -1201,9 +1201,9 @@ test("authenticated unknown paths keep the not-found fallback", async ({ page })
   await page.goto("/rota-inexistente-v2");
 
   await expect(
-    page.getByRole("heading", { name: "Este caminho nao existe" })
+    page.getByRole("heading", { name: "Este caminho não existe" })
   ).toBeVisible();
-  await expect(page).toHaveTitle("Pagina nao encontrada | Cesta Digital");
+  await expect(page).toHaveTitle("Página não encontrada | Cesta Digital");
 });
 
 test("capture approval evidence at mobile and desktop baselines", async ({
@@ -1429,7 +1429,9 @@ test("auth loading uses the brand symbol on desktop and mobile", async ({ page }
   await page.goto("/");
 
   await activeGate.requestStarted;
-  await expect(page.locator(".app-loading .brand-lockup--mark-only")).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: /Carregando/i }).locator("img")
+  ).toBeVisible();
   activeGate.releaseResponse();
   await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 
@@ -1438,7 +1440,9 @@ test("auth loading uses the brand symbol on desktop and mobile", async ({ page }
   await page.reload();
 
   await activeGate.requestStarted;
-  await expect(page.locator(".app-loading .brand-lockup--mark-only")).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: /Carregando/i }).locator("img")
+  ).toBeVisible();
   activeGate.releaseResponse();
   await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 });

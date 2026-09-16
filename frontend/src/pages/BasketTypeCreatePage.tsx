@@ -51,7 +51,7 @@ export function BasketTypeCreatePage() {
         <form className={styles.formCard} onSubmit={handleSubmit}>
           <div className={styles.cardHeading}><span className={styles.headingIcon}><ShoppingBasket aria-hidden="true" /></span><div><h2>Dados da cesta</h2><p>Use um nome claro para facilitar agendamentos e entregas.</p></div></div>
           <div className={styles.formGrid}>
-            <label className={styles.field}><span>Nome da cesta <b>*</b></span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="Ex.: Cesta básica mensal" maxLength={100} required /></label>
+            <label className={styles.field}><span>Nome da cesta <b>*</b></span><input value={name} onChange={(event) => setName(event.target.value)} maxLength={100} required /></label>
             <label className={`${styles.field} ${styles.fieldWide}`}><span>Descrição operacional</span><textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={5} placeholder="Informe o propósito ou orientações desta composição." /></label>
             <label className={`${styles.switchField} ${styles.fieldWide}`}><span><strong>Disponível para operação</strong><small>Permite usar esta cesta em novos agendamentos.</small></span><input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} /><i aria-hidden="true" /></label>
           </div>

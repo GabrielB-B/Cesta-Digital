@@ -12,8 +12,8 @@ const ROUTE_META: RouteMeta[] = [
   { pattern: "/", title: "Dashboard", section: "Dashboard", sectionPath: "/" },
   {
     pattern: "/families",
-    title: "Familias",
-    section: "Familias",
+    title: "Famílias",
+    section: "Famílias",
     sectionPath: "/families",
   },
   {
@@ -24,44 +24,44 @@ const ROUTE_META: RouteMeta[] = [
   },
   {
     pattern: "/families/new",
-    title: "Cadastrar familia",
-    section: "Familias",
+    title: "Cadastrar família",
+    section: "Famílias",
     sectionPath: "/families",
   },
   {
     pattern: "/families/:familyId",
-    title: "Detalhe da familia",
-    section: "Familias",
+    title: "Detalhe da família",
+    section: "Famílias",
     sectionPath: "/families",
   },
   {
     pattern: "/families/:familyId/edit",
-    title: "Editar familia",
-    section: "Familias",
+    title: "Editar família",
+    section: "Famílias",
     sectionPath: "/families",
   },
   {
     pattern: "/families/:familyId/people/new",
     title: "Cadastrar pessoa",
-    section: "Familias",
+    section: "Famílias",
     sectionPath: "/families",
   },
   {
     pattern: "/families/:familyId/people/:personId/edit",
     title: "Editar pessoa",
-    section: "Familias",
+    section: "Famílias",
     sectionPath: "/families",
   },
   {
     pattern: "/families/:familyId/benefits/new",
-    title: "Cadastrar beneficio",
-    section: "Familias",
+    title: "Cadastrar benefício",
+    section: "Famílias",
     sectionPath: "/families",
   },
   {
     pattern: "/families/:familyId/benefits/:benefitId/edit",
-    title: "Editar beneficio",
-    section: "Familias",
+    title: "Editar benefício",
+    section: "Famílias",
     sectionPath: "/families",
   },
   {
@@ -97,7 +97,7 @@ const ROUTE_META: RouteMeta[] = [
   },
   {
     pattern: "/stock-movements/new",
-    title: "Registrar movimentacao",
+    title: "Registrar movimentação",
     section: "Estoque",
     sectionPath: "/items",
   },
@@ -166,7 +166,7 @@ export function getRouteMeta(pathname: string): RouteMeta {
   return (
     exactMatch ?? {
       pattern: "*",
-      title: "Pagina nao encontrada",
+      title: "Página não encontrada",
       section: "Cesta Digital",
       sectionPath: "/",
     }

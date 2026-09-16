@@ -51,8 +51,8 @@ export function EnvironmentNotice({
   return (
     <div
       className={[
-        "environment-notice",
-        compact ? "environment-notice--compact" : null,
+        styles.notice,
+        compact ? styles.compact : null,
         className,
       ]
         .filter(Boolean)
@@ -65,3 +65,4 @@ export function EnvironmentNotice({
     </div>
   );
 }
+import styles from "./EnvironmentNotice.module.css";

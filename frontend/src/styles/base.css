@@ -6,6 +6,7 @@
 
 html {
   min-width: 20rem;
+  min-height: 100%;
   color: var(--cd-text);
   background: var(--cd-page);
   font-family: var(--cd-font-sans);
@@ -22,6 +23,10 @@ body {
   font: var(--cd-type-body);
 }
 
+#root {
+  min-height: 100vh;
+}
+
 button,
 input,
 textarea,
@@ -32,6 +37,7 @@ select {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 button {
@@ -40,6 +46,15 @@ button {
 
 a {
   color: var(--cd-text-link);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--cd-brand-action) 24%, transparent);
+  outline-offset: 2px;
 }
 
 img,
@@ -52,6 +67,20 @@ h2,
 h3,
 p {
   margin-block: 0;
+}
+
+.sr-only,
+.cd-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
 }
 
 @media (max-width: 899px) {
