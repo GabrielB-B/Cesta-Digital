@@ -4,6 +4,7 @@ import { expect, test, type Route } from "@playwright/test";
 
 const familyFormsEvidenceDirectory = path.resolve("showcase/evidence/v2-17");
 const memberFormsEvidenceDirectory = path.resolve("showcase/evidence/v2-18");
+const benefitFormsEvidenceDirectory = path.resolve("showcase/evidence/v2-19");
 
 const currentUser = {
   id: 1,
@@ -417,5 +418,54 @@ test("edição de membro preserva dados existentes e chega à revisão sem salva
   await page.screenshot({
     path: path.join(memberFormsEvidenceDirectory, `membro-edicao-revisao-${testInfo.project.name}.png`),
     fullPage: testInfo.project.name === "desktop-1440",
+  });
+});
+
+test("cadastro de benefício usa campos reais e hierarquia responsiva", async ({ page }, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência de benefícios concentrada nos viewports de aprovação.",
+  );
+  const isDesktop = testInfo.project.name === "desktop-1440";
+  await page.goto("/families/1/benefits/new");
+  await page.evaluate(() => document.fonts.ready);
+
+  await expect(page.getByRole("heading", { level: 1, name: "Novo benefício" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dados do benefício" })).toBeVisible();
+  await expect(page.getByRole("option", { name: "Maria Silva" })).toHaveCount(1);
+  await expect(page.locator("form input[placeholder], form textarea[placeholder]")).toHaveCount(0);
+  const fontSize = await page.getByRole("textbox", { name: "Tipo do benefício" })
+    .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
+  expect(fontSize).toBeGreaterThanOrEqual(isDesktop ? 15 : 16);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  if (isDesktop) await expect(page.getByRole("complementary", { name: "Resumo do benefício" })).toBeVisible();
+  else await expect(page.getByRole("complementary", { name: "Resumo do benefício" })).toBeHidden();
+
+  await mkdir(benefitFormsEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(benefitFormsEvidenceDirectory, `beneficio-cadastro-${testInfo.project.name}.png`),
+    fullPage: isDesktop,
+  });
+});
+
+test("edição de benefício preserva cálculo, vigência e exclusão protegida", async ({ page }, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência de benefícios concentrada nos viewports de aprovação.",
+  );
+  const isDesktop = testInfo.project.name === "desktop-1440";
+  await page.goto("/families/1/benefits/1/edit");
+
+  await expect(page.getByRole("heading", { level: 1, name: "Editar benefício" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Tipo do benefício" })).toHaveValue("Bolsa Família");
+  await expect(page.getByRole("spinbutton", { name: "Valor mensal" })).toHaveValue("480.00");
+  await expect(page.getByLabel("Incluir no cálculo da renda familiar")).toBeChecked();
+  await expect(page.getByRole("button", { name: "Excluir benefício" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+  await mkdir(benefitFormsEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(benefitFormsEvidenceDirectory, `beneficio-edicao-${testInfo.project.name}.png`),
+    fullPage: isDesktop,
   });
 });

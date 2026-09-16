@@ -148,6 +148,19 @@ const familyDetail = {
   ],
 };
 
+const familyBenefit = {
+  id: 1,
+  family_id: 1,
+  person_id: 1,
+  benefit_type: "Bolsa Família",
+  monthly_amount: "480.00",
+  counts_as_income: true,
+  is_active: true,
+  start_date: "2026-01-01",
+  end_date: null,
+  notes: "Cadastro social vigente",
+};
+
 const assessmentQueue = {
   items: [
     {
@@ -2427,6 +2440,93 @@ test("family member delete requires explicit confirmation", async ({ page }) => 
   await page.getByRole("button", { name: "Excluir membro" }).click();
   await expect.poll(() => deleteCalls).toBe(1);
   await expect(page).toHaveURL(/\/families\/1$/);
+});
+
+test("family benefit create validates dates and preserves the income payload", async ({ page }) => {
+  let createdPayload: Record<string, unknown> | null = null;
+  await page.route(/\/families\/1\/benefits$/, async (route) => {
+    createdPayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...familyBenefit, id: 2, ...createdPayload });
+  });
+
+  await page.goto("/families/1/benefits/new");
+  await page.getByRole("button", { name: "Cadastrar benefício" }).click();
+  await expect(page.getByRole("textbox", { name: "Tipo do benefício" })).toBeFocused();
+
+  await page.getByRole("textbox", { name: "Tipo do benefício" }).fill("Auxílio alimentação");
+  await page.getByRole("spinbutton", { name: "Valor mensal" }).fill("325.50");
+  await page.getByRole("combobox", { name: "Pessoa vinculada" }).selectOption("1");
+  await page.getByLabel("Data inicial").fill("2026-02-01");
+  await page.getByLabel("Data final").fill("2026-01-31");
+  await page.getByRole("button", { name: "Cadastrar benefício" }).click();
+  await expect(page.getByText("A data final não pode ser anterior à inicial.")).toBeVisible();
+
+  await page.getByLabel("Data final").fill("2026-12-31");
+  await page.getByRole("button", { name: "Cadastrar benefício" }).click();
+
+  await expect.poll(() => createdPayload).not.toBeNull();
+  expect(createdPayload).toMatchObject({
+    person_id: 1,
+    benefit_type: "Auxílio alimentação",
+    monthly_amount: 325.5,
+    counts_as_income: true,
+    is_active: true,
+    start_date: "2026-02-01",
+    end_date: "2026-12-31",
+  });
+});
+
+test("family benefit edit keeps the stored link and protects unsaved changes", async ({ page }) => {
+  let updatedPayload: Record<string, unknown> | null = null;
+  await page.route(/\/families\/1$/, async (route) => {
+    await fulfillJson(route, { ...familyDetail, benefits: [familyBenefit] });
+  });
+  await page.route(/\/benefits\/1$/, async (route) => {
+    updatedPayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...familyBenefit, ...updatedPayload });
+  });
+
+  await page.goto("/families/1/benefits/1/edit");
+  await expect(page.getByRole("textbox", { name: "Tipo do benefício" })).toHaveValue("Bolsa Família");
+  await expect(page.getByRole("combobox", { name: "Pessoa vinculada" })).toHaveValue("1");
+  await expect(page.getByRole("spinbutton", { name: "Valor mensal" })).toHaveValue("480.00");
+  await page.getByRole("spinbutton", { name: "Valor mensal" }).fill("510");
+  await expect(page.locator('form[data-unsaved-changes="true"]')).toBeVisible();
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+
+  await expect.poll(() => updatedPayload).not.toBeNull();
+  expect(updatedPayload).toMatchObject({
+    person_id: 1,
+    benefit_type: "Bolsa Família",
+    monthly_amount: 510,
+    counts_as_income: true,
+    is_active: true,
+  });
+});
+
+test("family benefit delete requires explicit confirmation", async ({ page }) => {
+  let deleteCalls = 0;
+  await page.route(/\/families\/1$/, async (route) => {
+    await fulfillJson(route, { ...familyDetail, benefits: [familyBenefit] });
+  });
+  await page.route(/\/benefits\/1$/, async (route) => {
+    deleteCalls += 1;
+    await route.fulfill({ status: 204 });
+  });
+  await page.goto("/families/1/benefits/1/edit");
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.type()).toBe("confirm");
+    expect(dialog.message()).toContain("não pode ser desfeita");
+    await dialog.dismiss();
+  });
+  await page.getByRole("button", { name: "Excluir benefício" }).click();
+  expect(deleteCalls).toBe(0);
+  await expect(page).toHaveURL(/\/benefits\/1\/edit$/);
+
+  page.once("dialog", async (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Excluir benefício" }).click();
+  await expect.poll(() => deleteCalls).toBe(1);
 });
 
 test("mobile shell opens drawer navigation and compact account menu", async ({ page }) => {
