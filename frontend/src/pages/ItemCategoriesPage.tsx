@@ -287,7 +287,7 @@ export function ItemCategoriesPage() {
                     </span>
                     <div className={styles.categoryIdentity}>
                       <h3>{category.name}</h3>
-                      <p>{category.description || "Descrição não informada"}</p>
+                      {category.description ? <p>{category.description}</p> : null}
                     </div>
                     <span
                       className={`${styles.statusBadge} ${

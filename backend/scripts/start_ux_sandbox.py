@@ -43,6 +43,15 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Origem adicional autorizada no CORS. Pode ser repetida.",
     )
+    parser.add_argument(
+        "--seed-mode",
+        choices=("synthetic", "minimal"),
+        default="synthetic",
+        help=(
+            "synthetic cria o cenario completo; minimal cria somente perfis "
+            "estruturais e o administrador local."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -101,6 +110,43 @@ def configure_isolated_environment(
         "AUTH_COOKIE_SAMESITE": "lax",
     }
     os.environ.update(isolated_values)
+
+
+def seed_minimal_data(session_factory, access: dict[str, str]) -> None:
+    """Cria somente o acesso necessário para um banco de homologação vazio."""
+    from sqlalchemy import select
+
+    from app.core.security import get_password_hash
+    from app.models.role import Role
+    from app.models.user import User
+    from app.models.user_role import UserRole
+
+    with session_factory() as db:
+        if db.scalar(select(User.id).limit(1)) is not None:
+            return
+
+        roles = {
+            name: Role(name=name, description=description)
+            for name, description in (
+                ("admin", "Administração do sistema"),
+                ("lider_social", "Cadastro e avaliação social"),
+                ("operador", "Estoque, cestas e entregas"),
+            )
+        }
+        db.add_all(roles.values())
+        db.flush()
+
+        admin = User(
+            name="Administrador UX",
+            login_name=access["login_name"],
+            email="ux.admin@example.com",
+            password_hash=get_password_hash(access["password"]),
+            is_active=True,
+        )
+        db.add(admin)
+        db.flush()
+        db.add(UserRole(user_id=admin.id, role_id=roles["admin"].id))
+        db.commit()
 
 
 def seed_synthetic_data(session_factory, access: dict[str, str]) -> None:
@@ -626,9 +672,14 @@ def main() -> None:
 
     main_module.app.dependency_overrides[get_db] = get_sandbox_db
     main_module.test_db_connection = test_sandbox_db_connection
-    seed_synthetic_data(sandbox_session, access)
+    if args.seed_mode == "minimal":
+        seed_minimal_data(sandbox_session, access)
+        seed_description = "banco vazio e acesso administrativo minimo"
+    else:
+        seed_synthetic_data(sandbox_session, access)
+        seed_description = "cenario completo com dados exclusivamente sinteticos"
 
-    print("Sandbox UX local iniciado com dados exclusivamente sinteticos.", flush=True)
+    print(f"Sandbox UX local iniciado: {seed_description}.", flush=True)
     print(f"Banco isolado: {database_path}", flush=True)
     print(f"Login: {access['login_name']}", flush=True)
     print(f"Senha local: {access['password']}", flush=True)

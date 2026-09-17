@@ -2,7 +2,10 @@ param(
     [string]$Address,
     [string]$BrowserHost = "127.0.0.1",
     [int]$FrontendPort = 5173,
-    [int]$ApiPort = 8010
+    [int]$ApiPort = 8010,
+    [ValidateSet("synthetic", "minimal")]
+    [string]$SeedMode = "synthetic",
+    [switch]$ResetData
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,6 +15,7 @@ $statePath = Join-Path $runtimeDir "processes.json"
 $backendDir = Join-Path $repositoryDir "backend"
 $frontendDir = Join-Path $repositoryDir "frontend"
 $pythonPath = Join-Path $backendDir ".venv\Scripts\python.exe"
+$databasePath = Join-Path $runtimeDir "cesta-digital-ux.sqlite3"
 $computerHostName = [System.Net.Dns]::GetHostName().ToLowerInvariant()
 
 if (-not (Test-Path -LiteralPath $pythonPath)) {
@@ -46,6 +50,33 @@ foreach ($port in @($FrontendPort, $ApiPort)) {
     if ($listener) {
         $owners = ($listener | Select-Object -ExpandProperty OwningProcess -Unique) -join ", "
         throw "A porta $port ja esta em uso pelo processo $owners. Nenhum processo foi encerrado."
+    }
+}
+
+if ($ResetData) {
+    $resolvedRepositoryDir = [System.IO.Path]::GetFullPath($repositoryDir).TrimEnd('\')
+    $resolvedRuntimeDir = [System.IO.Path]::GetFullPath($runtimeDir).TrimEnd('\')
+    $expectedRuntimeDir = [System.IO.Path]::GetFullPath(
+        (Join-Path $resolvedRepositoryDir ".ux-sandbox")
+    ).TrimEnd('\')
+    if (-not $resolvedRuntimeDir.Equals(
+        $expectedRuntimeDir,
+        [System.StringComparison]::OrdinalIgnoreCase
+    )) {
+        throw "Diretorio de runtime fora do sandbox esperado: $resolvedRuntimeDir"
+    }
+
+    foreach ($artifactPath in @($databasePath, "$databasePath-wal", "$databasePath-shm")) {
+        $resolvedArtifactPath = [System.IO.Path]::GetFullPath($artifactPath)
+        if (-not $resolvedArtifactPath.StartsWith(
+            "$resolvedRuntimeDir\",
+            [System.StringComparison]::OrdinalIgnoreCase
+        )) {
+            throw "Arquivo de banco fora do sandbox esperado: $resolvedArtifactPath"
+        }
+        if (Test-Path -LiteralPath $resolvedArtifactPath) {
+            Remove-Item -LiteralPath $resolvedArtifactPath -Force
+        }
     }
 }
 
@@ -91,6 +122,7 @@ try {
             "scripts/start_ux_sandbox.py",
             "--host", "0.0.0.0",
             "--port", "$ApiPort",
+            "--seed-mode", $SeedMode,
             "--frontend-origin", $frontendUrl,
             "--frontend-origin", $frontendNetworkUrl,
             "--frontend-origin", "http://${computerHostName}:$FrontendPort"
@@ -155,6 +187,8 @@ try {
         frontend_network_url = $frontendNetworkUrl
         api_url = $apiUrl
         api_network_url = $apiNetworkUrl
+        seed_mode = $SeedMode
+        reset_data = [bool]$ResetData
         backend = [ordered]@{
             id = $backendProcess.Id
             started_at = $backendProcess.StartTime.ToUniversalTime().ToString("o")
@@ -171,6 +205,7 @@ try {
         API = $apiUrl
         Health = "$apiUrl/health/db"
         Modo = if ($BrowserHost -eq $Address) { "rede local" } else { "este computador" }
+        Dados = if ($SeedMode -eq "minimal") { "banco vazio; somente acesso administrativo" } else { "cenario sintetico completo" }
         Estado = $statePath
     } | Format-List
 }

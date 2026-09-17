@@ -1,5 +1,8 @@
 # Homologação local UX — 27/08/2026
 
+> Para iniciar os próprios cadastros em uma base vazia, use o procedimento mais
+> recente em [HOMOLOGACAO_LOCAL_LIMPA_2026-09-17.md](./HOMOLOGACAO_LOCAL_LIMPA_2026-09-17.md).
+
 **Escopo:** validação manual do Frontend V2 completo e dos fluxos funcionais
 com dados exclusivamente sintéticos.
 
@@ -26,7 +29,9 @@ O login administrativo é `ux.admin`. A senha é gerada localmente no primeiro
 início e pode ser consultada, sem ser versionada, com:
 
 ```powershell
-Get-Content .\.ux-sandbox\access.json
+Get-Content .\.ux-sandbox\access.json |
+  ConvertFrom-Json |
+  Select-Object login_name,password
 ```
 
 ## Iniciar e encerrar

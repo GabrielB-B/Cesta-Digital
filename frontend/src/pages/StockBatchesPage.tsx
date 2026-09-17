@@ -133,7 +133,6 @@ export function StockBatchesPage() {
             </span>
             <div>
               <h2 id="entries-history-title">Histórico de entradas</h2>
-              <p>Lotes mais recentes registrados no sistema.</p>
             </div>
           </div>
 

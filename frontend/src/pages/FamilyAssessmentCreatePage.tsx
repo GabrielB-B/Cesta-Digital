@@ -369,7 +369,6 @@ export function FamilyAssessmentCreatePage() {
                   value={formData.decision_reason}
                   onChange={handleInputChange}
                   rows={4}
-                  placeholder="Registre os elementos sociais considerados nesta decisão."
                   required={divergesFromSystem}
                 />
                 <small>Obrigatória quando a decisão divergir da sugestão calculada.</small>
@@ -392,7 +391,6 @@ export function FamilyAssessmentCreatePage() {
                   value={formData.exception_reason}
                   onChange={handleInputChange}
                   rows={3}
-                  placeholder="Use quando houver uma condição excepcional relevante."
                 />
               </label>
             </div>
@@ -432,7 +430,6 @@ export function FamilyAssessmentCreatePage() {
                   value={formData.technical_notes}
                   onChange={handleInputChange}
                   rows={4}
-                  placeholder="Inclua orientações para o próximo atendimento, se necessário."
                 />
               </label>
             </div>

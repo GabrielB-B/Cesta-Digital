@@ -567,7 +567,6 @@ export function StockMovementCreatePage() {
             </span>
             <div>
               <h2 id="movement-data-title">Dados da movimentação</h2>
-              <p>Selecione o lote e informe a alteração.</p>
             </div>
           </header>
 

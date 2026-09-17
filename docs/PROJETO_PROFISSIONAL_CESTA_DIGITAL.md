@@ -8,9 +8,9 @@
 |---|---|
 | Dono da visão e decisão final | Gabriel Bomfim Bispo |
 | Produto | Cesta Digital |
-| Última revisão | 18/08/2026 |
-| Commit auditado | `4e3d24e12a3ab24bba06895052a6f2768e6881c7` |
-| Branch auditada | `main` |
+| Última revisão | 17/09/2026 |
+| Commit-base auditado | `f2c78c3` |
+| Branch auditada | `chore/homologacao-local-limpa` |
 | Ambiente público | Vercel + Render, atualmente configurado como `staging` no backend |
 | Decisão vigente | **NO-GO profissional e para ampliar uso com dados e entregas reais** |
 | Uso permitido enquanto houver bloqueios | Somente homologação controlada com dados sintéticos ou anonimizados |
@@ -816,6 +816,7 @@ migrations.
 | 15/09/2026 | Checkpoint local V2-18 — Cadastro e edição de membros | Branch `feat/frontend-v2-membros-formulario` migra `/families/:familyId/people/new` e `/families/:familyId/people/:personId/edit` para três etapas claras, com código real da família, resumo contextual no desktop, progresso e ações adaptados a 390 px. Nome, nascimento e parentesco são validados antes de avançar; renda, igreja/UPG e condições individuais conservam o contrato de escrita. Escolaridade histórica não reconhecida pelo seletor é preservada na edição. Botões de avançar e salvar são distintos para evitar envio prematuro; mensagens de erro não deslocam o botão durante o clique. Exclusão exige confirmação explícita. Sem placeholders de exemplo, painéis escuros, mudança de rotas, RBAC, API, backend ou banco. Gates: frontend lint/build, E2E 44/44 e visual de Famílias 21 aprovados com 11 skips por viewport. Gabriel autorizou a continuidade em 16/09/2026. |
 | 16/09/2026 | Checkpoint local V2-19 — Cadastro e edição de benefícios | Branch `feat/frontend-v2-beneficios-formulario` migra `/families/:familyId/benefits/new` e `/families/:familyId/benefits/:benefitId/edit` para a composição clara de Famílias, com resumo contextual no desktop e ações acessíveis em 390 px. O fluxo valida tipo, valor e vigência; explicita se o benefício compõe renda e preserva vínculos históricos que não estejam na lista atual. Alterações não salvas são protegidas e exclusão exige confirmação explícita. Placeholders de exemplo e painéis escuros foram removidos, sem mudar rotas, RBAC, API, recálculo do backend ou banco. Gates: frontend lint/build/escala tipográfica, E2E 47/47 e visual de Famílias 25 aprovados com 15 skips por viewport. A galeria `frontend/showcase/evidence/v2-19/index.html` aguarda aprovação visual de Gabriel. |
 | 16/09/2026 | Checkpoint local V2-20 — Auditoria visual final | Branch `chore/frontend-v2-auditoria-final` percorre as 28 rotas e todas as abas em desktop, tablet e mobile. A antiga folha global escura, fontes sem uso, componentes mortos, gradientes decorativos e placeholders de exemplo remanescentes foram removidos. Carregamento, aviso de ambiente, acesso restrito, página inexistente e detalhe de produto passaram a integrar a identidade e a regressão V2. Rotas, RBAC, APIs e regras de domínio foram preservados. Gates: lint/build, npm audit sem vulnerabilidades, piso tipográfico de 12 px e E2E 47/47. Evidência consolidada em `frontend/showcase/evidence/v2-20/index.html`; o aceite visual não altera o `NO-GO` profissional. |
+| 17/09/2026 | Sandbox local limpo para homologação manual | Branch `chore/homologacao-local-limpa` adiciona o modo de seed `minimal` e reset restrito ao SQLite de `.ux-sandbox`, mantendo somente três perfis e o acesso `ux.admin`. Todas as tabelas operacionais iniciam vazias. Textos internos redundantes e placeholders cenográficos remanescentes foram removidos sem alterar contratos, regras ou campos. Login, healthcheck, dashboard e API foram aprovados; Chromium percorreu 11 rotas em 1440×900 e 390×844 sem 5xx, erro JavaScript ou overflow horizontal. A base está liberada somente para cadastros locais fictícios; publicação no GitHub aguarda o aceite manual de Gabriel. |
 
 Próximo gate: Gabriel executar o roteiro manual de UX, registrar defeitos por
 jornada e aprovar ou reprovar a homologação visual/funcional local. O `NO-GO`

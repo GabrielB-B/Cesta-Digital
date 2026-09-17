@@ -369,7 +369,6 @@ export function StockBatchFormPanel({
             name="batch_code"
             value={formData.batch_code}
             onChange={handleInputChange}
-            placeholder="Opcional · gerado automaticamente"
             maxLength={50}
             autoCapitalize="characters"
             aria-invalid={errorField === "batch_code"}
@@ -438,7 +437,6 @@ export function StockBatchFormPanel({
                 name="storage_location"
                 value={formData.storage_location}
                 onChange={handleInputChange}
-                placeholder="Local de armazenamento"
                 maxLength={120}
                 aria-invalid={errorField === "storage_location"}
               />
@@ -480,7 +478,6 @@ export function StockBatchFormPanel({
                   onChange={handleInputChange}
                   rows={3}
                   required
-                  placeholder="Descreva o que precisa ser conferido."
                   aria-invalid={errorField === "quarantine_reason"}
                 />
               </label>
@@ -493,7 +490,6 @@ export function StockBatchFormPanel({
                 value={formData.notes}
                 onChange={handleInputChange}
                 rows={3}
-                placeholder="Informações adicionais sobre o recebimento"
               />
             </label>
           </div>

@@ -192,7 +192,6 @@ export function DeliveryScheduleCreatePage() {
               value={formData.notes}
               onChange={handleInputChange}
               rows={4}
-              placeholder="Orientações de retirada ou observações operacionais"
             />
           </label>
         </div>
