@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evidências V2-03 · AppShell Cesta Digital</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px;
+        color: #111827;
+        background: #f7f8fa;
+        font-family: Inter, Arial, sans-serif;
+      }
+      main { width: min(100%, 1500px); margin: 0 auto; }
+      h1 { margin: 0; font-size: 28px; }
+      .intro { max-width: 850px; margin: 10px 0 32px; color: #6e7583; line-height: 1.55; }
+      .notice {
+        padding: 14px 16px;
+        color: #7a294f;
+        background: #fdecf4;
+        border: 1px solid #f9d5e6;
+        border-radius: 10px;
+      }
+      section { margin-top: 40px; }
+      h2 { margin-bottom: 16px; font-size: 18px; }
+      .compare,
+      .devices {
+        display: grid;
+        gap: 24px;
+        align-items: start;
+      }
+      .compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .devices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      figure { margin: 0; }
+      figcaption { margin-bottom: 8px; color: #4b5563; font-size: 13px; }
+      a { display: block; }
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgb(17 24 39 / 6%);
+      }
+      .mobile img { max-width: 390px; margin-inline: auto; }
+      a:focus-visible { outline: 3px solid #d92676; outline-offset: 3px; }
+      @media (max-width: 900px) {
+        body { padding: 20px 16px; }
+        .compare,
+        .devices { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Evidências visuais · V2-03 AppShell</h1>
+      <p class="intro">
+        Comparação da moldura comum autenticada: sidebar fixa no desktop,
+        topbar, marca, conta, localização ativa, drawer e navegação inferior
+        mobile. Clique em qualquer captura para abrir em tamanho integral.
+      </p>
+      <p class="notice">
+        O conteúdo escuro dentro da área principal ainda é o Dashboard legado e
+        não faz parte desta aprovação. Ele será substituído no branch exclusivo
+        da aba Início, depois do Login.
+      </p>
+
+      <section>
+        <h2>Comparação desktop</h2>
+        <div class="compare">
+          <figure>
+            <figcaption>Referência aprovada · 1586 × 992</figcaption>
+            <a href="referencia-shell-desktop.png"><img src="referencia-shell-desktop.png" alt="Referência original do shell desktop" /></a>
+          </figure>
+          <figure>
+            <figcaption>AppShell implementado · 1440 × 900</figcaption>
+            <a href="shell-desktop-1440.png"><img src="shell-desktop-1440.png" alt="AppShell implementado em desktop" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>Adaptação responsiva</h2>
+        <div class="devices">
+          <figure class="mobile">
+            <figcaption>Mobile · 360 × 800</figcaption>
+            <a href="shell-mobile-360.png"><img src="shell-mobile-360.png" alt="AppShell em 360 pixels" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Mobile · 390 × 844</figcaption>
+            <a href="shell-mobile-390.png"><img src="shell-mobile-390.png" alt="AppShell em 390 pixels" /></a>
+          </figure>
+          <figure>
+            <figcaption>Tablet · 768 × 1024</figcaption>
+            <a href="shell-tablet-768.png"><img src="shell-tablet-768.png" alt="AppShell em 768 pixels" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>Menu móvel aberto</h2>
+        <div class="devices">
+          <figure class="mobile">
+            <figcaption>Drawer · 390 × 844</figcaption>
+            <a href="shell-mobile-390-drawer.png"><img src="shell-mobile-390-drawer.png" alt="Drawer móvel do AppShell aberto" /></a>
+          </figure>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

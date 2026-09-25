@@ -1,29 +1,33 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
+  Heart,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   UserRound,
   X,
 } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { AppIcon } from "../components/AppIcon";
-import { BrandLockup } from "../components/BrandLockup";
 import { EnvironmentNotice } from "../components/EnvironmentNotice";
 import { useAuth } from "../contexts/useAuth";
+import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
 import { getRouteMeta } from "../routes/routeMeta";
+import styles from "./AppLayout.module.css";
 
 type MenuIconName =
   | "dashboard"
   | "families"
+  | "assessments"
   | "finance"
+  | "reports"
   | "items"
+  | "entries"
   | "categories"
   | "baskets"
   | "deliveries"
-  | "audit"
   | "users";
-
-const SIDEBAR_STORAGE_KEY = "cestaDigital.sidebarCollapsed";
 
 type FlashMessage = {
   type: "success" | "error";
@@ -34,58 +38,40 @@ type RouteState = {
   flash?: FlashMessage;
 };
 
-type MenuGroupName =
-  | "Principal"
-  | "Social"
-  | "Estoque"
-  | "Distribuicao"
-  | "Administracao";
+type MenuItem = {
+  path: string;
+  label: string;
+  icon: MenuIconName;
+  visible: boolean;
+};
+
+const SIDEBAR_STORAGE_KEY = "cestaDigital.sidebarCollapsed";
+const MOBILE_BREAKPOINT = "(max-width: 899px)";
 
 function getInitialSidebarState(): boolean {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
+  if (typeof window === "undefined") return false;
   return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
 }
 
 function getInitialMobileViewport(): boolean {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  return window.matchMedia("(max-width: 900px)").matches;
+  if (typeof window === "undefined") return false;
+  return window.matchMedia(MOBILE_BREAKPOINT).matches;
 }
 
 function formatRole(role: string): string {
-  if (role === "admin") {
-    return "Administrador";
-  }
-
-  if (role === "lider_social") {
-    return "Liderança social";
-  }
-
-  if (role === "operador") {
-    return "Operador";
-  }
-
+  if (role === "admin") return "Administrador";
+  if (role === "lider_social") return "Liderança social";
+  if (role === "operador") return "Operador";
   return "Usuário";
 }
 
 function getInitials(name?: string | null): string {
-  if (!name) {
-    return "U";
-  }
-
-  const parts = name
+  const parts = (name ?? "")
     .split(" ")
     .map((part) => part.trim())
     .filter(Boolean);
 
-  if (parts.length === 0) {
-    return "U";
-  }
+  if (parts.length === 0) return "U";
 
   return parts
     .slice(0, 2)
@@ -94,17 +80,31 @@ function getInitials(name?: string | null): string {
     .toUpperCase();
 }
 
+function ShellBrand({ compact = false }: { compact?: boolean }) {
+  return (
+    <Link
+      className={`${styles.brand}${compact ? ` ${styles.brandCompact}` : ""}`}
+      to="/"
+      aria-label="Cesta Digital, página principal"
+    >
+      <img src="/brand/cesta-digital-symbol.png" alt="" width="64" height="64" />
+      <span className={styles.brandText} translate="no">
+        <strong>Cesta</strong>
+        <span>Digital</span>
+      </span>
+    </Link>
+  );
+}
+
 export function AppLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
   const navigationToggleRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
-  const userRoles = user?.roles ?? [];
-  const [isSidebarCollapsed, setIsSidebarCollapsed] =
-    useState(getInitialSidebarState);
-  const [dismissedFlashKey, setDismissedFlashKey] = useState<string | null>(
-    null
-  );
+  const accountRef = useRef<HTMLDivElement>(null);
+  const userRoles = useMemo(() => user?.roles ?? [], [user?.roles]);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(getInitialSidebarState);
+  const [dismissedFlashKey, setDismissedFlashKey] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(getInitialMobileViewport);
@@ -115,41 +115,48 @@ export function AppLayout() {
       : null;
 
   useEffect(() => {
-    if (!routeState?.flash?.message) {
-      return;
-    }
+    if (!routeState?.flash?.message) return;
 
-    const timeoutId = window.setTimeout(() => {
-      setDismissedFlashKey(location.key);
-    }, 6000);
-
+    const timeoutId = window.setTimeout(() => setDismissedFlashKey(location.key), 6000);
     return () => window.clearTimeout(timeoutId);
   }, [location.key, routeState?.flash?.message]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
+    if (typeof window === "undefined") return;
 
-    const mediaQuery = window.matchMedia("(max-width: 900px)");
+    const mediaQuery = window.matchMedia(MOBILE_BREAKPOINT);
     const handleViewportChange = () => {
       setIsMobileViewport(mediaQuery.matches);
-
-      if (!mediaQuery.matches) {
-        setIsMobileMenuOpen(false);
-      }
+      if (!mediaQuery.matches) setIsMobileMenuOpen(false);
     };
 
     handleViewportChange();
     mediaQuery.addEventListener("change", handleViewportChange);
-
     return () => mediaQuery.removeEventListener("change", handleViewportChange);
   }, []);
 
   useEffect(() => {
-    if (!isMobileViewport || !isMobileMenuOpen) {
-      return;
-    }
+    if (!isAccountMenuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!accountRef.current?.contains(event.target as Node)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsAccountMenuOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAccountMenuOpen]);
+
+  useEffect(() => {
+    if (!isMobileViewport || !isMobileMenuOpen) return;
 
     const sidebar = sidebarRef.current;
     const previousBodyOverflow = document.body.style.overflow;
@@ -161,12 +168,14 @@ export function AppLayout() {
     const getFocusableElements = () =>
       Array.from(
         sidebar?.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        ) ?? []
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
       ).filter((element) => !element.hasAttribute("disabled"));
 
     document.body.style.overflow = "hidden";
-    getFocusableElements()[0]?.focus();
+    sidebar
+      ?.querySelector<HTMLButtonElement>('button[aria-label="Fechar menu"]')
+      ?.focus();
 
     const handleDrawerKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -175,12 +184,9 @@ export function AppLayout() {
         return;
       }
 
-      if (event.key !== "Tab") {
-        return;
-      }
+      if (event.key !== "Tab") return;
 
       const focusableElements = getFocusableElements();
-
       if (focusableElements.length === 0) {
         event.preventDefault();
         return;
@@ -199,7 +205,6 @@ export function AppLayout() {
     };
 
     document.addEventListener("keydown", handleDrawerKeyDown);
-
     return () => {
       document.removeEventListener("keydown", handleDrawerKeyDown);
       document.body.style.overflow = previousBodyOverflow;
@@ -207,120 +212,113 @@ export function AppLayout() {
     };
   }, [isMobileMenuOpen, isMobileViewport]);
 
-  function hasAnyRole(...roles: string[]): boolean {
-    return roles.some((role) => userRoles.includes(role));
-  }
-
-  const menuItems = [
-    {
-      path: "/",
-      label: "Dashboard",
-      icon: "dashboard",
-      group: "Principal",
-      visible: true,
-    },
-    {
-      path: "/families",
-      label: "Famílias",
-      icon: "families",
-      group: "Social",
-      visible: hasAnyRole("admin", "lider_social"),
-    },
-    {
-      path: "/financial-summary",
-      label: "Financeiro",
-      icon: "finance",
-      group: "Social",
-      visible: hasAnyRole("admin", "lider_social"),
-    },
-    {
-      path: "/items",
-      label: "Itens",
-      icon: "items",
-      group: "Estoque",
-      visible: hasAnyRole("admin", "operador"),
-    },
-    {
-      path: "/item-categories",
-      label: "Categorias",
-      icon: "categories",
-      group: "Estoque",
-      visible: hasAnyRole("admin", "operador"),
-    },
-    {
-      path: "/basket-types",
-      label: "Cestas",
-      icon: "baskets",
-      group: "Distribuicao",
-      visible: hasAnyRole("admin", "operador"),
-    },
-    {
-      path: "/deliveries",
-      label: "Entregas",
-      icon: "deliveries",
-      group: "Distribuicao",
-      visible: hasAnyRole("admin", "operador"),
-    },
-    {
-      path: "/users",
-      label: "Usuários",
-      icon: "users",
-      group: "Administracao",
-      visible: hasAnyRole("admin"),
-    },
-    {
-      path: "/audit-logs",
-      label: "Auditoria",
-      icon: "audit",
-      group: "Administracao",
-      visible: hasAnyRole("admin"),
-    },
-  ] satisfies Array<{
-    path: string;
-    label: string;
-    icon: MenuIconName;
-    group: MenuGroupName;
-    visible: boolean;
-  }>;
-
-  const visibleMenuItems = menuItems.filter((item) => item.visible);
-  const menuGroups = [
-    "Principal",
-    "Social",
-    "Estoque",
-    "Distribuicao",
-    "Administracao",
-  ].map((group) => ({
-    group,
-    items: visibleMenuItems.filter((item) => item.group === group),
-  })).filter((group) => group.items.length > 0);
+  const menuItems = useMemo(
+    () =>
+      [
+        { path: "/", label: "Início", icon: "dashboard", visible: true },
+        {
+          path: "/families",
+          label: "Famílias",
+          icon: "families",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
+        },
+        {
+          path: "/assessments",
+          label: "Avaliações",
+          icon: "assessments",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
+        },
+        {
+          path: "/items",
+          label: "Estoque",
+          icon: "items",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+        },
+        {
+          path: "/stock-batches",
+          label: "Entradas",
+          icon: "entries",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+        },
+        {
+          path: "/item-categories",
+          label: "Categorias",
+          icon: "categories",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+        },
+        {
+          path: "/deliveries",
+          label: "Entregas",
+          icon: "deliveries",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+        },
+        {
+          path: "/basket-types",
+          label: "Tipos de Cesta",
+          icon: "baskets",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+        },
+        {
+          path: "/reports",
+          label: "Relatórios",
+          icon: "reports",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.authenticated),
+        },
+        {
+          path: "/users",
+          label: "Administração",
+          icon: "users",
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.administration),
+        },
+      ].filter((item) => item.visible) as MenuItem[],
+    [userRoles],
+  );
 
   const routeMeta = getRouteMeta(location.pathname);
   const currentSection =
-    visibleMenuItems.find((item) => item.path === routeMeta.sectionPath) ??
-    visibleMenuItems.find(
-      (item) => item.path !== "/" && location.pathname.startsWith(item.path)
-    ) ??
-    visibleMenuItems[0];
+    routeMeta.pattern === "*"
+      ? undefined
+      : menuItems.find((item) => item.path === routeMeta.sectionPath) ??
+        menuItems.find(
+          (item) => item.path !== "/" && location.pathname.startsWith(item.path),
+        );
+  const mobileQuickItems = useMemo(() => {
+    const priorityPaths = [
+      "/",
+      "/families",
+      "/assessments",
+      "/items",
+      "/deliveries",
+      "/reports",
+    ];
+    const priorityItems = priorityPaths
+      .map((path) => menuItems.find((item) => item.path === path))
+      .filter((item): item is MenuItem => Boolean(item))
+      .slice(0, 3);
 
-  const primaryRole = formatRole(userRoles[0] ?? "");
-
-  function isActive(path: string): boolean {
-    if (path === "/") {
-      return location.pathname === "/";
+    if (
+      currentSection &&
+      !priorityItems.some((item) => item.path === currentSection.path)
+    ) {
+      return [...priorityItems.slice(0, 2), currentSection];
     }
 
-    return location.pathname.startsWith(path);
+    return priorityItems;
+  }, [currentSection, menuItems]);
+  const primaryRole = formatRole(userRoles[0] ?? "");
+  const accountInitials = getInitials(user?.name);
+  const isMoreCurrent = Boolean(
+    currentSection && !mobileQuickItems.some((item) => item.path === currentSection.path),
+  );
+
+  function isActive(path: string): boolean {
+    return currentSection?.path === path;
   }
 
   function toggleSidebar() {
     setIsSidebarCollapsed((current) => {
       const nextState = !current;
-
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextState));
-      }
-
+      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextState));
       return nextState;
     });
   }
@@ -331,220 +329,201 @@ export function AppLayout() {
     await logout();
   }
 
-  function handleNavigationToggle() {
-    if (isMobileViewport) {
-      setIsMobileMenuOpen(true);
-      return;
-    }
-
-    toggleSidebar();
-  }
-
-  const shellClasses = [
-    "app-shell",
-    isSidebarCollapsed ? "app-shell--sidebar-collapsed" : null,
-    isMobileMenuOpen ? "app-shell--mobile-menu-open" : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const accountInitials = getInitials(user?.name);
-  const navigationToggleLabel = isMobileViewport
-    ? "Abrir menu"
-    : isSidebarCollapsed
-      ? "Expandir menu lateral"
-      : "Recolher menu lateral";
+  const shellClassName = `${styles.appShell}${
+    isSidebarCollapsed ? ` ${styles.appShellCollapsed}` : ""
+  }${isMobileMenuOpen ? ` ${styles.appShellMobileOpen}` : ""}`;
 
   return (
     <>
-      <a className="skip-link" href="#conteudo-principal">
+      <a className={styles.skipLink} href="#conteudo-principal">
         Pular para o conteúdo
       </a>
 
-      <div className={shellClasses}>
+      <div className={shellClassName}>
         <aside
           ref={sidebarRef}
           id="main-navigation"
-          className="sidebar"
+          className={styles.sidebar}
           aria-label="Navegação principal"
           aria-hidden={isMobileViewport && !isMobileMenuOpen ? true : undefined}
           inert={isMobileViewport && !isMobileMenuOpen ? true : undefined}
         >
-          <div className="sidebar__overlay" />
-
-          <div className="sidebar__content">
-            <div className="sidebar__brand-row">
-              <div className="sidebar__brand">
-                <BrandLockup
-                  variant="sidebar"
-                  title="Cesta Digital"
-                  subtitle="UPG | Gestão social e operacional"
-                />
-              </div>
-
-              <button
-                className="sidebar__mobile-close"
-                type="button"
-                aria-label="Fechar menu"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <X size={20} aria-hidden="true" />
-              </button>
-            </div>
-
-            <nav className="sidebar__nav">
-              {menuGroups.map(({ group, items }) => (
-                <div className="sidebar__nav-group" key={group}>
-                  <span className="sidebar__nav-group-label">{group}</span>
-
-                  {items.map((item) => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      data-label={item.label}
-                      aria-label={isSidebarCollapsed ? item.label : undefined}
-                      title={isSidebarCollapsed ? item.label : undefined}
-                      aria-current={isActive(item.path) ? "page" : undefined}
-                      className={
-                        isActive(item.path)
-                          ? "sidebar__link sidebar__link--active"
-                          : "sidebar__link"
-                      }
-                    >
-                      <span className="sidebar__link-icon">
-                        <AppIcon name={item.icon} />
-                      </span>
-                      <span className="sidebar__link-label">{item.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              ))}
-            </nav>
-
-            <div className="sidebar__footer">
-              <span className="sidebar__footer-label">Sessão ativa</span>
-              <strong>{user?.name ?? "Usuário"}</strong>
-              <p>{primaryRole}</p>
-              <button
-                className="sidebar__footer-logout"
-                type="button"
-                onClick={handleLogout}
-              >
-                <AppIcon name="logout" className="button__icon" />
-                <span>Sair</span>
-              </button>
-            </div>
+          <div className={styles.sidebarHeader}>
+            <ShellBrand />
+            <button
+              className={styles.mobileClose}
+              type="button"
+              aria-label="Fechar menu"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <X size={20} aria-hidden="true" />
+            </button>
           </div>
 
+          <nav className={styles.sidebarNav} aria-label="Seções do sistema">
+            {menuItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMobileMenuOpen(false)}
+                aria-current={isActive(item.path) ? "page" : undefined}
+                aria-label={isSidebarCollapsed && !isMobileViewport ? item.label : undefined}
+                title={isSidebarCollapsed && !isMobileViewport ? item.label : undefined}
+                className={`${styles.navLink}${
+                  isActive(item.path) ? ` ${styles.navLinkActive}` : ""
+                }`}
+              >
+                <AppIcon name={item.icon} className={styles.navIcon} />
+                <span className={styles.navLabel}>{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+
+          <div className={styles.sidebarFooter}>
+            <div className={styles.purpose}>
+              <Heart size={23} aria-hidden="true" />
+              <span>Transformando doações em oportunidades.</span>
+            </div>
+            <button
+              className={styles.collapseButton}
+              type="button"
+              aria-label={
+                isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"
+              }
+              title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+              onClick={toggleSidebar}
+            >
+              {isSidebarCollapsed ? (
+                <PanelLeftOpen size={18} aria-hidden="true" />
+              ) : (
+                <PanelLeftClose size={18} aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </aside>
 
-      {isMobileViewport && isMobileMenuOpen ? (
-        <button
-          className="mobile-drawer-backdrop"
-          type="button"
-          aria-label="Fechar menu"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      ) : null}
+        {isMobileViewport ? (
+          <button
+            className={styles.drawerBackdrop}
+            type="button"
+            aria-label="Fechar menu"
+            tabIndex={isMobileMenuOpen ? 0 : -1}
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        ) : null}
 
-      <main id="conteudo-principal" className="content" tabIndex={-1}>
-        <header className="topbar">
-          <div className="topbar__identity">
-            <button
-              ref={navigationToggleRef}
-              className="topbar__menu"
-              type="button"
-              aria-label={navigationToggleLabel}
-              aria-controls="main-navigation"
-              aria-expanded={isMobileViewport ? isMobileMenuOpen : !isSidebarCollapsed}
-              title={navigationToggleLabel}
-              onClick={handleNavigationToggle}
-            >
-              <Menu size={21} aria-hidden="true" />
-            </button>
-
-            <div className="topbar__brand">
-              <BrandLockup variant="compact" title="Cesta Digital" subtitle="" />
+        <main id="conteudo-principal" className={styles.content} tabIndex={-1}>
+          <header className={styles.topbar}>
+            <div className={styles.topbarIdentity}>
+              <button
+                ref={navigationToggleRef}
+                className={styles.mobileMenuButton}
+                type="button"
+                aria-label="Abrir menu"
+                aria-controls="main-navigation"
+                aria-expanded={isMobileMenuOpen}
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <Menu size={21} aria-hidden="true" />
+              </button>
+              <div className={styles.mobileBrand}>
+                <ShellBrand compact />
+              </div>
+              <span className={styles.sectionTitle}>
+                {currentSection?.label ?? routeMeta.title}
+              </span>
             </div>
 
-            <span className="topbar__section">
-              {routeMeta.section || currentSection.label}
-            </span>
-          </div>
-
-          <div className="topbar__actions">
-            <div className="topbar__account">
+            <div ref={accountRef} className={styles.account}>
               <button
-                className="topbar__account-button"
+                className={styles.accountButton}
                 type="button"
                 aria-label={`Conta de ${user?.name ?? "Usuário"}`}
                 aria-haspopup="menu"
                 aria-expanded={isAccountMenuOpen}
-                title={user?.login_name ? `${user.name} (@${user.login_name})` : user?.name ?? "Usuário"}
                 onClick={() => setIsAccountMenuOpen((current) => !current)}
               >
-                <span className="topbar__avatar" aria-hidden="true">
+                <span className={styles.avatar} aria-hidden="true">
                   {accountInitials}
                 </span>
-                <span className="topbar__account-text">
+                <span className={styles.accountText}>
                   <strong>{user?.name ?? "Usuário"}</strong>
-                  <span>
-                    {user?.login_name ? `@${user.login_name}` : "Sessão ativa"}
-                  </span>
+                  <span>{primaryRole}</span>
                 </span>
-                <ChevronDown
-                  className="topbar__account-chevron"
-                  size={17}
-                  aria-hidden="true"
-                />
+                <ChevronDown className={styles.accountChevron} size={17} aria-hidden="true" />
               </button>
 
               {isAccountMenuOpen ? (
-                <div className="topbar__account-menu" role="menu">
-                  <div className="topbar__account-menu-header">
-                    <UserRound size={17} aria-hidden="true" />
+                <div className={styles.accountMenu} role="menu">
+                  <div className={styles.accountMenuHeader}>
+                    <UserRound size={18} aria-hidden="true" />
                     <div>
-                      <strong>{primaryRole}</strong>
+                      <strong>{user?.name ?? "Usuário"}</strong>
                       <span>
-                        {user?.login_name
-                          ? `@${user.login_name}`
-                          : "Sessão ativa"}
+                        {user?.login_name ? `@${user.login_name}` : primaryRole}
                       </span>
                     </div>
                   </div>
-
                   <button
-                    className="topbar__account-menu-item"
+                    className={styles.accountMenuItem}
                     type="button"
                     role="menuitem"
                     onClick={handleLogout}
                   >
-                    <AppIcon name="logout" className="button__icon" />
+                    <AppIcon name="logout" className={styles.accountMenuIcon} />
                     <span>Sair</span>
                   </button>
                 </div>
               ) : null}
             </div>
-          </div>
-        </header>
+          </header>
 
-        <section className="page-content">
-          <EnvironmentNotice compact />
+          <section className={styles.pageContent}>
+            <EnvironmentNotice compact />
+            {routeFlash ? (
+              <p
+                className={`${styles.flashMessage} ${
+                  routeFlash.type === "error" ? styles.flashError : styles.flashSuccess
+                }`}
+                role={routeFlash.type === "error" ? "alert" : "status"}
+                aria-live="polite"
+              >
+                {routeFlash.message}
+              </p>
+            ) : null}
+            <Outlet />
+          </section>
+        </main>
 
-          {routeFlash ? (
-            <p
-              className={`flash-message flash-message--${routeFlash.type}`}
-              role={routeFlash.type === "error" ? "alert" : "status"}
-              aria-live="polite"
+        <nav className={styles.bottomNav} aria-label="Atalhos principais">
+          {mobileQuickItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              aria-current={isActive(item.path) ? "page" : undefined}
+              className={`${styles.bottomNavItem}${
+                isActive(item.path) ? ` ${styles.bottomNavItemActive}` : ""
+              }`}
             >
-              {routeFlash.message}
-            </p>
-          ) : null}
-
-          <Outlet />
-        </section>
-      </main>
+              <AppIcon name={item.icon} className={styles.bottomNavIcon} />
+              <span>{item.label}</span>
+            </Link>
+          ))}
+          <button
+            className={`${styles.bottomNavItem}${
+              isMoreCurrent ? ` ${styles.bottomNavItemActive}` : ""
+            }`}
+            type="button"
+            aria-label="Mais opções"
+            aria-current={isMoreCurrent ? "page" : undefined}
+            aria-controls="main-navigation"
+            aria-expanded={isMobileMenuOpen}
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <Menu className={styles.bottomNavIcon} aria-hidden="true" />
+            <span>Menu</span>
+          </button>
+        </nav>
       </div>
     </>
   );

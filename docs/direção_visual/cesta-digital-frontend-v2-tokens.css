@@ -1,0 +1,67 @@
+:root {
+  /* Cesta Digital Frontend V2 - approved visual direction */
+  --cd-brand-logo-pink: #EB3385;
+  --cd-brand-logo-purple: #7C55F4;
+  --cd-brand-action: #D92676;
+  --cd-brand-action-hover: #C2186A;
+  --cd-brand-action-pressed: #B1125F;
+  --cd-brand-soft: #FDECF4;
+
+  --cd-success: #16A34A;
+  --cd-success-soft: #ECFDF3;
+  --cd-warning: #F59E0B;
+  --cd-warning-soft: #FFF7E6;
+  --cd-danger: #EF4444;
+  --cd-danger-soft: #FEF2F2;
+  --cd-info: #2563EB;
+  --cd-info-soft: #EFF6FF;
+
+  --cd-page: #F7F8FA;
+  --cd-surface: #FFFFFF;
+  --cd-surface-muted: #FBFCFD;
+  --cd-border: #E5E7EB;
+  --cd-border-strong: #D1D5DB;
+  --cd-text: #111827;
+  --cd-text-secondary: #4B5563;
+  --cd-text-muted: #6E7583;
+
+  --cd-space-1: 4px;
+  --cd-space-2: 8px;
+  --cd-space-3: 12px;
+  --cd-space-4: 16px;
+  --cd-space-5: 20px;
+  --cd-space-6: 24px;
+  --cd-space-8: 32px;
+  --cd-space-10: 40px;
+  --cd-space-12: 48px;
+  --cd-space-16: 64px;
+
+  --cd-radius-sm: 6px;
+  --cd-radius-md: 10px;
+  --cd-radius-lg: 14px;
+  --cd-radius-pill: 999px;
+
+  --cd-shadow-xs: 0 1px 2px rgba(17, 24, 39, 0.04);
+  --cd-shadow-sm: 0 4px 12px rgba(17, 24, 39, 0.06);
+  --cd-shadow-overlay: 0 16px 40px rgba(17, 24, 39, 0.14);
+
+  --cd-sidebar-width: 232px;
+  --cd-sidebar-collapsed: 72px;
+  --cd-topbar-height: 64px;
+  --cd-mobile-topbar-height: 56px;
+  --cd-mobile-bottom-nav-height: 64px;
+  --cd-content-max: 1440px;
+  --cd-form-max: 720px;
+
+  --cd-motion-fast: 120ms;
+  --cd-motion-normal: 180ms;
+  --cd-motion-slow: 240ms;
+  --cd-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Visual hard rules:
+   1) do not add decorative gradients outside the original logo asset;
+   2) do not add glow/glassmorphism;
+   3) color communicates brand, action, state or data - never surface decoration;
+   4) non-interactive cards do not lift on hover;
+   5) all interactive focus states must be visible. */

@@ -1,5 +1,6 @@
 interface EnvironmentNoticeProps {
   compact?: boolean;
+  className?: string;
 }
 
 interface EnvironmentMessage {
@@ -37,7 +38,10 @@ function getEnvironmentMessage(): EnvironmentMessage | null {
   };
 }
 
-export function EnvironmentNotice({ compact = false }: EnvironmentNoticeProps) {
+export function EnvironmentNotice({
+  compact = false,
+  className,
+}: EnvironmentNoticeProps) {
   const message = getEnvironmentMessage();
 
   if (!message) {
@@ -46,9 +50,13 @@ export function EnvironmentNotice({ compact = false }: EnvironmentNoticeProps) {
 
   return (
     <div
-      className={`environment-notice${
-        compact ? " environment-notice--compact" : ""
-      }`}
+      className={[
+        styles.notice,
+        compact ? styles.compact : null,
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       role="note"
       aria-label="Aviso do ambiente"
     >
@@ -57,3 +65,4 @@ export function EnvironmentNotice({ compact = false }: EnvironmentNoticeProps) {
     </div>
   );
 }
+import styles from "./EnvironmentNotice.module.css";

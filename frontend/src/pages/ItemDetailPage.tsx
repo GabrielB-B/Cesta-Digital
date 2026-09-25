@@ -1,12 +1,28 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  AlertTriangle,
+  ArrowDownToLine,
+  ArrowLeft,
+  Barcode,
+  Boxes,
+  CalendarDays,
+  CircleDollarSign,
+  Edit3,
+  History,
+  MapPin,
+  PackageCheck,
+  Save,
+  ShieldCheck,
+  Tag,
+  X,
+} from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
-import { DataTable } from "../components/DataTable";
-import { FormActions } from "../components/FormActions";
-import { FormSection } from "../components/FormSection";
-import { PageHeader } from "../components/PageHeader";
-import { PanelHeader } from "../components/PanelHeader";
-import { StateMessage } from "../components/StateMessage";
+import { ProductImage } from "../components/ProductImage";
+import {
+  ProductImagePicker,
+  type ProductImageSelection,
+} from "../components/ProductImagePicker";
 import type {
   ItemCategoryResponse,
   ItemDetailResponse,
@@ -19,18 +35,32 @@ import type {
 } from "../types/item";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatCurrency, formatDateOnly } from "../utils/format";
+import { persistProductImageSelection } from "../utils/product-image";
 import {
   formatStockMovementType,
   formatStockSourceType,
   getBatchExpirationStatus,
   isStockBatchReceived,
 } from "../utils/stock";
+import styles from "./ItemDetailPage.module.css";
 
 type BatchMetadataDraft = {
   batch_code: string;
   status: StockBatchStatus;
   storage_location: string;
   quarantine_reason: string;
+  notes: string;
+};
+
+type ItemEditDraft = {
+  category_id: string;
+  name: string;
+  barcode: string;
+  unit_measure: string;
+  tracks_expiration: boolean;
+  is_active: boolean;
+  reference_unit_value: string;
+  minimum_stock_alert: string;
   notes: string;
 };
 
@@ -41,6 +71,20 @@ function toBatchMetadataDraft(batch: StockBatchResponse): BatchMetadataDraft {
     storage_location: batch.storage_location ?? "",
     quarantine_reason: batch.quarantine_reason ?? "",
     notes: batch.notes ?? "",
+  };
+}
+
+function toItemEditDraft(item: ItemDetailResponse): ItemEditDraft {
+  return {
+    category_id: String(item.category_id),
+    name: item.name,
+    barcode: item.barcode ?? "",
+    unit_measure: item.unit_measure,
+    tracks_expiration: item.tracks_expiration,
+    is_active: item.is_active,
+    reference_unit_value: String(item.reference_unit_value),
+    minimum_stock_alert: String(item.minimum_stock_alert),
+    notes: item.notes ?? "",
   };
 }
 
@@ -63,6 +107,7 @@ export function ItemDetailPage() {
   const [editForm, setEditForm] = useState({
     category_id: "",
     name: "",
+    barcode: "",
     unit_measure: "unidade",
     tracks_expiration: true,
     is_active: true,
@@ -75,6 +120,12 @@ export function ItemDetailPage() {
   const [isSavingBatchId, setIsSavingBatchId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [imageSelection, setImageSelection] = useState<ProductImageSelection>({
+    kind: "unchanged",
+  });
+  const editButtonRef = useRef<HTMLButtonElement | null>(null);
+  const editorHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -124,16 +175,7 @@ export function ItemDetailPage() {
         );
         setMovements(movementsResponse.data);
         setCategories(categoriesResponse.data);
-        setEditForm({
-          category_id: String(loadedItem.category_id),
-          name: loadedItem.name,
-          unit_measure: loadedItem.unit_measure,
-          tracks_expiration: loadedItem.tracks_expiration,
-          is_active: loadedItem.is_active,
-          reference_unit_value: String(loadedItem.reference_unit_value),
-          minimum_stock_alert: String(loadedItem.minimum_stock_alert),
-          notes: loadedItem.notes ?? "",
-        });
+        setEditForm(toItemEditDraft(loadedItem));
       } catch (err) {
         if (isMounted) {
           setError(getApiErrorMessage(err, "Não foi possível carregar o item."));
@@ -202,6 +244,77 @@ export function ItemDetailPage() {
     ? summary?.total_quantity ?? usableCurrentQuantity
     : 0;
 
+  const nextUsableExpiration = useMemo(() => {
+    if (!item?.tracks_expiration) return null;
+
+    return (
+      batches
+        .filter((batch) => {
+          if (
+            batch.status !== "disponivel" ||
+            batch.current_quantity <= 0 ||
+            !batch.expiration_date ||
+            !isStockBatchReceived(batch)
+          ) {
+            return false;
+          }
+
+          return !getBatchExpirationStatus(batch, true).blocksManualExit;
+        })
+        .map((batch) => batch.expiration_date)
+        .filter((date): date is string => Boolean(date))
+        .toSorted()[0] ?? null
+    );
+  }, [batches, item?.tracks_expiration]);
+
+  const isBelowMinimum = Boolean(
+    item?.is_active && displayedUsableQuantity <= item.minimum_stock_alert
+  );
+
+  const isEditDirty = useMemo(() => {
+    if (!item) return false;
+    return (
+      JSON.stringify(editForm) !== JSON.stringify(toItemEditDraft(item)) ||
+      imageSelection.kind !== "unchanged"
+    );
+  }, [editForm, imageSelection.kind, item]);
+
+  useEffect(() => {
+    if (!isEditorOpen || !isEditDirty) return;
+
+    function warnBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault();
+    }
+
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [isEditDirty, isEditorOpen]);
+
+  function openEditor() {
+    setError("");
+    setSuccessMessage("");
+    setIsEditorOpen(true);
+    window.requestAnimationFrame(() => {
+      editorHeadingRef.current?.focus();
+      editorHeadingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  function closeEditor() {
+    if (
+      isEditDirty &&
+      !window.confirm("Descartar as alterações ainda não salvas?")
+    ) {
+      return;
+    }
+
+    if (item) setEditForm(toItemEditDraft(item));
+    setImageSelection({ kind: "unchanged" });
+    setError("");
+    setIsEditorOpen(false);
+    window.requestAnimationFrame(() => editButtonRef.current?.focus());
+  }
+
   function formatDate(value: string | null): string {
     if (!value) {
       return "Não informada";
@@ -225,6 +338,7 @@ export function ItemDetailPage() {
       const payload: ItemUpdatePayload = {
         category_id: Number(editForm.category_id),
         name: editForm.name.trim(),
+        barcode: editForm.barcode.trim() || null,
         unit_measure: editForm.unit_measure,
         tracks_expiration: editForm.tracks_expiration,
         is_active: editForm.is_active,
@@ -234,18 +348,29 @@ export function ItemDetailPage() {
       };
 
       const response = await api.put<ItemDetailResponse>(`/items/${itemId}`, payload);
+      let updatedItem = response.data;
+
+      try {
+        await persistProductImageSelection(response.data.id, imageSelection);
+        if (imageSelection.kind !== "unchanged") {
+          const refreshedItem = await api.get<ItemDetailResponse>(`/items/${itemId}`);
+          updatedItem = refreshedItem.data;
+        }
+      } catch (imageError) {
+        setItem(response.data);
+        setError(
+          `Os dados do produto foram salvos, mas a imagem não foi atualizada. ${getApiErrorMessage(
+            imageError,
+            "Tente novamente.",
+          )}`,
+        );
+        return;
+      }
+
       setSummary(null);
-      setItem(response.data);
-      setEditForm({
-        category_id: String(response.data.category_id),
-        name: response.data.name,
-        unit_measure: response.data.unit_measure,
-        tracks_expiration: response.data.tracks_expiration,
-        is_active: response.data.is_active,
-        reference_unit_value: String(response.data.reference_unit_value),
-        minimum_stock_alert: String(response.data.minimum_stock_alert),
-        notes: response.data.notes ?? "",
-      });
+      setItem(updatedItem);
+      setImageSelection({ kind: "unchanged" });
+      setEditForm(toItemEditDraft(updatedItem));
 
       try {
         const summaryResponse = await api.get<StockSummaryResponse[]>(
@@ -254,7 +379,7 @@ export function ItemDetailPage() {
         );
         setSummary(
           summaryResponse.data.find(
-            (entry) => entry.item_id === response.data.id
+            (entry) => entry.item_id === updatedItem.id
           ) ?? null
         );
       } catch {
@@ -262,7 +387,9 @@ export function ItemDetailPage() {
         setSummary(null);
       }
 
-      setSuccessMessage("Item atualizado com auditoria registrada.");
+      setSuccessMessage("Produto atualizado.");
+      setIsEditorOpen(false);
+      window.requestAnimationFrame(() => editButtonRef.current?.focus());
     } catch (err) {
       setError(getApiErrorMessage(err, "Não foi possível salvar o item."));
     } finally {
@@ -342,11 +469,12 @@ export function ItemDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="page-stack">
-        <div className="panel-card">
-          <StateMessage variant="loading">
-            Carregando detalhe do item…
-          </StateMessage>
+      <div className={styles.page}>
+        <div className={styles.loadingState} role="status" aria-live="polite">
+          <span className={styles.loadingIcon}>
+            <PackageCheck aria-hidden="true" />
+          </span>
+          <strong>Carregando produto…</strong>
         </div>
       </div>
     );
@@ -354,117 +482,177 @@ export function ItemDetailPage() {
 
   if (!item) {
     return (
-      <div className="page-stack">
-        <div className="panel-card">
-          <StateMessage variant="error">
-            {error || "Não foi possível carregar o item."}
-          </StateMessage>
-          <FormActions>
-            <Link to="/items" className="button button--secondary">
-              Voltar
-            </Link>
-          </FormActions>
+      <div className={styles.page}>
+        <div className={styles.errorState} role="alert">
+          <AlertTriangle aria-hidden="true" />
+          <div>
+            <strong>Não foi possível abrir o produto</strong>
+            <span>{error || "Tente novamente em alguns instantes."}</span>
+          </div>
+          <Link to="/items">Voltar ao estoque</Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="page-stack">
-      <PageHeader
-        eyebrow="Detalhe do item"
-        title={item.name}
-        description={`Categoria: ${item.category_name} | Unidade: ${item.unit_measure}`}
-        actions={
-          item.is_active ? (
-            <>
-            <Link
-              to={`/stock-batches/new?itemId=${item.id}`}
-              className="button button--link"
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
+        <Link to="/items" className={styles.backLink}>
+          <ArrowLeft aria-hidden="true" /> Estoque
+        </Link>
+
+        <div className={styles.headerRow}>
+          <div className={styles.productIdentity}>
+            <ProductImage name={item.name} src={item.image_path} size="detail" eager />
+            <div>
+              <span
+                className={`${styles.statusBadge} ${
+                  item.is_active ? styles.statusActive : styles.statusInactive
+                }`}
+              >
+                {item.is_active ? "Ativo" : "Inativo"}
+              </span>
+              <h1>{item.name}</h1>
+              <p>
+                {item.category_name} <span aria-hidden="true">·</span>{" "}
+                {item.unit_measure}
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.headerActions}>
+            <button
+              ref={editButtonRef}
+              type="button"
+              className={styles.secondaryAction}
+              onClick={openEditor}
+              aria-expanded={isEditorOpen}
+              aria-controls="item-editor"
             >
-              Registrar entrada
-            </Link>
-            <Link
-              to={`/stock-movements/new?itemId=${item.id}`}
-              className="button button--secondary button--link"
-            >
-              Ajustar saldo
-            </Link>
-            </>
-          ) : undefined
-        }
-        meta={
-          <div className="hero-badges">
-            <span className="hero-badge">
-              Saldo utilizável: {displayedUsableQuantity}
-            </span>
-            <span className="hero-badge">
-              Alerta mínimo: {item.minimum_stock_alert}
-            </span>
-            <span className="hero-badge">
-              Status: {item.is_active ? "Ativo" : "Inativo"}
-            </span>
-            {criticalBatchCount > 0 ? (
-              <span className="hero-badge hero-badge--danger">
-                {criticalBatchCount} lote{criticalBatchCount > 1 ? "s" : ""} com
-                validade crítica
-              </span>
-            ) : null}
-            {futureBatchCount > 0 ? (
-              <span className="hero-badge hero-badge--danger">
-                {futureBatchCount} lote{futureBatchCount > 1 ? "s" : ""} com
-                entrada futura
-              </span>
-            ) : null}
-            {restrictedBatchCount > 0 ? (
-              <span className="hero-badge hero-badge--danger">
-                {restrictedBatchCount} lote{restrictedBatchCount > 1 ? "s" : ""}{" "}
-                fora do saldo utilizável
-              </span>
+              <Edit3 aria-hidden="true" /> Editar produto
+            </button>
+            {item.is_active ? (
+              <Link
+                className={styles.primaryAction}
+                to={`/stock-batches/new?itemId=${item.id}`}
+              >
+                <ArrowDownToLine aria-hidden="true" /> Registrar entrada
+              </Link>
             ) : null}
           </div>
-        }
-      />
+        </div>
+      </header>
 
       {error ? (
-        <StateMessage variant="error">{error}</StateMessage>
+        <p className={styles.feedbackError} role="alert">{error}</p>
+      ) : null}
+      {successMessage ? (
+        <p className={styles.feedbackSuccess} role="status">{successMessage}</p>
       ) : null}
 
-      <section className="content-grid">
-        <article className="panel-card">
-          <PanelHeader eyebrow="Resumo" title="Dados principais" />
-
-          <div className="detail-grid">
-            <div className="detail-item">
-              <span>Categoria</span>
-              <strong>{item.category_name}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Unidade</span>
-              <strong>{item.unit_measure}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Valor de referência</span>
-              <strong>{formatCurrency(item.reference_unit_value)}</strong>
-            </div>
-            <div className="detail-item">
+      <section className={styles.overview} aria-label="Resumo do produto">
+        <article className={styles.balancePanel}>
+          <div className={styles.balanceHeading}>
+            <span className={styles.balanceIcon}>
+              <Boxes aria-hidden="true" />
+            </span>
+            <div>
               <span>Saldo utilizável</span>
-              <strong>{displayedUsableQuantity}</strong>
+              <strong>
+                {displayedUsableQuantity} <small>{item.unit_measure}</small>
+              </strong>
             </div>
-            <div className="detail-item">
-              <span>Total de lotes</span>
-              <strong>{summary?.total_batches ?? batches.length}</strong>
-            </div>
-            <div className="detail-item">
-              <span>Controla validade</span>
-              <strong>{item.tracks_expiration ? "Sim, por lote" : "Não"}</strong>
-            </div>
+            <span
+              className={`${styles.stockBadge} ${
+                isBelowMinimum ? styles.stockWarning : styles.stockGood
+              }`}
+            >
+              {item.is_active
+                ? isBelowMinimum
+                  ? "Estoque baixo"
+                  : "Disponível"
+                : "Produto inativo"}
+            </span>
           </div>
+          <dl className={styles.balanceFacts}>
+            <div>
+              <dt>Estoque mínimo</dt>
+              <dd>{item.minimum_stock_alert} {item.unit_measure}</dd>
+            </div>
+            <div>
+              <dt>Lotes cadastrados</dt>
+              <dd>{summary?.total_batches ?? batches.length}</dd>
+            </div>
+            <div>
+              <dt>Próxima validade</dt>
+              <dd>{nextUsableExpiration ? formatDateOnly(nextUsableExpiration) : "Não aplicável"}</dd>
+            </div>
+          </dl>
         </article>
 
-        <form onSubmit={handleItemSave} className="panel-card form-panel">
-          <FormSection eyebrow="Cadastro" title="Editar item">
-            <label className="form__group">
+        <article className={styles.registrationPanel}>
+          <div className={styles.sectionHeading}>
+            <div><h2>Cadastro do produto</h2></div>
+            <Tag aria-hidden="true" />
+          </div>
+          <dl className={styles.registrationFacts}>
+            <div>
+              <dt><Barcode aria-hidden="true" /> Código de barras</dt>
+              <dd>{item.barcode || "Não informado"}</dd>
+            </div>
+            <div>
+              <dt><CalendarDays aria-hidden="true" /> Validade</dt>
+              <dd>{item.tracks_expiration ? "Controlada por lote" : "Não controlada"}</dd>
+            </div>
+            <div>
+              <dt><CircleDollarSign aria-hidden="true" /> Valor de referência</dt>
+              <dd>{formatCurrency(item.reference_unit_value)}</dd>
+            </div>
+          </dl>
+          {item.notes ? <p className={styles.productNote}>{item.notes}</p> : null}
+          {item.image_attribution ? (
+            <small className={styles.imageAttribution}>{item.image_attribution}</small>
+          ) : null}
+        </article>
+
+      </section>
+
+      {criticalBatchCount > 0 || futureBatchCount > 0 || restrictedBatchCount > 0 ? (
+        <section className={styles.attentionPanel} aria-label="Atenção operacional">
+          <AlertTriangle aria-hidden="true" />
+          <div>
+            <strong>Atenção operacional</strong>
+            <ul>
+              {criticalBatchCount > 0 ? (
+                <li>{criticalBatchCount} lote{criticalBatchCount > 1 ? "s" : ""} com validade crítica</li>
+              ) : null}
+              {futureBatchCount > 0 ? (
+                <li>{futureBatchCount} lote{futureBatchCount > 1 ? "s" : ""} com entrada futura</li>
+              ) : null}
+              {restrictedBatchCount > 0 ? (
+                <li>{restrictedBatchCount} lote{restrictedBatchCount > 1 ? "s" : ""} restrito{restrictedBatchCount > 1 ? "s" : ""}</li>
+              ) : null}
+            </ul>
+          </div>
+        </section>
+      ) : null}
+
+      {isEditorOpen ? (
+        <section id="item-editor" className={styles.editorPanel} aria-labelledby="item-editor-title">
+          <div className={styles.editorHeader}>
+            <div>
+              <h2 id="item-editor-title" ref={editorHeadingRef} tabIndex={-1}>Editar produto</h2>
+              <p>Dados do catálogo e identificação visual.</p>
+            </div>
+            <button type="button" onClick={closeEditor} aria-label="Fechar edição">
+              <X aria-hidden="true" />
+            </button>
+          </div>
+
+          <form onSubmit={handleItemSave} className={styles.editorForm}>
+            <div className={styles.formGrid}>
+            <label className={styles.field}>
               <span>Categoria</span>
               <select
                 value={editForm.category_id}
@@ -484,7 +672,7 @@ export function ItemDetailPage() {
               </select>
             </label>
 
-            <label className="form__group">
+            <label className={styles.field}>
               <span>Nome</span>
               <input
                 value={editForm.name}
@@ -498,7 +686,7 @@ export function ItemDetailPage() {
               />
             </label>
 
-            <label className="form__group">
+            <label className={styles.field}>
               <span>Unidade</span>
               <select
                 value={editForm.unit_measure}
@@ -518,7 +706,7 @@ export function ItemDetailPage() {
               </select>
             </label>
 
-            <label className="form__group">
+            <label className={styles.field}>
               <span>Valor de referência</span>
               <input
                 type="number"
@@ -534,7 +722,7 @@ export function ItemDetailPage() {
               />
             </label>
 
-            <label className="form__group">
+            <label className={styles.field}>
               <span>Alerta mínimo</span>
               <input
                 type="number"
@@ -549,7 +737,7 @@ export function ItemDetailPage() {
               />
             </label>
 
-            <label className="checkbox-card">
+            <label className={styles.switchField}>
               <input
                 type="checkbox"
                 checked={editForm.tracks_expiration}
@@ -560,16 +748,13 @@ export function ItemDetailPage() {
                   }))
                 }
               />
-              <span className="checkbox-card__content">
+              <span>
                 <strong>Controla validade por lote</strong>
-                <small>
-                  A data será informada em cada entrada, conforme a embalagem
-                  recebida.
-                </small>
               </span>
+              <i aria-hidden="true" />
             </label>
 
-            <label className="checkbox-card">
+            <label className={styles.switchField}>
               <input
                 type="checkbox"
                 checked={editForm.is_active}
@@ -580,11 +765,12 @@ export function ItemDetailPage() {
                   }))
                 }
               />
-              Item ativo
+              <span><strong>Produto ativo</strong></span>
+              <i aria-hidden="true" />
             </label>
 
-            <label className="form__group form__group--wide">
-              <span>Observações</span>
+            <label className={`${styles.field} ${styles.fieldWide}`}>
+              <span>Observações <small>(opcional)</small></span>
               <textarea
                 value={editForm.notes}
                 onChange={(event) =>
@@ -596,44 +782,52 @@ export function ItemDetailPage() {
                 rows={3}
               />
             </label>
-          </FormSection>
+            </div>
 
-          {successMessage ? (
-            <StateMessage variant="success">{successMessage}</StateMessage>
-          ) : null}
+            <ProductImagePicker
+              productName={editForm.name}
+              barcode={editForm.barcode}
+              onBarcodeChange={(barcode) =>
+                setEditForm((previous) => ({ ...previous, barcode }))
+              }
+              selection={imageSelection}
+              onSelectionChange={setImageSelection}
+              currentImagePath={item.image_path}
+              currentImageSource={item.image_source}
+              currentImageAttribution={item.image_attribution}
+              disabled={isSavingItem}
+            />
 
-          <FormActions>
-            <button type="submit" className="button" disabled={isSavingItem}>
-              {isSavingItem ? "Salvando…" : "Salvar item"}
-            </button>
-          </FormActions>
-        </form>
-      </section>
+            <div className={styles.formActions}>
+              <button type="button" onClick={closeEditor} disabled={isSavingItem}>
+                Cancelar
+              </button>
+              <button type="submit" className={styles.saveButton} disabled={isSavingItem}>
+                <Save aria-hidden="true" /> {isSavingItem ? "Salvando…" : "Salvar produto"}
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
 
-      <section className="content-grid">
-        <article className="panel-card">
-          <PanelHeader
-            eyebrow="Lotes"
-            title="Entradas e saldos"
-            actions={
-              item.is_active ? (
-              <Link
-                to={`/stock-batches/new?itemId=${item.id}`}
-                className="button button--secondary button--link"
-              >
-                Registrar entrada
-              </Link>
-              ) : undefined
-            }
-          />
+      <section className={styles.operationalGrid}>
+        <article className={styles.sectionPanel}>
+          <div className={styles.sectionHeading}>
+            <div>
+              <h2>Lotes</h2>
+              <span>{batches.length} cadastrado{batches.length === 1 ? "" : "s"}</span>
+            </div>
+            <Boxes aria-hidden="true" />
+          </div>
 
           {batches.length === 0 ? (
-            <StateMessage>
-              Nenhuma entrada registrada. Este item ainda não possui saldo em
-              lotes.
-            </StateMessage>
+            <div className={styles.emptyState}>
+              <PackageCheck aria-hidden="true" />
+              <strong>Nenhum lote registrado</strong>
+              <span>O saldo será exibido após a primeira entrada.</span>
+            </div>
           ) : (
-            <div className="trace-card-list" aria-label="Lotes do item">
+            <div className={styles.batchList} aria-label="Lotes do item">
               {batches.map((batch) => {
                 const batchWasReceived = isStockBatchReceived(batch);
                 const expirationStatus = getBatchExpirationStatus(
@@ -643,77 +837,82 @@ export function ItemDetailPage() {
                 const draft = batchDrafts[batch.id] ?? toBatchMetadataDraft(batch);
                 const statusTone =
                   batch.status === "disponivel"
-                    ? "success"
+                    ? styles.batchAvailable
                     : batch.status === "quarentena"
-                      ? "warning"
-                      : "danger";
+                      ? styles.batchQuarantine
+                      : styles.batchBlocked;
+                const batchName = batch.batch_code ?? `Lote legado #${batch.id}`;
 
                 return (
-                  <article className="trace-card" key={batch.id}>
-                    <div className="trace-card__header">
+                  <article
+                    className={styles.batchCard}
+                    key={batch.id}
+                    aria-label={`Lote ${batchName}`}
+                  >
+                    <div className={styles.batchHeader}>
                       <div>
-                        <span className="trace-card__label">Lote físico</span>
-                        <h3>{batch.batch_code ?? `Lote legado #${batch.id}`}</h3>
+                        <span>Lote</span>
+                        <h3>{batchName}</h3>
                       </div>
-                      <span className={`pill pill--${statusTone}`}>
+                      <span className={`${styles.statusBadge} ${statusTone}`}>
                         {formatBatchStatus(batch.status)}
                       </span>
                     </div>
 
-                    <div className="trace-card__facts">
+                    <dl className={styles.batchFacts}>
                       <div>
-                        <span>Saldo</span>
-                        <strong>
+                        <dt>Saldo</dt>
+                        <dd>
                           {batch.current_quantity} de {batch.entry_quantity}{" "}
                           {item.unit_measure}
-                        </strong>
+                        </dd>
                       </div>
                       <div>
-                        <span>Localização</span>
-                        <strong>{batch.storage_location ?? "Não informada"}</strong>
+                        <dt><MapPin aria-hidden="true" /> Localização</dt>
+                        <dd>{batch.storage_location ?? "Não informada"}</dd>
                       </div>
                       <div>
-                        <span>Recebimento</span>
-                        <strong>{formatDate(batch.entry_date)}</strong>
+                        <dt>Recebimento</dt>
+                        <dd>{formatDate(batch.entry_date)}</dd>
                       </div>
                       <div>
-                        <span>Validade</span>
-                        <strong>{formatDate(batch.expiration_date)}</strong>
+                        <dt>Validade</dt>
+                        <dd>{formatDate(batch.expiration_date)}</dd>
                       </div>
-                    </div>
+                    </dl>
 
-                    <div className="trace-card__signals">
+                    <div className={styles.batchSignals}>
                       <span
-                        className={`pill${
+                        className={`${styles.expirationBadge} ${
                           !batchWasReceived
-                            ? " pill--danger"
-                            : expirationStatus.tone === "neutral"
-                              ? ""
-                              : ` pill--${expirationStatus.tone}`
+                            ? styles.expirationDanger
+                            : expirationStatus.tone === "danger"
+                              ? styles.expirationDanger
+                              : expirationStatus.tone === "warning"
+                                ? styles.expirationWarning
+                                : styles.expirationNeutral
                         }`}
                       >
                         {batchWasReceived ? expirationStatus.label : "Entrada futura"}
                       </span>
-                      <span className="trace-card__source">
-                        {formatStockSourceType(batch.source_type)}
-                      </span>
+                      <span>{formatStockSourceType(batch.source_type)}</span>
                     </div>
 
                     {batch.quarantine_reason ? (
-                      <p className="trace-card__restriction">
-                        <strong>Motivo da restrição:</strong> {batch.quarantine_reason}
+                      <p className={styles.restriction}>
+                        <ShieldCheck aria-hidden="true" />
+                        <span><strong>Restrito:</strong> {batch.quarantine_reason}</span>
                       </p>
                     ) : null}
 
-                    <details className="trace-card__details">
-                      <summary>Corrigir identificação ou situação</summary>
+                    <details className={styles.batchEditor}>
+                      <summary>Editar rastreabilidade</summary>
                       <form
-                        className="trace-card__form"
                         onSubmit={(event) =>
                           void handleBatchMetadataSave(event, batch.id)
                         }
                       >
-                        <label className="form__group">
+                        <label className={styles.field}>
                           <span>Código do lote</span>
                           <input
                             value={draft.batch_code}
@@ -730,7 +929,7 @@ export function ItemDetailPage() {
                             required
                           />
                         </label>
-                        <label className="form__group">
+                        <label className={styles.field}>
                           <span>Situação física</span>
                           <select
                             value={draft.status}
@@ -749,8 +948,8 @@ export function ItemDetailPage() {
                             <option value="bloqueado">Bloqueado</option>
                           </select>
                         </label>
-                        <label className="form__group">
-                          <span>Localização</span>
+                        <label className={styles.field}>
+                          <span>Localização <small>(opcional)</small></span>
                           <input
                             value={draft.storage_location}
                             maxLength={120}
@@ -766,7 +965,7 @@ export function ItemDetailPage() {
                           />
                         </label>
                         {draft.status !== "disponivel" ? (
-                          <label className="form__group">
+                          <label className={styles.field}>
                             <span>Motivo da restrição</span>
                             <input
                               value={draft.quarantine_reason}
@@ -783,8 +982,8 @@ export function ItemDetailPage() {
                             />
                           </label>
                         ) : null}
-                        <label className="form__group form__group--wide">
-                          <span>Observações</span>
+                        <label className={`${styles.field} ${styles.fieldWide}`}>
+                          <span>Observações <small>(opcional)</small></span>
                           <textarea
                             value={draft.notes}
                             rows={2}
@@ -796,10 +995,9 @@ export function ItemDetailPage() {
                             }
                           />
                         </label>
-                        <div className="trace-card__actions">
+                        <div className={styles.batchEditorActions}>
                           <button
                             type="submit"
-                            className="button button--secondary"
                             disabled={isSavingBatchId === batch.id}
                           >
                             {isSavingBatchId === batch.id
@@ -816,18 +1014,36 @@ export function ItemDetailPage() {
           )}
         </article>
 
-        <article className="panel-card">
-          <PanelHeader eyebrow="Movimentações" title="Histórico do item" />
+        <article className={styles.sectionPanel}>
+          <div className={styles.sectionHeading}>
+            <div>
+              <h2>Histórico</h2>
+              <span>{movements.length} movimentação{movements.length === 1 ? "" : "ões"}</span>
+            </div>
+            {item.is_active ? (
+              <Link
+                className={styles.contextAction}
+                to={`/stock-movements/new?itemId=${item.id}`}
+              >
+                Ajustar saldo
+              </Link>
+            ) : (
+              <History aria-hidden="true" />
+            )}
+          </div>
 
           {movements.length === 0 ? (
-            <StateMessage>
-              Nenhuma movimentação encontrada para este item.
-            </StateMessage>
+            <div className={styles.emptyState}>
+              <History aria-hidden="true" />
+              <strong>Sem movimentações</strong>
+              <span>Entradas e ajustes aparecerão aqui.</span>
+            </div>
           ) : (
-            <DataTable caption="Histórico de movimentações do item">
+            <>
+              <div className={styles.movementTable}>
+                <table aria-label="Histórico de movimentações do item">
                 <thead>
                   <tr>
-                    <th>ID</th>
                     <th>Tipo</th>
                     <th>Quantidade</th>
                     <th>Lote</th>
@@ -837,26 +1053,34 @@ export function ItemDetailPage() {
                 <tbody>
                   {movements.map((movement) => (
                     <tr key={movement.id}>
-                      <td>{movement.id}</td>
                       <td>{formatStockMovementType(movement.movement_type)}</td>
-                      <td>{movement.quantity}</td>
+                      <td><strong>{movement.quantity} {item.unit_measure}</strong></td>
                       <td>
                         {batchCodeById.get(movement.batch_id) ?? `#${movement.batch_id}`}
                       </td>
-                      <td>{movement.notes ?? "-"}</td>
+                      <td>{movement.notes ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>
-            </DataTable>
+                </table>
+              </div>
+
+              <div className={styles.movementList} aria-label="Histórico de movimentações do item">
+                {movements.map((movement) => (
+                  <article key={movement.id}>
+                    <div>
+                      <strong>{formatStockMovementType(movement.movement_type)}</strong>
+                      <span>{batchCodeById.get(movement.batch_id) ?? `Lote #${movement.batch_id}`}</span>
+                    </div>
+                    <b>{movement.quantity} {item.unit_measure}</b>
+                    {movement.notes ? <p>{movement.notes}</p> : null}
+                  </article>
+                ))}
+              </div>
+            </>
           )}
         </article>
       </section>
-
-      <FormActions>
-        <Link to="/items" className="button button--secondary">
-          Voltar para itens
-        </Link>
-      </FormActions>
     </div>
   );
 }

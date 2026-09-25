@@ -1,563 +1,221 @@
 import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Check, CircleAlert, PackagePlus, Save, ShoppingBasket, Trash2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
-import { DataTable } from "../components/DataTable";
-import { FormActions } from "../components/FormActions";
-import { FormSection } from "../components/FormSection";
-import { PageHeader } from "../components/PageHeader";
-import { PanelHeader } from "../components/PanelHeader";
-import { StateMessage } from "../components/StateMessage";
-import type {
-  BasketAvailabilityResponse,
-  BasketTypeDetailResponse,
-  BasketTypeItemCreatePayload,
-} from "../types/basket";
+import { ProductImage } from "../components/ProductImage";
+import type { BasketAvailabilityResponse, BasketTypeDetailResponse, BasketTypeItemCreatePayload } from "../types/basket";
 import type { ItemDetailResponse } from "../types/item";
 import { getApiErrorMessage } from "../utils/api-error";
+import styles from "./BasketTypeEditorPage.module.css";
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+}
+
+function formatUnit(unit: string) {
+  const labels: Record<string, string> = { unidade: "un.", pacote: "pct.", kg: "kg", litro: "L", caixa: "cx.", frasco: "fr." };
+  return labels[unit] ?? unit;
+}
 
 export function BasketTypeDetailPage() {
   const { basketTypeId } = useParams();
-
-  return (
-    <BasketTypeDetailContent
-      key={basketTypeId ?? "basket-type-missing"}
-      basketTypeId={basketTypeId}
-    />
-  );
-}
-
-function BasketTypeDetailContent({
-  basketTypeId,
-}: {
-  basketTypeId: string | undefined;
-}) {
   const [basketType, setBasketType] = useState<BasketTypeDetailResponse | null>(null);
-  const [availability, setAvailability] = useState<BasketAvailabilityResponse | null>(
-    null
-  );
+  const [availability, setAvailability] = useState<BasketAvailabilityResponse | null>(null);
   const [items, setItems] = useState<ItemDetailResponse[]>([]);
+  const [basketForm, setBasketForm] = useState({ name: "", is_active: true, notes: "" });
+  const [recipeForm, setRecipeForm] = useState({ item_id: "", required_quantity: 1 });
   const [quantityDrafts, setQuantityDrafts] = useState<Record<number, string>>({});
-  const [basketForm, setBasketForm] = useState({
-    name: "",
-    is_active: true,
-    notes: "",
-  });
-  const [recipeForm, setRecipeForm] = useState({
-    item_id: "",
-    required_quantity: 1,
-  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingBasket, setIsSavingBasket] = useState(false);
-  const [isSubmittingRecipe, setIsSubmittingRecipe] = useState(false);
-  const [busyRecipeItemId, setBusyRecipeItemId] = useState<number | null>(null);
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [busyItemId, setBusyItemId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [recipeError, setRecipeError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  async function loadBasketTypeData(targetBasketTypeId: string) {
+  async function loadData(targetId: string) {
     try {
       const [detailResponse, availabilityResponse, itemsResponse] = await Promise.all([
-        api.get<BasketTypeDetailResponse>(`/basket-types/${targetBasketTypeId}`),
-        api.get<BasketAvailabilityResponse>(
-          `/basket-types/${targetBasketTypeId}/availability`
-        ),
-        api.get<ItemDetailResponse[]>("/items"),
+        api.get<BasketTypeDetailResponse>(`/basket-types/${targetId}`),
+        api.get<BasketAvailabilityResponse>(`/basket-types/${targetId}/availability`),
+        api.get<ItemDetailResponse[]>("/items", { params: { is_active: true, limit: 200 } }),
       ]);
-
       setBasketType(detailResponse.data);
       setAvailability(availabilityResponse.data);
       setItems(itemsResponse.data);
-      setBasketForm({
-        name: detailResponse.data.name,
-        is_active: detailResponse.data.is_active,
-        notes: detailResponse.data.notes ?? "",
-      });
-      setQuantityDrafts(
-        Object.fromEntries(
-          detailResponse.data.basket_items.map((item) => [
-            item.item_id,
-            String(item.required_quantity),
-          ])
-        )
-      );
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel carregar a cesta."));
+      setBasketForm({ name: detailResponse.data.name, is_active: detailResponse.data.is_active, notes: detailResponse.data.notes ?? "" });
+      setQuantityDrafts(Object.fromEntries(detailResponse.data.basket_items.map((item) => [item.item_id, String(item.required_quantity)])));
+      setError("");
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError, "Não foi possível carregar a cesta."));
     } finally {
       setIsLoading(false);
     }
   }
 
-  async function refreshBasketTypeData(targetBasketTypeId: string) {
-    setIsLoading(true);
-    setError("");
-    await loadBasketTypeData(targetBasketTypeId);
-  }
-
   useEffect(() => {
-    if (!basketTypeId) {
-      return;
-    }
-
+    if (!basketTypeId) return;
     let isCurrent = true;
-
     void Promise.all([
       api.get<BasketTypeDetailResponse>(`/basket-types/${basketTypeId}`),
-      api.get<BasketAvailabilityResponse>(
-        `/basket-types/${basketTypeId}/availability`
-      ),
-      api.get<ItemDetailResponse[]>("/items"),
-    ])
-      .then(([detailResponse, availabilityResponse, itemsResponse]) => {
-        if (!isCurrent) {
-          return;
-        }
-
-        setBasketType(detailResponse.data);
-        setAvailability(availabilityResponse.data);
-        setItems(itemsResponse.data);
-        setBasketForm({
-          name: detailResponse.data.name,
-          is_active: detailResponse.data.is_active,
-          notes: detailResponse.data.notes ?? "",
-        });
-        setQuantityDrafts(
-          Object.fromEntries(
-            detailResponse.data.basket_items.map((item) => [
-              item.item_id,
-              String(item.required_quantity),
-            ])
-          )
-        );
-      })
-      .catch((err) => {
-        if (isCurrent) {
-          setError(getApiErrorMessage(err, "Nao foi possivel carregar a cesta."));
-        }
-      })
-      .finally(() => {
-        if (isCurrent) {
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      isCurrent = false;
-    };
+      api.get<BasketAvailabilityResponse>(`/basket-types/${basketTypeId}/availability`),
+      api.get<ItemDetailResponse[]>("/items", { params: { is_active: true, limit: 200 } }),
+    ]).then(([detailResponse, availabilityResponse, itemsResponse]) => {
+      if (!isCurrent) return;
+      setBasketType(detailResponse.data);
+      setAvailability(availabilityResponse.data);
+      setItems(itemsResponse.data);
+      setBasketForm({ name: detailResponse.data.name, is_active: detailResponse.data.is_active, notes: detailResponse.data.notes ?? "" });
+      setQuantityDrafts(Object.fromEntries(detailResponse.data.basket_items.map((item) => [item.item_id, String(item.required_quantity)])));
+      setError("");
+    }).catch((requestError) => {
+      if (isCurrent) setError(getApiErrorMessage(requestError, "Não foi possível carregar a cesta."));
+    }).finally(() => {
+      if (isCurrent) setIsLoading(false);
+    });
+    return () => { isCurrent = false; };
   }, [basketTypeId]);
 
-  const limitingItems = useMemo(() => {
-    if (!availability) {
-      return [];
-    }
-
-    return availability.items.filter((item) =>
-      availability.limiting_item_ids.includes(item.item_id)
-    );
-  }, [availability]);
-
-  const availableItemsToAdd = useMemo(() => {
-    const existingItemIds = new Set(
-      basketType?.basket_items.map((item) => item.item_id) ?? []
-    );
-    return items.filter((item) => !existingItemIds.has(item.id));
+  const availableItems = useMemo(() => {
+    const existingIds = new Set(basketType?.basket_items.map((item) => item.item_id) ?? []);
+    return items.filter((item) => !existingIds.has(item.id));
   }, [basketType, items]);
 
-  async function handleSaveBasketType(event: React.FormEvent<HTMLFormElement>) {
+  const estimatedValue = useMemo(() => basketType?.basket_items.reduce((total, item) => total + Number(item.reference_unit_value) * item.required_quantity, 0) ?? 0, [basketType]);
+  const limitingItems = useMemo(() => availability?.items.filter((item) => availability.limiting_item_ids.includes(item.item_id)) ?? [], [availability]);
+
+  async function handleSaveBasket(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    if (!basketTypeId) {
-      return;
-    }
-
+    if (!basketTypeId || !basketForm.name.trim()) return;
+    setIsSavingBasket(true);
+    setError("");
+    setSuccessMessage("");
     try {
-      setIsSavingBasket(true);
-      setError("");
-      setSuccessMessage("");
-
-      await api.put(`/basket-types/${basketTypeId}`, {
-        name: basketForm.name.trim(),
-        is_active: basketForm.is_active,
-        notes: basketForm.notes.trim() || null,
-      });
-      await refreshBasketTypeData(basketTypeId);
-      setSuccessMessage("Tipo de cesta atualizado com auditoria registrada.");
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel salvar o tipo de cesta."));
+      await api.put(`/basket-types/${basketTypeId}`, { name: basketForm.name.trim(), is_active: basketForm.is_active, notes: basketForm.notes.trim() || null });
+      await loadData(basketTypeId);
+      setSuccessMessage("Dados da cesta atualizados com auditoria registrada.");
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError, "Não foi possível salvar a cesta."));
     } finally {
       setIsSavingBasket(false);
     }
   }
 
-  async function handleAddRecipeItem(event: React.FormEvent<HTMLFormElement>) {
+  async function handleAddItem(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setRecipeError("");
-
     if (!basketTypeId || !recipeForm.item_id) {
-      setRecipeError("Selecione um item para adicionar a receita.");
+      setRecipeError("Selecione um produto para adicionar.");
       return;
     }
-
-    setIsSubmittingRecipe(true);
-
+    setIsAddingItem(true);
+    setRecipeError("");
     try {
-      const payload: BasketTypeItemCreatePayload = {
-        item_id: Number(recipeForm.item_id),
-        required_quantity: Number(recipeForm.required_quantity),
-      };
-
+      const payload: BasketTypeItemCreatePayload = { item_id: Number(recipeForm.item_id), required_quantity: Number(recipeForm.required_quantity) };
       await api.post(`/basket-types/${basketTypeId}/items`, payload);
-      setRecipeForm({
-        item_id: "",
-        required_quantity: 1,
-      });
-      await refreshBasketTypeData(basketTypeId);
-    } catch (err) {
-      setRecipeError(getApiErrorMessage(err, "Nao foi possivel adicionar o item."));
+      setRecipeForm({ item_id: "", required_quantity: 1 });
+      await loadData(basketTypeId);
+      setSuccessMessage("Produto adicionado à composição.");
+    } catch (requestError) {
+      setRecipeError(getApiErrorMessage(requestError, "Não foi possível adicionar o produto."));
     } finally {
-      setIsSubmittingRecipe(false);
+      setIsAddingItem(false);
     }
   }
 
-  async function handleUpdateRecipeItem(itemId: number) {
-    if (!basketTypeId) {
-      return;
-    }
-
+  async function handleUpdateItem(itemId: number) {
+    if (!basketTypeId) return;
+    setBusyItemId(itemId);
+    setRecipeError("");
     try {
-      setBusyRecipeItemId(itemId);
-      setRecipeError("");
-      await api.put(`/basket-types/${basketTypeId}/items/${itemId}`, {
-        required_quantity: Number(quantityDrafts[itemId] ?? 0),
-      });
-      await refreshBasketTypeData(basketTypeId);
-    } catch (err) {
-      setRecipeError(getApiErrorMessage(err, "Nao foi possivel atualizar a receita."));
+      await api.put(`/basket-types/${basketTypeId}/items/${itemId}`, { required_quantity: Number(quantityDrafts[itemId] ?? 0) });
+      await loadData(basketTypeId);
+      setSuccessMessage("Quantidade atualizada.");
+    } catch (requestError) {
+      setRecipeError(getApiErrorMessage(requestError, "Não foi possível atualizar a quantidade."));
     } finally {
-      setBusyRecipeItemId(null);
+      setBusyItemId(null);
     }
   }
 
-  async function handleDeleteRecipeItem(itemId: number) {
-    if (!basketTypeId) {
-      return;
-    }
-
-    const confirmed = window.confirm("Remover este item da receita?");
-    if (!confirmed) {
-      return;
-    }
-
+  async function handleDeleteItem(itemId: number) {
+    if (!basketTypeId || !window.confirm("Remover este produto da composição?")) return;
+    setBusyItemId(itemId);
+    setRecipeError("");
     try {
-      setBusyRecipeItemId(itemId);
-      setRecipeError("");
       await api.delete(`/basket-types/${basketTypeId}/items/${itemId}`);
-      await refreshBasketTypeData(basketTypeId);
-    } catch (err) {
-      setRecipeError(getApiErrorMessage(err, "Nao foi possivel remover o item."));
+      await loadData(basketTypeId);
+      setSuccessMessage("Produto removido da composição.");
+    } catch (requestError) {
+      setRecipeError(getApiErrorMessage(requestError, "Não foi possível remover o produto."));
     } finally {
-      setBusyRecipeItemId(null);
+      setBusyItemId(null);
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="page-stack">
-        <div className="panel-card">
-          <StateMessage variant="loading">
-            Carregando detalhe da cesta...
-          </StateMessage>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !basketType || !availability) {
-    return (
-      <div className="page-stack">
-        <div className="panel-card">
-          <StateMessage variant="error">
-            {error || "Nao foi possivel carregar a cesta."}
-          </StateMessage>
-          <FormActions>
-            <Link to="/basket-types" className="button button--secondary">
-              Voltar
-            </Link>
-          </FormActions>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <div className={styles.loadingState}>Carregando composição da cesta...</div>;
+  if (error && !basketType) return <div className={styles.errorState}><CircleAlert aria-hidden="true" /><strong>Não foi possível abrir a cesta</strong><p>{error}</p><Link to="/basket-types">Voltar para tipos de cesta</Link></div>;
+  if (!basketType || !availability) return null;
 
   return (
-    <div className="page-stack">
-      <PageHeader
-        eyebrow="Detalhe da cesta"
-        title={basketType.name}
-        description={
-          basketType.notes || "Sem observacoes adicionais para este tipo de cesta."
-        }
-        meta={
-          <div className="hero-badges">
-          <span className="hero-badge">
-            Cestas possiveis: {availability.possible_baskets}
-          </span>
-          <span className="hero-badge">
-            Status: {basketType.is_active ? "Ativa" : "Inativa"}
-          </span>
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
+        <Link to="/basket-types" className={styles.backLink}><ArrowLeft aria-hidden="true" />Tipos de cesta</Link>
+        <div className={styles.detailTitle}><span className={styles.headingIcon}><ShoppingBasket aria-hidden="true" /></span><div><h1>{basketType.name}</h1><p>Edite o modelo e mantenha sua composição operacional.</p></div><span className={basketType.is_active ? styles.statusActive : styles.statusInactive}>{basketType.is_active ? "Ativa" : "Inativa"}</span></div>
+      </header>
+
+      {error ? <div className={styles.feedbackError} role="alert">{error}</div> : null}
+      {recipeError ? <div className={styles.feedbackError} role="alert">{recipeError}</div> : null}
+      {successMessage ? <div className={styles.feedbackSuccess} role="status">{successMessage}</div> : null}
+
+      <section className={styles.summaryStrip}>
+        <div><span>Produtos</span><strong>{basketType.basket_items.length}</strong></div>
+        <div><span>Valor estimado</span><strong>{formatCurrency(estimatedValue)}</strong></div>
+        <div><span>Capacidade atual</span><strong>{availability.possible_baskets} cestas</strong></div>
+        <div><span>Itens limitantes</span><strong>{limitingItems.length}</strong></div>
+      </section>
+
+      <section className={styles.editorGrid}>
+        <form className={styles.formCard} onSubmit={handleSaveBasket}>
+          <div className={styles.cardHeading}><div><h2>Dados da cesta</h2><p>Nome, descrição e disponibilidade operacional.</p></div></div>
+          <div className={styles.formGrid}>
+            <label className={styles.field}><span>Nome <b>*</b></span><input value={basketForm.name} onChange={(event) => setBasketForm((current) => ({ ...current, name: event.target.value }))} maxLength={100} required /></label>
+            <label className={`${styles.field} ${styles.fieldWide}`}><span>Descrição operacional</span><textarea value={basketForm.notes} onChange={(event) => setBasketForm((current) => ({ ...current, notes: event.target.value }))} rows={3} /></label>
+            <label className={`${styles.switchField} ${styles.fieldWide}`}><span><strong>Disponível para operação</strong><small>Permite novos agendamentos com este modelo.</small></span><input type="checkbox" checked={basketForm.is_active} onChange={(event) => setBasketForm((current) => ({ ...current, is_active: event.target.checked }))} /><i aria-hidden="true" /></label>
           </div>
-        }
-      />
-
-      {successMessage ? (
-        <StateMessage variant="success">{successMessage}</StateMessage>
-      ) : null}
-
-      <section className="content-grid">
-        <form onSubmit={handleSaveBasketType} className="panel-card form-panel">
-          <FormSection eyebrow="Cadastro" title="Editar tipo de cesta">
-            <label className="form__group">
-              <span>Nome</span>
-              <input
-                value={basketForm.name}
-                onChange={(event) =>
-                  setBasketForm((previous) => ({
-                    ...previous,
-                    name: event.target.value,
-                  }))
-                }
-                required
-              />
-            </label>
-
-            <label className="checkbox-card">
-              <input
-                type="checkbox"
-                checked={basketForm.is_active}
-                onChange={(event) =>
-                  setBasketForm((previous) => ({
-                    ...previous,
-                    is_active: event.target.checked,
-                  }))
-                }
-              />
-              Tipo ativo
-            </label>
-
-            <label className="form__group form__group--wide">
-              <span>Observacoes</span>
-              <textarea
-                value={basketForm.notes}
-                onChange={(event) =>
-                  setBasketForm((previous) => ({
-                    ...previous,
-                    notes: event.target.value,
-                  }))
-                }
-                rows={3}
-              />
-            </label>
-          </FormSection>
-
-          <FormActions>
-            <button type="submit" className="button" disabled={isSavingBasket}>
-              {isSavingBasket ? "Salvando..." : "Salvar tipo"}
-            </button>
-          </FormActions>
+          <div className={styles.inlineActions}><button type="submit" disabled={isSavingBasket}><Save aria-hidden="true" />{isSavingBasket ? "Salvando..." : "Salvar dados"}</button></div>
         </form>
 
-        <form onSubmit={handleAddRecipeItem} className="panel-card form-panel">
-          <FormSection eyebrow="Receita" title="Adicionar item">
-            <label className="form__group form__group--wide">
-              <span>Item disponivel</span>
-              <select
-                value={recipeForm.item_id}
-                onChange={(event) =>
-                  setRecipeForm((previous) => ({
-                    ...previous,
-                    item_id: event.target.value,
-                  }))
-                }
-                required
-              >
-                <option value="">Selecione</option>
-                {availableItemsToAdd.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name} | {item.category_name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="form__group">
-              <span>Quantidade exigida</span>
-              <input
-                type="number"
-                min="1"
-                value={recipeForm.required_quantity}
-                onChange={(event) =>
-                  setRecipeForm((previous) => ({
-                    ...previous,
-                    required_quantity: Number(event.target.value),
-                  }))
-                }
-                required
-              />
-            </label>
-          </FormSection>
-
-          {availableItemsToAdd.length === 0 ? (
-            <StateMessage>
-              Todos os itens cadastrados ja estao presentes nesta receita.
-            </StateMessage>
-          ) : null}
-
-          {recipeError ? (
-            <StateMessage variant="error">{recipeError}</StateMessage>
-          ) : null}
-
-          <FormActions>
-            <button
-              type="submit"
-              className="button"
-              disabled={isSubmittingRecipe || availableItemsToAdd.length === 0}
-            >
-              {isSubmittingRecipe ? "Salvando..." : "Adicionar a receita"}
-            </button>
-          </FormActions>
+        <form className={styles.formCard} onSubmit={handleAddItem}>
+          <div className={styles.cardHeading}><span className={styles.secondaryHeadingIcon}><PackagePlus aria-hidden="true" /></span><div><h2>Adicionar produto</h2><p>Inclua um produto ativo e sua quantidade obrigatória.</p></div></div>
+          <div className={styles.formGrid}>
+            <label className={`${styles.field} ${styles.fieldWide}`}><span>Produto <b>*</b></span><select value={recipeForm.item_id} onChange={(event) => setRecipeForm((current) => ({ ...current, item_id: event.target.value }))} required><option value="">Selecione um produto</option>{availableItems.map((item) => <option key={item.id} value={item.id}>{item.name} · {formatUnit(item.unit_measure)}</option>)}</select></label>
+            <label className={styles.field}><span>Quantidade <b>*</b></span><input type="number" min="1" value={recipeForm.required_quantity} onChange={(event) => setRecipeForm((current) => ({ ...current, required_quantity: Number(event.target.value) }))} required /></label>
+          </div>
+          {availableItems.length === 0 ? <p className={styles.inlineNotice}>Todos os produtos ativos já fazem parte desta composição.</p> : null}
+          <div className={styles.inlineActions}><button type="submit" disabled={isAddingItem || availableItems.length === 0}><PackagePlus aria-hidden="true" />{isAddingItem ? "Adicionando..." : "Adicionar à composição"}</button></div>
         </form>
       </section>
 
-      <section className="content-grid">
-        <article className="panel-card">
-          <PanelHeader eyebrow="Receita" title="Composicao da cesta" />
-
-          {basketType.basket_items.length === 0 ? (
-            <StateMessage>Nenhum item cadastrado nesta receita.</StateMessage>
-          ) : (
-            <DataTable caption="Composicao da cesta">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Unidade</th>
-                    <th>Quantidade</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {basketType.basket_items.map((item) => (
-                    <tr key={item.item_id}>
-                      <td>{item.item_name}</td>
-                      <td>{item.unit_measure}</td>
-                      <td>
-                        <input
-                          className="table-input"
-                          type="number"
-                          min="1"
-                          value={quantityDrafts[item.item_id] ?? item.required_quantity}
-                          onChange={(event) =>
-                            setQuantityDrafts((previous) => ({
-                              ...previous,
-                              [item.item_id]: event.target.value,
-                            }))
-                          }
-                        />
-                      </td>
-                      <td>
-                        <div className="table-actions">
-                          <button
-                            type="button"
-                            className="button button--secondary button--small"
-                            disabled={busyRecipeItemId === item.item_id}
-                            onClick={() => void handleUpdateRecipeItem(item.item_id)}
-                          >
-                            Salvar
-                          </button>
-                          <button
-                            type="button"
-                            className="button button--danger button--small"
-                            disabled={busyRecipeItemId === item.item_id}
-                            onClick={() => void handleDeleteRecipeItem(item.item_id)}
-                          >
-                            Remover
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-            </DataTable>
-          )}
-        </article>
-
-        <article className="panel-card">
-          <PanelHeader eyebrow="Limite atual" title="Itens limitantes" />
-
-          {limitingItems.length === 0 ? (
-            <StateMessage>
-              Nenhum item limitante identificado no momento.
-            </StateMessage>
-          ) : (
-            <div className="stack-list">
-              {limitingItems.map((item) => (
-                <div key={item.item_id} className="stack-item">
-                  <div>
-                    <strong>{item.item_name}</strong>
-                    <p className="stack-item__muted">
-                      Disponivel: {item.available_quantity} {item.unit_measure}
-                    </p>
-                  </div>
-
-                  <span className="pill pill--danger">
-                    Faltam {item.missing_for_next_basket}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </article>
+      <section className={styles.recipeCard}>
+        <div className={styles.cardHeading}><div><h2>Composição da cesta</h2><p>Valores estimados usam o preço de referência cadastrado em cada produto.</p></div></div>
+        {basketType.basket_items.length === 0 ? <div className={styles.recipeEmpty}><ShoppingBasket aria-hidden="true" /><strong>Nenhum produto na composição</strong><p>Use o formulário acima para montar esta cesta.</p></div> : (
+          <div className={styles.recipeList}>{basketType.basket_items.map((item) => <article className={styles.recipeRow} key={item.item_id}>
+            <ProductImage name={item.item_name} src={item.image_path} size="card" />
+            <div className={styles.recipeIdentity}><strong>{item.item_name}</strong><span>{item.category_name} · {item.tracks_expiration ? "Perecível" : "Não perecível"}</span><small>{formatCurrency(Number(item.reference_unit_value))} por {formatUnit(item.unit_measure)}</small></div>
+            <label className={styles.quantityField}><span>Quantidade</span><input type="number" min="1" value={quantityDrafts[item.item_id] ?? item.required_quantity} onChange={(event) => setQuantityDrafts((current) => ({ ...current, [item.item_id]: event.target.value }))} /></label>
+            <strong className={styles.lineValue}>{formatCurrency(Number(item.reference_unit_value) * Number(quantityDrafts[item.item_id] ?? item.required_quantity))}</strong>
+            <div className={styles.recipeActions}><button type="button" onClick={() => void handleUpdateItem(item.item_id)} disabled={busyItemId === item.item_id} aria-label={`Salvar quantidade de ${item.item_name}`}><Check aria-hidden="true" /></button><button type="button" onClick={() => void handleDeleteItem(item.item_id)} disabled={busyItemId === item.item_id} aria-label={`Remover ${item.item_name}`}><Trash2 aria-hidden="true" /></button></div>
+          </article>)}</div>
+        )}
       </section>
 
-      <section className="content-grid content-grid--single">
-        <article className="panel-card">
-          <PanelHeader
-            eyebrow="Disponibilidade por item"
-            title="Capacidade de montagem"
-          />
-
-          <DataTable caption="Capacidade de montagem por item">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Necessario</th>
-                  <th>Disponivel</th>
-                  <th>Possiveis por item</th>
-                  <th>Falta para proxima</th>
-                </tr>
-              </thead>
-              <tbody>
-                {availability.items.map((item) => (
-                  <tr key={item.item_id}>
-                    <td>{item.item_name}</td>
-                    <td>
-                      {item.required_quantity} {item.unit_measure}
-                    </td>
-                    <td>
-                      {item.available_quantity} {item.unit_measure}
-                    </td>
-                    <td>{item.possible_from_item}</td>
-                    <td>{item.missing_for_next_basket}</td>
-                  </tr>
-                ))}
-              </tbody>
-          </DataTable>
-        </article>
+      <section className={styles.availabilityCard}>
+        <div className={styles.cardHeading}><div><h2>Capacidade de montagem</h2><p>Saldo utilizável por produto e gargalos para a próxima cesta.</p></div></div>
+        <div className={styles.availabilityGrid}>{availability.items.map((item) => {
+          const isLimiting = availability.limiting_item_ids.includes(item.item_id);
+          return <article key={item.item_id} className={isLimiting ? styles.availabilityLimiting : ""}><div><strong>{item.item_name}</strong><span>Disponível: {item.available_quantity} {formatUnit(item.unit_measure)}</span></div><b>{item.possible_from_item} cestas</b>{isLimiting ? <small>Faltam {item.missing_for_next_basket} para a próxima</small> : <small>Capacidade regular</small>}</article>;
+        })}</div>
       </section>
-
-      <FormActions>
-        <Link to="/basket-types" className="button button--secondary">
-          Voltar para cestas
-        </Link>
-      </FormActions>
     </div>
   );
 }

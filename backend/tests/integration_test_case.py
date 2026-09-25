@@ -187,7 +187,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
     ) -> dict:
         payload = {
             "assessment_date": "2026-04-15",
-            "vulnerability_score": 40,
+            "vulnerability_score": 0,
             "final_decision": "apta_recorrente",
             "decision_reason": "Avaliacao social registrada no teste.",
             "exception_reason": None,

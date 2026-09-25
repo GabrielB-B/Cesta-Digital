@@ -82,14 +82,45 @@ Apos `git push origin main`, consultar o status do commit no GitHub. O deploy so
 - Se a Vercel estiver apontando para `localhost`, corrigir `VITE_API_URL` nas variaveis da Vercel para `https://cesta-digital-api.onrender.com`.
 - Antes de qualquer migration em banco compartilhado ou publico, gerar backup verificado, registrar exit code, tamanho e checksum e comprovar restore em ambiente seguro. Sem essa evidencia, nao publicar a migration.
 
-## Identidade visual
+## Identidade visual vigente - Frontend V2
 
-Preservar o dark premium institucional do Cesta Digital:
+Decisao aprovada por Gabriel em 18/08/2026: a interface do Cesta Digital sera
+redesenhada de forma mobile-first e desktop responsiva, preservando o simbolo
+original da marca. A antiga linguagem `dark premium` e apenas historica e nao
+deve orientar telas novas ou migradas.
 
-- magenta/rosa como assinatura;
-- dourado como acento;
-- verde escuro como base;
-- textura sutil;
-- cards administrativos;
-- mobile sem regressao;
-- sem redesign radical sem aprovacao de Gabriel.
+Fontes obrigatorias antes de qualquer mudanca visual:
+
+- [`docs/direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`](docs/direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md);
+- [`docs/direção_visual/CODEX_FRONTEND_V2_EXECUTION.md`](docs/direção_visual/CODEX_FRONTEND_V2_EXECUTION.md);
+- [`docs/direção_visual/MANIFESTO_REFERENCIAS_VISUAIS_POR_TELA.md`](docs/direção_visual/MANIFESTO_REFERENCIAS_VISUAIS_POR_TELA.md);
+- [`docs/direção_visual/AUDITORIA_FUNCIONAL_REFERENCIAS_POR_TELA_2026-08-18.md`](docs/direção_visual/AUDITORIA_FUNCIONAL_REFERENCIAS_POR_TELA_2026-08-18.md);
+- [`docs/direção_visual/referencias_por_tela/`](docs/direção_visual/referencias_por_tela/) para a imagem específica da tela em alteração;
+- [`docs/direção_visual/Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](docs/direção_visual/Cesta_Digital_Frontend_V2_Baseline_Desktop.png) para princípios gerais não cobertos pelas referências específicas.
+
+Regras obrigatorias:
+
+- preservar o simbolo/asset oficial da marca e sua identidade rosa/roxo;
+- usar superficies predominantemente claras (`#F7F8FA` e branco), texto grafite
+  e bordas neutras;
+- reservar rosa da marca para acao e selecao, e verde/amarelo/vermelho para
+  estados semanticos;
+- nao usar gradientes em cards, tabelas, navegacao, bordas ou sombras, nem usar
+  glow, glassmorphism, texturas repetidas ou faixas coloridas; gradiente fica
+  restrito ao asset oficial, ao CTA primario rosa-roxo mostrado nas referencias
+  e ao ambiente institucional sutil do login;
+- nao aplicar hover/elevacao a superficies nao interativas;
+- evitar cards aninhados, excesso de cards e duplicacao de metricas;
+- projetar primeiro para 360/390 px e validar tambem 768 e 1440 px;
+- oferecer padrao mobile proprio para tabelas que causariam rolagem horizontal;
+- manter uma acao primaria dominante por tela ou regiao;
+- nao alterar contratos de API, rotas, RBAC ou regras de dominio em tarefa
+  visual sem requisito funcional separado e aprovado;
+- manter e ampliar skip link, foco visivel, `inert`, Escape, restauracao de
+  foco, bloqueio de scroll e feedback acessivel;
+- comparar cada entrega visual com a referencia especifica e a baseline geral
+  em 390x844 e 1440x900, apresentar as evidencias a Gabriel e aguardar aprovacao
+  antes de avancar para a proxima aba.
+
+O documento [`docs/DESIGN_FRONTEND_CESTA_DIGITAL.md`](docs/DESIGN_FRONTEND_CESTA_DIGITAL.md)
+e historico e nao e fonte da identidade vigente quando divergir da decisao V2.

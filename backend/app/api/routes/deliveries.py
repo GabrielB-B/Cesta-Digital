@@ -8,6 +8,9 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schemas.delivery import (
     DeliveryFromScheduleCreate,
+    DeliveryOperationsPeriod,
+    DeliveryOperationsResponse,
+    DeliveryOperationsStatus,
     DeliveryResponse,
     DeliveryScheduleCreate,
     DeliveryScheduleResponse,
@@ -17,6 +20,7 @@ from app.services.delivery_service import (
     create_delivery_from_schedule,
     create_delivery_schedule,
     get_delivery_detail,
+    get_delivery_operations,
     list_deliveries,
     list_delivery_schedules,
     update_delivery_schedule,
@@ -56,6 +60,30 @@ def list_delivery_schedules_endpoint(
     )
     response.headers["X-Total-Count"] = str(total)
     return schedules
+
+
+@router.get("/delivery-operations", response_model=DeliveryOperationsResponse)
+def get_delivery_operations_endpoint(
+    response: Response,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    q: str | None = Query(default=None, max_length=150),
+    period: DeliveryOperationsPeriod = Query(default="hoje"),
+    status: DeliveryOperationsStatus | None = Query(default=None),
+    limit: int = Query(default=25, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+):
+    """Lista a agenda operacional com família, cesta, endereço e totais reais."""
+    result = get_delivery_operations(
+        db,
+        q=q,
+        period=period,
+        status=status,
+        limit=limit,
+        offset=offset,
+    )
+    response.headers["X-Total-Count"] = str(result["total"])
+    return result
 
 
 @router.put("/delivery-schedules/{schedule_id}", response_model=DeliveryScheduleResponse)

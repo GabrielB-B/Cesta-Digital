@@ -186,6 +186,156 @@ LGPD, observabilidade e decisão formal de `GO profissional`.
 Resultado do checkpoint: publicado e aprovado pelos gates local, remoto, banco,
 deploy e smoke público. DOM-001 e DOM-006 concluídos neste escopo.
 
+### Checkpoint local V2-07A de Avaliações — 19/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/backend-v2-avaliacoes-contrato` a partir do V2-06 aprovado (`380fd9c`) |
+| Fila | `GET /social-assessments/queue` pagina, busca e classifica famílias por urgência sem agregação incompleta no cliente |
+| Integridade | `vulnerability_score` gravado vem do cálculo do servidor; divergência do campo legado retorna 422 sem persistência |
+| Separação de conceitos | Última decisão, última sugestão e nova prévia calculada são campos distintos |
+| RBAC | `admin`/`lider_social` autorizados; `operador` 403; anônimo 401 |
+| Banco | nenhuma migration ou alteração de tabela |
+| Backend local | `compileall` aprovado; suíte completa 60/60 testes aprovados |
+| Publicação | não realizada; evidência é local e o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-07B de Avaliações — 19/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-avaliacoes` a partir do contrato V2-07A (`6544624`) |
+| Rota e navegação | `/assessments` adicionada para `admin`/`lider_social`; seção ativa correta no desktop e mobile |
+| Fila | quatro situações reais, busca/filtro/página/seleção em URL, tabela desktop e cards em 360/390/768 |
+| Decisão social | cálculo atual, última decisão e próxima reavaliação apresentados separadamente; sem etapas fictícias |
+| Integridade do score | score somente leitura; novo formulário não envia `vulnerability_score` |
+| Frontend local | lint e build aprovados; E2E 35/35; visual V2-07B 11 aprovados e 5 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Publicação | não realizada; aguarda aprovação visual e o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-08A de Estoque — 20/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/backend-v2-estoque-contrato` a partir do V2-07B aprovado (`767969c`) |
+| Visão global | `GET /stock-overview` pagina, busca, filtra e ordena produtos por urgência sem agregar somente a página atual |
+| Indicadores | estoque baixo por produto e lotes vencendo em 15 dias, vencidos, sem validade obrigatória ou restritos |
+| Saldo | quantidade disponível reutiliza a política canônica de lote utilizável e a data operacional de São Paulo |
+| RBAC | `admin`/`operador` autorizados; `lider_social` 403; anônimo 401 |
+| Compatibilidade | `/stock-summary` e todos os contratos de escrita foram preservados |
+| Banco | nenhuma migration ou alteração de tabela |
+| Backend local | `compileall` aprovado; suíte completa 62/62 testes aprovados |
+| Publicação | não realizada; evidência é local e o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-08B de Estoque — 20/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-estoque` a partir do contrato V2-08A (`c1041b6`) |
+| Desktop | sidebar fixa, três indicadores globais, tabela paginada e painel do item selecionado |
+| Mobile/tablet | cards próprios em 360/390/768, sem overflow; seção Estoque permanece visível e ativa |
+| Escopo | alimentos, higiene e demais produtos doados; nenhum dado de família/pessoa |
+| Integridade | saldo utilizável e riscos vêm do backend; nenhuma agregação incompleta no cliente |
+| Contratos preservados | rotas, RBAC e escritas de item/lote/movimento inalterados; sem exportação ou transferência fictícia |
+| Frontend local | lint e build aprovados; E2E 35/35; visual V2-08B 9 aprovados e 3 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Aprovação visual | conjunto V2-08B/V2-08C aprovado por Gabriel em 21/08/2026 |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-08C de imagens do Estoque — 20/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/estoque-v2-imagens-produto` sobre o V2-08B local |
+| Cadastro | EAN/GTIN único, upload próprio e consulta explícita por código de barras; nenhuma importação automática |
+| Persistência | foto validada, otimizada para WebP e salva em tabela um-para-um; listagem não depende de serviço externo |
+| Transparência | origem e atribuição visíveis para Open Facts; produto sem foto mantém fallback operacional |
+| Segurança | limite de arquivo/dimensões, remoção de metadados, allowlist HTTPS, timeout, proteção contra redirecionamento e auditoria |
+| RBAC | `admin`/`operador` autorizados; `lider_social` 403; arquivo público não expõe metadados de estoque |
+| Banco | migration aditiva `d4e5f6a7b8c9` criada localmente; publicação bloqueada até backup/restore e aprovação |
+| Backend local | `compileall`; suíte completa 67/67; contrato específico de imagens 5/5 |
+| Frontend local | lint e build; E2E 36/36; gate visual 11 aprovados e 5 skips intencionais |
+| Aprovação visual | conjunto V2-08B/V2-08C aprovado por Gabriel em 21/08/2026 |
+| Publicação | não realizada; migration permanece local e o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-09A de Entradas — 21/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-entradas` a partir do V2-08B/V2-08C aprovado (`5a9751b`) |
+| Rotas | novo histórico `/stock-batches`; cadastro `/stock-batches/new` e seus deep links preservados |
+| Desktop | sidebar fixa, histórico paginado e formulário real lado a lado |
+| Mobile/tablet | cartões próprios em 360/390/768 e cadastro dedicado, sem overflow horizontal |
+| Integridade | origem, lote, quantidade, validade, localização e situação vêm da API; fornecedor e responsável nominais não foram inventados |
+| Contratos | `GET/POST /stock-batches` e payload existentes; RBAC `admin`/`operador`; nenhuma mudança no backend ou banco |
+| Frontend local | lint e build aprovados; E2E 37/37; visual V2-09A 6 aprovados e 2 skips intencionais |
+| Aprovação visual | aprovada por Gabriel em 21/08/2026; galeria local V2-09A preservada como evidência |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-10 de Entregas — 21/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-entregas` a partir do V2-09A aprovado (`78d114a`) |
+| Contrato | `GET /delivery-operations` com contadores globais, períodos operacionais, busca e paginação calculados no servidor |
+| Desktop | sidebar fixa, quatro indicadores, agenda em tabela e painel real da entrega selecionada |
+| Mobile/tablet | indicadores e cartões próprios em 360/390/768, sem overflow horizontal |
+| Regra social | decisão de aptidão visível; o novo agendamento oferece somente famílias aptas, sem alterar silenciosamente a regra legada do backend |
+| Integridade | nenhum mapa, rota, janela de horário ou identidade inexistente foi simulada; confirmação e baixa rastreável de estoque foram preservadas |
+| Backend local | `compileall` aprovado; suíte completa 69/69 |
+| Frontend local | lint e build aprovados; E2E 37/37; visual V2-10 8 aprovados e 4 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Aprovação visual | aprovada por Gabriel em 26/08/2026; galeria local V2-10 preservada como evidência |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-11 de Tipos de Cesta — 26/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-tipos-cesta` a partir do V2-10 aprovado (`1b29ca3`) |
+| Contrato | `GET /basket-types/overview` com busca, estado, paginação, quantidade de produtos, valor de referência e atualização calculados no servidor |
+| Desktop | sidebar fixa, cartões de tipos, composição em tabela e resumo da cesta selecionada |
+| Mobile/tablet | cartões próprios em 360/390/768, marca legível e composição sem overflow horizontal |
+| Integridade | composição e imagens persistidas; valor declarado como referência; capacidade calculada pelo estoque utilizável; duplicação inexistente não foi simulada |
+| Fluxos preservados | criar, editar, ativar/desativar e alterar a receita continuam usando os contratos reais; RBAC `admin`/`operador` preservado |
+| Backend local | `compileall` aprovado; suíte completa 71/71 e contrato focado 2/2 |
+| Frontend local | lint e build aprovados; E2E 37/37; visual V2-11 8 aprovados e 4 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Aprovação visual | aprovada por Gabriel em 26/08/2026; galeria local V2-11 preservada como evidência |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-12 de Relatórios — 26/08/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-relatorios` a partir do V2-11 aprovado (`9b9beb2`) |
+| Contrato | `GET /reports/overview` e `GET /reports/{report_key}/export` com período máximo de 367 dias, dados calculados no servidor e CSV real |
+| Desktop | sidebar fixa, filtros, três indicadores e seis downloads para administrador na composição da referência 08 |
+| Mobile/tablet | filtros e cartões próprios em 360/390/768, marca legível e navegação ativa sem overflow horizontal |
+| RBAC | overview agregado para perfis autenticados; relatórios sociais somente para `admin`/`lider_social` e operacionais somente para `admin`/`operador` |
+| Integridade | sem tendências fictícias; alertas declarados como posição atual; CSV protegido contra células de fórmula; cada exportação é auditada |
+| Compatibilidade | `/financial-summary` preservado como redirect social; endpoint financeiro anterior permanece intacto; matriz passa a 28 paths |
+| Backend local | `compileall` aprovado; suíte completa 74/74 e contrato focado 3/3 |
+| Frontend local | lint e build aprovados; E2E 38/38; visual V2-12 6 aprovados e 2 skips intencionais |
+| Banco | nenhuma migration ou alteração de tabela |
+| Aprovação visual | aprovada por Gabriel em 26/08/2026; galeria local V2-12 preservada como evidência |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
+### Checkpoint local V2-16 de Movimentação de estoque — 08/09/2026
+
+| Evidência | Resultado |
+|---|---|
+| Branch | `feat/frontend-v2-movimentacao-estoque` a partir do cadastro de produto V2 (`3508f1d`) |
+| Escopo | `/stock-movements/new` em superfícies claras, com resumo de lote e saldo projetado antes da escrita |
+| Contratos | rota, RBAC, `GET /items`, `GET /stock-batches`, `POST /stock-movements` e payload preservados |
+| Integridade | FEFO, validade, quarentena, item inativo, saldo, quantidade inteira e motivo obrigatório preservados |
+| Desktop | formulário e resumo contextual lado a lado em 1440×900 |
+| Mobile | fluxo vertical próprio em 390×844, sem overflow horizontal e com ação primária de 48 px |
+| Frontend local | lint, build e escala tipográfica aprovados; E2E 40/40; visual focado 2 aprovados e 2 skips intencionais |
+| Evidência visual | galeria clicável `frontend/showcase/evidence/v2-16/index.html` |
+| Banco/backend | nenhuma alteração ou migration |
+| Aprovação visual | aguardando Gabriel |
+| Publicação | não realizada; o `NO-GO` profissional permanece |
+
 ## 3. Pré-condições
 
 - [ ] Ambiente explicitamente classificado como homologação ou produção.
@@ -370,6 +520,8 @@ Testar:
 
 **Esperado:** status apto referencia avaliação e versão da regra; exceção exige justificativa; score vem do servidor; auditoria registra decisão.
 
+- [x] Gate automatizado local V2-07A comprova fila, prazos, paginação, RBAC,
+  prévia versus decisão e rejeição de score divergente.
 - [ ] Aprovado.
 
 ### HOM-SOC-006 — projeção mínima para operador
@@ -519,6 +671,16 @@ Provocar falha controlada de frontend, API, banco e entrega.
 - [x] Banco está rotulado como “destinado a homologação; conteúdo não verificado”.
 - [x] Aviso visual coberto no login e na área autenticada por E2E.
 - [ ] Base revisada e confirmada sem dados reais.
+
+### Rodada local Frontend V2 — 27/08/2026
+
+O sandbox persistente isolado descrito em
+[`HOMOLOGACAO_LOCAL_UX_2026-08-27.md`](./HOMOLOGACAO_LOCAL_UX_2026-08-27.md)
+foi iniciado com dados sintéticos. Login e cadastro de produto passaram pela
+API real; 10/10 rotas autenticadas foram percorridas em 1440×900 e 390×844, sem
+HTTP 500, erro JavaScript de página ou overflow horizontal documental. Esta é
+evidência preparatória para o teste manual de Gabriel, não aprovação dos gates
+profissionais abaixo.
 
 ## 9. Regressão por perfil
 

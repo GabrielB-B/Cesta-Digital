@@ -206,7 +206,7 @@ export type FamilyBenefitUpdatePayload = FamilyBenefitCreatePayload;
 
 export interface FamilyAssessmentCreatePayload {
   assessment_date: string;
-  vulnerability_score: number;
+  vulnerability_score?: number;
   system_suggestion?: string;
   final_decision: string;
   decision_reason: string | null;
@@ -228,4 +228,60 @@ export interface EligibilityPreviewResponse {
   social_weight_score: number;
   social_aggravating_factors: string[];
   priority_level: string;
+}
+
+export type AssessmentQueueStatus =
+  | "sem_avaliacao"
+  | "reavaliacao_vencida"
+  | "reavaliacao_proxima"
+  | "em_dia";
+
+export type AssessmentQueueReason =
+  | "nunca_avaliada"
+  | "prazo_nao_definido"
+  | "prazo_vencido"
+  | "prazo_proximo"
+  | "prazo_em_dia";
+
+export interface AssessmentQueueItemResponse {
+  family_id: number;
+  internal_code: string;
+  responsible_name: string | null;
+  total_residents: number;
+  neighborhood: string;
+  city: string;
+  state: string;
+  family_status: string;
+  queue_status: AssessmentQueueStatus;
+  queue_reason: AssessmentQueueReason;
+  latest_assessment_id: number | null;
+  latest_assessment_date: string | null;
+  latest_system_suggestion: string | null;
+  latest_final_decision: string | null;
+  latest_vulnerability_score: number | null;
+  latest_approved_by_user_id: number | null;
+  latest_approved_by_name: string | null;
+  next_revaluation_date: string | null;
+  current_system_suggestion: string;
+  current_social_weight_score: number;
+  current_priority_level: string;
+  current_preview_differs_from_decision: boolean;
+}
+
+export interface AssessmentQueueSummaryResponse {
+  sem_avaliacao: number;
+  reavaliacao_vencida: number;
+  reavaliacao_proxima: number;
+  em_dia: number;
+  total: number;
+}
+
+export interface AssessmentQueueResponse {
+  items: AssessmentQueueItemResponse[];
+  total: number;
+  limit: number;
+  offset: number;
+  reference_date: string;
+  due_soon_days: number;
+  summary: AssessmentQueueSummaryResponse;
 }

@@ -10,6 +10,7 @@ from app.models.family import Family
 from app.models.family_contact import FamilyContact
 from app.models.item import Item
 from app.models.item_category import ItemCategory
+from app.models.item_image import ItemImage
 from app.models.login_rate_limit import LoginRateLimit
 from app.models.person import Person
 from app.models.role import Role
@@ -32,6 +33,7 @@ __all__ = [
     "SocialAssessment",
     "ItemCategory",
     "Item",
+    "ItemImage",
     "LoginRateLimit",
     "StockBatch",
     "StockMovement",

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-18 · Membros da família</title>
+    <style>
+      :root { color: #142033; background: #f5f6f8; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+      header { display: grid; gap: 8px; margin-bottom: 28px; }
+      h1, h2, p { margin: 0; }
+      h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.04em; }
+      h2 { font-size: 18px; }
+      p { color: #667085; line-height: 1.5; }
+      .status { width: fit-content; margin-top: 8px; padding: 7px 12px; color: #9a5b00; background: #fff2dc; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      section { margin-top: 32px; }
+      .section-heading { display: grid; gap: 4px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+      figure { margin: 0; overflow: hidden; background: white; border: 1px solid #e2e5e9; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.07); }
+      figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; color: #263247; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8eaed; }
+      figcaption span { color: #7b8492; font-weight: 500; }
+      figure a { display: block; background: #eef0f3; }
+      img { display: block; width: 100%; height: auto; }
+      .mobile img { width: min(100%, 390px); margin: 0 auto; }
+      .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
+      .note strong { display: block; margin-bottom: 5px; font-size: 14px; }
+      .note p { font-size: 13px; }
+      @media (max-width: 900px) {
+        main { width: min(100% - 20px, 680px); padding-top: 24px; }
+        .grid, .notes { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>V2-18 · Membros da família</h1>
+        <p>Cadastro e edição no padrão visual aprovado de Famílias. Clique na imagem para abrir a captura original.</p>
+        <span class="status">Aguardando aprovação visual</span>
+      </header>
+
+      <section>
+        <div class="section-heading"><h2>Referência × cadastro</h2><p>Superfícies claras, hierarquia e menu lateral no desktop; progresso compacto no celular.</p></div>
+        <div class="grid">
+          <figure>
+            <figcaption>Referência Famílias <span>direção aprovada</span></figcaption>
+            <a href="../v2-06/referencia-familias-desktop.png" target="_blank" rel="noreferrer"><img src="../v2-06/referencia-familias-desktop.png" alt="Referência aprovada da tela Famílias" /></a>
+          </figure>
+          <figure>
+            <figcaption>Novo membro <span>desktop 1440</span></figcaption>
+            <a href="membro-cadastro-desktop-1440.png" target="_blank" rel="noreferrer"><img src="membro-cadastro-desktop-1440.png" alt="Cadastro de membro no desktop" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Novo membro <span>mobile 390</span></figcaption>
+            <a href="membro-cadastro-mobile-390.png" target="_blank" rel="noreferrer"><img src="membro-cadastro-mobile-390.png" alt="Cadastro de membro no celular" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Condições do membro</h2><p>Trabalho, renda, igreja/UPG e condições individuais sem cartão escuro.</p></div>
+        <div class="grid">
+          <figure><figcaption>Edição · condições <span>desktop 1440</span></figcaption><a href="membro-edicao-condicoes-desktop-1440.png" target="_blank" rel="noreferrer"><img src="membro-edicao-condicoes-desktop-1440.png" alt="Condições do membro no desktop" /></a></figure>
+          <figure class="mobile"><figcaption>Edição · condições <span>mobile 390</span></figcaption><a href="membro-edicao-condicoes-mobile-390.png" target="_blank" rel="noreferrer"><img src="membro-edicao-condicoes-mobile-390.png" alt="Condições do membro no celular" /></a></figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Revisão antes de salvar</h2><p>A edição só é enviada após confirmação; exclusão exige uma segunda confirmação.</p></div>
+        <div class="grid">
+          <figure><figcaption>Edição · revisão <span>desktop 1440</span></figcaption><a href="membro-edicao-revisao-desktop-1440.png" target="_blank" rel="noreferrer"><img src="membro-edicao-revisao-desktop-1440.png" alt="Revisão do membro no desktop" /></a></figure>
+          <figure class="mobile"><figcaption>Edição · revisão <span>mobile 390</span></figcaption><a href="membro-edicao-revisao-mobile-390.png" target="_blank" rel="noreferrer"><img src="membro-edicao-revisao-mobile-390.png" alt="Revisão do membro no celular" /></a></figure>
+        </div>
+      </section>
+
+      <section class="notes">
+        <div class="note"><strong>Contrato preservado</strong><p>Mesmas rotas e campos gravados no backend; escolaridade registrada fora da lista não é perdida.</p></div>
+        <div class="note"><strong>Sem exemplos</strong><p>Campos vazios no cadastro e dados fictícios apenas nas capturas de teste.</p></div>
+        <div class="note"><strong>Próximo passo</strong><p>Benefícios familiares ficam para uma etapa separada após esta aprovação.</p></div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cesta Digital — referências visuais por tela</title>
+    <style>
+      :root {
+        color: #111827;
+        background: #f7f8fa;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      main {
+        width: min(1500px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0 64px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.1;
+      }
+
+      .intro {
+        max-width: 760px;
+        margin: 12px 0 32px;
+        color: #64748b;
+        line-height: 1.6;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+        gap: 24px;
+      }
+
+      figure {
+        overflow: hidden;
+        margin: 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgb(17 24 39 / 7%);
+      }
+
+      figure a {
+        display: block;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      figcaption {
+        padding: 16px 18px 18px;
+      }
+
+      strong,
+      span {
+        display: block;
+      }
+
+      span {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 14px;
+      }
+
+      a:focus-visible {
+        outline: 3px solid #d92676;
+        outline-offset: -3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Referências visuais por tela</h1>
+      <p class="intro">
+        Fonte de comparação do Frontend V2. Clique em qualquer imagem para abrir
+        a versão integral de 1586 × 992 px. Conteúdo e números são ilustrativos;
+        composição, hierarquia e linguagem visual são a referência.
+      </p>
+
+      <section class="grid" aria-label="Telas de referência">
+        <figure>
+          <a href="01-inicio-desktop.png"><img src="01-inicio-desktop.png" alt="Referência desktop da tela Início" /></a>
+          <figcaption><strong>01 — Início</strong><span>Dashboard operacional</span></figcaption>
+        </figure>
+        <figure>
+          <a href="02-familias-desktop.png"><img src="02-familias-desktop.png" alt="Referência desktop da tela Famílias" /></a>
+          <figcaption><strong>02 — Famílias</strong><span>Lista e contexto selecionado</span></figcaption>
+        </figure>
+        <figure>
+          <a href="03-avaliacoes-desktop.png"><img src="03-avaliacoes-desktop.png" alt="Referência desktop da tela Avaliações" /></a>
+          <figcaption><strong>03 — Avaliações</strong><span>Lista e evolução social</span></figcaption>
+        </figure>
+        <figure>
+          <a href="04-estoque-desktop.png"><img src="04-estoque-desktop.png" alt="Referência desktop da tela Estoque" /></a>
+          <figcaption><strong>04 — Estoque</strong><span>Itens, alertas e movimentos</span></figcaption>
+        </figure>
+        <figure>
+          <a href="05-entradas-desktop.png"><img src="05-entradas-desktop.png" alt="Referência desktop da tela Entradas" /></a>
+          <figcaption><strong>05 — Entradas</strong><span>Histórico e novo recebimento</span></figcaption>
+        </figure>
+        <figure>
+          <a href="06-entregas-desktop.png"><img src="06-entregas-desktop.png" alt="Referência desktop da tela Entregas" /></a>
+          <figcaption><strong>06 — Entregas</strong><span>Agenda, histórico e rota</span></figcaption>
+        </figure>
+        <figure>
+          <a href="07-tipos-de-cesta-desktop.png"><img src="07-tipos-de-cesta-desktop.png" alt="Referência desktop da tela Tipos de Cesta" /></a>
+          <figcaption><strong>07 — Tipos de Cesta</strong><span>Composição e resumo</span></figcaption>
+        </figure>
+        <figure>
+          <a href="08-relatorios-desktop.png"><img src="08-relatorios-desktop.png" alt="Referência desktop da tela Relatórios" /></a>
+          <figcaption><strong>08 — Relatórios</strong><span>Indicadores e exportações</span></figcaption>
+        </figure>
+        <figure>
+          <a href="09-administracao-desktop.png"><img src="09-administracao-desktop.png" alt="Referência desktop da tela Administração" /></a>
+          <figcaption><strong>09 — Administração</strong><span>Usuários e organização</span></figcaption>
+        </figure>
+        <figure>
+          <a href="10-login-desktop.png"><img src="10-login-desktop.png" alt="Referência desktop da tela Login" /></a>
+          <figcaption><strong>10 — Login</strong><span>Acesso e assinatura institucional</span></figcaption>
+        </figure>
+      </section>
+    </main>
+  </body>
+</html>

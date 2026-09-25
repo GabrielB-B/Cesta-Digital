@@ -6,6 +6,12 @@ import {
   getBatchExpirationStatus,
   isStockBatchReceived,
 } from "../../src/utils/stock";
+import { ROUTE_ACCESS } from "../../src/routes/routeAccess";
+import { getRouteMeta } from "../../src/routes/routeMeta";
+import {
+  APP_ROUTE_CONTRACTS,
+  NAVIGATION_CONTRACTS,
+} from "./support/route-contracts";
 
 const currentUser = {
   id: 1,
@@ -24,6 +30,21 @@ const operatorUser = {
   is_active: true,
   roles: ["operador"],
 };
+
+const routeAccessUsers = [
+  {
+    role: "admin",
+    user: { ...currentUser, roles: ["admin"] },
+  },
+  {
+    role: "lider_social",
+    user: { ...currentUser, id: 3, login_name: "lider", roles: ["lider_social"] },
+  },
+  {
+    role: "operador",
+    user: operatorUser,
+  },
+] as const;
 
 const family = {
   id: 1,
@@ -125,6 +146,60 @@ const familyDetail = {
       technical_notes: null,
     },
   ],
+};
+
+const familyBenefit = {
+  id: 1,
+  family_id: 1,
+  person_id: 1,
+  benefit_type: "Bolsa Família",
+  monthly_amount: "480.00",
+  counts_as_income: true,
+  is_active: true,
+  start_date: "2026-01-01",
+  end_date: null,
+  notes: "Cadastro social vigente",
+};
+
+const assessmentQueue = {
+  items: [
+    {
+      family_id: family.id,
+      internal_code: family.internal_code,
+      responsible_name: "Maria Silva",
+      total_residents: family.total_residents,
+      neighborhood: family.neighborhood,
+      city: family.city,
+      state: family.state,
+      family_status: family.status,
+      queue_status: "reavaliacao_vencida",
+      queue_reason: "prazo_vencido",
+      latest_assessment_id: 1,
+      latest_assessment_date: "2026-05-15",
+      latest_system_suggestion: "apta_recorrente",
+      latest_final_decision: "apta_recorrente",
+      latest_vulnerability_score: 4,
+      latest_approved_by_user_id: 1,
+      latest_approved_by_name: "Admin Homologacao",
+      next_revaluation_date: "2026-08-15",
+      current_system_suggestion: "apta_recorrente",
+      current_social_weight_score: 4,
+      current_priority_level: "media",
+      current_preview_differs_from_decision: false,
+    },
+  ],
+  total: 1,
+  limit: 25,
+  offset: 0,
+  reference_date: "2026-08-19",
+  due_soon_days: 30,
+  summary: {
+    sem_avaliacao: 0,
+    reavaliacao_vencida: 1,
+    reavaliacao_proxima: 0,
+    em_dia: 0,
+    total: 1,
+  },
 };
 
 const item = {
@@ -317,6 +392,56 @@ const basketType = {
   notes: null,
 };
 
+const basketTypeOverview = {
+  ...basketType,
+  item_count: 2,
+  estimated_value: "23.50",
+  updated_at: "2026-08-26T09:30:00",
+};
+
+const basketTypeDetail = {
+  ...basketType,
+  basket_items: [
+    {
+      id: 1,
+      item_id: 1,
+      item_name: "Arroz 1kg",
+      category_name: "Alimentos",
+      unit_measure: "pacote",
+      tracks_expiration: true,
+      reference_unit_value: "7.50",
+      image_path: null,
+      image_source: null,
+      image_attribution: null,
+      required_quantity: 1,
+    },
+    {
+      id: 2,
+      item_id: 2,
+      item_name: "Feijao 1kg",
+      category_name: "Alimentos",
+      unit_measure: "pacote",
+      tracks_expiration: true,
+      reference_unit_value: "8.00",
+      image_path: null,
+      image_source: null,
+      image_attribution: null,
+      required_quantity: 2,
+    },
+  ],
+};
+
+const basketAvailability = {
+  basket_type_id: 1,
+  basket_type_name: "Cesta padrao",
+  possible_baskets: 4,
+  limiting_item_ids: [1],
+  items: [
+    { item_id: 1, item_name: "Arroz 1kg", unit_measure: "pacote", required_quantity: 1, available_quantity: 4, possible_from_item: 4, missing_for_next_basket: 1 },
+    { item_id: 2, item_name: "Feijao 1kg", unit_measure: "pacote", required_quantity: 2, available_quantity: 10, possible_from_item: 5, missing_for_next_basket: 2 },
+  ],
+};
+
 const schedule = {
   id: 1,
   family_id: 1,
@@ -325,6 +450,40 @@ const schedule = {
   status: "agendado",
   notes: "Retirada pela manha",
   created_by_user_id: 1,
+};
+
+const deliveryOperations = {
+  items: [
+    {
+      id: 1,
+      family_id: 1,
+      family_code: "FAM-0001",
+      family_status: "apta_recorrente",
+      basket_type_id: 1,
+      basket_type_name: "Cesta padrao",
+      scheduled_date: "2026-08-21",
+      status: "agendado",
+      notes: "Retirada pela manha",
+      street: "Rua A",
+      number: "10",
+      complement: null,
+      neighborhood: "Centro",
+      city: "Aracaju",
+      state: "SE",
+    },
+  ],
+  total: 1,
+  limit: 8,
+  offset: 0,
+  reference_date: "2026-08-21",
+  period: "hoje",
+  summary: {
+    scheduled: 1,
+    rescheduled: 0,
+    completed: 0,
+    exceptions: 0,
+    total: 1,
+  },
 };
 
 const delivery = {
@@ -349,6 +508,25 @@ const delivery = {
       expiration_date: "2099-12-31",
       quantity: 2,
     },
+  ],
+};
+
+const reportsOverview = {
+  start_date: "2026-08-01",
+  end_date: "2026-08-26",
+  generated_at: "2026-08-26T10:30:00",
+  kpis: {
+    families_served: 1248,
+    baskets_delivered: 342,
+    items_distributed: 7856,
+  },
+  available_reports: [
+    { key: "attendances", title: "Atendimentos por período", description: "Famílias atendidas e recorrência de entregas no período.", format: "csv", uses_period: true },
+    { key: "deliveries", title: "Cestas entregues", description: "Entregas concluídas por data, família e tipo de cesta.", format: "csv", uses_period: true },
+    { key: "stock_movements", title: "Estoque movimentado", description: "Entradas, saídas, perdas e ajustes registrados no período.", format: "csv", uses_period: true },
+    { key: "benefits", title: "Benefícios concedidos", description: "Benefícios iniciados no período, com valor e situação.", format: "csv", uses_period: true },
+    { key: "families", title: "Famílias cadastradas", description: "Cadastros realizados no período, por situação e região.", format: "csv", uses_period: true },
+    { key: "stock_alerts", title: "Alertas de estoque", description: "Posição atual dos itens abaixo do estoque mínimo.", format: "csv", uses_period: false },
   ],
 };
 
@@ -431,6 +609,69 @@ async function mockApi(page: Page, user = currentUser) {
     { ...item },
     { ...inactiveStockItem },
   ];
+
+  const getStockOverview = (requestUrl: string) => {
+    const url = new URL(requestUrl);
+    const query = (url.searchParams.get("q") ?? "").toLocaleLowerCase("pt-BR");
+    const active = url.searchParams.get("is_active");
+    const attention = url.searchParams.get("attention");
+    const overviewItems = mockedStockSummaries.map((summary) => ({
+      ...summary,
+      next_expiration_date: summary.item_id === 1 ? "2099-12-31" : null,
+      expiring_soon_batches: 0,
+      expired_batches: summary.item_id === 1 ? 1 : 0,
+      missing_expiration_batches: summary.item_id === 1 ? 1 : 0,
+      restricted_batches: 0,
+    }));
+    const filteredItems = overviewItems.filter((entry) => {
+      const matchesQuery = !query || [
+        entry.item_name,
+        entry.category_name,
+        entry.unit_measure,
+      ].some((value) => value.toLocaleLowerCase("pt-BR").includes(query));
+      const matchesActive = active === null || entry.is_active === (active === "true");
+      const matchesAttention =
+        !attention ||
+        (attention === "estoque_baixo" && entry.is_active && entry.is_below_minimum) ||
+        (attention === "vencendo_em_breve" && entry.expiring_soon_batches > 0) ||
+        (attention === "vencido" && entry.expired_batches > 0) ||
+        (attention === "validade_ausente" && entry.missing_expiration_batches > 0) ||
+        (attention === "restrito" && entry.restricted_batches > 0);
+      return matchesQuery && matchesActive && matchesAttention;
+    });
+
+    return {
+      items: filteredItems,
+      total: filteredItems.length,
+      limit: 25,
+      offset: 0,
+      reference_date: "2026-08-20",
+      due_soon_days: 15,
+      summary: {
+        total_items: overviewItems.length,
+        active_items: overviewItems.filter((entry) => entry.is_active).length,
+        low_stock_items: overviewItems.filter(
+          (entry) => entry.is_active && entry.is_below_minimum,
+        ).length,
+        expiring_soon_batches: overviewItems.reduce(
+          (total, entry) => total + entry.expiring_soon_batches,
+          0,
+        ),
+        expired_batches: overviewItems.reduce(
+          (total, entry) => total + entry.expired_batches,
+          0,
+        ),
+        missing_expiration_batches: overviewItems.reduce(
+          (total, entry) => total + entry.missing_expiration_batches,
+          0,
+        ),
+        restricted_batches: overviewItems.reduce(
+          (total, entry) => total + entry.restricted_batches,
+          0,
+        ),
+      },
+    };
+  };
 
   const recomputeStockSummary = (itemId: number) => {
     const summary = mockedStockSummaries.find(
@@ -518,6 +759,9 @@ async function mockApi(page: Page, user = currentUser) {
       },
     ],
   }));
+  await page.route("**/social-assessments/queue**", async (route) =>
+    fulfillJson(route, assessmentQueue, { "X-Total-Count": "1" })
+  );
   await page.route("**/families?**", async (route) =>
     fulfillJson(route, [family], { "X-Total-Count": "1" })
   );
@@ -646,6 +890,12 @@ async function mockApi(page: Page, user = currentUser) {
       "X-Total-Count": String(mockedStockSummaries.length),
     })
   );
+  await page.route("**/stock-overview?**", async (route) => {
+    const overview = getStockOverview(route.request().url());
+    await fulfillJson(route, overview, {
+      "X-Total-Count": String(overview.total),
+    });
+  });
   await page.route("**/stock-batches?**", async (route) => {
     const url = new URL(route.request().url());
     const itemId = Number(url.searchParams.get("item_id") ?? 0);
@@ -655,6 +905,11 @@ async function mockApi(page: Page, user = currentUser) {
     await fulfillJson(route, response, { "X-Total-Count": String(response.length) });
   });
   await page.route("**/stock-batches", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+
     if (route.request().method() === "POST") {
       const payload = route.request().postDataJSON();
       const createdBatch = {
@@ -777,8 +1032,25 @@ async function mockApi(page: Page, user = currentUser) {
   await page.route("**/basket-types?**", async (route) =>
     fulfillJson(route, [basketType], { "X-Total-Count": "1" })
   );
+  await page.route("**/basket-types/overview?**", async (route) =>
+    fulfillJson(route, [basketTypeOverview], { "X-Total-Count": "1" })
+  );
+  await page.route(/\/basket-types\/\d+\/availability(?:\?.*)?$/, async (route) =>
+    fulfillJson(route, basketAvailability)
+  );
+  await page.route(/\/basket-types\/\d+(?:\?.*)?$/, async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+
+    await fulfillJson(route, basketTypeDetail);
+  });
   await page.route("**/delivery-schedules?**", async (route) =>
     fulfillJson(route, [schedule], { "X-Total-Count": "1" })
+  );
+  await page.route("**/delivery-operations?**", async (route) =>
+    fulfillJson(route, deliveryOperations, { "X-Total-Count": "1" })
   );
   await page.route("**/deliveries?**", async (route) =>
     fulfillJson(route, [delivery], { "X-Total-Count": "1" })
@@ -788,6 +1060,19 @@ async function mockApi(page: Page, user = currentUser) {
       status: 201,
       contentType: "application/json",
       body: JSON.stringify({ ...delivery, id: 2 }),
+    });
+  });
+  await page.route("**/reports/overview?**", async (route) =>
+    fulfillJson(route, reportsOverview)
+  );
+  await page.route("**/reports/*/export?**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "text/csv; charset=utf-8",
+      headers: {
+        "Content-Disposition": 'attachment; filename="relatorio-periodo.csv"',
+      },
+      body: "codigo;quantidade\nFAM-0001;1\n",
     });
   });
   await page.route("**/users/roles", async (route) =>
@@ -827,6 +1112,132 @@ test.beforeEach(async ({ page }) => {
   await mockApi(page);
 });
 
+test("route access groups remain equal to the approved RBAC baseline", () => {
+  expect(ROUTE_ACCESS).toEqual({
+    authenticated: ["admin", "lider_social", "operador"],
+    social: ["admin", "lider_social"],
+    operations: ["admin", "operador"],
+    administration: ["admin"],
+  });
+});
+
+test("route metadata remains aligned with the 28-path contract", () => {
+  expect(APP_ROUTE_CONTRACTS).toHaveLength(28);
+
+  for (const route of APP_ROUTE_CONTRACTS) {
+    expect(getRouteMeta(route.path)).toMatchObject({
+      title: route.title,
+      sectionPath: route.sectionPath,
+    });
+  }
+});
+
+for (const scenario of routeAccessUsers) {
+  test(`direct route access remains frozen for ${scenario.role}`, async ({ page }) => {
+    test.slow();
+    await page.unroute("**/auth/me");
+    await page.route("**/auth/me", async (route) => fulfillJson(route, scenario.user));
+
+    await page.goto("/");
+    const navigation = page.getByLabel("Navegação principal");
+
+    for (const item of NAVIGATION_CONTRACTS) {
+      const shouldBeVisible = (item.allowedRoles as readonly string[]).includes(
+        scenario.role
+      );
+      const link = navigation.getByRole("link", { name: item.label });
+
+      if (shouldBeVisible) {
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAttribute("href", item.path);
+      } else {
+        await expect(link).toHaveCount(0);
+      }
+    }
+
+    for (const route of APP_ROUTE_CONTRACTS) {
+      if (route.allowedRoles === "public") {
+        continue;
+      }
+
+      await page.goto(route.path);
+
+      const isAllowed = (route.allowedRoles as readonly string[]).includes(
+        scenario.role
+      );
+
+      if (isAllowed) {
+        await expect(page).toHaveTitle(`${route.title} | Cesta Digital`);
+        await expect(
+          page.getByRole("heading", { name: "Acesso restrito" })
+        ).toHaveCount(0);
+      } else {
+        await expect(
+          page.getByRole("heading", { name: "Acesso restrito" })
+        ).toBeVisible();
+      }
+    }
+  });
+}
+
+test("anonymous deep links return to login without protected content", async ({ page }) => {
+  await page.unroute("**/auth/me");
+  await page.route("**/auth/me", (route) =>
+    route.fulfill({
+      status: 401,
+      contentType: "application/json",
+      body: JSON.stringify({ detail: "Nao autenticado" }),
+    })
+  );
+
+  await page.goto("/families/1");
+
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByLabel("Nome de login")).toBeVisible();
+  await expect(page.getByText("FAM-0001")).toHaveCount(0);
+});
+
+test("authenticated unknown paths keep the not-found fallback", async ({ page }) => {
+  await page.goto("/rota-inexistente-v2");
+
+  await expect(
+    page.getByRole("heading", { name: "Este caminho não existe" })
+  ).toBeVisible();
+  await expect(page).toHaveTitle("Página não encontrada | Cesta Digital");
+});
+
+test("capture approval evidence at mobile and desktop baselines", async ({
+  page,
+}, testInfo) => {
+  for (const viewport of [
+    { name: "mobile-390", width: 390, height: 844 },
+    { name: "desktop-1440", width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/login");
+    await page.getByRole("heading", { name: "Bem-vindo de volta!" }).waitFor();
+
+    const loginPath = testInfo.outputPath(`login-${viewport.name}.png`);
+    await page.screenshot({ path: loginPath, fullPage: true });
+    await testInfo.attach(`login-${viewport.name}`, {
+      path: loginPath,
+      contentType: "image/png",
+    });
+
+    await page.goto("/");
+    await page
+      .getByRole("heading", { name: /Olá,/i })
+      .waitFor();
+
+    const dashboardPath = testInfo.outputPath(`dashboard-${viewport.name}.png`);
+    await page.screenshot({ path: dashboardPath, fullPage: true });
+    await testInfo.attach(`dashboard-${viewport.name}`, {
+      path: dashboardPath,
+      contentType: "image/png",
+    });
+  }
+});
+
 test("stock policy uses Sao Paulo civil date and evaluates optional legacy dates", () => {
   expect(formatStockMovementType("saida_entrega")).toBe("Saída para entrega");
 
@@ -861,41 +1272,39 @@ test("stock policy uses Sao Paulo civil date and evaluates optional legacy dates
   ).toBeGreaterThan(0);
 });
 
-async function expectLoginBrandSeparated(page: Page) {
-  const brand = page
-    .locator(".login-page .brand-lockup--login:visible")
-    .filter({ hasText: "Cesta Digital" })
-    .first();
-  const mark = brand.locator(".brand-lockup__mark");
-  const title = brand.locator(".brand-lockup__title");
+async function expectLoginBrandVisible(page: Page) {
+  const symbol = page.getByRole("img", { name: "Símbolo da Cesta Digital" });
 
-  await expect(mark).toBeVisible();
-  await expect(title).toHaveText("Cesta Digital");
+  await expect(symbol).toBeVisible();
 
-  const markBox = await mark.boundingBox();
-  const titleBox = await title.boundingBox();
+  const symbolBox = await symbol.boundingBox();
+  const viewportWidth = page.viewportSize()?.width ?? 0;
 
-  expect(markBox).not.toBeNull();
-  expect(titleBox).not.toBeNull();
-  expect(markBox!.y + markBox!.height).toBeLessThanOrEqual(titleBox!.y - 4);
+  expect(symbolBox).not.toBeNull();
+  expect(symbolBox!.width).toBeGreaterThanOrEqual(viewportWidth >= 900 ? 120 : 56);
+  expect(symbolBox!.height).toBeGreaterThanOrEqual(viewportWidth >= 900 ? 120 : 56);
 }
 
 test("login brand and immediate navigation remain polished on desktop and mobile", async ({ page }) => {
   await page.setViewportSize({ width: 1365, height: 768 });
   await page.goto("/login");
-  await expectLoginBrandSeparated(page);
+  await expectLoginBrandVisible(page);
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await expectLoginBrandSeparated(page);
+  await expectLoginBrandVisible(page);
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
+  await page.getByRole("button", { name: "Mostrar senha" }).click();
+  await expect(page.getByLabel("Senha", { exact: true })).toHaveAttribute("type", "text");
+  await page.getByRole("button", { name: "Ocultar senha" }).click();
+  await expect(page.getByLabel("Senha", { exact: true })).toHaveAttribute("type", "password");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.locator(".login-success-overlay")).toHaveCount(0);
   await expect(page.locator(".login-success-overlay__video")).toHaveCount(0);
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible({ timeout: 1_500 });
 });
 
@@ -937,17 +1346,17 @@ test("stale anonymous session check cannot undo a successful login", async ({
   await page.goto("/login");
   await initialRequestStarted;
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible({ timeout: 1_500 });
   releaseStaleSession();
   await staleSessionResponse;
   await expect(page).toHaveURL(/\/$/);
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible();
 });
 
@@ -963,7 +1372,7 @@ test("failed login keeps the user on login without success splash", async ({ pag
 
   await page.goto("/login");
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("senha-errada");
+  await page.getByLabel("Senha", { exact: true }).fill("senha-errada");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.getByText("Credenciais invalidas.")).toBeVisible();
@@ -977,13 +1386,13 @@ test("reduced motion login never renders blocking overlay or video", async ({ pa
   await page.goto("/login");
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.locator(".login-success-overlay")).toHaveCount(0);
   await expect(page.locator(".login-success-overlay__video")).toHaveCount(0);
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible({ timeout: 1_500 });
 });
 
@@ -1020,31 +1429,35 @@ test("auth loading uses the brand symbol on desktop and mobile", async ({ page }
   await page.goto("/");
 
   await activeGate.requestStarted;
-  await expect(page.locator(".app-loading .brand-lockup--mark-only")).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: /Carregando/i }).locator("img")
+  ).toBeVisible();
   activeGate.releaseResponse();
-  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 
   await page.setViewportSize({ width: 390, height: 844 });
   activeGate = createAuthResponseGate();
   await page.reload();
 
   await activeGate.requestStarted;
-  await expect(page.locator(".app-loading .brand-lockup--mark-only")).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: /Carregando/i }).locator("img")
+  ).toBeVisible();
   activeGate.releaseResponse();
-  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 });
 
 test("login, dashboard and core operational routes render", async ({ page }) => {
   await page.goto("/login");
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page.locator(".login-success-overlay")).toHaveCount(0);
   await expect(page.locator(".login-success-overlay__video")).toHaveCount(0);
   await expect(
-    page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })
+    page.getByRole("heading", { name: /Olá,/i })
   ).toBeVisible({ timeout: 1_500 });
   await expect(
     page.locator("#conteudo-principal").getByText("Admin Homologacao")
@@ -1053,16 +1466,16 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
   const mainNav = page.getByLabel("Navegação principal");
 
   await mainNav.getByRole("link", { name: /Famílias/i }).click();
-  await expect(page.getByRole("heading", { name: "Familias", exact: true })).toBeVisible();
-  await expect(page.getByText("FAM-0001")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Famílias", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "FAM-0001", exact: true })).toBeVisible();
 
-  await mainNav.getByRole("link", { name: /^Itens$/i }).click();
-  await expect(page.getByRole("heading", { name: "Itens", exact: true })).toBeVisible();
-  await expect(page.getByText("Arroz 1kg")).toBeVisible();
+  await mainNav.getByRole("link", { name: /^Estoque$/i }).click();
+  await expect(page.getByRole("heading", { name: "Estoque", exact: true })).toBeVisible();
+  await expect(page.getByText("Arroz 1kg").first()).toBeVisible();
 
   await mainNav.getByRole("link", { name: /Entregas/i }).click();
-  await expect(page.getByRole("heading", { name: "Agendamentos e entregas" })).toBeVisible();
-  await expect(page.getByLabel(/Observacao do agendamento/i)).toHaveValue(
+  await expect(page.getByRole("heading", { name: "Entregas", exact: true })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Observações" })).toHaveValue(
     "Retirada pela manha"
   );
 });
@@ -1082,12 +1495,112 @@ test("homologation warning remains visible before and after login", async ({ pag
   await expect(page.getByRole("note", { name: "Aviso do ambiente" })).toBeVisible();
 });
 
+test("categories keep create and edit contracts in the V2 responsive layout", async ({
+  page,
+}) => {
+  let categories = [
+    {
+      id: 1,
+      name: "Alimentos",
+      description: "Itens essenciais de cesta.",
+      is_active: true,
+    },
+    {
+      id: 2,
+      name: "Higiene",
+      description: "Produtos de higiene pessoal.",
+      is_active: true,
+    },
+  ];
+
+  await page.route("**/item-categories**", async (route) => {
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+
+    if (request.resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+
+    if (request.method() === "POST") {
+      const payload = request.postDataJSON();
+      const created = { id: 3, ...payload };
+      categories = [...categories, created];
+      await fulfillJson(route, created);
+      return;
+    }
+
+    if (request.method() === "PUT") {
+      const categoryId = Number(pathname.split("/").at(-1));
+      const payload = request.postDataJSON();
+      const updated = { id: categoryId, ...payload };
+      categories = categories.map((category) =>
+        category.id === categoryId ? updated : category,
+      );
+      await fulfillJson(route, updated);
+      return;
+    }
+
+    await fulfillJson(route, categories);
+  });
+
+  await page.goto("/item-categories");
+  await expect(page.getByRole("heading", { level: 1, name: "Categorias" })).toBeVisible();
+  await expect(page.getByText("2 no total · 2 ativas")).toBeVisible();
+
+  await page.getByLabel("Nome").fill("Bebidas");
+  await page.getByLabel("Descrição (opcional)").fill("Bebidas não alcoólicas.");
+  const createRequestPromise = page.waitForRequest(
+    (request) =>
+      new URL(request.url()).pathname.endsWith("/item-categories") &&
+      request.method() === "POST",
+  );
+  await page.getByRole("button", { name: "Cadastrar categoria" }).click();
+  const createRequest = await createRequestPromise;
+  expect(createRequest.postDataJSON()).toEqual({
+    name: "Bebidas",
+    description: "Bebidas não alcoólicas.",
+    is_active: true,
+  });
+  await expect(page.getByText("Categoria cadastrada.")).toBeVisible();
+  await expect(page.getByRole("article", { name: "Categoria Bebidas" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Editar Bebidas" }).click();
+  await page.getByLabel("Descrição (opcional)").fill("Bebidas e sucos.");
+  await page.getByText("Categoria ativa", { exact: true }).click();
+  await expect(page.getByLabel("Categoria ativa")).not.toBeChecked();
+  const updateRequestPromise = page.waitForRequest(
+    (request) =>
+      new URL(request.url()).pathname.endsWith("/item-categories/3") &&
+      request.method() === "PUT",
+  );
+  await page.getByRole("button", { name: "Salvar categoria" }).click();
+  const updateRequest = await updateRequestPromise;
+  expect(updateRequest.postDataJSON()).toEqual({
+    name: "Bebidas",
+    description: "Bebidas e sucos.",
+    is_active: false,
+  });
+  await expect(page.getByText("Categoria atualizada.")).toBeVisible();
+  await expect(page.getByRole("article", { name: "Categoria Bebidas" })).toContainText(
+    "Inativa",
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/item-categories");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+});
+
 test("mobile stock entry completes without document overflow", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
   const dashboardEntryLink = page
-    .getByRole("link", { name: "Registrar entrada" })
+    .getByRole("link", { name: "Nova entrada" })
     .first();
   await expect(dashboardEntryLink).toBeVisible();
   await dashboardEntryLink.click();
@@ -1112,17 +1625,17 @@ test("mobile stock entry completes without document overflow", async ({ page }) 
 
   await page.goto("/items");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Itens" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Estoque" })).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Registrar entrada" }).first()
   ).toBeVisible();
-  const inactiveRow = page.getByRole("row", {
-    name: /Farinha descontinuada/,
+  const inactiveCard = page.locator("article").filter({
+    hasText: "Farinha descontinuada",
   });
-  await expect(inactiveRow.getByText("Inativo", { exact: true })).toBeVisible();
-  await expect(inactiveRow.getByText("Atenção", { exact: true })).toHaveCount(0);
+  await expect(inactiveCard.getByText("Inativo", { exact: true })).toBeVisible();
+  await expect(inactiveCard.getByText("Atenção", { exact: true })).toHaveCount(0);
   await expect(
-    inactiveRow.getByRole("link", { name: "Registrar entrada" })
+    inactiveCard.getByRole("link", { name: "Registrar entrada" })
   ).toHaveCount(0);
 });
 
@@ -1131,25 +1644,42 @@ test("item creation guides the first stock entry with conditional expiration", a
 }) => {
   await page.goto("/items/new");
 
-  await expect(
-    page.getByText(
-      "A data não pertence ao item. Ela será informada em cada entrada, conforme a embalagem recebida."
-    )
-  ).toBeVisible();
+  await expect(page.getByText("Exige validade em cada recebimento.")).toBeVisible();
 
   await page.getByLabel("Categoria").selectOption("1");
-  await page.getByLabel("Nome do item").fill("Feijao 1kg");
+  await page.getByLabel("Nome do produto").fill("Feijao 1kg");
+  await page.getByLabel("Valor estimado (R$)").fill("8.5");
+  await page.getByLabel("Estoque mínimo").fill("6");
+  const createItemRequestPromise = page.waitForRequest(
+    (request) =>
+      new URL(request.url()).pathname.endsWith("/items") &&
+      request.method() === "POST",
+  );
   const activeItemsRequestPromise = page.waitForRequest((request) => {
     const url = new URL(request.url());
     return url.pathname.endsWith("/items") && url.searchParams.get("is_active") === "true";
   });
-  await page.getByRole("button", { name: "Cadastrar item" }).click();
-  await activeItemsRequestPromise;
+  await page.getByRole("button", { name: "Salvar e registrar entrada" }).click();
+  const [createItemRequest] = await Promise.all([
+    createItemRequestPromise,
+    activeItemsRequestPromise,
+  ]);
+  expect(createItemRequest.postDataJSON()).toEqual({
+    category_id: 1,
+    name: "Feijao 1kg",
+    barcode: null,
+    unit_measure: "unidade",
+    tracks_expiration: true,
+    is_active: true,
+    reference_unit_value: 8.5,
+    minimum_stock_alert: 6,
+    notes: null,
+  });
 
   await expect(page).toHaveURL(/\/stock-batches\/new\?itemId=2&from=item-create$/);
   await expect(page.getByRole("heading", { name: "Registrar entrada" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "Item", exact: true })).toHaveValue("2");
-  await expect(page.getByText(/Item cadastrado\. Registre agora/)).toBeVisible();
+  await expect(page.getByText("Produto cadastrado. Registre a primeira entrada.")).toBeVisible();
 
   const expirationField = page.getByLabel("Data de validade do lote");
   const entryDateField = page.getByLabel("Data de entrada");
@@ -1201,12 +1731,146 @@ test("item creation guides the first stock entry with conditional expiration", a
   await expect(
     page.getByRole("link", { name: "Registrar entrada" }).first()
   ).toBeVisible();
-  await expect(page.getByText("Saldo utilizável: 7")).toBeVisible();
-  const createdEntryCard = page.locator(".trace-card").filter({
-    hasText: "Compra com recursos da instituição",
-  });
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("Saldo utilizável");
+  await expect(itemBalance.locator("strong").first()).toHaveText(/7\s+unidade/);
+  const createdEntryCard = page
+    .getByLabel("Lotes do item")
+    .getByRole("article")
+    .filter({ hasText: "Compra com recursos da instituição" });
   await expect(createdEntryCard).toContainText("31/12/2099");
   await expect(createdEntryCard).toContainText("LT-MOCK-");
+});
+
+test("entries history uses real batch data and registers from the desktop panel", async ({ page }) => {
+  await page.goto("/stock-batches");
+
+  await expect(page.getByRole("heading", { level: 1, name: "Entradas" })).toBeVisible();
+  const historyTable = page.getByRole("table", { name: "Histórico de lotes recebidos" });
+  await expect(historyTable).toBeVisible();
+  await expect(historyTable.getByRole("cell", { name: "LT-MOCK-001" })).toBeVisible();
+  await expect(historyTable.getByText("Doação de item", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Família Silva")).toHaveCount(0);
+  await expect(
+    page.getByLabel("Navegação principal").getByRole("link", { name: "Entradas" }),
+  ).toHaveAttribute("aria-current", "page");
+
+  const formPanel = page.getByLabel("Cadastro rápido de entrada");
+  await formPanel.getByRole("combobox", { name: "Item", exact: true }).selectOption("1");
+  await formPanel.getByLabel("Data de validade do lote").fill("2099-12-31");
+
+  const requestPromise = page.waitForRequest(
+    (request) => request.url().endsWith("/stock-batches") && request.method() === "POST",
+  );
+  await formPanel.getByRole("button", { name: "Registrar entrada" }).click();
+  await requestPromise;
+
+  await expect(
+    formPanel.getByText("Entrada registrada. O histórico e o saldo do produto foram atualizados."),
+  ).toBeVisible();
+});
+
+test("item creation persists an explicitly selected catalog image after the product", async ({
+  page,
+}) => {
+  const barcode = "7891000100103";
+  const imageUrl =
+    "https://images.openfoodfacts.org/images/products/789/100/010/0103/front_pt.34.400.jpg";
+
+  await page.route("**/product-images/open-facts**", async (route) =>
+    fulfillJson(route, {
+      barcode,
+      found: true,
+      has_image: true,
+      product_name: "Leite Condensado Integral Moça",
+      brands: "Nestlé, Moça",
+      quantity: "395 g",
+      image_url: imageUrl,
+      source_name: "Open Food Facts",
+      attribution: "Open Food Facts contributors · CC BY-SA 3.0",
+      license_name: "CC BY-SA 3.0",
+      license_url: "https://creativecommons.org/licenses/by-sa/3.0/",
+    })
+  );
+  await page.route(imageUrl, async (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "image/png",
+      body: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII=",
+        "base64"
+      ),
+    })
+  );
+  await page.route("**/items/2/image/import-open-facts", async (route) =>
+    fulfillJson(route, {
+      item_id: 2,
+      image_path: "/public/items/2/image?v=e2e-image",
+      mime_type: "image/webp",
+      size_bytes: 1240,
+      sha256: "e2e-image-sha256",
+      source: "open_facts",
+      source_url: imageUrl,
+      attribution: "Open Food Facts contributors · CC BY-SA 3.0",
+    })
+  );
+
+  await page.goto("/items/new");
+  await page.getByLabel("Categoria").selectOption("1");
+  await page.getByLabel("Nome do produto").fill("Leite Condensado Moça 395g");
+  await page.getByLabel("Código EAN/GTIN").fill(barcode);
+  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByRole("button", { name: "Usar esta foto" }).click();
+
+  const itemRequestPromise = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return url.pathname.endsWith("/items") && request.method() === "POST";
+  });
+  const imageRequestPromise = page.waitForRequest(
+    (request) =>
+      new URL(request.url()).pathname.endsWith("/items/2/image/import-open-facts") &&
+      request.method() === "POST"
+  );
+  await page.getByRole("button", { name: "Salvar e registrar entrada" }).click();
+
+  const [itemRequest, imageRequest] = await Promise.all([
+    itemRequestPromise,
+    imageRequestPromise,
+  ]);
+  expect(itemRequest.postDataJSON()).toMatchObject({ barcode });
+  expect(imageRequest.postDataJSON()).toEqual({ barcode });
+  await expect(page).toHaveURL(/\/stock-batches\/new\?itemId=2&from=item-create$/);
+});
+
+test("product creation filters inactive categories and protects dirty cancellation", async ({
+  page,
+}) => {
+  await page.route("**/item-categories**", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+    await fulfillJson(route, [
+      { id: 1, name: "Alimentos", description: null, is_active: true },
+      { id: 2, name: "Arquivada", description: null, is_active: false },
+    ]);
+  });
+
+  await page.goto("/items/new");
+  await expect(page.getByLabel("Categoria").locator("option", { hasText: "Arquivada" })).toHaveCount(0);
+  await page.getByLabel("Nome do produto").fill("Produto em edição");
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.type()).toBe("confirm");
+    expect(dialog.message()).toBe("Descartar as alterações deste produto?");
+    await dialog.dismiss();
+  });
+  await page.getByRole("link", { name: "Cancelar" }).click();
+  await expect(page).toHaveURL(/\/items\/new$/);
+
+  page.once("dialog", async (dialog) => dialog.accept());
+  await page.getByRole("link", { name: "Cancelar" }).click();
+  await expect(page).toHaveURL(/\/items$/);
 });
 
 test("invalid stock entry item query never becomes a selectable payload", async ({
@@ -1235,10 +1899,10 @@ test("batch traceability can quarantine stock without mobile overflow", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/items/1");
 
-  const batchCard = page.locator(".trace-card").filter({ hasText: "LT-MOCK-001" });
+  const batchCard = page.getByRole("article", { name: "Lote LT-MOCK-001" });
   await expect(batchCard).toBeVisible();
   await expect(batchCard).toContainText("Prateleira A1");
-  await batchCard.getByText("Corrigir identificação ou situação").click();
+  await batchCard.getByText("Editar rastreabilidade").click();
 
   await batchCard.getByLabel("Situação física").selectOption("quarentena");
   await batchCard.getByLabel("Localização").fill("Mesa de triagem");
@@ -1260,12 +1924,12 @@ test("batch traceability can quarantine stock without mobile overflow", async ({
   });
 
   await expect(
-    batchCard.locator(".trace-card__header .pill").filter({
-      hasText: "Em quarentena",
-    })
+    batchCard.locator("span").filter({ hasText: /^Em quarentena$/ })
   ).toBeVisible();
   await expect(batchCard).toContainText("Em conferência de integridade");
-  await expect(page.getByText("Saldo utilizável: 0")).toBeVisible();
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("Saldo utilizável");
+  await expect(itemBalance.locator("strong").first()).toHaveText(/0\s+pacote/);
   const hasNoDocumentOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth <= document.documentElement.clientWidth
   );
@@ -1283,39 +1947,46 @@ test("inactive item creation stays on detail without stock entry CTA", async ({ 
   await page.goto("/items/new");
 
   await page.getByLabel("Categoria").selectOption("1");
-  await page.getByLabel("Nome do item").fill("Farinha nova");
-  await page.getByLabel("Item ativo").uncheck();
-  await page.getByRole("button", { name: "Cadastrar item" }).click();
+  await page.getByLabel("Nome do produto").fill("Farinha nova");
+  await page.getByLabel("Produto ativo").uncheck();
+  await page.getByRole("button", { name: "Cadastrar produto" }).click();
 
   await expect(page).toHaveURL(/\/items\/2$/);
   await expect(
     page.getByRole("heading", { level: 1, name: "Farinha nova" })
   ).toBeVisible();
   await expect(
-    page.getByText("Item inativo cadastrado. Ative-o antes de registrar uma entrada de estoque.")
+    page.getByText("Produto inativo cadastrado.")
   ).toBeVisible();
-  await expect(page.getByText("Saldo utilizável: 0")).toBeVisible();
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("Saldo utilizável");
+  await expect(itemBalance.locator("strong").first()).toHaveText(/0\s+unidade/);
   await expect(page.getByRole("link", { name: "Registrar entrada" })).toHaveCount(0);
 });
 
 test("deactivating and reactivating an item recomputes usable stock", async ({ page }) => {
   await page.goto("/items/1");
 
-  await expect(page.getByText("Saldo utilizável: 8")).toBeVisible();
-  await page.getByLabel("Item ativo").uncheck();
-  await page.getByRole("button", { name: "Salvar item" }).click();
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("8 pacote");
+  await page.getByRole("button", { name: "Editar produto" }).click();
+  await page.getByText("Produto ativo", { exact: true }).click();
+  await expect(page.getByLabel("Produto ativo")).not.toBeChecked();
+  await page.getByRole("button", { name: "Salvar produto" }).click();
 
-  await expect(page.getByText("Item atualizado com auditoria registrada.")).toBeVisible();
-  await expect(page.getByText("Saldo utilizável: 0")).toBeVisible();
-  await expect(page.getByText("Status: Inativo")).toBeVisible();
+  await expect(page.getByText("Produto atualizado.")).toBeVisible();
+  await expect(itemBalance).toContainText("0 pacote");
+  await expect(page.getByText("Inativo", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Registrar entrada" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Ajustar saldo" })).toHaveCount(0);
 
-  await page.getByLabel("Item ativo").check();
-  await page.getByRole("button", { name: "Salvar item" }).click();
+  await page.getByRole("button", { name: "Editar produto" }).click();
+  await page.getByText("Produto ativo", { exact: true }).click();
+  await expect(page.getByLabel("Produto ativo")).toBeChecked();
+  await page.getByRole("button", { name: "Salvar produto" }).click();
 
-  await expect(page.getByText("Saldo utilizável: 8")).toBeVisible();
-  await expect(page.getByText("Status: Ativo")).toBeVisible();
+  await expect(itemBalance).toContainText("8 pacote");
+  await expect(page.getByText("Ativo", { exact: true }).first()).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Registrar entrada" }).first()
   ).toBeVisible();
@@ -1329,22 +2000,23 @@ test("item detail explains expiration and highlights critical batches", async ({
   await page.goto("/items/1");
 
   await expect(page.getByRole("heading", { name: "Arroz 1kg" })).toBeVisible();
-  await expect(page.getByText("Saldo utilizável: 8")).toBeVisible();
+  const itemBalance = page.getByLabel("Resumo do produto").locator("article").first();
+  await expect(itemBalance).toContainText("8 pacote");
   await expect(page.getByText("2 lotes com validade crítica")).toBeVisible();
   await expect(page.getByText("1 lote com entrada futura")).toBeVisible();
 
   const batchesList = page.getByLabel("Lotes do item");
   await expect(batchesList.getByText("Doação de item")).toHaveCount(2);
   await expect(
-    batchesList.locator(".trace-card").filter({ hasText: "Vencido" })
+    batchesList.getByRole("article").filter({ hasText: "Vencido" })
   ).toBeVisible();
   await expect(
-    batchesList.locator(".trace-card").filter({
+    batchesList.getByRole("article").filter({
       hasText: "Validade não informada",
     })
   ).toBeVisible();
   await expect(
-    batchesList.locator(".trace-card").filter({ hasText: "Entrada futura" })
+    batchesList.getByRole("article").filter({ hasText: "Entrada futura" })
   ).toBeVisible();
 });
 
@@ -1353,8 +2025,18 @@ test("manual stock exit follows FEFO and keeps expired batch available for dispo
 }) => {
   await page.goto("/stock-movements/new?itemId=1");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Movimentação manual" })
+    page.getByRole("heading", { level: 1, name: "Registrar movimentação" })
   ).toBeVisible();
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.type()).toBe("confirm");
+    expect(dialog.message()).toBe("Descartar as alterações desta movimentação?");
+    await dialog.dismiss();
+  });
+  await page.getByLabel("Quantidade").fill("2");
+  await page.getByRole("link", { name: "Cancelar" }).click();
+  await expect(page).toHaveURL(/\/stock-movements\/new\?itemId=1$/);
+  await page.getByLabel("Quantidade").fill("1");
 
   const batchSelect = page.getByRole("combobox", { name: "Lote", exact: true });
   const movementType = page.getByRole("combobox", { name: "Tipo", exact: true });
@@ -1375,7 +2057,9 @@ test("manual stock exit follows FEFO and keeps expired batch available for dispo
   await expect(missingExpirationOption).not.toHaveAttribute("disabled", "");
   await expect(validOption).toHaveAttribute("disabled", "");
   await batchSelect.selectOption("2");
-  await expect(page.locator(".detail-grid .pill")).toHaveText("Vencido");
+  await expect(
+    page.getByLabel("Situação do lote").getByText("Vencido", { exact: true })
+  ).toBeVisible();
   await page.getByRole("button", { name: "Registrar movimentação" }).click();
   const movementErrorSummary = page.locator("#stock-movement-form-error");
   await expect(page.getByLabel("Motivo da movimentação")).toBeFocused();
@@ -1411,8 +2095,8 @@ test("manual stock exit follows FEFO and keeps expired batch available for dispo
     movement_type: "perda_validade",
   });
   await expect(page).toHaveURL(/\/items\/1$/);
-  const updatedExpiredBatchCard = page.locator(".trace-card").filter({
-    hasText: "LT-MOCK-002",
+  const updatedExpiredBatchCard = page.getByRole("article", {
+    name: "Lote LT-MOCK-002",
   });
   await expect(updatedExpiredBatchCard).toContainText("1 de 2 pacote");
   await expect(
@@ -1490,7 +2174,9 @@ test("delivery history exposes item and batch trace on mobile", async ({ page })
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/deliveries");
 
-  const deliveryCard = page.locator(".delivery-trace").filter({
+  await page.getByRole("button", { name: "Histórico rastreável" }).click();
+
+  const deliveryCard = page.locator("article").filter({
     hasText: "LT-MOCK-001",
   });
   await expect(deliveryCard).toBeVisible();
@@ -1504,53 +2190,347 @@ test("delivery history exposes item and batch trace on mobile", async ({ page })
 });
 
 test("family creation makes church and UPG relationship easy to fill", async ({ page }) => {
+  let createPayload: Record<string, unknown> | null = null;
+  await page.route(/\/families$/, async (route) => {
+    if (route.request().method() !== "POST") {
+      await route.fallback();
+      return;
+    }
+
+    createPayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...family, id: 45, ...createPayload });
+  });
   await page.goto("/families/new");
 
-  await expect(page.getByRole("heading", { name: "Igreja, UPG e participacao" })).toBeVisible();
-  await expect(page.getByText("Frequenta igreja ou UPG")).toBeVisible();
+  await page.getByRole("textbox", { name: "Rua" }).fill("Rua das Flores");
+  await page.getByRole("textbox", { name: "Número" }).fill("123");
+  await page.getByRole("textbox", { name: "Bairro" }).fill("Centro");
+  await page.getByRole("textbox", { name: "Cidade" }).fill("Aracaju");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByRole("button", { name: "Próximo" }).click();
 
   const incomeField = page.getByRole("spinbutton", { name: "Renda mensal total" });
-  const churchNameField = page.getByRole("textbox", { name: "Igreja ou UPG" });
-  const communityRelationshipField = page.getByRole("textbox", {
-    name: "O que faz ou qual vinculo possui",
-  });
-
   await incomeField.fill("850");
   await incomeField.blur();
+  await page.getByRole("button", { name: "Próximo" }).click();
+
+  const churchGroup = page.getByRole("group", {
+    name: "Igreja, UPG e participação",
+  });
+  await expect(churchGroup.getByText("Frequenta igreja ou UPG")).toBeVisible();
+
+  const churchNameField = churchGroup.getByRole("textbox", {
+    name: "Igreja ou UPG",
+  });
+  const communityRelationshipField = churchGroup.getByRole("textbox", {
+    name: "Participação ou vínculo",
+  });
+  await expect(churchNameField).toBeDisabled();
+  await churchGroup.getByLabel("Frequenta igreja ou UPG").check();
   await churchNameField.fill("UPG Central");
   await communityRelationshipField.fill("Voluntaria no acolhimento");
 
+  await page.getByRole("button", { name: "Anterior" }).click();
   await expect(incomeField).toHaveValue("850.00");
+  await page.getByRole("button", { name: "Próximo" }).click();
   await expect(churchNameField).toHaveValue("UPG Central");
   await expect(communityRelationshipField).toHaveValue("Voluntaria no acolhimento");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Revisão e observações" })).toBeVisible();
+  await page.getByRole("button", { name: "Cadastrar família" }).click();
+
+  await expect.poll(() => createPayload).not.toBeNull();
+  expect(createPayload?.status).toBe("em_analise");
+  expect(createPayload?.total_residents).toBe(1);
+  expect(createPayload?.income_per_capita).toBe(850);
+  expect(createPayload).not.toHaveProperty("internal_code");
+});
+
+test("family wizard focuses the first error and warns before unloading unsaved data", async ({ page }) => {
+  await page.goto("/families/new");
+
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("textbox", { name: "Rua" })).toBeFocused();
+  await expect(page.getByText("Informe a rua da família.")).toBeVisible();
+
+  await page.getByRole("textbox", { name: "Rua" }).fill("Rua Segura");
+  await expect(page.locator('form[data-unsaved-changes="true"]')).toBeVisible();
+  expect(
+    await page.evaluate(() => {
+      const event = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    })
+  ).toBe(true);
+  await expect(page.getByRole("textbox", { name: "Rua" })).toHaveValue(
+    "Rua Segura"
+  );
+});
+
+test("family edit keeps additional contacts and assessment-owned status", async ({ page }) => {
+  const additionalContact = {
+    id: 2,
+    contact_name: "João Silva",
+    phone: "79999991111",
+    contact_type: "parente",
+    is_whatsapp: false,
+    notes: "Contato alternativo",
+  };
+  let updatePayload: Record<string, unknown> | null = null;
+
+  await page.route(/\/families\/1$/, async (route) => {
+    if (route.request().method() === "PUT") {
+      updatePayload = route.request().postDataJSON() as Record<string, unknown>;
+      await fulfillJson(route, { ...familyDetail, ...updatePayload });
+      return;
+    }
+
+    await fulfillJson(route, {
+      ...familyDetail,
+      last_evaluation_date: "2026-05-15",
+      contacts: [...familyDetail.contacts, additionalContact],
+    });
+  });
+
+  await page.goto("/families/1/edit");
+
+  const statusField = page.getByRole("combobox", { name: "Status do cadastro" });
+  await expect(statusField).toHaveValue("apta_recorrente");
+  await expect(statusField.locator('option[value="apta_recorrente"]')).toHaveAttribute(
+    "disabled",
+    ""
+  );
+  await expect(statusField.locator('option[value="apta_emergencial"]')).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Moradores e moradia" })).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Renda e condições sociais" })).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Contato e rede de apoio" })).toBeVisible();
+  await page.getByRole("textbox", { name: "Nome do contato" }).fill("Maria Atualizada");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Revisão e observações" })).toBeVisible();
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+
+  await expect.poll(() => updatePayload).not.toBeNull();
+  expect(updatePayload?.status).toBe("apta_recorrente");
+  expect(updatePayload?.last_evaluation_date).toBe("2026-05-15");
+  expect(updatePayload?.contacts).toEqual([
+    {
+      contact_name: "Maria Atualizada",
+      phone: "79999990000",
+      contact_type: "principal",
+      is_whatsapp: true,
+      notes: null,
+    },
+    {
+      contact_name: "João Silva",
+      phone: "79999991111",
+      contact_type: "parente",
+      is_whatsapp: false,
+      notes: "Contato alternativo",
+    },
+  ]);
 });
 
 test("family detail highlights system suggestion and church shortcut", async ({ page }) => {
   await page.goto("/families/1");
 
   await expect(
-    page.getByRole("heading", { name: "Sugestao do sistema e decisao da lideranca" })
+    page.getByRole("heading", { name: "Sugestão do sistema e decisão da liderança" })
   ).toBeVisible();
-  await expect(page.getByText("Sugestao: Apta recorrente")).toBeVisible();
-  await expect(page.getByText("Ultima decisao registrada")).toBeVisible();
+  await expect(page.getByText("Sugestão: Apta recorrente")).toBeVisible();
+  await expect(page.getByText("Última decisão registrada")).toBeVisible();
   await expect(page.getByRole("link", { name: "Igreja/UPG" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Registrar avaliacao" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Registrar avaliação" })).toBeVisible();
 });
 
-test("family member edit has its own church link separate from income", async ({ page }) => {
+test("family member create validates fields and preserves the person payload", async ({ page }) => {
+  let createdPayload: Record<string, unknown> | null = null;
+  await page.route(/\/families\/1\/people$/, async (route) => {
+    createdPayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...familyDetail.people[0], id: 2, ...createdPayload });
+  });
+
+  await page.goto("/families/1/people/new");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("textbox", { name: "Nome completo" })).toBeFocused();
+
+  await page.getByRole("textbox", { name: "Nome completo" }).fill("Lucas Silva");
+  await page.getByLabel("Data de nascimento").fill("2014-03-11");
+  await page.getByRole("textbox", { name: "Parentesco" }).fill("filho");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByRole("spinbutton", { name: "Renda individual" }).fill("125");
+  await page.getByLabel("Está estudando").check();
+  await page.getByLabel("Frequenta igreja ou UPG").check();
+  await page.getByRole("textbox", { name: "Igreja ou UPG" }).fill("UPG Central");
+  await page.getByRole("textbox", { name: "Participação ou vínculo" }).fill("Visitante");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Revisar membro" })).toBeVisible();
+  await page.getByRole("button", { name: "Cadastrar membro" }).click();
+
+  await expect.poll(() => createdPayload).not.toBeNull();
+  expect(createdPayload).toMatchObject({
+    full_name: "Lucas Silva",
+    birth_date: "2014-03-11",
+    kinship: "filho",
+    individual_income: 125,
+    is_currently_studying: true,
+    attends_church: true,
+    church_name: "UPG Central",
+    church_role: "Visitante",
+    is_family_responsible: false,
+  });
+  expect(createdPayload).not.toHaveProperty("id");
+});
+
+test("family member edit keeps its church link, income and unsaved protection", async ({ page }) => {
+  let updatePayload: Record<string, unknown> | null = null;
+  await page.route(/\/people\/1$/, async (route) => {
+    updatePayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...familyDetail.people[0], ...updatePayload });
+  });
   await page.goto("/families/1/people/1/edit");
 
-  await expect(
-    page.getByRole("heading", { name: "Igreja, UPG e participacao do membro" })
-  ).toBeVisible();
-  await expect(page.getByRole("spinbutton", { name: "Renda individual" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dados do membro" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Escolaridade" })).toHaveValue("medio");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByRole("heading", { name: "Trabalho e condições" })).toBeVisible();
+  await expect(page.getByRole("spinbutton", { name: "Renda individual" })).toHaveValue("600.00");
   await expect(page.getByLabel("Frequenta igreja ou UPG")).toBeChecked();
   await expect(page.getByRole("textbox", { name: "Igreja ou UPG" })).toHaveValue(
     "UPG Central"
   );
-  await expect(page.getByRole("textbox", { name: "Cargo, funcao ou vinculo" })).toHaveValue(
+  await expect(page.getByRole("textbox", { name: "Participação ou vínculo" })).toHaveValue(
     "Voluntaria"
   );
+  await page.getByRole("textbox", { name: "Participação ou vínculo" }).fill("Voluntária titular");
+  await expect(page.locator('form[data-unsaved-changes="true"]')).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+
+  await expect.poll(() => updatePayload).not.toBeNull();
+  expect(updatePayload).toMatchObject({
+    full_name: "Maria Silva",
+    individual_income: 600,
+    education_level: "medio",
+    church_name: "UPG Central",
+    church_role: "Voluntária titular",
+    is_family_responsible: true,
+  });
+});
+
+test("family member delete requires explicit confirmation", async ({ page }) => {
+  let deleteCalls = 0;
+  await page.route(/\/people\/1$/, async (route) => {
+    deleteCalls += 1;
+    await route.fulfill({ status: 204 });
+  });
+  await page.goto("/families/1/people/1/edit");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByRole("button", { name: "Próximo" }).click();
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.type()).toBe("confirm");
+    expect(dialog.message()).toContain("não pode ser desfeita");
+    await dialog.dismiss();
+  });
+  await page.getByRole("button", { name: "Excluir membro" }).click();
+  expect(deleteCalls).toBe(0);
+  await expect(page).toHaveURL(/\/people\/1\/edit$/);
+
+  page.once("dialog", async (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Excluir membro" }).click();
+  await expect.poll(() => deleteCalls).toBe(1);
+  await expect(page).toHaveURL(/\/families\/1$/);
+});
+
+test("family benefit create validates dates and preserves the income payload", async ({ page }) => {
+  let createdPayload: Record<string, unknown> | null = null;
+  await page.route(/\/families\/1\/benefits$/, async (route) => {
+    createdPayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...familyBenefit, id: 2, ...createdPayload });
+  });
+
+  await page.goto("/families/1/benefits/new");
+  await page.getByRole("button", { name: "Cadastrar benefício" }).click();
+  await expect(page.getByRole("textbox", { name: "Tipo do benefício" })).toBeFocused();
+
+  await page.getByRole("textbox", { name: "Tipo do benefício" }).fill("Auxílio alimentação");
+  await page.getByRole("spinbutton", { name: "Valor mensal" }).fill("325.50");
+  await page.getByRole("combobox", { name: "Pessoa vinculada" }).selectOption("1");
+  await page.getByLabel("Data inicial").fill("2026-02-01");
+  await page.getByLabel("Data final").fill("2026-01-31");
+  await page.getByRole("button", { name: "Cadastrar benefício" }).click();
+  await expect(page.getByText("A data final não pode ser anterior à inicial.")).toBeVisible();
+
+  await page.getByLabel("Data final").fill("2026-12-31");
+  await page.getByRole("button", { name: "Cadastrar benefício" }).click();
+
+  await expect.poll(() => createdPayload).not.toBeNull();
+  expect(createdPayload).toMatchObject({
+    person_id: 1,
+    benefit_type: "Auxílio alimentação",
+    monthly_amount: 325.5,
+    counts_as_income: true,
+    is_active: true,
+    start_date: "2026-02-01",
+    end_date: "2026-12-31",
+  });
+});
+
+test("family benefit edit keeps the stored link and protects unsaved changes", async ({ page }) => {
+  let updatedPayload: Record<string, unknown> | null = null;
+  await page.route(/\/families\/1$/, async (route) => {
+    await fulfillJson(route, { ...familyDetail, benefits: [familyBenefit] });
+  });
+  await page.route(/\/benefits\/1$/, async (route) => {
+    updatedPayload = route.request().postDataJSON() as Record<string, unknown>;
+    await fulfillJson(route, { ...familyBenefit, ...updatedPayload });
+  });
+
+  await page.goto("/families/1/benefits/1/edit");
+  await expect(page.getByRole("textbox", { name: "Tipo do benefício" })).toHaveValue("Bolsa Família");
+  await expect(page.getByRole("combobox", { name: "Pessoa vinculada" })).toHaveValue("1");
+  await expect(page.getByRole("spinbutton", { name: "Valor mensal" })).toHaveValue("480.00");
+  await page.getByRole("spinbutton", { name: "Valor mensal" }).fill("510");
+  await expect(page.locator('form[data-unsaved-changes="true"]')).toBeVisible();
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+
+  await expect.poll(() => updatedPayload).not.toBeNull();
+  expect(updatedPayload).toMatchObject({
+    person_id: 1,
+    benefit_type: "Bolsa Família",
+    monthly_amount: 510,
+    counts_as_income: true,
+    is_active: true,
+  });
+});
+
+test("family benefit delete requires explicit confirmation", async ({ page }) => {
+  let deleteCalls = 0;
+  await page.route(/\/families\/1$/, async (route) => {
+    await fulfillJson(route, { ...familyDetail, benefits: [familyBenefit] });
+  });
+  await page.route(/\/benefits\/1$/, async (route) => {
+    deleteCalls += 1;
+    await route.fulfill({ status: 204 });
+  });
+  await page.goto("/families/1/benefits/1/edit");
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.type()).toBe("confirm");
+    expect(dialog.message()).toContain("não pode ser desfeita");
+    await dialog.dismiss();
+  });
+  await page.getByRole("button", { name: "Excluir benefício" }).click();
+  expect(deleteCalls).toBe(0);
+  await expect(page).toHaveURL(/\/benefits\/1\/edit$/);
+
+  page.once("dialog", async (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Excluir benefício" }).click();
+  await expect.poll(() => deleteCalls).toBe(1);
 });
 
 test("mobile shell opens drawer navigation and compact account menu", async ({ page }) => {
@@ -1558,10 +2538,10 @@ test("mobile shell opens drawer navigation and compact account menu", async ({ p
   await page.goto("/login");
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
-  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 
   const navigation = page.getByLabel("Navegação principal");
   const navigationToggle = page.getByRole("button", { name: "Abrir menu" });
@@ -1588,7 +2568,7 @@ test("mobile shell opens drawer navigation and compact account menu", async ({ p
     .getByRole("link", { name: /Famílias/i })
     .click();
 
-  await expect(page.getByRole("heading", { name: "Familias", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Famílias", exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: /Conta de Admin Homologacao/i }).click();
   await expect(page.getByRole("menuitem", { name: "Sair" })).toBeVisible();
@@ -1599,10 +2579,10 @@ test("desktop sidebar collapses and account logout returns to login", async ({ p
   await page.goto("/login");
 
   await page.getByLabel("Nome de login").fill("admin");
-  await page.getByLabel("Senha").fill("Admin@123456");
+  await page.getByLabel("Senha", { exact: true }).fill("Admin@123456");
   await page.getByRole("button", { name: "Entrar" }).click();
 
-  await expect(page.getByRole("heading", { name: /Dashboard do Cesta Digital/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Olá,/i })).toBeVisible();
 
   await page.getByRole("button", { name: "Recolher menu lateral" }).click();
   await expect(page.getByRole("button", { name: "Expandir menu lateral" })).toBeVisible();
@@ -1623,8 +2603,7 @@ test("admin pages stay restricted for non-admin users", async ({ page }) => {
   await page.goto("/");
 
   const mainNav = page.getByLabel("Navegação principal");
-  await expect(mainNav.getByRole("link", { name: /Usuários/i })).toHaveCount(0);
-  await expect(mainNav.getByRole("link", { name: /Auditoria/i })).toHaveCount(0);
+  await expect(mainNav.getByRole("link", { name: /Administração/i })).toHaveCount(0);
 
   await page.goto("/users");
   await expect(page.getByRole("heading", { name: "Acesso restrito" })).toBeVisible();
@@ -1644,17 +2623,37 @@ test("audit page uses administrative language with technical details on demand",
   await expect(auditTable.getByText("Login realizado", { exact: true })).toBeVisible();
   await expect(auditTable.getByText("Tentativa de login falhou", { exact: true })).toBeVisible();
   await expect(auditTable.getByText("Sucesso", { exact: true })).toBeVisible();
-  await expect(page.locator(".audit-panel .table-wrapper")).not.toContainText("auth.login_succeeded");
-  await expect(page.locator(".audit-panel .table-wrapper")).not.toContainText('{"roles"');
+  await expect(auditTable).not.toContainText("auth.login_succeeded");
+  await expect(auditTable).not.toContainText('{"roles"');
 
   await page.getByRole("button", { name: "Ver detalhes" }).first().click();
 
   const detailsDialog = page.getByRole("dialog", { name: "Login realizado" });
   await expect(detailsDialog).toBeVisible();
-  await expect(page.getByText("Codigo tecnico")).toBeVisible();
+  await expect(page.getByText("Código do evento")).toBeVisible();
   await expect(detailsDialog.getByText("auth.login_succeeded", { exact: true })).toBeVisible();
   await expect(detailsDialog.getByText("Perfis", { exact: true })).toBeVisible();
   await expect(detailsDialog.getByText("Administrador", { exact: true })).toBeVisible();
+});
+
+test("reports preserve period filters and generate a real CSV download", async ({ page }) => {
+  await page.goto("/reports?start_date=2026-08-01&end_date=2026-08-26");
+
+  await expect(page.getByRole("heading", { name: "Relatórios", exact: true })).toBeVisible();
+  await expect(page.getByText("1.248")).toBeVisible();
+  await expect(page.getByText("7.856")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Baixar Atendimentos por período/ })).toBeVisible();
+
+  await page.getByLabel("Tipo de relatório").selectOption("deliveries");
+  await expect(page).toHaveURL(/type=deliveries/);
+  const reportsPanel = page.locator('section[aria-labelledby="available-reports-title"]');
+  await expect(reportsPanel.getByText("Cestas entregues", { exact: true })).toBeVisible();
+  await expect(reportsPanel.getByText("Estoque movimentado", { exact: true })).toHaveCount(0);
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: /Baixar Cestas entregues/ }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("deliveries-2026-08-01-2026-08-26.csv");
 });
 
 test("password recovery request shows safe feedback", async ({ page }) => {

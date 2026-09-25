@@ -1,10 +1,19 @@
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 ALLOWED_SCHEDULE_STATUSES = {"agendado", "cancelado", "faltou", "reagendado"}
 ALLOWED_DELIVERY_STATUSES = {"concluida"}
+
+DeliveryOperationsPeriod = Literal["hoje", "amanha", "semana", "todos"]
+DeliveryOperationsStatus = Literal[
+    "agendado",
+    "reagendado",
+    "retirado",
+    "ocorrencia",
+]
 
 
 class DeliveryScheduleCreate(BaseModel):
@@ -37,6 +46,46 @@ class DeliveryScheduleResponse(BaseModel):
     status: str
     notes: str | None
     created_by_user_id: int
+
+
+class DeliveryOperationItemResponse(BaseModel):
+    """Projeção operacional enriquecida para a agenda de entregas."""
+
+    id: int
+    family_id: int
+    family_code: str
+    family_status: str
+    basket_type_id: int
+    basket_type_name: str
+    scheduled_date: date
+    status: str
+    notes: str | None
+    street: str
+    number: str
+    complement: str | None
+    neighborhood: str
+    city: str
+    state: str
+
+
+class DeliveryOperationsSummaryResponse(BaseModel):
+    """Contadores globais do período, independentes da página atual."""
+
+    scheduled: int
+    rescheduled: int
+    completed: int
+    exceptions: int
+    total: int
+
+
+class DeliveryOperationsResponse(BaseModel):
+    items: list[DeliveryOperationItemResponse]
+    total: int
+    limit: int
+    offset: int
+    reference_date: date
+    period: DeliveryOperationsPeriod
+    summary: DeliveryOperationsSummaryResponse
 
 
 class DeliveryScheduleUpdate(BaseModel):

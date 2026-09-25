@@ -18,6 +18,7 @@ htmlcov/
 # Node / React
 node_modules/
 dist/
+dist-showcase/
 build/
 coverage/
 playwright-report/
@@ -38,3 +39,4 @@ Thumbs.db
 uploads/
 temp/
 backups/
+.ux-sandbox/

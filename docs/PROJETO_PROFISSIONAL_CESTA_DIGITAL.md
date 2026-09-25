@@ -8,9 +8,9 @@
 |---|---|
 | Dono da visão e decisão final | Gabriel Bomfim Bispo |
 | Produto | Cesta Digital |
-| Última revisão | 15/07/2026 |
-| Commit auditado | `374660b8337667137ed2557e4e41d9e4bd4ce5b7` |
-| Branch auditada | `main` |
+| Última revisão | 17/09/2026 |
+| Commit-base auditado | `f2c78c3` |
+| Branch auditada | `chore/homologacao-local-limpa` |
 | Ambiente público | Vercel + Render, atualmente configurado como `staging` no backend |
 | Decisão vigente | **NO-GO profissional e para ampliar uso com dados e entregas reais** |
 | Uso permitido enquanto houver bloqueios | Somente homologação controlada com dados sintéticos ou anonimizados |
@@ -131,7 +131,8 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 - Skip link, foco visível, labels clicáveis e `aria-live` em fluxos importantes.
 - Formatação de datas e moedas com helpers/`Intl`.
 - Componentes reutilizáveis para cabeçalhos, estados, métricas e formulários.
-- Paleta institucional dark com verde, magenta e dourado.
+- Símbolo e cores proprietárias da marca consolidados; a aplicação `dark premium`
+  registrada nesta auditoria foi substituída pela decisão Frontend V2 de 18/08/2026.
 
 ## 5. Bloqueios e achados priorizados
 
@@ -155,11 +156,14 @@ Dados pessoais ou sociais nunca são produto comercial e não podem ser monetiza
 | DOM-004 | Família pode ser marcada apta sem avaliação vinculada | Regra publicada na `main` em `77e7cbe`: cadastro/edição/status manual bloqueiam `apta_recorrente`, `apta_emergencial` e `inapta` sem avaliação social compatível; formulário orienta o caminho correto pela avaliação | Concluído |
 | DOM-005 | Agendamento não reserva estoque nem limita ciclo/duplicidade | Publicado na `main` em `88aa60b`: agendamentos ativos passam a respeitar capacidade prometível do estoque utilizável e bloqueiam duplicidade ativa por família+cesta; formulário orienta a regra | Concluído |
 | DOM-006 | API de entrega não expõe os itens e lotes efetivamente entregues | Publicado na `main` em `987e0df`: lista e detalhe expõem item, quantidade, lote, localização e validade; histórico responsivo apresenta a trilha ao operador; contrato OpenAPI público validado | Concluído |
+| DOM-007 | O servidor recalcula a sugestão de elegibilidade, mas o snapshot de `vulnerability_score` ainda aceita o valor enviado pelo cliente | V2-07A local torna o score calculado autoridade: campo legado compatível só é aceito quando coincide com a prévia; divergência retorna 422 e nenhuma avaliação é gravada | Em homologação |
+| DOM-008 | Produto não possui código de barras nem imagem governada; embalagens da referência não podem depender de hotlink ou mídia inventada | V2-08C local adiciona EAN/GTIN único, upload validado, consulta explícita ao Open Facts, cópia WebP persistida, atribuição, fallback e auditoria | Em homologação |
 | UX-001 | Navegação plana não representa Social, Estoque, Distribuição e Administração | Arquitetura de informação por tarefa | Aberto |
 | UX-002 | Tabelas usam `min-width: 720px`; quase todas dependem de rolagem horizontal no celular | Listas e ações mobile próprias | Aberto |
 | UX-003 | Login bloqueia navegação por vídeo não pulável de 7,4–8,5 s, inclusive com movimento reduzido | Entrada imediata aprovada localmente em desktop/mobile e movimento reduzido; publicação pendente | Em homologação |
 | UX-004 | Cadastro de família e membro é extenso, sem rascunho, progresso ou proteção de dados não salvos | Wizard retomável com revisão | Em andamento |
 | UX-005 | Erros são globais e podem substituir a tela; faltam erros por campo e foco no primeiro erro | Recuperação sem perda de preenchimento | Em andamento |
+| UX-006 | Avaliações existem apenas dentro da família e não oferecem uma fila segura de quem precisa ser avaliado ou reavaliado | Contrato paginado V2-07A concluído localmente; interface responsiva e rota global permanecem no V2-07B | Em andamento |
 | UI-001 | Gradientes, faixas laterais e elevação se repetem em superfícies não interativas | Identidade institucional própria e sem ruído | Aberto |
 | QA-001 | E2E intercepta toda a API; backend usa SQLite e não executa Alembic/MySQL | Teste integrado da pilha real | Aberto |
 | SEC-001 | Cookie cross-site sem defesa CSRF explícita; TLS do banco pode não validar CA | Threat model e hardening | Aberto |
@@ -305,6 +309,7 @@ Os casos da homologação final usam as propostas como alvo recomendado. Enquant
 - **RB-SOC-008 — Proposta para aprovação:** coaprovador deve estar ativo, possuir papel autorizado e ser diferente do aprovador quando a política exigir.
 - **RB-SOC-009 — Proposta para aprovação:** score automático é calculado no servidor; override registra antes/depois e motivo.
 - **RB-SOC-010 — Vigente:** CPF, NIS ou outro documento só será coletado após necessidade aprovada e finalidade documentada.
+- **UX-SOC-001 — Direção funcional aprovada:** a área “Avaliações” é uma fila de avaliação e reavaliação da aptidão das famílias. O sistema apresenta cálculo e sugestão; a decisão final permanece técnica e humana, com justificativa obrigatória quando divergir.
 
 ### 8.3 Agendamento e entrega
 
@@ -397,7 +402,8 @@ Campos pessoais devem seguir minimização. “Ter todos os campos” significa 
 - `GET /operational/families?eligible_for_delivery=true`: projeção mínima para operador.
 - `POST /families`: cria rascunho/em análise e responsável em transação.
 - `PATCH /families/{id}` e `PATCH /people/{id}`: parcial, `extra="forbid"`.
-- `POST /social-assessments`: score calculado no servidor e snapshot da regra.
+- `GET /social-assessments/queue`: fila paginada por urgência, prazo e situação, com última decisão separada da prévia atual.
+- `POST /families/{id}/assessments`: score calculado no servidor e snapshot da regra; divergência do campo legado é rejeitada.
 - `POST /delivery-schedules`: valida ciclo e reserva.
 - `POST /deliveries/from-schedule/{id}`: idempotente, FEFO apenas em lotes utilizáveis.
 - `GET /deliveries/{id}`: expõe itens, quantidades e lotes efetivamente entregues.
@@ -473,55 +479,52 @@ Princípios:
 - Nenhuma perda de preenchimento após erro de API.
 - Login libera a aplicação em até 1 segundo depois da autenticação, sem animação obrigatória.
 
-## 13. Direção visual recomendada
+## 13. Direção visual vigente — Frontend V2
 
-### Conceito
+### Decisão aprovada em 18/08/2026
 
-**Central de Abastecimento Solidário — editorial operacional humanista.**
+**Cesta Digital Clean Humanitarian Operations:** uma aplicação operacional
+premium, clara, humana e predominantemente mobile. A antiga linguagem
+`dark premium` deixa de orientar telas novas ou migradas.
 
-A memória visual deve vir de etiquetas de lote, fichas de atendimento, livro-caixa e organização de depósito — não de gradientes, glassmorphism ou faixas decorativas típicas de dashboards genéricos.
+Fontes de execução e comparação:
 
-### O que permanece
+- [`direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`](./direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md);
+- [`direção_visual/CODEX_FRONTEND_V2_EXECUTION.md`](./direção_visual/CODEX_FRONTEND_V2_EXECUTION.md);
+- [`direção_visual/MANIFESTO_REFERENCIAS_VISUAIS_POR_TELA.md`](./direção_visual/MANIFESTO_REFERENCIAS_VISUAIS_POR_TELA.md);
+- [`direção_visual/AUDITORIA_FUNCIONAL_REFERENCIAS_POR_TELA_2026-08-18.md`](./direção_visual/AUDITORIA_FUNCIONAL_REFERENCIAS_POR_TELA_2026-08-18.md);
+- [`direção_visual/referencias_por_tela/`](./direção_visual/referencias_por_tela/) para a imagem específica de cada tela;
+- [`direção_visual/Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./direção_visual/Cesta_Digital_Frontend_V2_Baseline_Desktop.png);
+- [`direção_visual/cesta-digital-frontend-v2-design-tokens.json`](./direção_visual/cesta-digital-frontend-v2-design-tokens.json).
 
-- Base verde-escura institucional.
-- Magenta/rosa como assinatura da marca.
-- Dourado como foco, atenção e detalhe institucional.
-- Símbolo e nome Cesta Digital, com asset otimizado.
-- Sensação premium sóbria e acolhedora.
+O mockup aprovado é baseline estética, de densidade e de interação. Ele não é
+contrato para criar dados, métricas, permissões, endpoints ou rotas inexistentes.
 
-### O que muda
+### Contrato visual
 
-- Superfícies predominantemente sólidas.
-- Uma textura contextual muito sutil, não aplicada a cada componente.
-- Cor reservada a ação, estado, prioridade e marca.
-- Remover faixas laterais coloridas repetitivas de cards/hero.
-- Remover hover/elevation de blocos que não são clicáveis.
-- Menos cards aninhados; mais seções, linhas, respiro e hierarquia tipográfica.
-- Botão primário sólido; gradiente não é padrão de ação.
-- Dourado não compete com magenta em todas as superfícies.
+- Preservar o símbolo oficial Cesta Digital e seu gradiente interno como asset.
+- Usar fundo `#F7F8FA`, superfícies brancas, texto grafite e bordas neutras.
+- Usar `#D92676` para ação principal; rosa/roxo como assinatura da marca.
+- Reservar verde, amarelo e vermelho para estados semânticos.
+- Não usar gradientes em superfícies operacionais, glow, glassmorphism,
+  texturas repetidas, faixas coloridas ou sombras pesadas. Gradiente fica
+  restrito ao asset oficial, CTA primário rosa-roxo e ambiente institucional
+  sutil do login, conforme as referências por tela.
+- Evitar cards aninhados e duplicação de dados; preferir espaço, divisores e
+  hierarquia tipográfica.
+- Manter uma ação primária dominante por região visual.
+- Projetar primeiro em 360/390 px e validar 768 e 1440 px.
+- Substituir tabelas desktop por listas operacionais próprias no mobile quando
+  houver risco de rolagem horizontal da página.
+- Preservar e ampliar acessibilidade, rotas, RBAC, sessão, contratos de API,
+  tipos e regras de domínio durante os marcos visuais.
 
-### Tipografia recomendada para protótipo
+### Governança de aprovação visual
 
-- Títulos editoriais: `Source Serif 4` ou alternativa aprovada.
-- Interface e dados: `Atkinson Hyperlegible` ou alternativa humanista aprovada.
-- Números: variante tabular.
-
-A troca só deve ocorrer depois de protótipo comparativo e validação de legibilidade. Não instalar fontes antes da aprovação visual.
-
-### Tokens iniciais
-
-| Papel | Referência |
-|---|---|
-| Fundo | verde-preto profundo atual, sem gradiente dominante |
-| Superfície | verde carvão sólido |
-| Texto principal | marfim |
-| Texto secundário | areia fria |
-| Marca/ação | magenta sólido |
-| Foco/atenção | dourado |
-| Sucesso | verde claro |
-| Perigo/validade vencida | vermelho dedicado |
-| Raio | 6–10 px, conforme componente |
-| Sombra | rara e funcional |
+Cada marco que altera UI deve gerar evidências comparativas em 390x844 e
+1440x900, além de 768x1024 quando o layout mudar materialmente. A entrega deve
+ser comparada com a baseline aprovada, apresentada a Gabriel e interrompida até
+aprovação antes do avanço para o próximo marco visual.
 
 ## 14. Acessibilidade
 
@@ -705,9 +708,12 @@ Objetivo: rastreabilidade e consistência duráveis.
 
 Objetivo: consolidar valor percebido e eficiência operacional.
 
-- Prototipar direção visual em login, dashboard, estoque e família.
-- Aprovar com Gabriel antes de escalar.
-- Implementar tokens e componentes sem gradientes/faixas repetitivas.
+- Implementar a direção Frontend V2 aprovada em login, dashboard, estoque e
+  família por marcos independentes.
+- Apresentar comparação visual em 390/768/1440 e obter aprovação de Gabriel em
+  cada marco antes de escalar para o próximo.
+- Implementar tokens e componentes sem gradientes em superfícies operacionais
+  ou faixas repetitivas; aplicar apenas as exceções de assinatura aprovadas.
 - Criar cards/listas mobile para módulos críticos.
 - Compactar cabeçalhos CRUD e ações fixas em formulários.
 - Otimizar marca, vídeo/assets e lazy loading por rota.
@@ -752,7 +758,7 @@ Uma entrega só está pronta quando:
 | Quantidades | Decimal com unidade de estoque + apresentação explícita |
 | CPF/NIS | Não coletar por padrão; adicionar somente com necessidade e finalidade aprovadas |
 | Cadastro social | Wizard com responsável na primeira etapa e agregados derivados |
-| Visual | Aprovar “Central de Abastecimento Solidário” antes da implementação ampla |
+| Visual | Frontend V2 clean, mobile-first e desktop responsivo aprovado em 18/08/2026; implementar incrementalmente conforme o plano V2 |
 | Splash pós-login | Remover bloqueio; feedback opcional de até 600 ms |
 | Ordem de trabalho | Fase 0 antes de redesign completo |
 
@@ -782,6 +788,37 @@ migrations.
 | 15/07/2026 | Gate remoto de rastreabilidade da Fase 2 | Commit `738afe85631095945b84b5fd8be7fcc352ce2078` publicado na branch `feat/fase-2-rastreabilidade-entrega-lote`; workflow `CI` nº `29463482370` aprovado nos jobs `frontend`, `backend` e `operations`; integração em `main` permanece bloqueada até backup/restore do banco público |
 | 16/07/2026 | Gate público de recuperação da Fase 2 | Backup público pré-migration aprovado com 52.921 bytes, SHA-256 `82C6C36C7619090B2FA74504D23020C4BF392FF9004DB72F9AE823ACB7E579B4`, manifesto e checksum válidos; restore MySQL isolado `exact-manifest-v2` preservou 19 tabelas, contagens exatas e revisão `9f2a7b6c8d1e`; banco temporário removido |
 | 16/07/2026 | Publicação da rastreabilidade da Fase 2 | Branch promovida para `main` no commit `987e0df6c4fae490bd046c89d8eadd2e32e45686`; CI `main` nº `29535564353` verde; Vercel produção `success`; Render corrigido com CA privada do Aiven após falha TLS fail-closed; migration `b7c9d1e2f3a4`, schema, `/health/db`, `/docs`, OpenAPI e `/login` aprovados |
+| 18/08/2026 | Aprovação da identidade Frontend V2 | Gabriel aprovou a direção visual clean, mobile-first e desktop responsiva, preservando o símbolo Cesta Digital. A antiga linguagem `dark premium` deixa de orientar novas telas. Gradientes ficam restritos ao asset, CTA primário e ambiente institucional sutil do login; glow, glassmorphism, faixas coloridas e excesso de cards permanecem proibidos. A implementação será incremental, preservando rotas, RBAC, contratos de API e comportamentos funcionais, conforme `docs/direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md`. |
+| 18/08/2026 | Checkpoint local V2-01 — safety net | Branch `test/frontend-v2-safety-net` congela 25 rotas, títulos, seções, RBAC e nove destinos de menu para `admin`, `lider_social` e `operador`; cobre deep link anônimo, fallback 404 e evidências 390/1440. O lockfile recebeu correções compatíveis de segurança, `npm audit` ficou sem vulnerabilidades e os gates fecharam com frontend lint/build e 35/35 E2E aprovados. Nenhuma mudança visual ou de backend foi realizada. |
+| 18/08/2026 | Checkpoint local V2-02 — fundação visual | Branch `feat/frontend-v2-foundation` materializa tokens, Inter local, símbolo oficial e dez primitives em um showcase isolado. Navegação contextual, tabela/lista e drawer foram validados em 360/390/768/1440; item ativo e breadcrumb permanecem sincronizados e cada domínio demonstra somente seu próprio escopo. Rotas, RBAC, API, telas reais e backend não foram alterados. O marco aguarda aprovação visual antes do AppShell. |
+| 18/08/2026 | Auditoria de fidelidade da baseline V2 | Comparação lado a lado transformada em matriz obrigatória por tela. A fundação corrigiu seleção ativa em hover, botão secundário rosa versus neutro, conta na topbar e numeração dos marcos. Dashboard, Famílias, Avaliação, Estoque e Distribuição continuam explicitamente pendentes de seus branches próprios; 16/16 testes visuais aprovados. |
+| 18/08/2026 | Referências detalhadas por tela aprovadas | Dez imagens 1586×992 de Início, Famílias, Avaliações, Estoque, Entradas, Entregas, Tipos de Cesta, Relatórios, Administração e Login foram versionadas com SHA-256, galeria clicável e auditoria de compatibilidade. Elas passam a ser a referência prioritária de cada tela, sem autorizar mapa, relatórios, configurações, métricas ou rotas inexistentes. A execução foi subdividida em um branch e um gate de aprovação por aba. |
+| 18/08/2026 | Checkpoint local V2-03 — AppShell | Branch `feat/frontend-v2-shell` migra sidebar, topbar, conta, navegação ativa e shell responsivo para a linguagem clara aprovada. Desktop usa sidebar fixa; 360/390/768 usam topbar, bottom navigation e drawer acessível. Rotas filhas preservam a seção ativa; RBAC, 25 paths, APIs e backend não mudaram. Gates: lint/build, 35/35 E2E e 11 testes visuais aprovados com um skip desktop intencional. Gabriel aprovou a continuidade em 19/08/2026. |
+| 18/08/2026 | Finalidade funcional de Avaliações confirmada | Gabriel definiu a aba como fila de avaliação e reavaliação para decidir aptidão da família. A arquitetura passou a separar sugestão calculada, decisão técnica e próxima revisão; etapas fictícias do mockup não serão simuladas. Foram registrados V2-07A para contrato paginado/integridade do score e V2-07B para a experiência visual responsiva. |
+| 19/08/2026 | Checkpoint local V2-04 — Login | Branch `feat/frontend-v2-login` reproduz o split institucional, marca ampla, cartão claro, campos e CTA da referência específica, com adaptação própria em 360/390/768. Login por `login_name`, cookie HttpOnly, redirects, recuperação e aviso de ambiente foram preservados. Splash sem uso, vídeo de 2,50 MB e logo raster de 1,38 MB foram removidos. Gates: lint/build, 35/35 E2E e 12/12 testes visuais aprovados. Gabriel aprovou as telas em 19/08/2026. |
+| 19/08/2026 | Checkpoint local V2-05 — Início | Branch `feat/frontend-v2-inicio` substitui o hero e as métricas duplicadas por saudação, quatro KPIs, prioridades, alertas e ações rápidas na composição da referência 01. A tela usa exclusivamente `DashboardOverviewResponse`; reavaliação informa que a aptidão será recalculada e a decisão considera cálculo e parecer social. Entradas hoje e relatório rápido não foram simulados. RBAC, rotas, API e backend permanecem inalterados. Gabriel aprovou a etapa em 19/08/2026; commit local `2abf89b`. |
+| 19/08/2026 | Checkpoint local V2-06 — Famílias | Branch `feat/frontend-v2-familias` migra lista e detalhe para a composição da referência 02: tabela e painel selecionado no desktop, cards em 360/390/768 e filtros, paginação e seleção no URL. Nome familiar e CPF não foram inventados; um único detalhe é carregado sob demanda. O detalhe separa sugestão calculada, decisão registrada e prioridade social, apresentando aptidão antes do resumo no mobile. Rotas, RBAC, APIs e backend não mudaram. Gates: lint/build, 35/35 E2E, 13 testes visuais próprios aprovados com 3 skips desktop-específicos e 11 testes do shell aprovados com 1 skip desktop intencional. Gabriel aprovou a etapa em 19/08/2026; commit local `380fd9c`. |
+| 19/08/2026 | Checkpoint local V2-07A — contrato de Avaliações | Branch `feat/backend-v2-avaliacoes-contrato` cria `GET /social-assessments/queue`, paginado, pesquisável e ordenado por urgência, com contadores de sem avaliação, reavaliação vencida/próxima e avaliação em dia. A projeção separa última decisão da prévia calculada atual e exclui famílias inativas. O score passa a ser snapshot calculado pelo servidor; valor legado divergente recebe 422 sem gravação. RBAC permanece em `admin`/`lider_social`, sem migration. Compile aprovado e backend 60/60 verde. |
+| 20/08/2026 | Checkpoint local V2-07B — Avaliações | Branch `feat/frontend-v2-avaliacoes` cria a rota global `/assessments`, menu ativo e fila responsiva com quatro situações reais, tabela/painel no desktop e cards em 360/390/768. O formulário separa dados atuais, cálculo server-owned, decisão humana e próxima reavaliação; score manual e etapas cenográficas não foram reproduzidos. Matriz passa intencionalmente a 26 rotas, RBAC social é preservado, sem migration. Frontend lint/build, 35/35 E2E e 11 testes visuais aprovados com 5 skips por viewport. Gabriel aprovou a continuidade em 20/08/2026. |
+| 20/08/2026 | Checkpoint local V2-08A — contrato de Estoque | Branch `feat/backend-v2-estoque-contrato` cria `GET /stock-overview`, com paginação, busca, filtros operacionais e resumo global de estoque baixo, vencimento, validade ausente e restrição. O saldo reutiliza a política canônica de lote utilizável e a data civil de São Paulo; lotes vencidos continuam visíveis como risco físico. `/stock-summary`, escritas, RBAC e banco foram preservados, sem migration. Compile aprovado e backend 62/62 verde. |
+| 20/08/2026 | Checkpoint local V2-08B — Estoque proposto | Branch `feat/frontend-v2-estoque` reproduz a referência 04 com indicadores globais, tabela e painel contextual no desktop, cards em 360/390/768 e localização ativa no shell mobile. A aba explicita alimentos, higiene e demais doações; não contém famílias. Fotos, exportação, transferência, código público e metadados inexistentes não foram simulados. Rotas, RBAC e escritas permanecem compatíveis, sem migration. Frontend lint/build, 35/35 E2E e 9 gates visuais aprovados com 3 skips por viewport; aguarda aprovação de Gabriel. |
+| 20/08/2026 | Checkpoint local V2-08C — imagens governadas de produto | Branch `feat/estoque-v2-imagens-produto` adiciona EAN/GTIN e uma imagem persistida por produto. O operador escolhe entre upload próprio e consulta pontual ao Open Facts; nenhum acesso externo ocorre na listagem e nenhuma foto é vinculada sem confirmação. Conteúdo é validado, redimensionado, limpo e salvo como WebP em tabela separada, com origem, atribuição, versão de cache e auditoria. Produtos sem foto mantêm fallback. Gates: backend 67/67, contrato de imagens 5/5, frontend lint/build, E2E 36/36 e visual 11 aprovados com 5 skips por viewport. Migration `d4e5f6a7b8c9` permanece somente local; publicação exige backup/restore e aprovação. |
+| 21/08/2026 | Aprovação consolidada V2-08B/V2-08C — Estoque | Gabriel aprovou a tela de Estoque e a identificação visual dos produtos após nova comparação desktop/mobile com a referência 04. A galeria foi reativada e referência, implementação e seletor de imagens responderam HTTP 200. Revalidação: backend 67/67, frontend lint/build, E2E 36/36 e visual 11 aprovados com 5 skips intencionais. O marco pode ser fechado em commit local e libera somente a branch própria de Entradas; migration e publicação continuam bloqueadas pelos gates profissionais. |
+| 21/08/2026 | Checkpoint local V2-09A — Entradas aprovado | Branch `feat/frontend-v2-entradas` cria o histórico `/stock-batches` e preserva `/stock-batches/new`, com menu ativo, tabela e formulário lado a lado no desktop e cartões/cadastro dedicado em 360/390/768. A interface usa produto, origem, lote, quantidade, validade, localização e situação reais; nomes de fornecedor/responsável e filtros sem contrato não foram simulados. RBAC de operações e payload de escrita foram preservados, sem mudança de backend ou banco. Gates: frontend lint/build, E2E 37/37 e visual 6 aprovados com 2 skips por viewport. Gabriel aprovou a etapa em 21/08/2026. |
+| 26/08/2026 | Checkpoint local V2-10 — Entregas aprovado | Branch `feat/frontend-v2-entregas` reproduz a referência 06 com quatro indicadores globais, agenda paginada, tabela/painel no desktop e cartões em 360/390/768. O contrato `GET /delivery-operations` calcula períodos, busca e métricas no servidor. A aptidão social é explícita e o cadastro oferece somente famílias aptas. Mapa, rota e horários inexistentes não foram simulados; agendamento, confirmação, baixa de estoque e rastreabilidade foram preservados, sem migration. Gates: backend 69/69, frontend lint/build, E2E 37/37 e visual 8 aprovados com 4 skips intencionais. Gabriel aprovou a continuidade em 26/08/2026. |
+| 26/08/2026 | Checkpoint local V2-11 — Tipos de Cesta aprovado | Branch `feat/frontend-v2-tipos-cesta` reproduz a referência 07 com cartões de tipos, composição selecionada e resumo no desktop, além de cartões próprios em 360/390/768. `GET /basket-types/overview` calcula quantidade de produtos e valor de referência no servidor; a edição preserva a disponibilidade baseada em estoque utilizável. Imagens vêm do catálogo persistido e duplicação inexistente não foi simulada. Escritas e RBAC `admin`/`operador` foram preservados, sem migration. Gates: backend 71/71, frontend lint/build, E2E 37/37 e visual 8 aprovados com 4 skips intencionais. Gabriel aprovou a continuidade em 26/08/2026. |
+| 26/08/2026 | Checkpoint local V2-12 — Relatórios aprovado | Branch `feat/frontend-v2-relatorios` reproduz a referência 08 com período, três indicadores reais e seis exports CSV para administrador, além de composição própria em 360/390/768. O backend calcula famílias atendidas, cestas concluídas e unidades distribuídas; downloads são segmentados por papel, neutralizam fórmulas e registram auditoria. `/financial-summary` continua compatível por redirect e o endpoint anterior permanece intacto. Matriz passa a 28 paths, sem migration. Gates: backend 74/74, frontend lint/build, E2E 38/38 e visual 6 aprovados com 2 skips intencionais. Gabriel aprovou a continuidade em 26/08/2026. |
+| 27/08/2026 | Checkpoint local V2-13 — Administração concluída | Branch `feat/frontend-v2-administracao` reúne Usuários, Perfis e Auditoria na composição da referência 09. As rotas `/users` e `/audit-logs`, RBAC exclusivo de `admin`, payloads e APIs foram preservados; configurações e 2FA inexistentes não foram simulados. Desktop usa tabela e painel lateral, enquanto 360/390/768 usam cartões e navegação interna responsiva. Diálogos contêm/restauram foco, protegem alterações não salvas e mantêm erros de API. Gates: frontend lint/build, E2E 38/38 e visual 10 aprovados com 6 skips intencionais. A validação UX manual ocorrerá em homologação local com dados sintéticos. |
+| 27/08/2026 | Atualização local de `cryptography` | Branch `fix/homologacao-cryptography` atualiza o pin do backend de 48.0.1 para 50.0.1, incorporando a correção do CVE-2026-69247 e wheels com OpenSSL 4.0.2. `pip check`, compile e `pip-audit` foram aprovados sem dependência quebrada ou vulnerabilidade conhecida; backend 74/74 e 7 subtestes verdes. Sem migration, mudança de API ou publicação externa. |
+| 27/08/2026 | Sandbox local para homologação UX manual | O Frontend V2 completo foi iniciado com frontend e API no mesmo host local, SQLite persistente isolado e somente dados sintéticos. Login e cadastro de produto foram comprovados pela API real; Chromium percorreu 10/10 rotas desktop sem HTTP 500 ou erro de página e as mesmas 10 rotas em 390×844 sem overflow documental. Em 28/08, o inicializador passou a usar `127.0.0.1` nos dois serviços por padrão, impedindo perda do cookie `SameSite` quando o usuário mistura IP e hostname. Credencial e banco permanecem fora do Git. O ambiente está liberado apenas para avaliação UX local de Gabriel. |
+| 08/09/2026 | Checkpoint local V2-16 — Movimentação de estoque | Branch `feat/frontend-v2-movimentacao-estoque` migra `/stock-movements/new` para a linguagem clara aprovada, com formulário e resumo contextual no desktop e fluxo vertical em 390 px. O operador revisa produto, lote, validade, saldo atual e saldo projetado antes de confirmar; microcopy extensa e placeholders de exemplo foram removidos. Rota, RBAC, endpoints, payload, FEFO, bloqueios de validade/quarentena/item inativo e motivo obrigatório foram preservados, sem backend ou migration. Gates: lint/build/escala tipográfica, E2E 40/40 e visual focado 2 aprovados com 2 skips intencionais. Gabriel aprovou a continuidade em 14/09/2026. |
+| 14/09/2026 | Checkpoint local V2-17 — Cadastro e edição de famílias | Branch `feat/frontend-v2-familias-formulario` substitui os formulários legados de `/families/new` e `/families/:familyId/edit` por um fluxo comum de cinco etapas, com resumo contextual no desktop e progresso compacto em 390 px. Validação e foco conduzem ao primeiro erro; alterações não salvas são protegidas; contatos adicionais e datas da última/próxima avaliação são preservados na edição. O cadastro não decide aptidão: famílias novas entram em análise e estados decididos pela avaliação são identificados como tal. Placeholders cenográficos e painéis escuros foram removidos, sem mudar rotas, RBAC, API, backend ou banco. Gates: lint/build/escala tipográfica, auditoria npm sem vulnerabilidades, E2E 42/42 e visual 17 aprovados com 7 skips intencionais por viewport. Gabriel aprovou a continuidade em 15/09/2026. |
+| 15/09/2026 | Checkpoint local V2-18 — Cadastro e edição de membros | Branch `feat/frontend-v2-membros-formulario` migra `/families/:familyId/people/new` e `/families/:familyId/people/:personId/edit` para três etapas claras, com código real da família, resumo contextual no desktop, progresso e ações adaptados a 390 px. Nome, nascimento e parentesco são validados antes de avançar; renda, igreja/UPG e condições individuais conservam o contrato de escrita. Escolaridade histórica não reconhecida pelo seletor é preservada na edição. Botões de avançar e salvar são distintos para evitar envio prematuro; mensagens de erro não deslocam o botão durante o clique. Exclusão exige confirmação explícita. Sem placeholders de exemplo, painéis escuros, mudança de rotas, RBAC, API, backend ou banco. Gates: frontend lint/build, E2E 44/44 e visual de Famílias 21 aprovados com 11 skips por viewport. Gabriel autorizou a continuidade em 16/09/2026. |
+| 16/09/2026 | Checkpoint local V2-19 — Cadastro e edição de benefícios | Branch `feat/frontend-v2-beneficios-formulario` migra `/families/:familyId/benefits/new` e `/families/:familyId/benefits/:benefitId/edit` para a composição clara de Famílias, com resumo contextual no desktop e ações acessíveis em 390 px. O fluxo valida tipo, valor e vigência; explicita se o benefício compõe renda e preserva vínculos históricos que não estejam na lista atual. Alterações não salvas são protegidas e exclusão exige confirmação explícita. Placeholders de exemplo e painéis escuros foram removidos, sem mudar rotas, RBAC, API, recálculo do backend ou banco. Gates: frontend lint/build/escala tipográfica, E2E 47/47 e visual de Famílias 25 aprovados com 15 skips por viewport. A galeria `frontend/showcase/evidence/v2-19/index.html` aguarda aprovação visual de Gabriel. |
+| 16/09/2026 | Checkpoint local V2-20 — Auditoria visual final | Branch `chore/frontend-v2-auditoria-final` percorre as 28 rotas e todas as abas em desktop, tablet e mobile. A antiga folha global escura, fontes sem uso, componentes mortos, gradientes decorativos e placeholders de exemplo remanescentes foram removidos. Carregamento, aviso de ambiente, acesso restrito, página inexistente e detalhe de produto passaram a integrar a identidade e a regressão V2. Rotas, RBAC, APIs e regras de domínio foram preservados. Gates: lint/build, npm audit sem vulnerabilidades, piso tipográfico de 12 px e E2E 47/47. Evidência consolidada em `frontend/showcase/evidence/v2-20/index.html`; o aceite visual não altera o `NO-GO` profissional. |
+| 17/09/2026 | Sandbox local limpo para homologação manual | Branch `chore/homologacao-local-limpa` adiciona o modo de seed `minimal` e reset restrito ao SQLite de `.ux-sandbox`, mantendo somente três perfis e o acesso `ux.admin`. Todas as tabelas operacionais iniciam vazias. Textos internos redundantes e placeholders cenográficos remanescentes foram removidos sem alterar contratos, regras ou campos. Login, healthcheck, dashboard e API foram aprovados; Chromium percorreu 11 rotas em 1440×900 e 390×844 sem 5xx, erro JavaScript ou overflow horizontal. A base está liberada somente para cadastros locais fictícios; publicação no GitHub aguarda o aceite manual de Gabriel. |
 
-Próxima entrada esperada: continuar a Fase 2 em quantidade decimal e agregados
-derivados da família.
+Próximo gate: Gabriel executar o roteiro manual de UX, registrar defeitos por
+jornada e aprovar ou reprovar a homologação visual/funcional local. O `NO-GO`
+para dados reais e publicação externa permanece até a conclusão dos gates
+profissionais.

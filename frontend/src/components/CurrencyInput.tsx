@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes } from "react";
+import styles from "./CurrencyInput.module.css";
 
 type CurrencyInputProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -7,8 +8,8 @@ type CurrencyInputProps = Omit<
 
 export function CurrencyInput(props: CurrencyInputProps) {
   return (
-    <div className="currency-input">
-      <span className="currency-input__prefix" aria-hidden="true">
+    <div className={styles.currencyInput}>
+      <span className={styles.prefix} aria-hidden="true">
         R$
       </span>
       <input

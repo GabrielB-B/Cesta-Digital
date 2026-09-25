@@ -1,0 +1,219 @@
+param(
+    [string]$Address,
+    [string]$BrowserHost = "127.0.0.1",
+    [int]$FrontendPort = 5173,
+    [int]$ApiPort = 8010,
+    [ValidateSet("synthetic", "minimal")]
+    [string]$SeedMode = "synthetic",
+    [switch]$ResetData
+)
+
+$ErrorActionPreference = "Stop"
+$repositoryDir = Split-Path -Parent $PSScriptRoot
+$runtimeDir = Join-Path $repositoryDir ".ux-sandbox"
+$statePath = Join-Path $runtimeDir "processes.json"
+$backendDir = Join-Path $repositoryDir "backend"
+$frontendDir = Join-Path $repositoryDir "frontend"
+$pythonPath = Join-Path $backendDir ".venv\Scripts\python.exe"
+$databasePath = Join-Path $runtimeDir "cesta-digital-ux.sqlite3"
+$computerHostName = [System.Net.Dns]::GetHostName().ToLowerInvariant()
+
+if (-not (Test-Path -LiteralPath $pythonPath)) {
+    throw "Ambiente Python nao encontrado em $pythonPath."
+}
+
+if (-not $Address) {
+    $network = Get-NetIPConfiguration |
+        Where-Object {
+            $_.IPv4Address -and
+            $_.IPv4DefaultGateway -and
+            $_.NetAdapter.Status -eq "Up"
+        } |
+        Select-Object -First 1
+    if (-not $network) {
+        throw "Nao foi possivel detectar um IPv4 de rede local com gateway ativo."
+    }
+    $Address = $network.IPv4Address.IPAddress
+}
+
+if (-not [System.Net.IPAddress]::TryParse($Address, [ref]([System.Net.IPAddress]$null))) {
+    throw "Endereco IPv4 invalido: $Address"
+}
+
+$allowedBrowserHosts = @("127.0.0.1", "localhost", $computerHostName, $Address)
+if ($BrowserHost.ToLowerInvariant() -notin $allowedBrowserHosts) {
+    throw "BrowserHost invalido. Use 127.0.0.1, localhost, $computerHostName ou $Address."
+}
+
+foreach ($port in @($FrontendPort, $ApiPort)) {
+    $listener = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue
+    if ($listener) {
+        $owners = ($listener | Select-Object -ExpandProperty OwningProcess -Unique) -join ", "
+        throw "A porta $port ja esta em uso pelo processo $owners. Nenhum processo foi encerrado."
+    }
+}
+
+if ($ResetData) {
+    $resolvedRepositoryDir = [System.IO.Path]::GetFullPath($repositoryDir).TrimEnd('\')
+    $resolvedRuntimeDir = [System.IO.Path]::GetFullPath($runtimeDir).TrimEnd('\')
+    $expectedRuntimeDir = [System.IO.Path]::GetFullPath(
+        (Join-Path $resolvedRepositoryDir ".ux-sandbox")
+    ).TrimEnd('\')
+    if (-not $resolvedRuntimeDir.Equals(
+        $expectedRuntimeDir,
+        [System.StringComparison]::OrdinalIgnoreCase
+    )) {
+        throw "Diretorio de runtime fora do sandbox esperado: $resolvedRuntimeDir"
+    }
+
+    foreach ($artifactPath in @($databasePath, "$databasePath-wal", "$databasePath-shm")) {
+        $resolvedArtifactPath = [System.IO.Path]::GetFullPath($artifactPath)
+        if (-not $resolvedArtifactPath.StartsWith(
+            "$resolvedRuntimeDir\",
+            [System.StringComparison]::OrdinalIgnoreCase
+        )) {
+            throw "Arquivo de banco fora do sandbox esperado: $resolvedArtifactPath"
+        }
+        if (Test-Path -LiteralPath $resolvedArtifactPath) {
+            Remove-Item -LiteralPath $resolvedArtifactPath -Force
+        }
+    }
+}
+
+New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
+
+$apiUrl = "http://${BrowserHost}:$ApiPort"
+$apiNetworkUrl = "http://${Address}:$ApiPort"
+$frontendUrl = "http://${BrowserHost}:$FrontendPort"
+$frontendNetworkUrl = "http://${Address}:$FrontendPort"
+$backendOutput = Join-Path $runtimeDir "backend.out.log"
+$backendError = Join-Path $runtimeDir "backend.err.log"
+$frontendOutput = Join-Path $runtimeDir "frontend.out.log"
+$frontendError = Join-Path $runtimeDir "frontend.err.log"
+
+function Wait-Http {
+    param(
+        [string]$Url,
+        [int]$TimeoutSeconds = 45
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    do {
+        try {
+            $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 3
+            if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 400) {
+                return
+            }
+        }
+        catch {
+            Start-Sleep -Milliseconds 500
+        }
+    } while ((Get-Date) -lt $deadline)
+
+    throw "Tempo esgotado aguardando $Url."
+}
+
+$backendProcess = $null
+$frontendProcess = $null
+try {
+    $backendProcess = Start-Process `
+        -FilePath $pythonPath `
+        -ArgumentList @(
+            "scripts/start_ux_sandbox.py",
+            "--host", "0.0.0.0",
+            "--port", "$ApiPort",
+            "--seed-mode", $SeedMode,
+            "--frontend-origin", $frontendUrl,
+            "--frontend-origin", $frontendNetworkUrl,
+            "--frontend-origin", "http://${computerHostName}:$FrontendPort"
+        ) `
+        -WorkingDirectory $backendDir `
+        -RedirectStandardOutput $backendOutput `
+        -RedirectStandardError $backendError `
+        -WindowStyle Hidden `
+        -PassThru
+
+    Wait-Http -Url "http://127.0.0.1:$ApiPort/health/db"
+
+    $npmPath = (Get-Command npm.cmd -ErrorAction Stop).Source
+    $previousApiUrl = $env:VITE_API_URL
+    $previousAppEnv = $env:VITE_APP_ENV
+    $previousUxLocalHost = $env:UX_LOCAL_HOST
+    try {
+        $env:VITE_API_URL = $apiUrl
+        $env:VITE_APP_ENV = "staging"
+        $env:UX_LOCAL_HOST = $computerHostName
+        $frontendProcess = Start-Process `
+            -FilePath $npmPath `
+            -ArgumentList @(
+                "run", "dev", "--",
+                "--host", "0.0.0.0",
+                "--port", "$FrontendPort",
+                "--strictPort"
+            ) `
+            -WorkingDirectory $frontendDir `
+            -RedirectStandardOutput $frontendOutput `
+            -RedirectStandardError $frontendError `
+            -WindowStyle Hidden `
+            -PassThru
+    }
+    finally {
+        if ($null -eq $previousApiUrl) {
+            Remove-Item Env:VITE_API_URL -ErrorAction SilentlyContinue
+        }
+        else {
+            $env:VITE_API_URL = $previousApiUrl
+        }
+        if ($null -eq $previousAppEnv) {
+            Remove-Item Env:VITE_APP_ENV -ErrorAction SilentlyContinue
+        }
+        else {
+            $env:VITE_APP_ENV = $previousAppEnv
+        }
+        if ($null -eq $previousUxLocalHost) {
+            Remove-Item Env:UX_LOCAL_HOST -ErrorAction SilentlyContinue
+        }
+        else {
+            $env:UX_LOCAL_HOST = $previousUxLocalHost
+        }
+    }
+
+    Wait-Http -Url "http://127.0.0.1:$FrontendPort/login"
+
+    $state = [ordered]@{
+        address = $Address
+        browser_host = $BrowserHost
+        frontend_url = $frontendUrl
+        frontend_network_url = $frontendNetworkUrl
+        api_url = $apiUrl
+        api_network_url = $apiNetworkUrl
+        seed_mode = $SeedMode
+        reset_data = [bool]$ResetData
+        backend = [ordered]@{
+            id = $backendProcess.Id
+            started_at = $backendProcess.StartTime.ToUniversalTime().ToString("o")
+        }
+        frontend = [ordered]@{
+            id = $frontendProcess.Id
+            started_at = $frontendProcess.StartTime.ToUniversalTime().ToString("o")
+        }
+    }
+    $state | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $statePath -Encoding UTF8
+
+    [pscustomobject]@{
+        Frontend = $frontendUrl
+        API = $apiUrl
+        Health = "$apiUrl/health/db"
+        Modo = if ($BrowserHost -eq $Address) { "rede local" } else { "este computador" }
+        Dados = if ($SeedMode -eq "minimal") { "banco vazio; somente acesso administrativo" } else { "cenario sintetico completo" }
+        Estado = $statePath
+    } | Format-List
+}
+catch {
+    foreach ($process in @($frontendProcess, $backendProcess)) {
+        if ($process -and -not $process.HasExited) {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        }
+    }
+    throw
+}

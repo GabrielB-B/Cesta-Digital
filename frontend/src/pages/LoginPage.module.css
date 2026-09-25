@@ -1,0 +1,669 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(34rem, 43.5%) minmax(0, 56.5%);
+  overflow: hidden;
+  background: var(--cd-surface);
+  color: var(--cd-text);
+  font-family: var(--cd-font-sans);
+}
+
+.brandPanel {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(3rem, 6vw, 6rem);
+  background:
+    radial-gradient(circle at 49% 43%, rgba(235, 51, 133, 0.12), transparent 33%),
+    linear-gradient(135deg, #fffdfd 0%, #fff7fb 57%, #faf5ff 100%);
+}
+
+.brandContent {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 29rem);
+  transform: translateY(-0.75rem);
+}
+
+.brandLockup {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 2.8vw, 2.5rem);
+}
+
+.brandSymbol {
+  width: clamp(10.5rem, 14vw, 12.5rem);
+  height: auto;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.brandName {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  color: #10213a;
+  font-size: clamp(3.25rem, 4.5vw, 4.5rem);
+  font-weight: 400;
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+}
+
+.brandName span:first-child {
+  font-weight: 700;
+}
+
+.brandStatement {
+  margin-top: clamp(3.25rem, 6vh, 4.5rem);
+}
+
+.brandRule {
+  display: block;
+  width: 3.5rem;
+  height: 0.1875rem;
+  margin-bottom: 2.25rem;
+  border-radius: var(--cd-radius-pill);
+  background: linear-gradient(90deg, var(--cd-brand-logo-purple), var(--cd-brand-logo-pink));
+}
+
+.brandStatement p {
+  max-width: 23rem;
+  margin: 0;
+  color: #14263f;
+  font-size: clamp(1.55rem, 2vw, 1.8rem);
+  font-weight: 700;
+  line-height: 1.42;
+  letter-spacing: -0.025em;
+}
+
+.brandStatement strong {
+  display: block;
+  color: var(--cd-brand-logo-pink);
+  background: linear-gradient(90deg, var(--cd-brand-logo-pink), var(--cd-brand-logo-purple));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brandWaves {
+  position: absolute;
+  z-index: 0;
+  inset: auto -3% -1.25rem -3%;
+  width: 106%;
+  height: clamp(11rem, 23vh, 14rem);
+  fill: none;
+  stroke: rgba(217, 38, 118, 0.1);
+  stroke-width: 1.35;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.accessPanel {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(2rem, 5vw, 5rem);
+  background: #fbfcfe;
+}
+
+.accessContent {
+  width: min(100%, 37rem);
+  transform: translateY(1.5rem);
+}
+
+.loginCard {
+  width: 100%;
+  padding: 2.75rem clamp(2.25rem, 4vw, 3.5rem);
+  border: 1px solid var(--cd-border);
+  border-radius: 1.35rem;
+  background: var(--cd-surface);
+  box-shadow: 0 10px 28px rgba(17, 24, 39, 0.06);
+  animation: cardEnter 360ms var(--cd-ease-standard) both;
+}
+
+.environmentNotice {
+  margin: 0 0 1.5rem;
+  border-color: #f5d79a;
+  border-radius: var(--cd-radius-md);
+  background: var(--cd-warning-soft);
+  color: var(--cd-text-secondary);
+}
+
+.environmentNotice strong {
+  color: #8a4b08;
+  font-family: var(--cd-font-sans);
+}
+
+.environmentNotice span {
+  color: var(--cd-text-secondary);
+}
+
+.heading {
+  margin-bottom: 2.1rem;
+  text-align: center;
+}
+
+.heading h1 {
+  margin: 0;
+  color: #14243c;
+  font-size: clamp(2rem, 2.75vw, 2.35rem);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+.heading p {
+  margin: 0.75rem 0 0;
+  color: #7a8393;
+  font-size: 1.08rem;
+  line-height: 1.5;
+}
+
+.form,
+.recoveryPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+.form {
+  gap: 1.35rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.field label {
+  color: #17243a;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.inputShell {
+  min-height: 4.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0 1.15rem;
+  border: 1px solid #cfd5df;
+  border-radius: 0.7rem;
+  background: var(--cd-surface);
+  color: #8993a3;
+  transition:
+    border-color var(--cd-motion-fast) var(--cd-ease-standard),
+    box-shadow var(--cd-motion-fast) var(--cd-ease-standard),
+    background-color var(--cd-motion-fast) var(--cd-ease-standard);
+}
+
+.inputShell:hover {
+  border-color: #aeb7c5;
+}
+
+.inputShell:focus-within {
+  border-color: var(--cd-brand-action);
+  box-shadow: 0 0 0 3px rgba(217, 38, 118, 0.12);
+}
+
+.inputShell:has(input[aria-invalid="true"]) {
+  border-color: var(--cd-danger);
+}
+
+.inputShell > svg {
+  flex: 0 0 auto;
+}
+
+.inputShell input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 1.25rem 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--cd-text);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.inputShell input::placeholder {
+  color: #9aa3b2;
+  opacity: 1;
+}
+
+.passwordToggle {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  margin-right: -0.65rem;
+  border: 0;
+  border-radius: var(--cd-radius-md);
+  background: transparent;
+  color: #7c8798;
+  cursor: pointer;
+}
+
+.passwordToggle:hover {
+  background: var(--cd-neutral-100);
+  color: var(--cd-text);
+}
+
+.passwordToggle:focus-visible,
+.forgotButton:focus-visible,
+.submitButton:focus-visible,
+.recoveryButton:focus-visible {
+  outline: 3px solid rgba(124, 85, 244, 0.35);
+  outline-offset: 3px;
+}
+
+.formUtilities {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: -0.25rem;
+}
+
+.formUtilities > span {
+  color: var(--cd-text-muted);
+  font-size: 0.79rem;
+  line-height: 1.35;
+}
+
+.forgotButton {
+  min-height: 2.75rem;
+  flex: 0 0 auto;
+  padding: 0 0.2rem;
+  border: 0;
+  background: transparent;
+  color: var(--cd-brand-action);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.forgotButton:hover {
+  color: var(--cd-brand-action-hover);
+  text-decoration: underline;
+  text-underline-offset: 0.22rem;
+}
+
+.submitButton,
+.recoveryButton {
+  min-height: 4.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.68rem;
+  font: inherit;
+  font-size: 1.08rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    filter var(--cd-motion-fast) var(--cd-ease-standard),
+    transform var(--cd-motion-fast) var(--cd-ease-standard),
+    opacity var(--cd-motion-fast) var(--cd-ease-standard);
+}
+
+.submitButton {
+  border: 0;
+  background: linear-gradient(100deg, #e72d84 0%, #d53590 48%, #a644ba 100%);
+  color: var(--cd-text-inverse);
+  box-shadow: 0 5px 12px rgba(177, 18, 95, 0.14);
+}
+
+.submitButton:hover:not(:disabled) {
+  filter: saturate(1.06) brightness(0.97);
+}
+
+.submitButton:active:not(:disabled),
+.recoveryButton:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.submitButton:disabled,
+.recoveryButton:disabled {
+  cursor: wait;
+  opacity: 0.66;
+}
+
+.errorMessage,
+.successMessage {
+  margin: -0.55rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--cd-radius-md);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.errorMessage {
+  border: 1px solid #fecaca;
+  background: var(--cd-danger-soft);
+  color: #b91c1c;
+}
+
+.successMessage {
+  border: 1px solid #bbf7d0;
+  background: var(--cd-success-soft);
+  color: #166534;
+}
+
+.recoveryPanel {
+  gap: 1.1rem;
+  margin-top: 1.6rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--cd-border);
+  animation: recoveryEnter 180ms var(--cd-ease-standard) both;
+}
+
+.recoveryHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--cd-brand-action);
+}
+
+.recoveryHeading svg {
+  flex: 0 0 auto;
+  margin-top: 0.05rem;
+}
+
+.recoveryHeading strong {
+  display: block;
+  color: var(--cd-text);
+  font-size: 0.95rem;
+}
+
+.recoveryHeading p {
+  margin: 0.2rem 0 0;
+  color: var(--cd-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.recoveryPanel .inputShell {
+  min-height: 3.65rem;
+}
+
+.recoveryPanel .inputShell input {
+  padding-block: 0.9rem;
+}
+
+.recoveryButton {
+  min-height: 3.35rem;
+  border: 1px solid var(--cd-brand-action);
+  background: var(--cd-surface);
+  color: var(--cd-brand-action);
+  font-size: 0.94rem;
+}
+
+.recoveryButton:hover:not(:disabled) {
+  background: var(--cd-brand-soft);
+}
+
+.accessFootnote {
+  margin: 2rem 0 0;
+  color: #8891a0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes recoveryEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 899px) {
+  .page {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100dvh;
+    overflow: visible;
+    background:
+      radial-gradient(circle at 50% 4%, rgba(235, 51, 133, 0.09), transparent 26rem),
+      #fbfcfe;
+  }
+
+  .brandPanel {
+    display: block;
+    padding: 1.4rem 1.5rem 0.85rem;
+    overflow: visible;
+    background: transparent;
+  }
+
+  .brandContent {
+    width: 100%;
+    transform: none;
+  }
+
+  .brandLockup {
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .brandSymbol {
+    width: 5rem;
+  }
+
+  .brandName {
+    font-size: 2.25rem;
+    line-height: 0.92;
+  }
+
+  .brandStatement {
+    margin-top: 0.65rem;
+    text-align: center;
+  }
+
+  .brandRule {
+    display: none;
+  }
+
+  .brandStatement p {
+    max-width: none;
+    color: var(--cd-text-secondary);
+    font-size: 0.84rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .brandStatement strong {
+    display: inline;
+  }
+
+  .brandWaves {
+    display: none;
+  }
+
+  .accessPanel {
+    display: block;
+    padding: 0.5rem 1.25rem 2rem;
+    background: transparent;
+  }
+
+  .accessContent {
+    margin: 0 auto;
+    transform: none;
+  }
+
+  .loginCard {
+    padding: 2rem;
+    border-radius: 1.1rem;
+  }
+
+  .heading {
+    margin-bottom: 2rem;
+  }
+
+  .heading h1 {
+    font-size: 1.9rem;
+  }
+
+  .heading p {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .form {
+    gap: 1.35rem;
+  }
+
+  .inputShell,
+  .submitButton {
+    min-height: 3.8rem;
+  }
+
+  .accessFootnote {
+    margin-top: 1.3rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .brandPanel {
+    padding: max(1rem, env(safe-area-inset-top)) 1rem 0.7rem;
+  }
+
+  .brandSymbol {
+    width: 4.5rem;
+  }
+
+  .brandName {
+    font-size: 2rem;
+  }
+
+  .accessPanel {
+    padding: 0.35rem 0.75rem max(1.25rem, env(safe-area-inset-bottom));
+  }
+
+  .loginCard {
+    padding: 1.6rem 1.25rem;
+    border-radius: 1rem;
+  }
+
+  .heading {
+    margin-bottom: 1.6rem;
+  }
+
+  .heading h1 {
+    font-size: 1.7rem;
+  }
+
+  .heading p {
+    font-size: 0.94rem;
+  }
+
+  .field {
+    gap: 0.5rem;
+  }
+
+  .field label {
+    font-size: 0.9rem;
+  }
+
+  .inputShell {
+    min-height: 3.55rem;
+    padding-inline: 0.95rem;
+  }
+
+  .inputShell input {
+    padding-block: 0.95rem;
+    font-size: 0.94rem;
+  }
+
+  .formUtilities {
+    align-items: flex-start;
+  }
+
+  .formUtilities > span {
+    max-width: 9.5rem;
+  }
+
+  .forgotButton {
+    font-size: 0.84rem;
+    text-align: right;
+  }
+
+  .submitButton {
+    min-height: 3.65rem;
+    font-size: 1rem;
+  }
+
+  .accessFootnote {
+    padding-inline: 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 900px) {
+  .accessContent {
+    transform: translateY(0.5rem);
+  }
+
+  .brandContent {
+    transform: none;
+  }
+
+  .loginCard {
+    padding-block: 2.25rem;
+  }
+
+  .heading {
+    margin-bottom: 1.8rem;
+  }
+
+  .form {
+    gap: 1.25rem;
+  }
+
+  .inputShell,
+  .submitButton {
+    min-height: 3.75rem;
+  }
+
+  .brandStatement {
+    margin-top: 2.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loginCard,
+  .recoveryPanel {
+    animation: none;
+  }
+
+  .inputShell,
+  .passwordToggle,
+  .submitButton,
+  .recoveryButton {
+    transition: none;
+  }
+}

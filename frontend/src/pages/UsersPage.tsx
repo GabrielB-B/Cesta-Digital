@@ -1,12 +1,23 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
+import {
+  KeyRound,
+  Pencil,
+  Plus,
+  Search,
+  ShieldCheck,
+  UserCheck,
+  UserRoundCog,
+} from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
-import { DataTable } from "../components/DataTable";
-import { PageHeader } from "../components/PageHeader";
-import { PanelHeader } from "../components/PanelHeader";
-import { StateMessage } from "../components/StateMessage";
-import { getApiErrorMessage } from "../utils/api-error";
-import { formatDateTime } from "../utils/format";
-import { isStrongPassword, PASSWORD_POLICY_HINT } from "../utils/password";
+import { AdministrationDialog } from "../components/AdministrationDialog";
+import { AdministrationShell } from "../components/AdministrationShell";
 import type {
   RoleOptionResponse,
   UserAdminResponse,
@@ -14,56 +25,116 @@ import type {
   UserPasswordResetPayload,
   UserUpdatePayload,
 } from "../types/user";
+import { getApiErrorMessage } from "../utils/api-error";
+import { formatDateTime } from "../utils/format";
+import { isStrongPassword, PASSWORD_POLICY_HINT } from "../utils/password";
+import {
+  confirmDiscardUnsavedChanges,
+  useUnsavedChangesWarning,
+} from "../utils/unsaved-changes";
+import styles from "./AdministrationPage.module.css";
 
-const initialFormState = {
-  name: "",
-  login_name: "",
-  email: "",
-  password: "",
-  is_active: true,
-  roles: [] as string[],
+type UserFormState = {
+  name: string;
+  login_name: string;
+  email: string;
+  password: string;
+  is_active: boolean;
+  roles: string[];
 };
 
 const roleLabels: Record<string, string> = {
   admin: "Administrador",
-  lider_social: "Lideranca social",
+  lider_social: "Liderança social",
   operador: "Operador",
 };
 
 const roleDescriptions: Record<string, string> = {
-  admin: "Acesso completo a usuarios, auditoria e configuracoes administrativas.",
-  lider_social: "Acompanha familias, beneficios, avaliacoes sociais e financeiro.",
-  operador: "Cuida de estoque, tipos de cesta, agendamentos e entregas.",
+  admin: "Administra acessos, acompanha auditoria e opera todos os módulos.",
+  lider_social: "Gerencia famílias, benefícios, avaliações e relatórios sociais.",
+  operador: "Opera estoque, entradas, cestas, agendamentos e entregas.",
 };
+
+const roleCapabilities: Record<string, string[]> = {
+  admin: [
+    "Usuários, perfis e auditoria",
+    "Atendimento social e avaliações",
+    "Estoque, cestas e entregas",
+  ],
+  lider_social: [
+    "Famílias, pessoas e benefícios",
+    "Avaliações e reavaliações",
+    "Relatórios autorizados ao perfil",
+  ],
+  operador: [
+    "Produtos, categorias e entradas",
+    "Tipos de cesta e disponibilidade",
+    "Agendamentos, entregas e rastreabilidade",
+  ],
+};
+
+function createInitialFormState(): UserFormState {
+  return {
+    name: "",
+    login_name: "",
+    email: "",
+    password: "",
+    is_active: true,
+    roles: [],
+  };
+}
 
 function formatRole(role: string): string {
   return roleLabels[role] ?? role;
 }
 
 function formatRoleDescription(role: string, fallback?: string | null): string {
-  return roleDescriptions[role] ?? fallback ?? "Permissao operacional do sistema.";
+  return roleDescriptions[role] ?? fallback ?? "Permissão operacional do sistema.";
 }
 
 function formatLastLogin(value: string | null): string {
-  if (!value) {
-    return "Nunca entrou";
+  return value ? formatDateTime(value) : "Nunca acessou";
+}
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return parts.slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "CD";
+}
+
+function getRoleBadgeClass(role: string): string {
+  if (role === "admin") {
+    return `${styles.badge} ${styles.badgeAdmin}`;
   }
 
-  return formatDateTime(value);
+  if (role === "lider_social") {
+    return `${styles.badge} ${styles.badgeSocial}`;
+  }
+
+  return `${styles.badge} ${styles.badgeOperator}`;
 }
 
 export function UsersPage() {
+  const [searchParams] = useSearchParams();
+  const activeSection = searchParams.get("view") === "roles" ? "roles" : "users";
   const [users, setUsers] = useState<UserAdminResponse[]>([]);
   const [roles, setRoles] = useState<RoleOptionResponse[]>([]);
-  const [formData, setFormData] = useState(initialFormState);
+  const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [formData, setFormData] = useState<UserFormState>(createInitialFormState);
   const [passwordReset, setPasswordReset] = useState("");
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [pageError, setPageError] = useState("");
+  const [formError, setFormError] = useState("");
+  const [feedback, setFeedback] = useState("");
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    setPageError("");
+
     try {
       const [usersResponse, rolesResponse] = await Promise.all([
         api.get<UserAdminResponse[]>("/users"),
@@ -72,12 +143,12 @@ export function UsersPage() {
 
       setUsers(usersResponse.data);
       setRoles(rolesResponse.data);
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel carregar os usuarios."));
+    } catch (error) {
+      setPageError(getApiErrorMessage(error, "Não foi possível carregar os usuários."));
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     let isCurrent = true;
@@ -87,24 +158,17 @@ export function UsersPage() {
       api.get<RoleOptionResponse[]>("/users/roles"),
     ])
       .then(([usersResponse, rolesResponse]) => {
-        if (!isCurrent) {
-          return;
-        }
-
+        if (!isCurrent) return;
         setUsers(usersResponse.data);
         setRoles(rolesResponse.data);
       })
-      .catch((err) => {
+      .catch((error) => {
         if (isCurrent) {
-          setError(
-            getApiErrorMessage(err, "Nao foi possivel carregar os usuarios.")
-          );
+          setPageError(getApiErrorMessage(error, "Não foi possível carregar os usuários."));
         }
       })
       .finally(() => {
-        if (isCurrent) {
-          setIsLoading(false);
-        }
+        if (isCurrent) setIsLoading(false);
       });
 
     return () => {
@@ -112,69 +176,138 @@ export function UsersPage() {
     };
   }, []);
 
-  const editingUser = useMemo(() => {
-    return users.find((user) => user.id === editingUserId) ?? null;
-  }, [editingUserId, users]);
+  const editingUser = useMemo(
+    () => users.find((user) => user.id === editingUserId) ?? null,
+    [editingUserId, users],
+  );
 
-  const summary = useMemo(() => {
-    return {
+  const summary = useMemo(
+    () => ({
       total: users.length,
       active: users.filter((user) => user.is_active).length,
       admins: users.filter((user) => user.roles.includes("admin")).length,
       inactive: users.filter((user) => !user.is_active).length,
-    };
-  }, [users]);
+    }),
+    [users],
+  );
 
-  function resetForm() {
+  const filteredUsers = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase("pt-BR");
+
+    return users.filter((user) => {
+      const matchesRole = !roleFilter || user.roles.includes(roleFilter);
+      const matchesQuery =
+        !normalizedQuery ||
+        [user.name, user.login_name, user.email, ...user.roles]
+          .join(" ")
+          .toLocaleLowerCase("pt-BR")
+          .includes(normalizedQuery);
+
+      return matchesRole && matchesQuery;
+    });
+  }, [query, roleFilter, users]);
+
+  const isFormDirty = useMemo(() => {
+    if (!isDialogOpen) {
+      return false;
+    }
+
+    if (!editingUser) {
+      return (
+        formData.name !== "" ||
+        formData.login_name !== "" ||
+        formData.email !== "" ||
+        formData.password !== "" ||
+        !formData.is_active ||
+        formData.roles.length > 0
+      );
+    }
+
+    return (
+      formData.name !== editingUser.name ||
+      formData.login_name !== editingUser.login_name ||
+      formData.email !== editingUser.email ||
+      formData.is_active !== editingUser.is_active ||
+      [...formData.roles].sort().join("|") !== [...editingUser.roles].sort().join("|") ||
+      passwordReset !== ""
+    );
+  }, [editingUser, formData, isDialogOpen, passwordReset]);
+
+  useUnsavedChangesWarning(isDialogOpen && isFormDirty && !isSubmitting);
+
+  function clearFormState() {
     setEditingUserId(null);
     setPasswordReset("");
-    setFormData(initialFormState);
+    setFormError("");
+    setFormData(createInitialFormState());
   }
 
-  function toggleRole(roleName: string) {
-    setFormData((previous) => {
-      const hasRole = previous.roles.includes(roleName);
-
-      return {
-        ...previous,
-        roles: hasRole
-          ? previous.roles.filter((role) => role !== roleName)
-          : [...previous.roles, roleName],
-      };
-    });
+  function closeDialog() {
+    setIsDialogOpen(false);
+    clearFormState();
   }
 
-  function startEditing(user: UserAdminResponse) {
+  const requestCloseDialog = useCallback(() => {
+    if (isSubmitting || isResettingPassword) {
+      return;
+    }
+
+    if (confirmDiscardUnsavedChanges(isFormDirty)) {
+      setIsDialogOpen(false);
+      setEditingUserId(null);
+      setPasswordReset("");
+      setFormError("");
+      setFormData(createInitialFormState());
+    }
+  }, [isFormDirty, isResettingPassword, isSubmitting]);
+
+  function openCreateDialog() {
+    clearFormState();
+    setFeedback("");
+    setIsDialogOpen(true);
+  }
+
+  function openEditDialog(user: UserAdminResponse) {
     setEditingUserId(user.id);
     setPasswordReset("");
+    setFormError("");
+    setFeedback("");
     setFormData({
       name: user.name,
       login_name: user.login_name,
       email: user.email,
       password: "",
       is_active: user.is_active,
-      roles: user.roles,
+      roles: [...user.roles],
     });
+    setIsDialogOpen(true);
+  }
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  function toggleRole(roleName: string) {
+    setFormData((previous) => ({
+      ...previous,
+      roles: previous.roles.includes(roleName)
+        ? previous.roles.filter((role) => role !== roleName)
+        : [...previous.roles, roleName],
+    }));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
+    setFormError("");
 
     if (!formData.name.trim() || !formData.login_name.trim() || !formData.email.trim()) {
-      setError("Nome, login e email de recuperacao sao obrigatorios.");
+      setFormError("Nome, login e e-mail de recuperação são obrigatórios.");
       return;
     }
 
     if (formData.roles.length === 0) {
-      setError("Selecione pelo menos uma permissao de acesso.");
+      setFormError("Selecione pelo menos um perfil de acesso.");
       return;
     }
 
     if (!editingUserId && !isStrongPassword(formData.password)) {
-      setError(PASSWORD_POLICY_HINT);
+      setFormError(PASSWORD_POLICY_HINT);
       return;
     }
 
@@ -189,8 +322,8 @@ export function UsersPage() {
           is_active: formData.is_active,
           roles: formData.roles,
         };
-
         await api.put(`/users/${editingUserId}`, payload);
+        setFeedback("Usuário atualizado com segurança.");
       } else {
         const payload: UserCreatePayload = {
           name: formData.name.trim(),
@@ -200,16 +333,14 @@ export function UsersPage() {
           is_active: formData.is_active,
           roles: formData.roles,
         };
-
         await api.post("/users", payload);
+        setFeedback("Novo usuário cadastrado com segurança.");
       }
 
-      resetForm();
-      setIsLoading(true);
-      setError("");
+      closeDialog();
       await loadData();
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel salvar o usuario."));
+    } catch (error) {
+      setFormError(getApiErrorMessage(error, "Não foi possível salvar o usuário."));
     } finally {
       setIsSubmitting(false);
     }
@@ -220,300 +351,254 @@ export function UsersPage() {
       return;
     }
 
-    setError("");
-
+    setFormError("");
     if (!isStrongPassword(passwordReset)) {
-      setError(PASSWORD_POLICY_HINT);
+      setFormError(PASSWORD_POLICY_HINT);
       return;
     }
 
     setIsResettingPassword(true);
-
     try {
-      const payload: UserPasswordResetPayload = {
-        new_password: passwordReset.trim(),
-      };
-
+      const payload: UserPasswordResetPayload = { new_password: passwordReset.trim() };
       await api.put(`/users/${editingUserId}/password`, payload);
       setPasswordReset("");
-      setIsLoading(true);
-      setError("");
+      setFeedback("Senha redefinida. O evento foi registrado na auditoria.");
       await loadData();
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Nao foi possivel redefinir a senha."));
+    } catch (error) {
+      setFormError(getApiErrorMessage(error, "Não foi possível redefinir a senha."));
     } finally {
       setIsResettingPassword(false);
     }
   }
 
+  const accessAside = (
+    <>
+      <h2 className={styles.summaryTitle}>Resumo de acesso</h2>
+      <div className={styles.brandSummary}>
+        <img src="/logo-symbol.png" alt="" aria-hidden="true" />
+        <div>
+          <strong>Cesta Digital</strong>
+          <span>Controle administrativo ativo</span>
+        </div>
+      </div>
+
+      <div className={styles.summaryStats} aria-label="Resumo de usuários">
+        <div className={styles.summaryStat}><span>Usuários</span><strong>{summary.total}</strong></div>
+        <div className={styles.summaryStat}><span>Ativos</span><strong>{summary.active}</strong></div>
+        <div className={styles.summaryStat}><span>Admins</span><strong>{summary.admins}</strong></div>
+        <div className={styles.summaryStat}><span>Inativos</span><strong>{summary.inactive}</strong></div>
+      </div>
+
+      <section className={styles.summarySection}>
+        <h3>Proteções vigentes</h3>
+        <ul className={styles.summaryList}>
+          <li><ShieldCheck aria-hidden="true" /><span>Somente administradores acessam esta área.</span></li>
+          <li><UserCheck aria-hidden="true" /><span>O último administrador ativo não pode perder o acesso.</span></li>
+          <li><KeyRound aria-hidden="true" /><span>Criação e redefinição exigem senha forte.</span></li>
+        </ul>
+      </section>
+    </>
+  );
+
   return (
-    <div className="page-stack users-page">
-      <PageHeader
-        eyebrow="Administracao"
-        title="Usuarios e permissoes"
-        description="Gerencie quem pode acessar o sistema e quais funcoes cada pessoa pode usar."
-        meta={
-          <div className="audit-summary-grid" aria-label="Resumo de usuarios">
-            <div className="audit-summary-card">
-              <span>Usuarios</span>
-              <strong>{summary.total}</strong>
-            </div>
-            <div className="audit-summary-card">
-              <span>Ativos</span>
-              <strong>{summary.active}</strong>
-            </div>
-            <div className="audit-summary-card">
-              <span>Administradores</span>
-              <strong>{summary.admins}</strong>
-            </div>
-            <div className="audit-summary-card">
-              <span>Inativos</span>
-              <strong>{summary.inactive}</strong>
-            </div>
-          </div>
-        }
-      />
-
-      <section className="content-grid users-admin-grid">
-        <form onSubmit={handleSubmit} className="panel-card form-panel users-form-panel">
-          <PanelHeader
-            eyebrow={editingUser ? "Edicao" : "Novo acesso"}
-            title={editingUser ? "Editar usuario" : "Cadastrar usuario"}
-          />
-
-          <div className="form-grid">
-            <label className="form__group">
-              <span>Nome da pessoa</span>
-              <input
-                value={formData.name}
-                onChange={(event) =>
-                  setFormData((previous) => ({
-                    ...previous,
-                    name: event.target.value,
-                  }))
-                }
-                placeholder="Ex.: Maria Souza"
-                required
-              />
-            </label>
-
-            <label className="form__group">
-              <span>Login de acesso</span>
-              <input
-                value={formData.login_name}
-                onChange={(event) =>
-                  setFormData((previous) => ({
-                    ...previous,
-                    login_name: event.target.value,
-                  }))
-                }
-                autoComplete="username"
-                placeholder="Ex.: maria.souza"
-                pattern="[a-z0-9._-]{3,80}"
-                spellCheck={false}
-                required
-              />
-            </label>
-
-            <label className="form__group">
-              <span>Email de recuperacao</span>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(event) =>
-                  setFormData((previous) => ({
-                    ...previous,
-                    email: event.target.value,
-                  }))
-                }
-                placeholder="nome@dominio.com"
-                required
-              />
-            </label>
-
-            {!editingUser ? (
-              <label className="form__group">
-                <span>Senha inicial</span>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(event) =>
-                    setFormData((previous) => ({
-                      ...previous,
-                      password: event.target.value,
-                    }))
-                  }
-                  autoComplete="new-password"
-                  required
-                />
-              </label>
-            ) : null}
-          </div>
-
-          <p className="table-muted">{PASSWORD_POLICY_HINT}</p>
-
-          <div className="users-permission-block">
+    <AdministrationShell activeSection={activeSection} aside={accessAside}>
+      {activeSection === "roles" ? (
+        <>
+          <header className={styles.panelHeader}>
             <div>
-              <p className="eyebrow">Permissoes</p>
-              <h3>Funcoes liberadas</h3>
+              <h2>Perfis de acesso</h2>
+              <p>Entenda as responsabilidades reais de cada perfil do sistema.</p>
             </div>
-
-            <div className="checkbox-grid role-choice-grid">
-              <label className="checkbox-card role-choice">
-                <input
-                  type="checkbox"
-                  checked={formData.is_active}
-                  onChange={(event) =>
-                    setFormData((previous) => ({
-                      ...previous,
-                      is_active: event.target.checked,
-                    }))
-                  }
-                />
-                <span>
-                  <strong>Usuario ativo</strong>
-                  <small>Pode entrar no sistema enquanto estiver ativo.</small>
-                </span>
-              </label>
-
-              {roles.map((role) => (
-                <label key={role.id} className="checkbox-card role-choice">
-                  <input
-                    type="checkbox"
-                    checked={formData.roles.includes(role.name)}
-                    onChange={() => toggleRole(role.name)}
-                  />
-                  <span>
-                    <strong>{formatRole(role.name)}</strong>
-                    <small>{formatRoleDescription(role.name, role.description)}</small>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {editingUser ? (
-            <div className="inline-panel">
-              <PanelHeader eyebrow="Seguranca" title="Redefinir senha" />
-
-              <p className="table-muted">{PASSWORD_POLICY_HINT}</p>
-
-              <div className="toolbar toolbar--row">
-                <label className="toolbar__field">
-                  <span className="sr-only">Nova senha forte</span>
-                  <input
-                    className="toolbar__input"
-                    type="password"
-                    name="password_reset"
-                    value={passwordReset}
-                    onChange={(event) => setPasswordReset(event.target.value)}
-                    placeholder="Nova senha forte..."
-                    autoComplete="new-password"
-                  />
-                </label>
-
-                <button
-                  type="button"
-                  className="button button--secondary"
-                  onClick={() => void handlePasswordReset()}
-                  disabled={isResettingPassword}
-                >
-                  {isResettingPassword ? "Salvando..." : "Redefinir senha"}
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          {error ? <StateMessage variant="error">{error}</StateMessage> : null}
-
-          <div className="panel-actions panel-actions--spread">
-            <button
-              type="button"
-              className="button button--secondary"
-              onClick={resetForm}
-            >
-              Limpar
-            </button>
-
-            <button type="submit" className="button" disabled={isSubmitting}>
-              {isSubmitting
-                ? "Salvando..."
-                : editingUser
-                  ? "Atualizar usuario"
-                  : "Cadastrar usuario"}
-            </button>
-          </div>
-        </form>
-
-        <section className="panel-card users-table-panel">
-          <PanelHeader eyebrow="Permissoes" title="Pessoas com acesso" />
+          </header>
 
           {isLoading ? (
-            <StateMessage variant="loading">Carregando usuarios...</StateMessage>
-          ) : users.length === 0 ? (
-            <StateMessage>Nenhum usuario cadastrado ainda.</StateMessage>
+            <div className={styles.loadingState} role="status">Carregando perfis...</div>
+          ) : pageError ? (
+            <div className={styles.errorState} role="alert">{pageError}</div>
           ) : (
-            <DataTable caption="Usuarios e permissoes cadastrados">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Login</th>
-                  <th>Email</th>
-                  <th>Permissoes</th>
-                  <th>Status</th>
-                  <th>Ultima entrada</th>
-                  <th>Acoes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td className="table-cell--truncate" title={user.name}>
-                      <strong>{user.name}</strong>
-                    </td>
-                    <td className="table-cell--nowrap" title={user.login_name}>
-                      <span className="inline-code">@{user.login_name}</span>
-                    </td>
-                    <td className="table-cell--truncate" title={user.email}>
-                      {user.email}
-                    </td>
-                    <td>
-                      <div className="role-badge-list">
-                        {user.roles.map((role) => (
-                          <span className="role-badge" key={`${user.id}-${role}`}>
-                            {formatRole(role)}
-                          </span>
-                        ))}
+            <div className={styles.rolesGrid}>
+              {roles.map((role) => {
+                const count = users.filter((user) => user.roles.includes(role.name)).length;
+                return (
+                  <article className={styles.roleCard} key={role.id}>
+                    <div className={styles.roleCardHeader}>
+                      <span className={styles.roleIcon}><UserRoundCog aria-hidden="true" /></span>
+                      <div>
+                        <h3>{formatRole(role.name)}</h3>
+                        <span className={getRoleBadgeClass(role.name)}>Perfil do sistema</span>
                       </div>
-                    </td>
-                    <td>
-                      {user.is_active ? (
-                        <span className="audit-status audit-status--success">Ativo</span>
-                      ) : (
-                        <span className="audit-status audit-status--danger">Inativo</span>
-                      )}
-                    </td>
-                    <td className="table-cell--nowrap">
-                      {formatLastLogin(user.last_login_at)}
-                    </td>
-                    <td>
-                      <div className="table-actions">
-                        <button
-                          type="button"
-                          className="button button--secondary button--small"
-                          onClick={() => startEditing(user)}
-                        >
-                          Editar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </DataTable>
+                    </div>
+                    <p>{formatRoleDescription(role.name, role.description)}</p>
+                    <ul>
+                      {(roleCapabilities[role.name] ?? []).map((capability) => (
+                        <li key={capability}>{capability}</li>
+                      ))}
+                    </ul>
+                    <span className={styles.roleCount}>{count} usuário{count === 1 ? "" : "s"} com este perfil</span>
+                  </article>
+                );
+              })}
+            </div>
           )}
-        </section>
-      </section>
-    </div>
+        </>
+      ) : (
+        <>
+          <header className={styles.panelHeader}>
+            <div>
+              <h2>Usuários</h2>
+              <p>Gerencie as pessoas que podem entrar no sistema e seus perfis.</p>
+            </div>
+            <button type="button" className={styles.primaryButton} onClick={openCreateDialog}>
+              <Plus aria-hidden="true" /> Novo usuário
+            </button>
+          </header>
+
+          <div className={styles.toolbar} role="search">
+            <label className={styles.searchControl}>
+              <Search aria-hidden="true" />
+              <span className="sr-only">Buscar usuário</span>
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar por nome, login ou e-mail"
+              />
+            </label>
+            <label>
+              <span className="sr-only">Filtrar por perfil</span>
+              <select
+                className={styles.selectControl}
+                value={roleFilter}
+                onChange={(event) => setRoleFilter(event.target.value)}
+              >
+                <option value="">Todos os perfis</option>
+                {roles.map((role) => <option key={role.id} value={role.name}>{formatRole(role.name)}</option>)}
+              </select>
+            </label>
+          </div>
+
+          {feedback ? <p className={styles.formSuccess} role="status">{feedback}</p> : null}
+          {pageError ? <p className={styles.formError} role="alert">{pageError}</p> : null}
+
+          {isLoading ? (
+            <div className={styles.loadingState} role="status">Carregando usuários...</div>
+          ) : filteredUsers.length === 0 ? (
+            <div className={styles.emptyState} role="status">Nenhum usuário corresponde aos filtros atuais.</div>
+          ) : (
+            <>
+              <div className={styles.tableShell}>
+                <div className={styles.tableScroll}>
+                  <table className={`${styles.table} ${styles.usersTable}`}>
+                    <caption className="sr-only">Usuários e perfis cadastrados</caption>
+                    <thead>
+                      <tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Último acesso</th><th>Ação</th></tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map((user) => (
+                        <tr key={user.id}>
+                          <td>
+                            <div className={styles.userCell}>
+                              <span className={styles.avatar}>{getInitials(user.name)}</span>
+                              <span><strong>{user.name}</strong><span>@{user.login_name}</span></span>
+                            </div>
+                          </td>
+                          <td className={styles.truncate} title={user.email}>{user.email}</td>
+                          <td><div className={styles.badgeList}>{user.roles.map((role) => <span key={`${user.id}-${role}`} className={getRoleBadgeClass(role)}>{formatRole(role)}</span>)}</div></td>
+                          <td><span className={`${styles.status} ${user.is_active ? styles.statusActive : styles.statusInactive}`}>{user.is_active ? "Ativo" : "Inativo"}</span></td>
+                          <td>{formatLastLogin(user.last_login_at)}</td>
+                          <td>
+                            <button type="button" className={styles.rowAction} onClick={() => openEditDialog(user)} aria-label={`Editar ${user.name}`}>
+                              <Pencil aria-hidden="true" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className={styles.mobileList}>
+                  {filteredUsers.map((user) => (
+                    <article className={styles.mobileCard} key={`mobile-${user.id}`}>
+                      <div className={styles.mobileCardHeader}>
+                        <div className={styles.userCell}>
+                          <span className={styles.avatar}>{getInitials(user.name)}</span>
+                          <span><strong>{user.name}</strong><span>@{user.login_name}</span></span>
+                        </div>
+                        <span className={`${styles.status} ${user.is_active ? styles.statusActive : styles.statusInactive}`}>{user.is_active ? "Ativo" : "Inativo"}</span>
+                      </div>
+                      <dl className={styles.mobileCardMeta}>
+                        <div><dt>E-mail</dt><dd>{user.email}</dd></div>
+                        <div><dt>Último acesso</dt><dd>{formatLastLogin(user.last_login_at)}</dd></div>
+                      </dl>
+                      <div className={styles.mobileCardFooter}>
+                        <div className={styles.badgeList}>{user.roles.map((role) => <span key={`mobile-${user.id}-${role}`} className={getRoleBadgeClass(role)}>{formatRole(role)}</span>)}</div>
+                        <button type="button" className={styles.secondaryButton} onClick={() => openEditDialog(user)}><Pencil aria-hidden="true" /> Editar</button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.pagination}><span>Mostrando {filteredUsers.length} de {users.length} usuários</span></div>
+            </>
+          )}
+        </>
+      )}
+
+      {isDialogOpen ? (
+        <AdministrationDialog
+          title={editingUser ? "Editar usuário" : "Novo usuário"}
+          description={editingUser ? "Atualize identificação, status e perfis de acesso." : "Crie um acesso individual com senha inicial segura."}
+          onRequestClose={requestCloseDialog}
+          footer={
+            <>
+              <button type="button" className={styles.secondaryButton} onClick={requestCloseDialog}>Cancelar</button>
+              <button type="submit" form="administration-user-form" className={styles.primaryButton} disabled={isSubmitting}>{isSubmitting ? "Salvando..." : editingUser ? "Salvar alterações" : "Cadastrar usuário"}</button>
+            </>
+          }
+        >
+          <form id="administration-user-form" onSubmit={handleSubmit}>
+            <div className={styles.formGrid}>
+              <label className={styles.field}>Nome completo<input value={formData.name} onChange={(event) => setFormData((previous) => ({ ...previous, name: event.target.value }))} autoComplete="name" required /></label>
+              <label className={styles.field}>Login de acesso<input value={formData.login_name} onChange={(event) => setFormData((previous) => ({ ...previous, login_name: event.target.value }))} autoComplete="username" pattern="[a-zA-Z0-9._-]{3,80}" spellCheck={false} required /></label>
+              <label className={`${styles.field} ${styles.fullField}`}>E-mail de recuperação<input type="email" value={formData.email} onChange={(event) => setFormData((previous) => ({ ...previous, email: event.target.value }))} autoComplete="email" required /></label>
+              {!editingUser ? <label className={`${styles.field} ${styles.fullField}`}>Senha inicial<input type="password" value={formData.password} onChange={(event) => setFormData((previous) => ({ ...previous, password: event.target.value }))} autoComplete="new-password" required /></label> : null}
+            </div>
+
+            {!editingUser ? <p className={styles.formHint}>{PASSWORD_POLICY_HINT}</p> : null}
+
+            <section className={styles.permissionBlock}>
+              <div><h3>Perfis de acesso</h3><p>Selecione somente as responsabilidades necessárias para esta pessoa.</p></div>
+              <div className={styles.roleChoices}>
+                {roles.map((role) => (
+                  <label className={styles.checkCard} key={role.id}>
+                    <input type="checkbox" checked={formData.roles.includes(role.name)} onChange={() => toggleRole(role.name)} />
+                    <span><strong>{formatRole(role.name)}</strong><small>{formatRoleDescription(role.name, role.description)}</small></span>
+                  </label>
+                ))}
+              </div>
+              <label className={styles.checkCard}>
+                <input type="checkbox" checked={formData.is_active} onChange={(event) => setFormData((previous) => ({ ...previous, is_active: event.target.checked }))} />
+                <span><strong>Usuário ativo</strong><small>Permite autenticação enquanto este status estiver ativo.</small></span>
+              </label>
+            </section>
+
+            {editingUser ? (
+              <section className={styles.passwordBlock}>
+                <div><h3>Redefinir senha</h3><p>{PASSWORD_POLICY_HINT}</p></div>
+                <div className={styles.inlineForm}>
+                  <label className="sr-only" htmlFor="administration-password-reset">Nova senha</label>
+                  <input id="administration-password-reset" className={styles.dateControl} type="password" value={passwordReset} onChange={(event) => { setPasswordReset(event.target.value); setFeedback(""); }} placeholder="Nova senha forte" autoComplete="new-password" />
+                  <button type="button" className={styles.secondaryButton} onClick={() => void handlePasswordReset()} disabled={isResettingPassword}>{isResettingPassword ? "Redefinindo..." : "Redefinir senha"}</button>
+                </div>
+              </section>
+            ) : null}
+
+            {editingUser && feedback ? <p className={styles.formSuccess} role="status">{feedback}</p> : null}
+            {formError ? <p className={styles.formError} role="alert">{formError}</p> : null}
+          </form>
+        </AdministrationDialog>
+      ) : null}
+    </AdministrationShell>
   );
 }
