@@ -219,7 +219,7 @@ export function PersonForm({
             <span>Etapa {step + 1} de {steps.length}</span>
             <strong>{steps[step].name}</strong>
             <div className={styles.progressTrack} aria-hidden="true">
-              <span style={{ width: `${((step + 1) / steps.length) * 100}%` }} />
+              <span className={styles[`progressStep${step + 1}`]} />
             </div>
           </div>
           <ol>

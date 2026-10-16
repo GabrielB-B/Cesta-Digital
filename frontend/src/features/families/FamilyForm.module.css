@@ -808,6 +808,12 @@
     transition: width var(--cd-motion-normal) var(--cd-ease-standard);
   }
 
+  .progressStep1 { width: 20%; }
+  .progressStep2 { width: 40%; }
+  .progressStep3 { width: 60%; }
+  .progressStep4 { width: 80%; }
+  .progressStep5 { width: 100%; }
+
   .stepHeader {
     min-height: 4.75rem;
     padding: 0.9rem 1rem;

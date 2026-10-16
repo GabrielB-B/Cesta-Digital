@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     frontend_cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     bootstrap_admin_enabled: bool = True
+    api_docs_enabled: bool = False
 
     db_host: str
     db_port: int = 3306
@@ -113,6 +114,9 @@ class Settings(BaseSettings):
 
         if self.auth_cookie_samesite.lower() not in {"lax", "strict", "none"}:
             raise ValueError("AUTH_COOKIE_SAMESITE deve ser lax, strict ou none.")
+
+        if self.app_env == "production" and self.api_docs_enabled:
+            raise ValueError("API_DOCS_ENABLED deve permanecer desativado em production.")
 
         if self.db_connect_timeout_seconds < 1:
             raise ValueError("DB_CONNECT_TIMEOUT_SECONDS deve ser maior que zero.")

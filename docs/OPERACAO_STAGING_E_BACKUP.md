@@ -20,7 +20,8 @@ Os endereços públicos são:
 - frontend: `https://cesta-digital.vercel.app`;
 - API: `https://cesta-digital-api.onrender.com`;
 - readiness do banco: `https://cesta-digital-api.onrender.com/health/db`;
-- documentação da API: `https://cesta-digital-api.onrender.com/docs`.
+- documentação da API: desativada por padrão no ambiente publicado; pode ser
+  habilitada explicitamente apenas em desenvolvimento/homologação autorizada.
 
 Ser acessível pela internet não torna o ambiente produção. O plano gratuito do
 Render pode suspender a instância, causar cold start e não oferece as garantias

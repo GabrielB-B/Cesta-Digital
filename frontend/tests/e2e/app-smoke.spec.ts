@@ -706,8 +706,6 @@ async function mockApi(page: Page, user = currentUser) {
 
   await page.route("**/auth/me", async (route) => fulfillJson(route, user));
   await page.route("**/auth/login", async (route) => fulfillJson(route, {
-    access_token: "test-token",
-    token_type: "bearer",
     user_id: user.id,
     name: user.name,
     login_name: user.login_name,
@@ -2174,7 +2172,9 @@ test("delivery history exposes item and batch trace on mobile", async ({ page })
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/deliveries");
 
-  await page.getByRole("button", { name: "Histórico rastreável" }).click();
+  await page
+    .getByRole("button", { name: "Histórico rastreável", exact: true })
+    .click();
 
   const deliveryCard = page.locator("article").filter({
     hasText: "LT-MOCK-001",

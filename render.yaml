@@ -19,6 +19,8 @@ services:
         value: INFO
       - key: BOOTSTRAP_ADMIN_ENABLED
         value: false
+      - key: API_DOCS_ENABLED
+        value: false
       - key: ALGORITHM
         value: HS256
       - key: ACCESS_TOKEN_EXPIRE_MINUTES

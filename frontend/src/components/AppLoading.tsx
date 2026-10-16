@@ -6,7 +6,7 @@ interface AppLoadingProps {
 }
 
 export function AppLoading({
-  label = "Carregando Cesta Digital...",
+  label = "Carregando Cesta Digital…",
   fullScreen = true,
 }: AppLoadingProps) {
   const className = [styles.loading, fullScreen ? styles.fullScreen : null]

@@ -15,8 +15,7 @@ interface AuthProviderProps {
 }
 
 /**
- * Provider responsável por autenticação, persistência do token
- * e carregamento do usuário atual.
+ * Provider responsável pela sessão HttpOnly e pelo usuário atual.
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<CurrentUserResponse | null>(null);
@@ -105,11 +104,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  const legacyToken = null;
-
   const value = useMemo<AuthContextData>(
     () => ({
-      token: legacyToken,
       isAuthenticated: Boolean(user),
       isLoading,
       user,

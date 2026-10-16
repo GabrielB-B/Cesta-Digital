@@ -1,38 +1,94 @@
+import { lazy } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { PageLifecycle } from "./components/PageLifecycle";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AppLayout } from "./layouts/AppLayout";
-import { BasketTypeCreatePage } from "./pages/BasketTypeCreatePage";
-import { BasketTypeDetailPage } from "./pages/BasketTypeDetailPage";
-import { BasketTypesPage } from "./pages/BasketTypesPage";
-import { AssessmentQueuePage } from "./pages/AssessmentQueuePage";
-import { AuditLogsPage } from "./pages/AuditLogsPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { DeliveriesPage } from "./pages/DeliveriesPage";
-import { DeliveryScheduleCreatePage } from "./pages/DeliveryScheduleCreatePage";
-import { ReportsPage } from "./pages/ReportsPage";
-import { FamiliesPage } from "./pages/FamiliesPage";
-import { FamilyAssessmentCreatePage } from "./pages/FamilyAssessmentCreatePage";
-import { FamilyBenefitCreatePage } from "./pages/FamilyBenefitCreatePage";
-import { FamilyBenefitEditPage } from "./pages/FamilyBenefitEditPage";
-import { FamilyCreatePage } from "./pages/FamilyCreatePage";
-import { FamilyDetailPage } from "./pages/FamilyDetailPage";
-import { FamilyEditPage } from "./pages/FamilyEditPage";
-import { FamilyPersonCreatePage } from "./pages/FamilyPersonCreatePage";
-import { FamilyPersonEditPage } from "./pages/FamilyPersonEditPage";
-import { ItemCategoriesPage } from "./pages/ItemCategoriesPage";
-import { ItemCreatePage } from "./pages/ItemCreatePage";
-import { ItemDetailPage } from "./pages/ItemDetailPage";
-import { ItemsPage } from "./pages/ItemsPage";
 import { LoginPage } from "./pages/LoginPage";
-import { NotFoundPage } from "./pages/NotFoundPage";
-import { StockBatchCreatePage } from "./pages/StockBatchCreatePage";
-import { StockBatchesPage } from "./pages/StockBatchesPage";
-import { StockMovementCreatePage } from "./pages/StockMovementCreatePage";
-import { UsersPage } from "./pages/UsersPage";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { RoleRoute } from "./routes/RoleRoute";
 import { ROUTE_ACCESS } from "./routes/routeAccess";
+
+const AssessmentQueuePage = lazy(() =>
+  import("./pages/AssessmentQueuePage").then((module) => ({ default: module.AssessmentQueuePage })),
+);
+const AuditLogsPage = lazy(() =>
+  import("./pages/AuditLogsPage").then((module) => ({ default: module.AuditLogsPage })),
+);
+const BasketTypeCreatePage = lazy(() =>
+  import("./pages/BasketTypeCreatePage").then((module) => ({ default: module.BasketTypeCreatePage })),
+);
+const BasketTypeDetailPage = lazy(() =>
+  import("./pages/BasketTypeDetailPage").then((module) => ({ default: module.BasketTypeDetailPage })),
+);
+const BasketTypesPage = lazy(() =>
+  import("./pages/BasketTypesPage").then((module) => ({ default: module.BasketTypesPage })),
+);
+const DashboardPage = lazy(() =>
+  import("./pages/DashboardPage").then((module) => ({ default: module.DashboardPage })),
+);
+const DeliveriesPage = lazy(() =>
+  import("./pages/DeliveriesPage").then((module) => ({ default: module.DeliveriesPage })),
+);
+const DeliveryScheduleCreatePage = lazy(() =>
+  import("./pages/DeliveryScheduleCreatePage").then((module) => ({ default: module.DeliveryScheduleCreatePage })),
+);
+const FamiliesPage = lazy(() =>
+  import("./pages/FamiliesPage").then((module) => ({ default: module.FamiliesPage })),
+);
+const FamilyAssessmentCreatePage = lazy(() =>
+  import("./pages/FamilyAssessmentCreatePage").then((module) => ({ default: module.FamilyAssessmentCreatePage })),
+);
+const FamilyBenefitCreatePage = lazy(() =>
+  import("./pages/FamilyBenefitCreatePage").then((module) => ({ default: module.FamilyBenefitCreatePage })),
+);
+const FamilyBenefitEditPage = lazy(() =>
+  import("./pages/FamilyBenefitEditPage").then((module) => ({ default: module.FamilyBenefitEditPage })),
+);
+const FamilyCreatePage = lazy(() =>
+  import("./pages/FamilyCreatePage").then((module) => ({ default: module.FamilyCreatePage })),
+);
+const FamilyDetailPage = lazy(() =>
+  import("./pages/FamilyDetailPage").then((module) => ({ default: module.FamilyDetailPage })),
+);
+const FamilyEditPage = lazy(() =>
+  import("./pages/FamilyEditPage").then((module) => ({ default: module.FamilyEditPage })),
+);
+const FamilyPersonCreatePage = lazy(() =>
+  import("./pages/FamilyPersonCreatePage").then((module) => ({ default: module.FamilyPersonCreatePage })),
+);
+const FamilyPersonEditPage = lazy(() =>
+  import("./pages/FamilyPersonEditPage").then((module) => ({ default: module.FamilyPersonEditPage })),
+);
+const ItemCategoriesPage = lazy(() =>
+  import("./pages/ItemCategoriesPage").then((module) => ({ default: module.ItemCategoriesPage })),
+);
+const ItemCreatePage = lazy(() =>
+  import("./pages/ItemCreatePage").then((module) => ({ default: module.ItemCreatePage })),
+);
+const ItemDetailPage = lazy(() =>
+  import("./pages/ItemDetailPage").then((module) => ({ default: module.ItemDetailPage })),
+);
+const ItemsPage = lazy(() =>
+  import("./pages/ItemsPage").then((module) => ({ default: module.ItemsPage })),
+);
+const NotFoundPage = lazy(() =>
+  import("./pages/NotFoundPage").then((module) => ({ default: module.NotFoundPage })),
+);
+const ReportsPage = lazy(() =>
+  import("./pages/ReportsPage").then((module) => ({ default: module.ReportsPage })),
+);
+const StockBatchCreatePage = lazy(() =>
+  import("./pages/StockBatchCreatePage").then((module) => ({ default: module.StockBatchCreatePage })),
+);
+const StockBatchesPage = lazy(() =>
+  import("./pages/StockBatchesPage").then((module) => ({ default: module.StockBatchesPage })),
+);
+const StockMovementCreatePage = lazy(() =>
+  import("./pages/StockMovementCreatePage").then((module) => ({ default: module.StockMovementCreatePage })),
+);
+const UsersPage = lazy(() =>
+  import("./pages/UsersPage").then((module) => ({ default: module.UsersPage })),
+);
 
 function App() {
   return (

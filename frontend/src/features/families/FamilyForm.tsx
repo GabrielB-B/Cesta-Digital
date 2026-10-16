@@ -339,7 +339,7 @@ export function FamilyForm({
             <strong>{currentStep.shortLabel}</strong>
           </div>
           <div className={styles.progressTrack} aria-hidden="true">
-            <span style={{ width: `${((activeStep + 1) / steps.length) * 100}%` }} />
+            <span className={styles[`progressStep${activeStep + 1}`]} />
           </div>
           <ol>
             {steps.map((step, index) => {

@@ -77,6 +77,9 @@ Em caso de suspeita de vazamento, acesso indevido ou exposicao de backup:
 
 ## Pendencias Para Producao
 
+O modelo que deve ser preenchido e aprovado está em
+[`AVISO_PRIVACIDADE_MODELO.md`](./AVISO_PRIVACIDADE_MODELO.md).
+
 - Definir encarregado/responsavel formal pelo tratamento dos dados.
 - Criar aviso de privacidade em linguagem simples para a operacao social.
 - Definir rotina de revisao de acessos por perfil.

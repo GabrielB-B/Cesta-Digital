@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
   Heart,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { AppIcon } from "../components/AppIcon";
+import { AppLoading } from "../components/AppLoading";
 import { EnvironmentNotice } from "../components/EnvironmentNotice";
 import { useAuth } from "../contexts/useAuth";
 import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
@@ -491,7 +492,9 @@ export function AppLayout() {
                 {routeFlash.message}
               </p>
             ) : null}
-            <Outlet />
+            <Suspense fallback={<AppLoading fullScreen={false} label="Carregando página…" />}>
+              <Outlet />
+            </Suspense>
           </section>
         </main>
 

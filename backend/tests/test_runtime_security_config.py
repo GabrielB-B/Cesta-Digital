@@ -50,6 +50,15 @@ class RuntimeSecurityConfigTests(unittest.TestCase):
         self.assertIsNone(without_custom_ca.db_ssl_ca)
         self.assertEqual(with_custom_ca.db_ssl_ca, "/etc/secrets/aiven-ca.pem")
 
+    def test_production_rejects_public_api_documentation(self):
+        with self.assertRaisesRegex(ValidationError, "API_DOCS_ENABLED"):
+            build_settings(app_env="production", api_docs_enabled=True)
+
+    def test_staging_keeps_api_documentation_disabled_by_default(self):
+        staging = build_settings()
+
+        self.assertFalse(staging.api_docs_enabled)
+
 
 if __name__ == "__main__":
     unittest.main()
