@@ -82,13 +82,9 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Remove governed product images and optional barcode."""
-    op.drop_index(
-        op.f("ix_item_images_created_by_user_id"),
-        table_name="item_images",
-    )
-    op.drop_index(op.f("ix_item_images_sha256"), table_name="item_images")
-    op.drop_index(op.f("ix_item_images_item_id"), table_name="item_images")
-    op.drop_index(op.f("ix_item_images_id"), table_name="item_images")
+    # MySQL may use an explicit column index to enforce a foreign key. Dropping
+    # indexes first fails with error 1553; dropping the table removes its
+    # foreign keys and indexes atomically.
     op.drop_table("item_images")
     op.drop_index(op.f("ix_items_barcode"), table_name="items")
     op.drop_column("items", "barcode")
