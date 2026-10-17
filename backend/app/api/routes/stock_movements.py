@@ -14,7 +14,7 @@ from app.services.stock_movement_service import (
 
 router = APIRouter(
     tags=["Movimentações de Estoque"],
-    dependencies=[Depends(require_any_role("admin", "operador"))],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
 )
 
 

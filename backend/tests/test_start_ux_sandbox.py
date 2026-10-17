@@ -33,7 +33,7 @@ from app.models.item_category import ItemCategory
 from app.models.role import Role
 from app.models.user import User
 from app.models.user_role import UserRole
-from scripts.start_ux_sandbox import seed_minimal_data
+from scripts.start_ux_sandbox import seed_minimal_data, seed_synthetic_data
 
 
 class MinimalUxSandboxSeedTests(unittest.TestCase):
@@ -62,7 +62,7 @@ class MinimalUxSandboxSeedTests(unittest.TestCase):
     def test_minimal_seed_creates_only_structural_access(self) -> None:
         seed_minimal_data(self.session_factory, self.access)
 
-        self.assertEqual(self.scalar_count(Role), 3)
+        self.assertEqual(self.scalar_count(Role), 4)
         self.assertEqual(self.scalar_count(User), 1)
         self.assertEqual(self.scalar_count(UserRole), 1)
         self.assertEqual(self.scalar_count(ItemCategory), 0)
@@ -78,9 +78,27 @@ class MinimalUxSandboxSeedTests(unittest.TestCase):
         seed_minimal_data(self.session_factory, self.access)
         seed_minimal_data(self.session_factory, self.access)
 
-        self.assertEqual(self.scalar_count(Role), 3)
+        self.assertEqual(self.scalar_count(Role), 4)
         self.assertEqual(self.scalar_count(User), 1)
         self.assertEqual(self.scalar_count(UserRole), 1)
+
+    def test_synthetic_seed_includes_the_four_homologation_profiles(self) -> None:
+        seed_synthetic_data(self.session_factory, self.access)
+
+        self.assertEqual(self.scalar_count(Role), 4)
+        self.assertEqual(self.scalar_count(User), 4)
+        self.assertEqual(self.scalar_count(UserRole), 4)
+
+        with self.session_factory() as db:
+            collaborator_roles = set(
+                db.scalars(
+                    select(Role.name)
+                    .join(UserRole, UserRole.role_id == Role.id)
+                    .join(User, User.id == UserRole.user_id)
+                    .where(User.login_name == "ux.colaborador")
+                ).all()
+            )
+            self.assertEqual(collaborator_roles, {"colaborador"})
 
 
 if __name__ == "__main__":

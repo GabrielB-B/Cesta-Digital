@@ -121,13 +121,25 @@ export function DashboardPage() {
     };
   }, []);
 
-  const canAccessSocial = userHasAnyRole(
+  const canAccessFamilies = userHasAnyRole(
     user?.roles ?? [],
-    ROUTE_ACCESS.social,
+    ROUTE_ACCESS.familyRecords,
   );
-  const canAccessOperations = userHasAnyRole(
+  const canAccessAssessments = userHasAnyRole(
     user?.roles ?? [],
-    ROUTE_ACCESS.operations,
+    ROUTE_ACCESS.socialAssessments,
+  );
+  const canAccessInventory = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.inventory,
+  );
+  const canConfigureBaskets = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.inventoryConfiguration,
+  );
+  const canAccessDeliveries = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.deliveries,
   );
 
   const priorities = useMemo<PriorityItem[]>(() => {
@@ -136,7 +148,7 @@ export function DashboardPage() {
     const items: PriorityItem[] = [];
     const nextRevaluation = data.upcoming_revaluations[0];
 
-    if (canAccessSocial) {
+    if (canAccessAssessments) {
       items.push({
         id: "revaluations",
         title:
@@ -148,7 +160,7 @@ export function DashboardPage() {
           : "Nenhuma aptidão precisa ser recalculada agora.",
         label: "Aptidão",
         tone: "assessment",
-        to: "/families",
+        to: "/assessments",
       });
 
       items.push({
@@ -164,7 +176,7 @@ export function DashboardPage() {
       });
     }
 
-    if (canAccessOperations) {
+    if (canAccessDeliveries) {
       items.push({
         id: "deliveries",
         title:
@@ -177,6 +189,9 @@ export function DashboardPage() {
         to: "/deliveries",
       });
 
+    }
+
+    if (canConfigureBaskets) {
       const leadingBasket = data.basket_summaries[0];
       if (leadingBasket) {
         items.push({
@@ -191,12 +206,12 @@ export function DashboardPage() {
     }
 
     return items.slice(0, 4);
-  }, [canAccessOperations, canAccessSocial, data]);
+  }, [canAccessAssessments, canAccessDeliveries, canConfigureBaskets, data]);
 
   const quickActions = useMemo<QuickAction[]>(() => {
     const actions: QuickAction[] = [];
 
-    if (canAccessOperations) {
+    if (canAccessInventory) {
       actions.push({
         to: "/stock-batches/new",
         label: "Nova entrada",
@@ -204,7 +219,7 @@ export function DashboardPage() {
       });
     }
 
-    if (canAccessSocial) {
+    if (canAccessFamilies) {
       actions.push({
         to: "/families/new",
         label: "Nova família",
@@ -212,12 +227,15 @@ export function DashboardPage() {
       });
     }
 
-    if (canAccessOperations) {
+    if (canAccessDeliveries) {
       actions.push({
         to: "/deliveries/schedules/new",
         label: "Agendar entrega",
         icon: CalendarPlus,
       });
+    }
+
+    if (canConfigureBaskets) {
       actions.push({
         to: "/basket-types",
         label: "Tipos de cesta",
@@ -226,7 +244,7 @@ export function DashboardPage() {
     }
 
     return actions.slice(0, 4);
-  }, [canAccessOperations, canAccessSocial]);
+  }, [canAccessDeliveries, canAccessFamilies, canAccessInventory, canConfigureBaskets]);
 
   if (isLoading) {
     return (
@@ -273,7 +291,7 @@ export function DashboardPage() {
       detail: `${numberFormatter.format(data.total_families)} cadastradas no total`,
       icon: UsersRound,
       tone: "family",
-      to: canAccessSocial ? "/families" : undefined,
+      to: canAccessFamilies ? "/families" : undefined,
     },
     {
       id: "deliveries-month",
@@ -282,7 +300,7 @@ export function DashboardPage() {
       detail: "Baixas concluídas no período",
       icon: Truck,
       tone: "delivery",
-      to: canAccessOperations ? "/deliveries" : undefined,
+      to: canAccessDeliveries ? "/deliveries" : undefined,
     },
     {
       id: "pending-schedules",
@@ -291,7 +309,7 @@ export function DashboardPage() {
       detail: data.pending_schedules === 1 ? "1 agendamento aberto" : "Agendamentos em aberto",
       icon: CalendarDays,
       tone: "schedule",
-      to: canAccessOperations ? "/deliveries" : undefined,
+      to: canAccessDeliveries ? "/deliveries" : undefined,
     },
     {
       id: "stock-alerts",
@@ -303,7 +321,7 @@ export function DashboardPage() {
           : "Estoque dentro dos limites",
       icon: TriangleAlert,
       tone: "attention",
-      to: canAccessOperations ? "/items" : undefined,
+      to: canAccessInventory ? "/items" : undefined,
     },
   ] as const;
 
@@ -457,7 +475,7 @@ export function DashboardPage() {
             <p className={styles.emptyState}>Nenhum item abaixo do estoque mínimo.</p>
           )}
 
-          {canAccessOperations ? (
+          {canAccessInventory ? (
             <Link className={styles.panelLink} to="/items">
               Ver todos os alertas
               <ArrowRight size={16} aria-hidden="true" />
@@ -467,7 +485,7 @@ export function DashboardPage() {
       </section>
 
       <div className={styles.dashboardFooterGrid}>
-        {canAccessSocial ? (
+        {canAccessFamilies ? (
           <section className={styles.distributionPanel} aria-labelledby="family-distribution-title">
             <div className={styles.quickHeader}>
               <div>
@@ -508,7 +526,7 @@ export function DashboardPage() {
 
         {quickActions.length > 0 ? (
           <section
-            className={`${styles.quickPanel}${canAccessSocial ? "" : ` ${styles.quickPanelWide}`}`}
+            className={`${styles.quickPanel}${canAccessFamilies ? "" : ` ${styles.quickPanelWide}`}`}
             aria-labelledby="dashboard-quick-actions"
           >
             <div className={styles.quickHeader}>

@@ -16,7 +16,7 @@ from app.services.item_service import (
 
 router = APIRouter(
     tags=["Itens"],
-    dependencies=[Depends(require_any_role("admin", "operador"))],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
 )
 
 

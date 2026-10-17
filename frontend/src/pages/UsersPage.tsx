@@ -47,12 +47,14 @@ const roleLabels: Record<string, string> = {
   admin: "Administrador",
   lider_social: "Liderança social",
   operador: "Operador",
+  colaborador: "Colaborador",
 };
 
 const roleDescriptions: Record<string, string> = {
   admin: "Administra acessos, acompanha auditoria e opera todos os módulos.",
   lider_social: "Gerencia famílias, benefícios, avaliações e relatórios sociais.",
   operador: "Opera estoque, entradas, cestas, agendamentos e entregas.",
+  colaborador: "Cadastra famílias, controla alimentos e realiza entregas sem acesso gerencial.",
 };
 
 const roleCapabilities: Record<string, string[]> = {
@@ -70,6 +72,11 @@ const roleCapabilities: Record<string, string[]> = {
     "Produtos, categorias e entradas",
     "Tipos de cesta e disponibilidade",
     "Agendamentos, entregas e rastreabilidade",
+  ],
+  colaborador: [
+    "Famílias, pessoas e benefícios",
+    "Produtos, entradas e movimentações",
+    "Agendamentos e entregas",
   ],
 };
 

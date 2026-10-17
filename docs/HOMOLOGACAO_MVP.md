@@ -609,6 +609,8 @@ Simular 400, 401, 403, 409, 422, 500, timeout e perda de rede durante formulári
 - [ ] Admin: usuários, auditoria e configurações autorizadas.
 - [ ] Liderança social: dados sociais autorizados, sem administração indevida.
 - [ ] Operador: estoque/distribuição e projeção social mínima.
+- [ ] Colaborador: famílias, alimentos, entradas e entregas; sem análises sociais,
+  relatórios, configuração de categorias/cestas ou administração.
 - [ ] Sem papel: acesso negado no frontend e backend.
 - [ ] Ação crítica registra auditoria.
 
@@ -636,6 +638,8 @@ Simular 400, 401, 403, 409, 422, 500, timeout e perda de rede durante formulári
 - [ ] Restore real executado em banco isolado e limpo.
 - [ ] API temporária abre sobre a restauração e as contagens agregadas conciliam.
 - [ ] Responsável, criptografia, retenção e descarte do backup real registrados.
+- [ ] Reset de staging simulado; execução aceita somente o manifesto e a prova
+  recente desse restore isolado, preservando ao menos um admin ativo.
 - [ ] Aprovado com evidência sem anexar o SQL.
 
 ### HOM-OPS-002 — release e rollback
@@ -712,6 +716,16 @@ profissionais abaixo.
 - [ ] Confirmar entrega e conferir lotes usados.
 - [ ] Cancelar/falta/reagendar e conferir reservas.
 - [ ] Validar bloqueio de dados sociais/administração.
+
+### Colaborador
+
+- [ ] Criar e editar família, membro e benefício.
+- [ ] Confirmar que o histórico e as ações de análise social não aparecem.
+- [ ] Criar produto, entrada e movimentação de estoque.
+- [ ] Agendar e confirmar entrega.
+- [ ] Confirmar que categorias e tipos de cesta são apenas opções internas dos
+  formulários, sem menu ou escrita direta.
+- [ ] Validar bloqueio de análises sociais, relatórios, administração e auditoria.
 
 ## 10. Gate automatizado antes do push
 

@@ -33,7 +33,7 @@ from app.models.user_role import UserRole
 from app.services.auth_rate_limit_service import clear_login_rate_limits
 
 
-ROLE_NAMES = ("admin", "lider_social", "operador")
+ROLE_NAMES = ("admin", "lider_social", "operador", "colaborador")
 
 
 class ApiIntegrationTestCase(unittest.TestCase):

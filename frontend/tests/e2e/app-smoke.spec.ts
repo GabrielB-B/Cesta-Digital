@@ -44,6 +44,17 @@ const routeAccessUsers = [
     role: "operador",
     user: operatorUser,
   },
+  {
+    role: "colaborador",
+    user: {
+      ...operatorUser,
+      id: 4,
+      name: "Colaborador Homologacao",
+      login_name: "colaborador",
+      email: "colaborador@cestadigital.app",
+      roles: ["colaborador"],
+    },
+  },
 ] as const;
 
 const family = {
@@ -550,6 +561,7 @@ const roleOptions = [
   { id: 1, name: "admin", description: "Administrador" },
   { id: 2, name: "lider_social", description: "Lideranca social" },
   { id: 3, name: "operador", description: "Operador" },
+  { id: 4, name: "colaborador", description: "Colaborador" },
 ];
 
 const auditLogs = [
@@ -1113,9 +1125,14 @@ test.beforeEach(async ({ page }) => {
 
 test("route access groups remain equal to the approved RBAC baseline", () => {
   expect(ROUTE_ACCESS).toEqual({
-    authenticated: ["admin", "lider_social", "operador"],
-    social: ["admin", "lider_social"],
-    operations: ["admin", "operador"],
+    authenticated: ["admin", "lider_social", "operador", "colaborador"],
+    familyRecords: ["admin", "lider_social", "colaborador"],
+    socialAssessments: ["admin", "lider_social"],
+    inventory: ["admin", "operador", "colaborador"],
+    inventoryConfiguration: ["admin", "operador"],
+    deliveries: ["admin", "operador", "colaborador"],
+    reports: ["admin", "lider_social", "operador"],
+    socialReports: ["admin", "lider_social"],
     administration: ["admin"],
   });
 });
@@ -1178,6 +1195,26 @@ for (const scenario of routeAccessUsers) {
     }
   });
 }
+
+test("collaborator family detail omits social analysis controls", async ({ page }) => {
+  const collaborator = routeAccessUsers.find(
+    (scenario) => scenario.role === "colaborador",
+  );
+  if (!collaborator) throw new Error("Cenário de colaborador ausente.");
+
+  await page.unroute("**/auth/me");
+  await page.route("**/auth/me", async (route) =>
+    fulfillJson(route, collaborator.user),
+  );
+
+  await page.goto("/families/1");
+
+  await expect(page.getByRole("heading", { name: /Família/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Registrar avaliação" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Análises sociais" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Histórico de aptidão" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Salvar status" })).toHaveCount(0);
+});
 
 test("anonymous deep links return to login without protected content", async ({ page }) => {
   await page.unroute("**/auth/me");

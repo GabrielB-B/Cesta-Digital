@@ -412,7 +412,7 @@ export function FamilyForm({
                     <option value="inativa">Inativa</option>
                   </select>
                   <small id="family-status-help" className={styles.mobileStatusGuidance}>
-                    A aptidão é definida em Avaliações.
+                    A aptidão é definida em Análises sociais.
                   </small>
                 </label>
 
@@ -862,7 +862,7 @@ export function FamilyForm({
               <ClipboardCheck aria-hidden="true" />
               <p>
                 <strong>Avaliação social</strong>
-                <span>A aptidão é calculada e decidida no fluxo de Avaliações.</span>
+                <span>A aptidão é calculada e decidida no fluxo de Análises sociais.</span>
               </p>
             </div>
           </aside>

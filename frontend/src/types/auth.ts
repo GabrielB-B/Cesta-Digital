@@ -1,4 +1,4 @@
-export type AppRole = "admin" | "lider_social" | "operador";
+export type AppRole = "admin" | "lider_social" | "operador" | "colaborador";
 
 export interface CurrentUserResponse {
   id: number;

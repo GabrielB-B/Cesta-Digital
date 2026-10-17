@@ -7,11 +7,12 @@ from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.dashboard import DashboardOverviewResponse
+from app.services.auth_service import get_user_roles
 from app.services.dashboard_service import get_dashboard_overview
 
 router = APIRouter(
     tags=["Dashboard"],
-    dependencies=[Depends(require_any_role("admin", "lider_social", "operador"))],
+    dependencies=[Depends(require_any_role("admin", "lider_social", "operador", "colaborador"))],
 )
 
 
@@ -21,4 +22,9 @@ def get_dashboard_overview_endpoint(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """Retorna os indicadores principais do dashboard inicial."""
-    return get_dashboard_overview(db)
+    overview = get_dashboard_overview(db)
+    roles = set(get_user_roles(db, current_user.id))
+    if not roles.intersection({"admin", "lider_social"}):
+        overview["upcoming_revaluations_count"] = 0
+        overview["upcoming_revaluations"] = []
+    return overview

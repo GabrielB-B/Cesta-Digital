@@ -68,7 +68,7 @@ python scripts\seed_initial_data.py
 
 Esse seed cria:
 
-- perfis `admin`, `lider_social` e `operador`
+- perfis `admin`, `lider_social`, `operador` e `colaborador`
 - o primeiro usuario administrador com base no `.env`
 - categorias iniciais `alimentos`, `higiene` e `limpeza`
 
@@ -116,15 +116,35 @@ URL esperada:
 2. Entre com o usuario admin criado no seed.
 3. O backend emite JWT e o frontend usa cookie `HttpOnly` para proteger as rotas internas.
 
-### Operacao social
+Matriz vigente:
+
+| Perfil | Uso principal | Não acessa |
+|---|---|---|
+| `colaborador` | famílias, membros, benefícios, produtos, entradas, movimentações e entregas | análises sociais, relatórios, configuração de categorias/cestas, usuários e auditoria |
+| `lider_social` | famílias, análises sociais e relatórios autorizados | estoque, configuração operacional e administração |
+| `operador` | estoque, categorias, tipos de cesta, entregas e relatórios operacionais | famílias, análises sociais e administração |
+| `admin` | acesso completo, usuários e auditoria | — |
+
+O `colaborador` pode consultar categorias e tipos de cesta somente pela API quando
+um formulário de produto ou entrega precisa dessas opções. Ele não recebe as
+rotas de configuração nem permissão de escrita nesses cadastros.
+
+### Cadastro e operação diária (`colaborador`)
 
 1. Cadastre uma familia.
 2. Cadastre membros da familia.
 3. Edite ou exclua membros quando necessario.
 4. Cadastre beneficios.
 5. Edite ou exclua beneficios quando necessario.
-6. Gere o preview de elegibilidade.
-7. Registre a avaliacao social.
+6. Cadastre produtos e registre entradas ou movimentações.
+7. Agende e confirme entregas.
+
+### Análise social (`lider_social` ou `admin`)
+
+1. Abra `Análises sociais`.
+2. Revise a fila de famílias aguardando análise ou reavaliação.
+3. Gere o preview de elegibilidade.
+4. Registre a decisão social e a próxima revisão.
 
 ### Operacao de estoque e entrega
 

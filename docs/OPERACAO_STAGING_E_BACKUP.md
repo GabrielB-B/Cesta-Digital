@@ -306,7 +306,57 @@ ensaio:
 5. executar login e smoke dos fluxos críticos;
 6. destruir com segurança o banco temporário após a retenção da evidência.
 
-## 7. Publicação sem migration
+## 7. Reset seguro dos dados de homologação
+
+O reset serve apenas para preparar uma rodada limpa com dados fictícios. Ele não
+é uma rotina de produção e não pode ser usado para apagar dados reais sem o
+processo formal de retenção, anonimização e descarte aprovado.
+
+Primeiro execute somente a simulação, a partir de `backend/` e com as variáveis
+do ambiente de staging carregadas:
+
+```powershell
+.venv\Scripts\python.exe scripts\reset_staging_data.py
+```
+
+A simulação informa somente contagens agregadas e não altera o banco. Para a
+execução, gere antes um backup v2 e uma prova recente de restore isolado conforme
+as seções 5 e 6. Então use os caminhos privados desses artefatos:
+
+```powershell
+.venv\Scripts\python.exe scripts\reset_staging_data.py `
+  --execute `
+  --confirm-database "cesta_digital_staging" `
+  --backup-manifest "C:\caminho-seguro\backup.sql.manifest.json" `
+  --restore-evidence "C:\caminho-seguro\backup-restore-AAAAMMDD-HHMMSSmmm.json"
+```
+
+O comando falha sem alterar dados quando qualquer condição não for atendida:
+
+- `APP_ENV` deve ser exatamente `staging`;
+- `--confirm-database` deve ser idêntico ao `DB_NAME` carregado;
+- manifesto e evidência devem usar `schema_version: 2`;
+- o dump real deve continuar disponível e seu tamanho/checksum deve coincidir
+  com o manifesto e a evidência;
+- o restore deve ter resultado `success`, modo `exact-manifest-v2` e destino
+  diferente da origem;
+- a evidência deve ter no máximo 24 horas, salvo janela menor explicitamente
+  definida;
+- ao menos um administrador ativo deve ser preservado.
+
+Em uma única transação, o reset remove dados operacionais, imagens, famílias,
+avaliações, estoque, entregas, logs anteriores e usuários que não sejam
+administradores ativos. Perfis e administradores ativos são preservados; as três
+categorias padrão são recriadas e um novo evento
+`system.staging_reset_completed` registra apenas contagens agregadas. Se qualquer
+etapa falhar, a transação é revertida.
+
+Depois da execução, repetir healthcheck, login do administrador, criação dos
+quatro usuários de teste e smoke por perfil. O reset público ainda não está
+comprovado enquanto os artefatos privados de backup/restore não forem fornecidos
+ao operador autorizado.
+
+## 8. Publicação sem migration
 
 1. Confirmar branch/SHA, escopo, revisão registrada (PR quando disponível) e checks verdes.
 2. Obter aprovação de Gabriel.
@@ -327,7 +377,7 @@ if ($frontend.StatusCode -ne 200 -or $database.database -ne "ok") {
 }
 ```
 
-## 8. Publicação com migration
+## 9. Publicação com migration
 
 1. Parar e não integrar se não houver backup e restore comprovados.
 2. Gerar backup novo da base de homologação.
@@ -350,7 +400,7 @@ janela aprovada, telemetria de compatibilidade e plano específico. Migration
 destrutiva, irreversível ou sem estratégia expand/contract permanece bloqueada,
 mesmo que o script de backup passe.
 
-## 9. Rollback e incidente
+## 10. Rollback e incidente
 
 Em falha pós-deploy:
 
@@ -362,7 +412,7 @@ Em falha pós-deploy:
 6. validar `/health/db`, login, saldo e entregas antes de reabrir;
 7. registrar causa raiz e ação preventiva.
 
-## 10. Evidência mínima dos gates
+## 11. Evidência mínima dos gates
 
 | Campo | Exemplo permitido |
 |---|---|

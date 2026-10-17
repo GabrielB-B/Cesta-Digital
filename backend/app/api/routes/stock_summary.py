@@ -20,7 +20,7 @@ from app.services.stock_summary_service import (
 
 router = APIRouter(
     tags=["Resumo de Estoque"],
-    dependencies=[Depends(require_any_role("admin", "operador"))],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
 )
 
 

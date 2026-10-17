@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { useAuth } from "../contexts/useAuth";
+import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
 import type {
   EligibilityPreviewResponse,
   FamilyAssessmentResponse,
@@ -74,6 +76,11 @@ export function FamilyDetailPage() {
 }
 
 function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
+  const { user } = useAuth();
+  const canAccessAssessments = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.socialAssessments,
+  );
   const [family, setFamily] = useState<FamilyDetailResponse | null>(null);
   const [eligibilityPreview, setEligibilityPreview] =
     useState<EligibilityPreviewResponse | null>(null);
@@ -90,23 +97,25 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
     if (!familyId) return;
     let isCurrent = true;
 
-    void Promise.allSettled([
-      api.get<FamilyDetailResponse>(`/families/${familyId}`),
-      api.get<EligibilityPreviewResponse>(
-        `/families/${familyId}/eligibility-preview`,
-      ),
-    ])
-      .then(([familyResult, previewResult]) => {
-        if (!isCurrent) return;
-        if (familyResult.status === "rejected") throw familyResult.reason;
+    const previewRequest = canAccessAssessments
+      ? api
+          .get<EligibilityPreviewResponse>(
+            `/families/${familyId}/eligibility-preview`,
+          )
+          .catch(() => null)
+      : Promise.resolve(null);
 
-        setFamily(familyResult.value.data);
-        setEligibilityPreview(
-          previewResult.status === "fulfilled" ? previewResult.value.data : null,
-        );
+    void Promise.all([
+      api.get<FamilyDetailResponse>(`/families/${familyId}`),
+      previewRequest,
+    ])
+      .then(([familyResponse, previewResponse]) => {
+        if (!isCurrent) return;
+        setFamily(familyResponse.data);
+        setEligibilityPreview(previewResponse?.data ?? null);
         setStatusForm({
-          status: familyResult.value.data.status,
-          internal_notes: familyResult.value.data.internal_notes ?? "",
+          status: familyResponse.data.status,
+          internal_notes: familyResponse.data.internal_notes ?? "",
         });
       })
       .catch((requestError) => {
@@ -126,7 +135,7 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
     return () => {
       isCurrent = false;
     };
-  }, [familyId]);
+  }, [canAccessAssessments, familyId]);
 
   async function handleStatusSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -218,19 +227,21 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
             <Link className={styles.secondaryAction} to={`/families/${family.id}/edit`}>
               <Edit3 aria-hidden="true" />Editar cadastro
             </Link>
-            <Link className={styles.primaryAction} to={`/families/${family.id}/assessments/new`}>
-              <Plus aria-hidden="true" />Registrar avaliação
-            </Link>
+            {canAccessAssessments ? (
+              <Link className={styles.primaryAction} to={`/families/${family.id}/assessments/new`}>
+                <Plus aria-hidden="true" />Registrar avaliação
+              </Link>
+            ) : null}
           </div>
         </div>
       </header>
 
       <nav className={styles.sectionNav} aria-label="Seções da família">
-        <a href="#decisao">Aptidão</a>
+        {canAccessAssessments ? <a href="#decisao">Aptidão</a> : null}
         <a href="#resumo">Resumo</a>
         <a href="#composicao">Composição</a>
         <a href="#beneficios">Benefícios</a>
-        <a href="#avaliacoes">Avaliações</a>
+        {canAccessAssessments ? <a href="#avaliacoes">Análises sociais</a> : null}
       </nav>
 
       <div className={styles.detailLayout}>
@@ -254,10 +265,12 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
               <dt><WalletCards aria-hidden="true" />Renda per capita</dt>
               <dd>{formatCurrency(family.income_per_capita)}</dd>
             </div>
-            <div>
-              <dt><CalendarDays aria-hidden="true" />Próxima reavaliação</dt>
-              <dd>{family.next_revaluation_date ? formatDateOnly(family.next_revaluation_date) : "Não agendada"}</dd>
-            </div>
+            {canAccessAssessments ? (
+              <div>
+                <dt><CalendarDays aria-hidden="true" />Próxima reavaliação</dt>
+                <dd>{family.next_revaluation_date ? formatDateOnly(family.next_revaluation_date) : "Não agendada"}</dd>
+              </div>
+            ) : null}
             <div>
               <dt><Home aria-hidden="true" />Moradia</dt>
               <dd>{family.housing_type || "Não informada"}</dd>
@@ -270,7 +283,7 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
         </aside>
 
         <main className={styles.content}>
-          <section id="decisao" className={styles.panel}>
+          {canAccessAssessments ? <section id="decisao" className={styles.panel}>
             <div className={styles.panelHeader}>
               <div>
                 <span className={styles.eyebrow}>Aptidão ao atendimento</span>
@@ -302,7 +315,7 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
                 <p>{eligibilityPreview?.economic_reason ?? "Registre uma avaliação para consolidar a leitura social."}</p>
               </div>
             </div>
-          </section>
+          </section> : null}
 
           <section id="resumo" className={styles.panel}>
             <div className={styles.panelHeader}>
@@ -392,7 +405,7 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
             )}
           </section>
 
-          <section id="avaliacoes" className={styles.panel}>
+          {canAccessAssessments ? <section id="avaliacoes" className={styles.panel}>
             <div className={styles.panelHeader}>
               <div><span className={styles.eyebrow}>Avaliações</span><h2>Histórico de aptidão</h2></div>
               <Link className={styles.textAction} to={`/families/${family.id}/assessments/new`}><Plus aria-hidden="true" />Nova avaliação</Link>
@@ -409,9 +422,9 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
                 ))}
               </div>
             )}
-          </section>
+          </section> : null}
 
-          <section className={styles.panel}>
+          {canAccessAssessments ? <section className={styles.panel}>
             <form onSubmit={handleStatusSubmit} className={styles.statusForm}>
               <div className={styles.panelHeader}>
                 <div><span className={styles.eyebrow}>Gestão do cadastro</span><h2>Status e observação interna</h2><p>Status apto ou inapto exige avaliação social com a mesma decisão final.</p></div>
@@ -438,7 +451,7 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
                 {isUpdatingStatus ? "Atualizando…" : "Salvar status"}
               </button>
             </form>
-          </section>
+          </section> : null}
         </main>
       </div>
     </div>

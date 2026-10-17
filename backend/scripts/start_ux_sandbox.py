@@ -131,6 +131,7 @@ def seed_minimal_data(session_factory, access: dict[str, str]) -> None:
                 ("admin", "Administração do sistema"),
                 ("lider_social", "Cadastro e avaliação social"),
                 ("operador", "Estoque, cestas e entregas"),
+                ("colaborador", "Famílias, alimentos, entradas e entregas"),
             )
         }
         db.add_all(roles.values())
@@ -183,6 +184,7 @@ def seed_synthetic_data(session_factory, access: dict[str, str]) -> None:
                 ("admin", "Administrador do sandbox UX"),
                 ("lider_social", "Lideranca social do sandbox UX"),
                 ("operador", "Operacao de estoque do sandbox UX"),
+                ("colaborador", "Atendimento e operacao cotidiana do sandbox UX"),
             )
         }
         db.add_all(roles.values())
@@ -214,6 +216,14 @@ def seed_synthetic_data(session_factory, access: dict[str, str]) -> None:
                 is_active=True,
                 last_login_at=now - timedelta(days=1),
             ),
+            "collaborator": User(
+                name="Ana Atendimento",
+                login_name="ux.colaborador",
+                email="ux.colaborador@example.com",
+                password_hash=shared_password_hash,
+                is_active=True,
+                last_login_at=now - timedelta(hours=6),
+            ),
         }
         db.add_all(users.values())
         db.flush()
@@ -222,6 +232,10 @@ def seed_synthetic_data(session_factory, access: dict[str, str]) -> None:
                 UserRole(user_id=users["admin"].id, role_id=roles["admin"].id),
                 UserRole(user_id=users["social"].id, role_id=roles["lider_social"].id),
                 UserRole(user_id=users["operator"].id, role_id=roles["operador"].id),
+                UserRole(
+                    user_id=users["collaborator"].id,
+                    role_id=roles["colaborador"].id,
+                ),
             ]
         )
 

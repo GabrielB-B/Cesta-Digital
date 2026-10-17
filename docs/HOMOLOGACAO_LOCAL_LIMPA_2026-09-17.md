@@ -11,7 +11,7 @@ ou anonimizadas.
 
 O modo `minimal` cria apenas a infraestrutura necessária para autenticação:
 
-- três perfis de acesso: `admin`, `lider_social` e `operador`;
+- quatro perfis de acesso: `admin`, `lider_social`, `operador` e `colaborador`;
 - um usuário administrativo local: `ux.admin`;
 - nenhuma categoria, produto, família, pessoa, benefício, avaliação, lote,
   movimentação, tipo de cesta, agendamento ou entrega.
@@ -35,6 +35,10 @@ Get-Content .\.ux-sandbox\access.json |
   ConvertFrom-Json |
   Select-Object login_name,password
 ```
+
+No modo `synthetic`, a mesma senha local também atende `ux.social`,
+`ux.operador` e `ux.colaborador`. Esses acessos existem somente no SQLite
+descartável; não devem ser reproduzidos no ambiente público.
 
 ## Iniciar, preservar ou limpar os testes
 

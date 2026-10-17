@@ -249,8 +249,8 @@ export function AssessmentQueuePage() {
     <div className={styles.page}>
       <header className={styles.pageHeader}>
         <div>
-          <h1>Avaliações sociais</h1>
-          <p>Revise a aptidão das famílias com base no cálculo e na decisão técnica.</p>
+          <h1>Fila de análise social</h1>
+          <p>Avalie novas famílias e revise decisões próximas do vencimento.</p>
         </div>
         {referenceDate ? (
           <span className={styles.referenceDate}>
@@ -328,7 +328,7 @@ export function AssessmentQueuePage() {
       </div>
 
       <div className={styles.workspace}>
-        <section className={styles.queuePanel} aria-label="Fila de avaliações sociais">
+        <section className={styles.queuePanel} aria-label="Fila de análise social">
           {isLoading ? (
             <div className={styles.loadingList} aria-live="polite" aria-busy="true">
               <span>Organizando a fila de avaliações…</span>
@@ -352,7 +352,7 @@ export function AssessmentQueuePage() {
             <>
               <div className={styles.desktopTable}>
                 <table>
-                  <caption className={styles.srOnly}>Fila de avaliações sociais</caption>
+                  <caption className={styles.srOnly}>Fila de análise social</caption>
                   <thead>
                     <tr>
                       <th>Família</th>

@@ -302,22 +302,22 @@ test.beforeEach(async ({ page }) => {
   });
   await page.goto("/assessments");
   await page.evaluate(() => document.fonts.ready);
-  await expect(page.getByRole("heading", { name: "Avaliações sociais" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Fila de análise social" })).toBeVisible();
 });
 
 test("fila usa painel no desktop, cards nas telas menores e não causa overflow", async ({ page }, testInfo) => {
   const viewportWidth = page.viewportSize()?.width ?? 0;
-  const table = page.getByRole("table", { name: "Fila de avaliações sociais" });
+  const table = page.getByRole("table", { name: "Fila de análise social" });
 
   if (viewportWidth >= 1100) {
     await expect(table).toBeVisible();
     await expect(page.getByLabel("Avaliação selecionada")).toBeVisible();
-    await expect(page.getByLabel("Navegação principal").getByRole("link", { name: "Avaliações" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByLabel("Navegação principal").getByRole("link", { name: "Análises sociais" })).toHaveAttribute("aria-current", "page");
   } else {
     await expect(table).toBeHidden();
     await expect(page.locator("article").first()).toBeVisible();
     await expect(page.getByLabel("Avaliação selecionada")).toBeHidden();
-    await expect(page.getByLabel("Atalhos principais").getByRole("link", { name: "Avaliações" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByLabel("Atalhos principais").getByRole("link", { name: "Análises sociais" })).toHaveAttribute("aria-current", "page");
   }
 
   await expect(page.getByText("Triagem e pré-cadastro")).toHaveCount(0);

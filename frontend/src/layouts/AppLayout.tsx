@@ -62,6 +62,7 @@ function formatRole(role: string): string {
   if (role === "admin") return "Administrador";
   if (role === "lider_social") return "Liderança social";
   if (role === "operador") return "Operador";
+  if (role === "colaborador") return "Colaborador";
   return "Usuário";
 }
 
@@ -220,49 +221,49 @@ export function AppLayout() {
           path: "/families",
           label: "Famílias",
           icon: "families",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.familyRecords),
         },
         {
           path: "/assessments",
-          label: "Avaliações",
+          label: "Análises sociais",
           icon: "assessments",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.social),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.socialAssessments),
         },
         {
           path: "/items",
           label: "Estoque",
           icon: "items",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.inventory),
         },
         {
           path: "/stock-batches",
           label: "Entradas",
           icon: "entries",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.inventory),
         },
         {
           path: "/item-categories",
           label: "Categorias",
           icon: "categories",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.inventoryConfiguration),
         },
         {
           path: "/deliveries",
           label: "Entregas",
           icon: "deliveries",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.deliveries),
         },
         {
           path: "/basket-types",
           label: "Tipos de Cesta",
           icon: "baskets",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.operations),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.inventoryConfiguration),
         },
         {
           path: "/reports",
           label: "Relatórios",
           icon: "reports",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.authenticated),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.reports),
         },
         {
           path: "/users",

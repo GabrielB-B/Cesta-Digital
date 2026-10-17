@@ -28,7 +28,7 @@ from app.services.delivery_service import (
 
 router = APIRouter(
     tags=["Entregas"],
-    dependencies=[Depends(require_any_role("admin", "operador"))],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
 )
 
 

@@ -211,7 +211,7 @@ export function FamilyAssessmentCreatePage() {
           <AlertTriangle aria-hidden="true" />
           <h1>Não foi possível iniciar a avaliação</h1>
           <p>{error || "Os dados necessários não estão disponíveis."}</p>
-          <Link to="/assessments">Voltar para avaliações</Link>
+          <Link to="/assessments">Voltar para análises sociais</Link>
         </div>
       </div>
     );
@@ -222,7 +222,7 @@ export function FamilyAssessmentCreatePage() {
       <header className={styles.pageHeader}>
         <Link className={styles.backLink} to={`/assessments?selected=${family.id}`}>
           <ArrowLeft aria-hidden="true" />
-          Avaliações
+          Análises sociais
         </Link>
         <div className={styles.headingRow}>
           <div>

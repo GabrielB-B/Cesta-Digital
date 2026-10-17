@@ -10,7 +10,7 @@ O fluxo prioritário é:
 
 1. autenticar usuários por perfil;
 2. localizar ou cadastrar família;
-3. cadastrar membros e registrar avaliação social;
+3. cadastrar membros com o perfil colaborador e registrar a decisão com a liderança social;
 4. cadastrar produtos, lotes e entradas de estoque;
 5. agendar e confirmar uma entrega;
 6. consultar o histórico e a auditoria.
@@ -43,7 +43,7 @@ dados sintéticos ou efetivamente anonimizados.
 - [ ] Gerar backup verificável e restaurar em banco isolado.
 - [ ] Aplicar migrations na restauração e conciliar contagens agregadas.
 - [ ] Publicar preview com origem exata autorizada no CORS.
-- [ ] Testar desktop e celulares de 360/390 px com admin, liderança e operador.
+- [ ] Testar desktop e celulares de 360/390 px com admin, liderança, operador e colaborador.
 - [ ] Preencher e aprovar o aviso de privacidade.
 - [ ] Definir responsável por acesso, backup, suporte e incidente.
 - [ ] Promover por fast-forward o mesmo SHA aprovado.

@@ -19,7 +19,7 @@ from app.services.stock_batch_service import (
 
 router = APIRouter(
     tags=["Lotes de Estoque"],
-    dependencies=[Depends(require_any_role("admin", "operador"))],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
 )
 
 

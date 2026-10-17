@@ -13,9 +13,14 @@ export interface NavigationContract {
   allowedRoles: readonly AppRole[];
 }
 
-const allRoles = ["admin", "lider_social", "operador"] as const;
-const socialRoles = ["admin", "lider_social"] as const;
-const operationsRoles = ["admin", "operador"] as const;
+const allRoles = ["admin", "lider_social", "operador", "colaborador"] as const;
+const familyRoles = ["admin", "lider_social", "colaborador"] as const;
+const assessmentRoles = ["admin", "lider_social"] as const;
+const inventoryRoles = ["admin", "operador", "colaborador"] as const;
+const inventoryConfigurationRoles = ["admin", "operador"] as const;
+const deliveryRoles = ["admin", "operador", "colaborador"] as const;
+const reportRoles = ["admin", "lider_social", "operador"] as const;
+const socialReportRoles = ["admin", "lider_social"] as const;
 const administrationRoles = ["admin"] as const;
 
 /**
@@ -40,145 +45,145 @@ export const APP_ROUTE_CONTRACTS = [
     path: "/families",
     title: "Famílias",
     sectionPath: "/families",
-    allowedRoles: socialRoles,
+    allowedRoles: familyRoles,
   },
   {
     path: "/assessments",
-    title: "Avaliações",
+    title: "Análises sociais",
     sectionPath: "/assessments",
-    allowedRoles: socialRoles,
+    allowedRoles: assessmentRoles,
   },
   {
     path: "/families/new",
     title: "Cadastrar família",
     sectionPath: "/families",
-    allowedRoles: socialRoles,
+    allowedRoles: familyRoles,
   },
   {
     path: "/families/1",
     title: "Detalhe da família",
     sectionPath: "/families",
-    allowedRoles: socialRoles,
+    allowedRoles: familyRoles,
   },
   {
     path: "/families/1/edit",
     title: "Editar família",
     sectionPath: "/families",
-    allowedRoles: socialRoles,
+    allowedRoles: familyRoles,
   },
   {
     path: "/families/1/people/new",
     title: "Cadastrar pessoa",
     sectionPath: "/families",
-    allowedRoles: socialRoles,
+    allowedRoles: familyRoles,
   },
   {
     path: "/families/1/people/1/edit",
     title: "Editar pessoa",
     sectionPath: "/families",
-    allowedRoles: socialRoles,
+    allowedRoles: familyRoles,
   },
   {
     path: "/families/1/benefits/new",
     title: "Cadastrar benefício",
     sectionPath: "/families",
-    allowedRoles: socialRoles,
+    allowedRoles: familyRoles,
   },
   {
     path: "/families/1/benefits/1/edit",
     title: "Editar benefício",
     sectionPath: "/families",
-    allowedRoles: socialRoles,
+    allowedRoles: familyRoles,
   },
   {
     path: "/families/1/assessments/new",
     title: "Nova avaliação social",
     sectionPath: "/assessments",
-    allowedRoles: socialRoles,
+    allowedRoles: assessmentRoles,
   },
   {
     path: "/items",
     title: "Itens",
     sectionPath: "/items",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryRoles,
   },
   {
     path: "/items/new",
     title: "Novo produto",
     sectionPath: "/items",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryRoles,
   },
   {
     path: "/items/1",
     title: "Detalhe do item",
     sectionPath: "/items",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryRoles,
   },
   {
     path: "/item-categories",
     title: "Categorias de item",
     sectionPath: "/item-categories",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryConfigurationRoles,
   },
   {
     path: "/stock-batches",
     title: "Entradas",
     sectionPath: "/stock-batches",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryRoles,
   },
   {
     path: "/stock-batches/new",
     title: "Registrar entrada",
     sectionPath: "/stock-batches",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryRoles,
   },
   {
     path: "/stock-movements/new",
     title: "Registrar movimentação",
     sectionPath: "/items",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryRoles,
   },
   {
     path: "/basket-types",
     title: "Tipos de cesta",
     sectionPath: "/basket-types",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryConfigurationRoles,
   },
   {
     path: "/basket-types/new",
     title: "Nova cesta",
     sectionPath: "/basket-types",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryConfigurationRoles,
   },
   {
     path: "/basket-types/1",
     title: "Editar cesta",
     sectionPath: "/basket-types",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryConfigurationRoles,
   },
   {
     path: "/deliveries",
     title: "Entregas",
     sectionPath: "/deliveries",
-    allowedRoles: operationsRoles,
+    allowedRoles: deliveryRoles,
   },
   {
     path: "/deliveries/schedules/new",
     title: "Nova entrega",
     sectionPath: "/deliveries",
-    allowedRoles: operationsRoles,
+    allowedRoles: deliveryRoles,
   },
   {
     path: "/reports",
     title: "Relatórios",
     sectionPath: "/reports",
-    allowedRoles: allRoles,
+    allowedRoles: reportRoles,
   },
   {
     path: "/financial-summary",
     title: "Relatórios",
     sectionPath: "/reports",
-    allowedRoles: socialRoles,
+    allowedRoles: socialReportRoles,
   },
   {
     path: "/users",
@@ -196,33 +201,33 @@ export const APP_ROUTE_CONTRACTS = [
 
 export const NAVIGATION_CONTRACTS = [
   { path: "/", label: "Início", allowedRoles: allRoles },
-  { path: "/families", label: "Famílias", allowedRoles: socialRoles },
-  { path: "/assessments", label: "Avaliações", allowedRoles: socialRoles },
+  { path: "/families", label: "Famílias", allowedRoles: familyRoles },
+  { path: "/assessments", label: "Análises sociais", allowedRoles: assessmentRoles },
   {
     path: "/reports",
     label: "Relatórios",
-    allowedRoles: allRoles,
+    allowedRoles: reportRoles,
   },
-  { path: "/items", label: "Estoque", allowedRoles: operationsRoles },
+  { path: "/items", label: "Estoque", allowedRoles: inventoryRoles },
   {
     path: "/stock-batches",
     label: "Entradas",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryRoles,
   },
   {
     path: "/item-categories",
     label: "Categorias",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryConfigurationRoles,
   },
   {
     path: "/basket-types",
     label: "Tipos de Cesta",
-    allowedRoles: operationsRoles,
+    allowedRoles: inventoryConfigurationRoles,
   },
   {
     path: "/deliveries",
     label: "Entregas",
-    allowedRoles: operationsRoles,
+    allowedRoles: deliveryRoles,
   },
   {
     path: "/users",

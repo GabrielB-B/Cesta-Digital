@@ -23,7 +23,7 @@ from app.services.product_image_service import (
 
 router = APIRouter(
     tags=["Imagens de Produtos"],
-    dependencies=[Depends(require_any_role("admin", "operador"))],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
 )
 public_router = APIRouter(tags=["Imagens Publicas de Produtos"])
 

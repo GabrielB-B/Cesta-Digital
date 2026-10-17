@@ -11,7 +11,7 @@ from app.services.basket_availability_service import get_basket_availability
 
 router = APIRouter(
     tags=["Disponibilidade de Cestas"],
-    dependencies=[Depends(require_any_role("admin", "operador"))],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
 )
 
 

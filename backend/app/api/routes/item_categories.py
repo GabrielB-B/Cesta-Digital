@@ -17,13 +17,15 @@ from app.services.item_category_service import (
     update_item_category,
 )
 
-router = APIRouter(
-    tags=["Categorias de Itens"],
+router = APIRouter(tags=["Categorias de Itens"])
+
+
+@router.post(
+    "/item-categories",
+    response_model=ItemCategoryResponse,
+    status_code=201,
     dependencies=[Depends(require_any_role("admin", "operador"))],
 )
-
-
-@router.post("/item-categories", response_model=ItemCategoryResponse, status_code=201)
 def create_item_category_endpoint(
     payload: ItemCategoryCreate,
     db: Annotated[Session, Depends(get_db)],
@@ -33,7 +35,11 @@ def create_item_category_endpoint(
     return create_item_category(db, payload, current_user)
 
 
-@router.get("/item-categories", response_model=list[ItemCategoryResponse])
+@router.get(
+    "/item-categories",
+    response_model=list[ItemCategoryResponse],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
+)
 def list_item_categories_endpoint(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_active_user)],
@@ -44,7 +50,11 @@ def list_item_categories_endpoint(
     return list_item_categories(db, q=q, is_active=is_active)
 
 
-@router.put("/item-categories/{category_id}", response_model=ItemCategoryResponse)
+@router.put(
+    "/item-categories/{category_id}",
+    response_model=ItemCategoryResponse,
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 def update_item_category_endpoint(
     category_id: int,
     payload: ItemCategoryUpdate,

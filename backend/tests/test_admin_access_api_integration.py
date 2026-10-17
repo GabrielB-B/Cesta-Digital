@@ -22,6 +22,12 @@ class AdminAccessApiIntegrationTests(ApiIntegrationTestCase):
             password="Lider@12345",
             roles=("lider_social",),
         )
+        self.create_user(
+            name="Colaborador API",
+            email="colaborador@example.com",
+            password="Colaborador@123",
+            roles=("colaborador",),
+        )
 
     def test_admin_can_access_user_and_audit_administration(self):
         headers = self.login_and_get_headers("admin", "Admin@12345")
@@ -42,6 +48,7 @@ class AdminAccessApiIntegrationTests(ApiIntegrationTestCase):
         for login_name, password in (
             ("operador", "Operador@123"),
             ("lider", "Lider@12345"),
+            ("colaborador", "Colaborador@123"),
         ):
             with self.subTest(login_name=login_name):
                 headers = self.login_and_get_headers(login_name, password)

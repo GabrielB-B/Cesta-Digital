@@ -19,6 +19,10 @@ function formatRole(role: string): string {
     return "Operador";
   }
 
+  if (role === "colaborador") {
+    return "Colaborador";
+  }
+
   return role;
 }
 
