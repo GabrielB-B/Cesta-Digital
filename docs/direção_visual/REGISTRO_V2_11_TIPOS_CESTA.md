@@ -82,3 +82,27 @@
 Gabriel aprovou o marco V2-11 em 26/08/2026 ao autorizar a continuidade. A
 decisão encerra o gate de Tipos de Cesta e libera exclusivamente a branch
 própria de Relatórios (`V2-12`).
+
+## 8. Refinamento de entrega — 17/10/2026
+
+Após a homologação manual, o topo global e a listagem de Tipos de Cesta foram
+lapidados sem redesenhar a identidade aprovada:
+
+- topbar reduzida para os tokens canônicos de 64 px no desktop e 56 px no
+  mobile, com breadcrumb discreto e conta mais compacta;
+- conteúdo limitado e centralizado em 1440 px, inclusive em monitores de
+  1920 px;
+- aviso de homologação integrado ao topo no desktop e mantido antes do
+  conteúdo no mobile, sem perder a advertência operacional;
+- título e descrição migrados para o `PageHeader` compartilhado;
+- busca, filtro e CTA reunidos em uma faixa operacional; no mobile, “Nova
+  cesta” antecede os filtros e ocupa a largura disponível;
+- controles com 44 px de altura, tipografia legível, foco preservado e sem
+  overflow horizontal.
+
+Não houve alteração de rota, RBAC, API, regra de negócio, backend, banco ou
+migration. A validação local fechou com lint e build aprovados, E2E 47/47,
+shell visual 13 aprovados com 3 skips intencionais e gate visual de Tipos de
+Cesta 9 aprovados com 7 skips por viewport. As evidências cobrem
+360/390/768/1440/1920 px, incluindo
+`frontend/showcase/evidence/v2-11/tipos-cesta-desktop-1920.png`.

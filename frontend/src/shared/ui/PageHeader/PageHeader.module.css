@@ -22,11 +22,14 @@
   color: var(--cd-text);
   font: var(--cd-type-display);
   letter-spacing: -0.025em;
+  text-wrap: balance;
 }
 
 .description {
   max-width: 44rem;
   color: var(--cd-text-muted);
+  line-height: 1.5rem;
+  text-wrap: pretty;
 }
 
 .actions {

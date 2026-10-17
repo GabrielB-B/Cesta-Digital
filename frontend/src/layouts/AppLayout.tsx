@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
+  ChevronRight,
   Heart,
   Menu,
   PanelLeftClose,
@@ -399,90 +400,104 @@ export function AppLayout() {
         ) : null}
 
         <main id="conteudo-principal" className={styles.content} tabIndex={-1}>
-          <header className={styles.topbar}>
-            <div className={styles.topbarIdentity}>
-              <button
-                ref={navigationToggleRef}
-                className={styles.mobileMenuButton}
-                type="button"
-                aria-label="Abrir menu"
-                aria-controls="main-navigation"
-                aria-expanded={isMobileMenuOpen}
-                onClick={() => setIsMobileMenuOpen(true)}
-              >
-                <Menu size={21} aria-hidden="true" />
-              </button>
-              <div className={styles.mobileBrand}>
-                <ShellBrand compact />
-              </div>
-              <button
-                className={styles.desktopSidebarButton}
-                type="button"
-                aria-label={
-                  isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"
-                }
-                aria-controls="main-navigation"
-                aria-expanded={!isSidebarCollapsed}
-                title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
-                onClick={toggleSidebar}
-              >
-                {isSidebarCollapsed ? (
-                  <PanelLeftOpen size={19} aria-hidden="true" />
-                ) : (
-                  <PanelLeftClose size={19} aria-hidden="true" />
-                )}
-              </button>
-              <span className={styles.sectionTitle}>
-                {currentSection?.label ?? routeMeta.title}
-              </span>
-            </div>
-
-            <div ref={accountRef} className={styles.account}>
-              <button
-                className={styles.accountButton}
-                type="button"
-                aria-label={`Conta de ${user?.name ?? "Usuário"}`}
-                aria-haspopup="menu"
-                aria-expanded={isAccountMenuOpen}
-                onClick={() => setIsAccountMenuOpen((current) => !current)}
-              >
-                <span className={styles.avatar} aria-hidden="true">
-                  {accountInitials}
-                </span>
-                <span className={styles.accountText}>
-                  <strong>{user?.name ?? "Usuário"}</strong>
-                  <span>{primaryRole}</span>
-                </span>
-                <ChevronDown className={styles.accountChevron} size={17} aria-hidden="true" />
-              </button>
-
-              {isAccountMenuOpen ? (
-                <div className={styles.accountMenu} role="menu">
-                  <div className={styles.accountMenuHeader}>
-                    <UserRound size={18} aria-hidden="true" />
-                    <div>
-                      <strong>{user?.name ?? "Usuário"}</strong>
-                      <span>
-                        {user?.login_name ? `@${user.login_name}` : primaryRole}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    className={styles.accountMenuItem}
-                    type="button"
-                    role="menuitem"
-                    onClick={handleLogout}
-                  >
-                    <AppIcon name="logout" className={styles.accountMenuIcon} />
-                    <span>Sair</span>
-                  </button>
+          <header className={styles.topbar} aria-label="Barra do aplicativo">
+            <div className={styles.topbarInner}>
+              <div className={styles.topbarIdentity}>
+                <button
+                  ref={navigationToggleRef}
+                  className={styles.mobileMenuButton}
+                  type="button"
+                  aria-label="Abrir menu"
+                  aria-controls="main-navigation"
+                  aria-expanded={isMobileMenuOpen}
+                  onClick={() => setIsMobileMenuOpen(true)}
+                >
+                  <Menu size={21} aria-hidden="true" />
+                </button>
+                <div className={styles.mobileBrand}>
+                  <ShellBrand compact />
                 </div>
-              ) : null}
+                <button
+                  className={styles.desktopSidebarButton}
+                  type="button"
+                  aria-label={
+                    isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"
+                  }
+                  aria-controls="main-navigation"
+                  aria-expanded={!isSidebarCollapsed}
+                  title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+                  onClick={toggleSidebar}
+                >
+                  {isSidebarCollapsed ? (
+                    <PanelLeftOpen size={19} aria-hidden="true" />
+                  ) : (
+                    <PanelLeftClose size={19} aria-hidden="true" />
+                  )}
+                </button>
+                <nav className={styles.breadcrumb} aria-label="Localização atual">
+                  <span className={styles.breadcrumbSection}>{routeMeta.section}</span>
+                  {routeMeta.title !== routeMeta.section ? (
+                    <>
+                      <ChevronRight aria-hidden="true" />
+                      <span className={styles.breadcrumbCurrent} aria-current="page">
+                        {routeMeta.title}
+                      </span>
+                    </>
+                  ) : null}
+                </nav>
+              </div>
+
+              <div className={styles.topbarActions}>
+                <EnvironmentNotice compact className={styles.topbarEnvironmentNotice} />
+
+                <div ref={accountRef} className={styles.account}>
+                  <button
+                    className={styles.accountButton}
+                    type="button"
+                    aria-label={`Conta de ${user?.name ?? "Usuário"}`}
+                    aria-haspopup="menu"
+                    aria-expanded={isAccountMenuOpen}
+                    onClick={() => setIsAccountMenuOpen((current) => !current)}
+                  >
+                    <span className={styles.avatar} aria-hidden="true">
+                      {accountInitials}
+                    </span>
+                    <span className={styles.accountText}>
+                      <strong>{user?.name ?? "Usuário"}</strong>
+                      <span>{primaryRole}</span>
+                    </span>
+                    <ChevronDown className={styles.accountChevron} size={17} aria-hidden="true" />
+                  </button>
+
+                  {isAccountMenuOpen ? (
+                    <div className={styles.accountMenu} role="menu">
+                      <div className={styles.accountMenuHeader}>
+                        <UserRound size={18} aria-hidden="true" />
+                        <div>
+                          <strong>{user?.name ?? "Usuário"}</strong>
+                          <span>
+                            {user?.login_name ? `@${user.login_name}` : primaryRole}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        className={styles.accountMenuItem}
+                        type="button"
+                        role="menuitem"
+                        onClick={handleLogout}
+                      >
+                        <AppIcon name="logout" className={styles.accountMenuIcon} />
+                        <span>Sair</span>
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
           </header>
 
           <section className={styles.pageContent}>
-            <EnvironmentNotice compact />
+            <EnvironmentNotice compact className={styles.mobileEnvironmentNotice} />
             {routeFlash ? (
               <p
                 className={`${styles.flashMessage} ${

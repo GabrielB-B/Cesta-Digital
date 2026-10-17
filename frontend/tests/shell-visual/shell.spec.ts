@@ -88,6 +88,10 @@ test("shell mantém localização, responsividade e ausência de overflow", asyn
   );
   expect(horizontalOverflow).toBe(false);
 
+  const topbarBox = await page.locator('header[aria-label="Barra do aplicativo"]').boundingBox();
+  // O token móvel é 56 px; a tolerância cobre a borda e o arredondamento subpixel do navegador.
+  expect(topbarBox?.height).toBeLessThanOrEqual(viewportWidth < 1100 ? 60 : 65);
+
   if (viewportWidth < 1100) {
     await expect(navigation).toHaveAttribute("aria-hidden", "true");
     await expect(navigation).toHaveAttribute("inert", "");

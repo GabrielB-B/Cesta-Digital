@@ -298,13 +298,20 @@
   position: sticky;
   top: 0;
   z-index: 30;
+  min-height: var(--cd-topbar-height);
+  background: var(--cd-surface);
+  border-bottom: 1px solid var(--cd-border);
+}
+
+.topbarInner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 5.5rem;
-  padding: 0 2.5rem;
-  background: var(--cd-surface);
-  border-bottom: 1px solid var(--cd-border);
+  width: 100%;
+  max-width: var(--cd-content-max);
+  min-height: var(--cd-topbar-height);
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .topbarIdentity {
@@ -318,13 +325,64 @@
   display: none;
 }
 
-.sectionTitle {
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
   overflow: hidden;
-  color: #16233a;
-  font-size: 1.0625rem;
-  font-weight: 700;
-  text-overflow: ellipsis;
+  color: var(--cd-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
   white-space: nowrap;
+}
+
+.breadcrumb svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+  color: #98a2b3;
+}
+
+.breadcrumbSection,
+.breadcrumbCurrent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breadcrumbSection {
+  font-weight: 580;
+}
+
+.breadcrumbCurrent {
+  color: #16233a;
+  font-weight: 680;
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.topbarEnvironmentNotice {
+  min-width: 0;
+  margin: 0;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--cd-radius-md);
+  white-space: nowrap;
+}
+
+.topbarEnvironmentNotice strong,
+.topbarEnvironmentNotice span {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.mobileEnvironmentNotice {
+  display: none;
 }
 
 .account {
@@ -335,7 +393,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  min-height: 3.25rem;
+  min-height: 2.75rem;
   padding: 0.25rem 0.35rem;
   color: var(--cd-text);
   background: transparent;
@@ -351,8 +409,8 @@
 .avatar {
   display: grid;
   place-items: center;
-  width: 2.625rem;
-  height: 2.625rem;
+  width: 2.25rem;
+  height: 2.25rem;
   flex: 0 0 auto;
   color: var(--cd-brand-action-pressed);
   background: var(--cd-brand-soft);
@@ -467,9 +525,9 @@
 
 .pageContent {
   width: 100%;
-  max-width: 105rem;
+  max-width: var(--cd-content-max);
   margin: 0 auto;
-  padding: 2rem 2.5rem 3rem;
+  padding: 1.75rem 2rem 3rem;
 }
 
 .drawerBackdrop,
@@ -590,7 +648,12 @@
   }
 
   .topbar {
-    min-height: 4.5rem;
+    min-height: var(--cd-mobile-topbar-height);
+  }
+
+  .topbarInner {
+    max-width: none;
+    min-height: var(--cd-mobile-topbar-height);
     padding: 0 1rem;
   }
 
@@ -602,8 +665,13 @@
     display: block;
   }
 
-  .sectionTitle {
+  .breadcrumb,
+  .topbarEnvironmentNotice {
     display: none;
+  }
+
+  .topbarActions {
+    gap: 0.5rem;
   }
 
   .accountText,
@@ -617,13 +685,20 @@
   }
 
   .avatar {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
   }
 
   .pageContent {
     max-width: none;
     padding: 1.25rem 1rem 2rem;
+  }
+
+  .mobileEnvironmentNotice {
+    display: flex;
+    width: fit-content;
+    max-width: 100%;
+    margin-bottom: 1rem;
   }
 
   .bottomNav {
@@ -686,8 +761,23 @@
   }
 }
 
+@media (min-width: 1100px) and (max-width: 1399px) {
+  .topbarEnvironmentNotice span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+  }
+}
+
 @media (max-width: 374px) {
-  .topbar {
+  .topbarInner {
     padding-inline: 0.75rem;
   }
 

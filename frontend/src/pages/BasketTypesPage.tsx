@@ -3,6 +3,7 @@ import { Archive, Check, ChevronLeft, ChevronRight, CircleAlert, Pencil, Plus, S
 import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { ProductImage } from "../components/ProductImage";
+import { PageHeader } from "../shared/ui/PageHeader/PageHeader";
 import type { BasketAvailabilityResponse, BasketTypeDetailResponse, BasketTypeOverviewItemResponse } from "../types/basket";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateTime } from "../utils/format";
@@ -131,24 +132,27 @@ export function BasketTypesPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.pageHeader}>
-        <div><h1>Tipos de cesta</h1><p>Defina e gerencie as composições disponíveis para entrega.</p></div>
-        <Link to="/basket-types/new" className={styles.primaryAction}><Plus aria-hidden="true" />Nova cesta</Link>
-      </header>
+      <PageHeader
+        title="Tipos de cesta"
+        description="Defina e gerencie as composições disponíveis para entrega."
+      />
 
-      <form className={styles.toolbar} onSubmit={handleSearch} role="search">
-        <label className={styles.searchField}>
-          <span className={styles.srOnly}>Buscar tipos de cesta</span><Search aria-hidden="true" />
-          <input name="basket_types_search" value={searchDraft} onChange={(event) => setSearchDraft(event.target.value)} placeholder="Buscar cestas..." autoComplete="off" />
-        </label>
-        <label className={styles.statusFilter}>
-          <span className={styles.srOnly}>Filtrar tipos de cesta por status</span>
-          <select name="basket_types_status" value={activeStatus} onChange={(event) => { setIsLoading(true); updateQuery({ active: event.target.value || null, offset: null, selected: null }); }}>
-            <option value="">Todas</option><option value="true">Ativas</option><option value="false">Inativas</option>
-          </select>
-        </label>
-        <button type="submit" className={styles.searchButton}>Buscar</button>
-      </form>
+      <div className={styles.commandBar}>
+        <form className={styles.toolbar} onSubmit={handleSearch} role="search">
+          <label className={styles.searchField}>
+            <span className={styles.srOnly}>Buscar tipos de cesta</span><Search aria-hidden="true" />
+            <input type="search" name="basket_types_search" value={searchDraft} onChange={(event) => setSearchDraft(event.target.value)} placeholder="Buscar por nome da cesta…" autoComplete="off" spellCheck={false} />
+          </label>
+          <label className={styles.statusFilter}>
+            <span className={styles.srOnly}>Filtrar tipos de cesta por status</span>
+            <select name="basket_types_status" value={activeStatus} onChange={(event) => { setIsLoading(true); updateQuery({ active: event.target.value || null, offset: null, selected: null }); }}>
+              <option value="">Todos os status</option><option value="true">Ativas</option><option value="false">Inativas</option>
+            </select>
+          </label>
+          <button type="submit" className={styles.searchButton}>Buscar</button>
+        </form>
+        <Link to="/basket-types/new" className={styles.primaryAction}><Plus aria-hidden="true" />Nova cesta</Link>
+      </div>
 
       {error ? <div className={styles.feedbackError} role="alert">{error}</div> : null}
       {successMessage ? <div className={styles.feedbackSuccess} role="status">{successMessage}</div> : null}
@@ -196,7 +200,7 @@ export function BasketTypesPage() {
                 <div><span>Composição selecionada</span><h2>{selectedOverview?.name ?? "Tipo de cesta"}</h2></div>
                 {selectedId ? <Link to={`/basket-types/${selectedId}`} className={styles.compactEdit}><Pencil aria-hidden="true" />Editar composição</Link> : null}
               </div>
-              {isDetailLoading ? <div className={styles.detailLoading}>Carregando composição...</div> : detailError ? (
+              {isDetailLoading ? <div className={styles.detailLoading}>Carregando composição…</div> : detailError ? (
                 <div className={styles.detailError} role="alert"><CircleAlert aria-hidden="true" />{detailError}</div>
               ) : !basketType || basketType.basket_items.length === 0 ? (
                 <div className={styles.compositionEmpty}><ShoppingBasket aria-hidden="true" /><strong>Composição ainda vazia</strong><p>Edite a cesta para adicionar produtos e quantidades.</p></div>
@@ -230,7 +234,7 @@ export function BasketTypesPage() {
               <div className={styles.summaryActions}>
                 {selectedId ? <Link to={`/basket-types/${selectedId}`}><Pencil aria-hidden="true" />Editar cesta</Link> : null}
                 <button type="button" className={basketType?.is_active ? styles.deactivateAction : styles.activateAction} onClick={() => void handleToggleStatus()} disabled={!basketType || isUpdatingStatus}>
-                  {basketType?.is_active ? <Archive aria-hidden="true" /> : <Check aria-hidden="true" />}{isUpdatingStatus ? "Salvando..." : basketType?.is_active ? "Desativar cesta" : "Reativar cesta"}
+                  {basketType?.is_active ? <Archive aria-hidden="true" /> : <Check aria-hidden="true" />}{isUpdatingStatus ? "Salvando…" : basketType?.is_active ? "Desativar cesta" : "Reativar cesta"}
                 </button>
               </div>
             </aside>
