@@ -13,7 +13,12 @@ import {
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm, useWatch, type FieldErrors } from "react-hook-form";
+import {
+  useController,
+  useForm,
+  useWatch,
+  type FieldErrors,
+} from "react-hook-form";
 import { CurrencyInput } from "../../components/CurrencyInput";
 import { getApiErrorMessage } from "../../utils/api-error";
 import { formatCurrency, formatDecimalInputValue, formatDateOnly } from "../../utils/format";
@@ -185,7 +190,6 @@ export function FamilyForm({
   const {
     control,
     register,
-    setValue,
     setFocus,
     trigger,
     handleSubmit,
@@ -306,8 +310,14 @@ export function FamilyForm({
     return getErrorMessage(errors, field) ? `${field}-error` : undefined;
   }
 
-  const incomeRegistration = register("monthly_income_total");
-  const expensesRegistration = register("monthly_essential_expenses");
+  const { field: incomeField } = useController({
+    control,
+    name: "monthly_income_total",
+  });
+  const { field: expensesField } = useController({
+    control,
+    name: "monthly_essential_expenses",
+  });
 
   return (
     <div className={styles.page}>
@@ -601,21 +611,13 @@ export function FamilyForm({
                     <label className={styles.field}>
                       <span>Renda mensal total</span>
                       <CurrencyInput
-                        {...incomeRegistration}
-                        value={watchedValues.monthly_income_total ?? "0"}
-                        onChange={(event) =>
-                          setValue("monthly_income_total", event.target.value, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          })
-                        }
+                        {...incomeField}
+                        value={incomeField.value ?? "0"}
                         onBlur={(event) => {
-                          void incomeRegistration.onBlur(event);
-                          setValue(
-                            "monthly_income_total",
-                            formatDecimalInputValue(event.target.value),
-                            { shouldDirty: true, shouldValidate: true }
+                          incomeField.onChange(
+                            formatDecimalInputValue(event.currentTarget.value)
                           );
+                          incomeField.onBlur();
                         }}
                         aria-invalid={Boolean(errors.monthly_income_total)}
                         aria-describedby={fieldDescribedBy("monthly_income_total")}
@@ -625,21 +627,13 @@ export function FamilyForm({
                     <label className={styles.field}>
                       <span>Despesas essenciais</span>
                       <CurrencyInput
-                        {...expensesRegistration}
-                        value={watchedValues.monthly_essential_expenses ?? "0"}
-                        onChange={(event) =>
-                          setValue("monthly_essential_expenses", event.target.value, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          })
-                        }
+                        {...expensesField}
+                        value={expensesField.value ?? "0"}
                         onBlur={(event) => {
-                          void expensesRegistration.onBlur(event);
-                          setValue(
-                            "monthly_essential_expenses",
-                            formatDecimalInputValue(event.target.value),
-                            { shouldDirty: true, shouldValidate: true }
+                          expensesField.onChange(
+                            formatDecimalInputValue(event.currentTarget.value)
                           );
+                          expensesField.onBlur();
                         }}
                         aria-invalid={Boolean(errors.monthly_essential_expenses)}
                         aria-describedby={fieldDescribedBy(
