@@ -100,7 +100,9 @@ test("shell mantém localização, responsividade e ausência de overflow", asyn
   } else {
     await expect(navigation).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Atalhos principais" })).toBeHidden();
-    await expect(page.getByRole("button", { name: "Recolher menu lateral" })).toBeVisible();
+    const sidebarToggle = page.getByRole("button", { name: "Recolher menu lateral" });
+    await expect(sidebarToggle).toBeVisible();
+    await expect(sidebarToggle.locator("svg")).toHaveClass(/lucide-menu/);
   }
 
   await page.screenshot({

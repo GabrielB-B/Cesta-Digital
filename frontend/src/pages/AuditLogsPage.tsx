@@ -355,12 +355,12 @@ export function AuditLogsPage() {
     <AdministrationShell activeSection="audit" aside={auditAside}>
       <header className={styles.panelHeader}>
         <div><h2>Auditoria do sistema</h2><p>Acompanhe acessos, alterações e ações importantes realizadas no sistema.</p></div>
-        <button type="button" className={styles.secondaryButton} onClick={() => void handleExportCsv()} disabled={isExporting}><Download aria-hidden="true" /> {isExporting ? "Exportando..." : "Exportar CSV"}</button>
+        <button type="button" className={styles.secondaryButton} onClick={() => void handleExportCsv()} disabled={isExporting}><Download aria-hidden="true" /> {isExporting ? "Exportando…" : "Exportar CSV"}</button>
       </header>
 
       <form className={styles.auditForm} onSubmit={handleApplyFilters}>
         <div className={styles.auditFilters}>
-          <label className={styles.searchControl}><Search aria-hidden="true" /><span className="sr-only">Buscar por e-mail do usuário</span><input type="email" value={draftFilters.actor_email} onChange={(event) => setDraftFilters((current) => ({ ...current, actor_email: event.target.value }))} placeholder="Buscar por usuário..." autoComplete="off" /></label>
+          <label className={styles.searchControl}><Search aria-hidden="true" /><span className="sr-only">Buscar por e-mail do usuário</span><input type="search" inputMode="email" name="audit_actor_email" value={draftFilters.actor_email} onChange={(event) => setDraftFilters((current) => ({ ...current, actor_email: event.target.value }))} placeholder="Buscar por usuário…" autoComplete="off" spellCheck={false} /></label>
           <label><span className="sr-only">Tipo de ação</span><select className={styles.selectControl} value={draftFilters.event_type} onChange={(event) => setDraftFilters((current) => ({ ...current, event_type: event.target.value }))}>{actionOptions.map((option) => <option key={option.value || "all-actions"} value={option.value}>{option.label}</option>)}</select></label>
           <label><span className="sr-only">Área do sistema</span><select className={styles.selectControl} value={draftFilters.entity_type} onChange={(event) => setDraftFilters((current) => ({ ...current, entity_type: event.target.value }))}>{areaOptions.map((option) => <option key={option.value || "all-areas"} value={option.value}>{option.label}</option>)}</select></label>
         </div>
@@ -368,11 +368,11 @@ export function AuditLogsPage() {
           <label className={styles.field}>Data inicial<input type="date" value={draftFilters.created_from} onChange={(event) => setDraftFilters((current) => ({ ...current, created_from: event.target.value }))} /></label>
           <label className={styles.field}>Data final<input type="date" value={draftFilters.created_to} onChange={(event) => setDraftFilters((current) => ({ ...current, created_to: event.target.value }))} /></label>
         </div>
-        <div className={styles.filterActions}><button type="button" className={styles.textButton} onClick={handleClearFilters}>Limpar filtros</button><button type="submit" className={styles.primaryButton} disabled={isLoading}>{isLoading ? "Consultando..." : "Aplicar filtros"}</button></div>
+        <div className={styles.filterActions}><button type="button" className={styles.textButton} onClick={handleClearFilters}>Limpar filtros</button><button type="submit" className={styles.primaryButton} disabled={isLoading}>{isLoading ? "Consultando…" : "Aplicar filtros"}</button></div>
       </form>
 
       {error ? <div className={styles.errorState} role="alert">{error}</div> : null}
-      {isLoading ? <div className={styles.loadingState} role="status">Carregando auditoria do sistema...</div> : logs.length === 0 ? <div className={styles.emptyState}>Nenhum registro encontrado para os filtros atuais.</div> : (
+      {isLoading ? <div className={styles.loadingState} role="status">Carregando auditoria do sistema…</div> : logs.length === 0 ? <div className={styles.emptyState}>Nenhum registro encontrado para os filtros atuais.</div> : (
         <div className={styles.tableShell}>
           <div className={styles.tableScroll}>
             <table className={`${styles.table} ${styles.auditTable}`}>

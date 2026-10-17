@@ -103,3 +103,25 @@ npm run test:visual:dashboard
 Gabriel aprovou a etapa em 19/08/2026. O marco foi consolidado no commit
 `2abf89b`, e o branch `feat/frontend-v2-familias` foi aberto a partir dessa base
 para executar o V2-06 sem misturar o histórico do Dashboard.
+
+## 10. Refinamento após homologação — 17/10/2026
+
+A homologação posterior mostrou que a tela preservava os dados corretos, mas
+a composição ainda era percebida como uma sequência de cards, e não como um
+dashboard operacional. O refinamento manteve o contrato existente e passou a
+organizar a leitura em quatro níveis:
+
+- identificação explícita de “Painel operacional”, saudação e contexto da data;
+- quatro KPIs com acentos semânticos sólidos e sem novos efeitos decorativos;
+- prioridades e alertas como núcleo acionável da tela;
+- distribuição visual das situações familiares e ações rápidas no fechamento.
+
+A distribuição usa exclusivamente `recurring_eligible_families`,
+`emergency_eligible_families`, `under_review_families`, `inactive_families` e o
+total já retornado por `DashboardOverviewResponse`. Nenhuma tendência, meta ou
+métrica histórica foi inventada. A evidência passou a cobrir também 1920 px em
+`frontend/showcase/evidence/v2-05/inicio-desktop-1920.png`.
+
+Gates do refinamento: E2E 47/47 e visual do Dashboard 13 aprovados com 3 skips
+intencionais por viewport. O aceite visual final deste refinamento permanece
+pendente de Gabriel.

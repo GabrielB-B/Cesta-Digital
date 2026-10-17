@@ -1,4 +1,7 @@
+import path from "node:path";
 import { expect, test, type Route } from "@playwright/test";
+
+const evidenceDirectory = path.resolve("showcase/evidence/v2-05");
 
 const currentUser = {
   id: 1,
@@ -87,6 +90,9 @@ test("início preserva composição, hierarquia e ausência de overflow", async 
 
   await expect(metrics).toHaveCount(4);
   await expect(panels).toHaveCount(2);
+  await expect(page.getByText("Painel operacional", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Situação das famílias" })).toBeVisible();
+  await expect(page.getByText("Aptas recorrentes", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Ações rápidas" })).toBeVisible();
 
   const horizontalOverflow = await page.evaluate(
@@ -118,9 +124,26 @@ test("início preserva composição, hierarquia e ausência de overflow", async 
   }
 
   await page.screenshot({
-    path: testInfo.outputPath(`inicio-${testInfo.project.name}.png`),
+    path: path.join(evidenceDirectory, `inicio-${testInfo.project.name}.png`),
     fullPage: viewportWidth >= 900,
   });
+});
+
+test("dashboard mantém leitura analítica em desktop amplo", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-1440", "Validação adicional executada uma vez em desktop amplo.");
+  await page.setViewportSize({ width: 1920, height: 950 });
+  await page.goto("/");
+  await page.evaluate(() => document.fonts.ready);
+
+  const contentBox = await page.locator("#conteudo-principal > section").boundingBox();
+  const distributionBox = await page.getByRole("region", { name: "Situação das famílias" }).boundingBox();
+  const quickActionsBox = await page.getByRole("region", { name: "Ações rápidas" }).boundingBox();
+
+  expect(contentBox?.width).toBeLessThanOrEqual(1441);
+  expect(Math.abs((distributionBox?.y ?? 0) - (quickActionsBox?.y ?? 0))).toBeLessThanOrEqual(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+  await page.screenshot({ path: path.join(evidenceDirectory, "inicio-desktop-1920.png"), fullPage: true });
 });
 
 test("reavaliação comunica aptidão e usa somente dados contratados", async ({ page }) => {

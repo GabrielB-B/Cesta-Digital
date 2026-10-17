@@ -1,5 +1,6 @@
 import { ScrollText, ShieldCheck, UsersRound } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PageHeader } from "../shared/ui/PageHeader/PageHeader";
 import styles from "../pages/AdministrationPage.module.css";
 
 export type AdministrationSection = "users" | "roles" | "audit";
@@ -23,10 +24,11 @@ export function AdministrationShell({
 }: AdministrationShellProps) {
   return (
     <main className={styles.page} aria-labelledby="administration-title">
-      <header className={styles.pageHeader}>
-        <h1 id="administration-title">Administração</h1>
-        <p>Gerencie acessos, perfis e registros de segurança do Cesta Digital.</p>
-      </header>
+      <PageHeader
+        title="Administração"
+        titleId="administration-title"
+        description="Gerencie acessos, perfis e registros de segurança do Cesta Digital."
+      />
 
       <section className={styles.frame}>
         <nav className={styles.sectionNav} aria-label="Seções administrativas">

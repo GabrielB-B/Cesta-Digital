@@ -68,9 +68,29 @@ test("usuários mantém hierarquia e adaptação responsiva", async ({ page }, t
     ? page.getByRole("table", { name: "Usuários e perfis cadastrados" })
     : page.getByRole("article").filter({ hasText: "Ana Silva" });
   await expect(userSurface.getByText("Ana Silva", { exact: true })).toBeVisible();
-  await expect(page.locator('aside a[href="/users"]').first()).toHaveAttribute("aria-current", "page");
+  const administrationNavigation = page.getByRole("navigation", { name: "Seções administrativas" });
+  await expect(administrationNavigation.getByRole("link", { name: "Usuários" })).toHaveAttribute("aria-current", "page");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await page.screenshot({ path: path.join(evidenceDirectory, `administracao-usuarios-${testInfo.project.name}.png`), fullPage: true });
+});
+
+test("administração ampla usa abas acima do espaço de trabalho", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-1440", "Validação adicional executada uma vez em desktop amplo.");
+  await page.setViewportSize({ width: 1920, height: 950 });
+  await page.goto("/users");
+  await page.evaluate(() => document.fonts.ready);
+
+  const navigationBox = await page.getByRole("navigation", { name: "Seções administrativas" }).boundingBox();
+  const tableBox = await page.getByRole("table", { name: "Usuários e perfis cadastrados" }).boundingBox();
+  const asideBox = await page.locator('main[aria-labelledby="administration-title"] aside').boundingBox();
+  const contentBox = await page.locator("#conteudo-principal > section").boundingBox();
+
+  expect(contentBox?.width).toBeLessThanOrEqual(1441);
+  expect((navigationBox?.y ?? 0)).toBeLessThan(tableBox?.y ?? 0);
+  expect((asideBox?.x ?? 0)).toBeGreaterThan((tableBox?.x ?? 0) + (tableBox?.width ?? 0) - 2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+  await page.screenshot({ path: path.join(evidenceDirectory, "administracao-usuarios-desktop-1920.png"), fullPage: true });
 });
 
 test("perfis explicam permissões reais", async ({ page }, testInfo) => {

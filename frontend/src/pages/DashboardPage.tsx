@@ -23,6 +23,11 @@ import { formatDateOnly } from "../utils/format";
 import styles from "./DashboardPage.module.css";
 
 const numberFormatter = new Intl.NumberFormat("pt-BR");
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "long",
+  weekday: "long",
+});
 
 function getFirstName(name?: string | null): string {
   const firstName = name?.trim().split(/\s+/)[0];
@@ -302,13 +307,56 @@ export function DashboardPage() {
     },
   ] as const;
 
+  const accountedFamilies =
+    data.recurring_eligible_families +
+    data.emergency_eligible_families +
+    data.under_review_families +
+    data.inactive_families;
+  const familyDistribution = [
+    {
+      label: "Aptas recorrentes",
+      value: data.recurring_eligible_families,
+      tone: "recurring",
+    },
+    {
+      label: "Aptas emergenciais",
+      value: data.emergency_eligible_families,
+      tone: "emergency",
+    },
+    {
+      label: "Em análise",
+      value: data.under_review_families,
+      tone: "review",
+    },
+    {
+      label: "Inativas",
+      value: data.inactive_families,
+      tone: "inactive",
+    },
+    {
+      label: "Outras situações",
+      value: Math.max(0, data.total_families - accountedFamilies),
+      tone: "other",
+    },
+  ].filter((entry) => entry.value > 0);
+
   return (
     <div className={styles.page}>
       <header className={styles.pageHeader}>
-        <h1>
-          Olá, {getFirstName(user?.name)} <span aria-hidden="true">👋</span>
-        </h1>
-        <p>Resumo geral das operações e prioridades atuais.</p>
+        <div>
+          <span className={styles.eyebrow}>Painel operacional</span>
+          <h1>
+            Olá, {getFirstName(user?.name)} <span aria-hidden="true">👋</span>
+          </h1>
+          <p>Acompanhe os indicadores e o que precisa de ação agora.</p>
+        </div>
+        <div className={styles.headerContext} aria-label={`Visão de ${dateFormatter.format(new Date())}`}>
+          <span aria-hidden="true" />
+          <div>
+            <small>Visão atual</small>
+            <strong>{dateFormatter.format(new Date())}</strong>
+          </div>
+        </div>
       </header>
 
       <section className={styles.metricGrid} aria-label="Indicadores principais">
@@ -331,7 +379,7 @@ export function DashboardPage() {
             <Link
               key={metric.id}
               to={metric.to}
-              className={styles.metricCard}
+              className={`${styles.metricCard} ${styles[`${metric.tone}Card`]}`}
               data-testid={`dashboard-metric-${metric.id}`}
             >
               {content}
@@ -339,7 +387,7 @@ export function DashboardPage() {
           ) : (
             <div
               key={metric.id}
-              className={styles.metricCard}
+              className={`${styles.metricCard} ${styles[`${metric.tone}Card`]}`}
               data-testid={`dashboard-metric-${metric.id}`}
             >
               {content}
@@ -418,25 +466,71 @@ export function DashboardPage() {
         </article>
       </section>
 
-      {quickActions.length > 0 ? (
-        <section className={styles.quickPanel} aria-labelledby="dashboard-quick-actions">
-          <div className={styles.quickHeader}>
-            <h2 id="dashboard-quick-actions">Ações rápidas</h2>
-            <p>Atalhos para as tarefas mais frequentes.</p>
-          </div>
-          <div className={styles.quickGrid}>
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-              return (
-                <Link key={action.to} to={action.to} className={styles.quickAction}>
-                  <Icon aria-hidden="true" />
-                  <span>{action.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
+      <div className={styles.dashboardFooterGrid}>
+        {canAccessSocial ? (
+          <section className={styles.distributionPanel} aria-labelledby="family-distribution-title">
+            <div className={styles.quickHeader}>
+              <div>
+                <h2 id="family-distribution-title">Situação das famílias</h2>
+                <p>Distribuição dos {numberFormatter.format(data.total_families)} cadastros.</p>
+              </div>
+              <Link className={styles.panelLinkCompact} to="/families">
+                Ver famílias
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
+
+            {familyDistribution.length > 0 ? (
+              <>
+                <div className={styles.distributionTrack} aria-hidden="true">
+                  {familyDistribution.map((entry) => (
+                    <span
+                      key={entry.tone}
+                      className={styles[`${entry.tone}Segment`]}
+                      style={{ flexGrow: entry.value }}
+                    />
+                  ))}
+                </div>
+                <dl className={styles.distributionLegend}>
+                  {familyDistribution.map((entry) => (
+                    <div key={entry.tone}>
+                      <dt><span className={styles[`${entry.tone}Dot`]} aria-hidden="true" />{entry.label}</dt>
+                      <dd>{numberFormatter.format(entry.value)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            ) : (
+              <p className={styles.emptyState}>Nenhuma família cadastrada.</p>
+            )}
+          </section>
+        ) : null}
+
+        {quickActions.length > 0 ? (
+          <section
+            className={`${styles.quickPanel}${canAccessSocial ? "" : ` ${styles.quickPanelWide}`}`}
+            aria-labelledby="dashboard-quick-actions"
+          >
+            <div className={styles.quickHeader}>
+              <div>
+                <h2 id="dashboard-quick-actions">Ações rápidas</h2>
+                <p>Atalhos para as tarefas mais frequentes.</p>
+              </div>
+            </div>
+            <div className={styles.quickGrid}>
+              {quickActions.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <Link key={action.to} to={action.to} className={styles.quickAction}>
+                    <Icon aria-hidden="true" />
+                    <span>{action.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }

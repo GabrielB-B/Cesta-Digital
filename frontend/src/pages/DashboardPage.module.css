@@ -7,9 +7,26 @@
 }
 
 .pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.125rem 0 0.25rem;
+}
+
+.pageHeader > div:first-child {
   display: grid;
-  gap: 0.25rem;
-  padding: 0.25rem 0 0.125rem;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.eyebrow {
+  color: var(--cd-brand-action);
+  font-size: 0.75rem;
+  font-weight: 720;
+  letter-spacing: 0.075em;
+  line-height: 1rem;
+  text-transform: uppercase;
 }
 
 .pageHeader h1,
@@ -23,9 +40,53 @@
 }
 
 .pageHeader p {
+  margin: 0;
   color: var(--cd-text-muted);
   font-size: 0.9375rem;
   line-height: 1.5rem;
+}
+
+.headerContext {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex: 0 0 auto;
+  min-width: 12rem;
+  padding: 0.6rem 0.75rem;
+  color: #344054;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius-md);
+}
+
+.headerContext > span {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: 0 0 auto;
+  background: var(--cd-success);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.25rem var(--cd-success-soft);
+}
+
+.headerContext > div {
+  display: grid;
+  min-width: 0;
+}
+
+.headerContext small {
+  color: var(--cd-text-muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.headerContext strong {
+  overflow: hidden;
+  font-size: 0.75rem;
+  font-weight: 650;
+  line-height: 1rem;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .metricGrid {
@@ -35,6 +96,7 @@
 }
 
 .metricCard {
+  position: relative;
   display: grid;
   grid-template-columns: 3.75rem minmax(0, 1fr);
   align-items: start;
@@ -49,6 +111,20 @@
   border-radius: var(--cd-radius-lg);
   box-shadow: var(--cd-shadow-sm);
 }
+
+.metricCard::before {
+  position: absolute;
+  inset: 0.875rem auto 0.875rem 0;
+  width: 0.2rem;
+  background: #98a2b3;
+  border-radius: 0 var(--cd-radius-pill) var(--cd-radius-pill) 0;
+  content: "";
+}
+
+.familyCard::before { background: var(--cd-brand-action); }
+.deliveryCard::before { background: #7c55f4; }
+.scheduleCard::before { background: var(--cd-success); }
+.attentionCard::before { background: var(--cd-warning); }
 
 a.metricCard {
   transition:
@@ -146,6 +222,7 @@ a.metricCard:focus-visible,
 
 .panel,
 .quickPanel,
+.distributionPanel,
 .errorState {
   min-width: 0;
   background: var(--cd-surface);
@@ -352,10 +429,130 @@ a.metricCard:focus-visible,
   padding: 1.375rem 1.5rem 1.5rem;
 }
 
+.dashboardFooterGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.distributionPanel {
+  display: grid;
+  align-content: start;
+  gap: 1.125rem;
+  padding: 1.375rem 1.5rem 1.5rem;
+}
+
+.panelLinkCompact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  color: var(--cd-brand-action);
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.panelLinkCompact:hover {
+  color: var(--cd-brand-action-hover);
+}
+
+.panelLinkCompact:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--cd-brand-action) 28%, transparent);
+  outline-offset: 3px;
+}
+
+.distributionTrack {
+  display: flex;
+  gap: 0.2rem;
+  width: 100%;
+  height: 0.7rem;
+  overflow: hidden;
+  background: var(--cd-neutral-100);
+  border-radius: var(--cd-radius-pill);
+}
+
+.distributionTrack > span {
+  min-width: 0.25rem;
+  flex-basis: 0;
+}
+
+.recurringSegment,
+.recurringDot { background: var(--cd-success); }
+.emergencySegment,
+.emergencyDot { background: #7c55f4; }
+.reviewSegment,
+.reviewDot { background: var(--cd-warning); }
+.inactiveSegment,
+.inactiveDot { background: #98a2b3; }
+.otherSegment,
+.otherDot { background: #3b82f6; }
+
+.distributionLegend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+}
+
+.distributionLegend > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--cd-border);
+}
+
+.distributionLegend > div:nth-child(odd) {
+  padding-right: 1rem;
+}
+
+.distributionLegend > div:nth-child(even) {
+  padding-left: 1rem;
+  border-left: 1px solid var(--cd-border);
+}
+
+.distributionLegend dt {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  color: var(--cd-text-muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.distributionLegend dt > span {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.distributionLegend dd {
+  margin: 0;
+  color: #172338;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .quickGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.quickPanelWide {
+  grid-column: 1 / -1;
+}
+
+.quickPanelWide .quickGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .quickAction {
@@ -470,7 +667,8 @@ a.metricCard:focus-visible,
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .quickGrid {
+  .quickGrid,
+  .quickPanelWide .quickGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -481,6 +679,8 @@ a.metricCard:focus-visible,
   }
 
   .pageHeader {
+    display: grid;
+    align-items: start;
     padding-top: 0;
   }
 
@@ -491,6 +691,10 @@ a.metricCard:focus-visible,
   .pageHeader p {
     font-size: 0.875rem;
     line-height: 1.3rem;
+  }
+
+  .headerContext {
+    display: none;
   }
 
   .metricGrid {
@@ -535,6 +739,11 @@ a.metricCard:focus-visible,
     gap: 1rem;
   }
 
+  .dashboardFooterGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
   .panel {
     min-height: 0;
     padding: 1.125rem 1rem 1rem;
@@ -572,6 +781,10 @@ a.metricCard:focus-visible,
   }
 
   .quickPanel {
+    padding: 1.125rem 1rem 1rem;
+  }
+
+  .distributionPanel {
     padding: 1.125rem 1rem 1rem;
   }
 
@@ -620,6 +833,17 @@ a.metricCard:focus-visible,
 
   .alertQuantity {
     white-space: normal;
+  }
+
+  .distributionLegend {
+    grid-template-columns: 1fr;
+  }
+
+  .distributionLegend > div:nth-child(odd),
+  .distributionLegend > div:nth-child(even) {
+    padding-right: 0;
+    padding-left: 0;
+    border-left: 0;
   }
 }
 

@@ -4,8 +4,6 @@ import {
   ChevronRight,
   Heart,
   Menu,
-  PanelLeftClose,
-  PanelLeftOpen,
   UserRound,
   X,
 } from "lucide-react";
@@ -428,11 +426,7 @@ export function AppLayout() {
                   title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
                   onClick={toggleSidebar}
                 >
-                  {isSidebarCollapsed ? (
-                    <PanelLeftOpen size={19} aria-hidden="true" />
-                  ) : (
-                    <PanelLeftClose size={19} aria-hidden="true" />
-                  )}
+                  <Menu size={22} aria-hidden="true" />
                 </button>
                 <nav className={styles.breadcrumb} aria-label="Localização atual">
                   <span className={styles.breadcrumbSection}>{routeMeta.section}</span>

@@ -222,24 +222,26 @@
 .desktopSidebarButton {
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   padding: 0;
   color: #526176;
-  background: var(--cd-neutral-100);
-  border: 1px solid var(--cd-border);
-  border-radius: var(--cd-radius-md);
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border-strong);
+  border-radius: 0.7rem;
   cursor: pointer;
   transition:
     background var(--cd-motion-fast) var(--cd-ease-standard),
     color var(--cd-motion-fast) var(--cd-ease-standard),
-    border-color var(--cd-motion-fast) var(--cd-ease-standard);
+    border-color var(--cd-motion-fast) var(--cd-ease-standard),
+    box-shadow var(--cd-motion-fast) var(--cd-ease-standard);
 }
 
 .desktopSidebarButton:hover {
-  color: var(--cd-brand-action);
-  background: var(--cd-brand-soft);
-  border-color: var(--cd-brand-soft-strong);
+  color: #26344a;
+  background: var(--cd-neutral-100);
+  border-color: #b9c1cd;
+  box-shadow: var(--cd-shadow-xs);
 }
 
 .desktopSidebarButton:focus-visible {

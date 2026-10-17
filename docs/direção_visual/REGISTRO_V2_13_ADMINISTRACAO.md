@@ -78,3 +78,22 @@ instrução explícita de Gabriel, o próximo trabalho é uma etapa separada de
 segurança da dependência `cryptography`, seguida de homologação local isolada
 com dados sintéticos para validação UX manual. O `NO-GO` para dados pessoais
 reais e publicação permanece vigente.
+
+## 7. Refinamento após homologação — 17/10/2026
+
+A validação manual identificou compressão e excesso de molduras na composição
+original. O refinamento removeu a navegação vertical interna e a altura mínima
+artificial do frame administrativo. Usuários, Perfis e Auditoria agora usam
+abas horizontais acima do espaço de trabalho; a tabela ocupa a coluna principal
+e o resumo de acesso permanece em um painel lateral independente e aderente.
+
+No mobile, abas, conteúdo e resumo são superfícies distintas no fluxo vertical,
+sem tabela espremida ou overflow horizontal. Busca e mensagens assíncronas
+também receberam microcopy e atributos de formulário mais claros. Não houve
+mudança de rota, RBAC, payload, API, backend, banco ou migration.
+
+Gates do refinamento: E2E 47/47 e visual de Administração 11 aprovados com 9
+skips intencionais por viewport. As evidências incluem 360/390/768/1440/1920 px,
+com a captura ampla em
+`frontend/showcase/evidence/v2-13/administracao-usuarios-desktop-1920.png`. O
+aceite visual final deste refinamento permanece pendente de Gabriel.

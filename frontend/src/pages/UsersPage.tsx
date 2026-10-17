@@ -375,7 +375,7 @@ export function UsersPage() {
     <>
       <h2 className={styles.summaryTitle}>Resumo de acesso</h2>
       <div className={styles.brandSummary}>
-        <img src="/logo-symbol.png" alt="" aria-hidden="true" />
+        <img src="/logo-symbol.png" alt="" width="44" height="44" aria-hidden="true" />
         <div>
           <strong>Cesta Digital</strong>
           <span>Controle administrativo ativo</span>
@@ -412,7 +412,7 @@ export function UsersPage() {
           </header>
 
           {isLoading ? (
-            <div className={styles.loadingState} role="status">Carregando perfis...</div>
+            <div className={styles.loadingState} role="status">Carregando perfis…</div>
           ) : pageError ? (
             <div className={styles.errorState} role="alert">{pageError}</div>
           ) : (
@@ -459,9 +459,12 @@ export function UsersPage() {
               <span className="sr-only">Buscar usuário</span>
               <input
                 type="search"
+                name="users_search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar por nome, login ou e-mail"
+                placeholder="Buscar por nome, login ou e-mail…"
+                autoComplete="off"
+                spellCheck={false}
               />
             </label>
             <label>
@@ -481,7 +484,7 @@ export function UsersPage() {
           {pageError ? <p className={styles.formError} role="alert">{pageError}</p> : null}
 
           {isLoading ? (
-            <div className={styles.loadingState} role="status">Carregando usuários...</div>
+            <div className={styles.loadingState} role="status">Carregando usuários…</div>
           ) : filteredUsers.length === 0 ? (
             <div className={styles.emptyState} role="status">Nenhum usuário corresponde aos filtros atuais.</div>
           ) : (
@@ -553,7 +556,7 @@ export function UsersPage() {
           footer={
             <>
               <button type="button" className={styles.secondaryButton} onClick={requestCloseDialog}>Cancelar</button>
-              <button type="submit" form="administration-user-form" className={styles.primaryButton} disabled={isSubmitting}>{isSubmitting ? "Salvando..." : editingUser ? "Salvar alterações" : "Cadastrar usuário"}</button>
+              <button type="submit" form="administration-user-form" className={styles.primaryButton} disabled={isSubmitting}>{isSubmitting ? "Salvando…" : editingUser ? "Salvar alterações" : "Cadastrar usuário"}</button>
             </>
           }
         >
@@ -589,7 +592,7 @@ export function UsersPage() {
                 <div className={styles.inlineForm}>
                   <label className="sr-only" htmlFor="administration-password-reset">Nova senha</label>
                   <input id="administration-password-reset" className={styles.dateControl} type="password" value={passwordReset} onChange={(event) => { setPasswordReset(event.target.value); setFeedback(""); }} placeholder="Nova senha forte" autoComplete="new-password" />
-                  <button type="button" className={styles.secondaryButton} onClick={() => void handlePasswordReset()} disabled={isResettingPassword}>{isResettingPassword ? "Redefinindo..." : "Redefinir senha"}</button>
+                  <button type="button" className={styles.secondaryButton} onClick={() => void handlePasswordReset()} disabled={isResettingPassword}>{isResettingPassword ? "Redefinindo…" : "Redefinir senha"}</button>
                 </div>
               </section>
             ) : null}
