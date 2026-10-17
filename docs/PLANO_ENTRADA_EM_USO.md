@@ -20,10 +20,10 @@ relatórios, integrações comerciais ou novas fontes de imagens.
 
 ## Gates obrigatórios
 
-| Gate | Evidência exigida | Estado em 16/10/2026 |
+| Gate | Evidência exigida | Estado em 17/10/2026 |
 |---|---|---|
-| Código e dependências | lint, build, E2E, backend e auditorias verdes | Local aprovado; aguarda CI do SHA publicado |
-| MySQL/Alembic | ciclo completo em MySQL 8 | Adicionado ao CI; aguarda execução remota |
+| Código e dependências | lint, build, E2E, backend e auditorias verdes | CI remota aprovada no commit técnico `80827d2` ([execução 39042883332](https://github.com/GabrielB-B/Cesta-Digital/actions/runs/39042883332)) |
+| MySQL/Alembic | ciclo completo em MySQL 8 | Upgrade, rollback até a base e novo upgrade aprovados em MySQL 8 na CI |
 | Banco público | backup, checksum, restore isolado e conciliação | Obrigatório antes da promoção; não executar sem credenciais autorizadas |
 | Segurança web | cookie HttpOnly, origem confiável, CSP, RBAC e rate limit | Implementado localmente; aguarda staging |
 | Privacidade | responsável, aviso preenchido, retenção e revisão de acesso | Pendente de decisão organizacional |
@@ -37,7 +37,7 @@ dados sintéticos ou efetivamente anonimizados.
 
 ## Checklist de promoção
 
-- [ ] Registrar o SHA aprovado e executar todos os checks na branch.
+- [x] Registrar o SHA técnico `80827d2` e executar todos os checks na branch.
 - [ ] Confirmar proteção da `main` e deploy somente após checks verdes.
 - [ ] Classificar o conteúdo atual do banco sem exportar dados pessoais.
 - [ ] Gerar backup verificável e restaurar em banco isolado.
