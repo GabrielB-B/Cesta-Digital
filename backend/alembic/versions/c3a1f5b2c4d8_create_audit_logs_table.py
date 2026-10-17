@@ -81,11 +81,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_index(op.f("ix_audit_logs_request_id"), table_name="audit_logs")
-    op.drop_index(op.f("ix_audit_logs_actor_email"), table_name="audit_logs")
-    op.drop_index(op.f("ix_audit_logs_actor_user_id"), table_name="audit_logs")
-    op.drop_index(op.f("ix_audit_logs_entity_id"), table_name="audit_logs")
-    op.drop_index(op.f("ix_audit_logs_entity_type"), table_name="audit_logs")
-    op.drop_index(op.f("ix_audit_logs_event_type"), table_name="audit_logs")
-    op.drop_index(op.f("ix_audit_logs_id"), table_name="audit_logs")
     op.drop_table("audit_logs")

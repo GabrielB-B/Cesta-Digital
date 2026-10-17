@@ -69,9 +69,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index(op.f("ix_login_rate_limits_locked_until"), table_name="login_rate_limits")
-    op.drop_index(op.f("ix_login_rate_limits_id"), table_name="login_rate_limits")
-    op.drop_index(op.f("ix_login_rate_limits_email"), table_name="login_rate_limits")
-    op.drop_index(op.f("ix_login_rate_limits_client_ip"), table_name="login_rate_limits")
-    op.drop_index(op.f("ix_login_rate_limits_bucket_key"), table_name="login_rate_limits")
     op.drop_table("login_rate_limits")
