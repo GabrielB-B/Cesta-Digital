@@ -609,6 +609,13 @@ export function FamilyForm({
                       <span>Renda mensal total</span>
                       <CurrencyInput
                         {...incomeRegistration}
+                        value={watchedValues.monthly_income_total ?? "0"}
+                        onChange={(event) =>
+                          setValue("monthly_income_total", event.target.value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
+                        }
                         onBlur={(event) => {
                           void incomeRegistration.onBlur(event);
                           setValue(
@@ -626,6 +633,13 @@ export function FamilyForm({
                       <span>Despesas essenciais</span>
                       <CurrencyInput
                         {...expensesRegistration}
+                        value={watchedValues.monthly_essential_expenses ?? "0"}
+                        onChange={(event) =>
+                          setValue("monthly_essential_expenses", event.target.value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
+                        }
                         onBlur={(event) => {
                           void expensesRegistration.onBlur(event);
                           setValue(
