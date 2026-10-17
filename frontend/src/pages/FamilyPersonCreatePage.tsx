@@ -5,18 +5,19 @@ import { PersonForm, PersonFormError, PersonFormLoading } from "../features/fami
 import { newPersonDefaults } from "../features/families/personFormModel";
 import type { FamilyDetailResponse, FamilyPersonCreatePayload, FamilyPersonResponse } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
+import { getFamilyDisplayName } from "../utils/family-identity";
 
 export function FamilyPersonCreatePage() {
   const navigate = useNavigate();
   const { familyId } = useParams();
-  const [familyCode, setFamilyCode] = useState("");
+  const [familyName, setFamilyName] = useState("");
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     if (!familyId) return;
     let active = true;
     api.get<FamilyDetailResponse>(`/families/${familyId}`)
-      .then((response) => { if (active) setFamilyCode(response.data.internal_code); })
+      .then((response) => { if (active) setFamilyName(getFamilyDisplayName(response.data)); })
       .catch((error) => { if (active) setLoadError(getApiErrorMessage(error, "Não foi possível carregar a família.")); });
     return () => { active = false; };
   }, [familyId]);
@@ -25,7 +26,7 @@ export function FamilyPersonCreatePage() {
     return <PersonFormError message="Família não identificada." backTo="/families" />;
   }
   if (loadError) return <PersonFormError message={loadError} backTo={`/families/${familyId}`} />;
-  if (!familyCode) return <PersonFormLoading />;
+  if (!familyName) return <PersonFormLoading />;
 
   async function createPerson(payload: FamilyPersonCreatePayload) {
     await api.post<FamilyPersonResponse>(`/families/${familyId}/people`, payload);
@@ -38,7 +39,7 @@ export function FamilyPersonCreatePage() {
     <PersonForm
       mode="create"
       familyId={familyId}
-      familyCode={familyCode}
+      familyName={familyName}
       defaultValues={newPersonDefaults}
       onSave={createPerson}
     />

@@ -5,9 +5,10 @@ import { BenefitForm, BenefitFormError, BenefitFormLoading } from "../features/f
 import { benefitToFormValues, type BenefitFormValues } from "../features/families/benefitFormModel";
 import type { FamilyBenefitUpdatePayload, FamilyDetailResponse, FamilyPersonResponse } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
+import { getFamilyDisplayName } from "../utils/family-identity";
 
 interface LoadedBenefit {
-  familyCode: string;
+  familyName: string;
   people: FamilyPersonResponse[];
   values: BenefitFormValues;
 }
@@ -34,7 +35,7 @@ export function FamilyBenefitEditPage() {
           return;
         }
         setBenefit({
-          familyCode: response.data.internal_code,
+          familyName: getFamilyDisplayName(response.data),
           people: response.data.people,
           values: benefitToFormValues(selected),
         });
@@ -64,7 +65,7 @@ export function FamilyBenefitEditPage() {
     <BenefitForm
       mode="edit"
       familyId={familyId ?? ""}
-      familyCode={benefit.familyCode}
+      familyName={benefit.familyName}
       people={benefit.people}
       defaultValues={benefit.values}
       onSave={updateBenefit}

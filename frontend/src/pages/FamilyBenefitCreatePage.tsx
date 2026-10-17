@@ -5,6 +5,7 @@ import { BenefitForm, BenefitFormError, BenefitFormLoading } from "../features/f
 import { newBenefitDefaults } from "../features/families/benefitFormModel";
 import type { FamilyBenefitCreatePayload, FamilyBenefitResponse, FamilyDetailResponse } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
+import { getFamilyDisplayName } from "../utils/family-identity";
 
 export function FamilyBenefitCreatePage() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export function FamilyBenefitCreatePage() {
     <BenefitForm
       mode="create"
       familyId={familyId}
-      familyCode={family.internal_code}
+      familyName={getFamilyDisplayName(family)}
       people={family.people}
       defaultValues={newBenefitDefaults}
       onSave={createBenefit}

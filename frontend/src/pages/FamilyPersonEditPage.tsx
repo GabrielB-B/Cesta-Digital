@@ -12,10 +12,11 @@ import {
 } from "../features/families/personFormModel";
 import type { FamilyDetailResponse, FamilyPersonUpdatePayload } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
+import { getFamilyDisplayName } from "../utils/family-identity";
 
 interface LoadedMember {
   values: PersonFormValues;
-  familyCode: string;
+  familyName: string;
 }
 
 export function FamilyPersonEditPage() {
@@ -44,7 +45,7 @@ export function FamilyPersonEditPage() {
         }
         setMember({
           values: personToFormValues(person),
-          familyCode: response.data.internal_code,
+          familyName: getFamilyDisplayName(response.data),
         });
       } catch (error) {
         if (active) setLoadError(getApiErrorMessage(error, "Não foi possível carregar o membro."));
@@ -79,7 +80,7 @@ export function FamilyPersonEditPage() {
     <PersonForm
       mode="edit"
       familyId={familyId ?? ""}
-      familyCode={member.familyCode}
+      familyName={member.familyName}
       defaultValues={member.values}
       onSave={updateMember}
       onDelete={deleteMember}

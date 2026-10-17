@@ -33,7 +33,7 @@ type PersonFormMode = "create" | "edit";
 interface PersonFormProps {
   mode: PersonFormMode;
   familyId: string;
-  familyCode?: string;
+  familyName?: string;
   defaultValues: PersonFormValues;
   onSave: (payload: FamilyPersonCreatePayload) => Promise<void>;
   onDelete?: () => Promise<void>;
@@ -88,7 +88,7 @@ const conditionFlags = [
 export function PersonForm({
   mode,
   familyId,
-  familyCode,
+  familyName,
   defaultValues,
   onSave,
   onDelete,
@@ -201,7 +201,7 @@ export function PersonForm({
       <header className={styles.pageHeader}>
         <span>Composição familiar</span>
         <h1>{mode === "create" ? "Novo membro" : "Editar membro"}</h1>
-        <p>{familyCode ? `Família ${familyCode}` : `Família ${familyId}`}</p>
+        <p>{familyName ?? "Família cadastrada"}</p>
       </header>
 
       <form
@@ -362,7 +362,7 @@ export function PersonForm({
           <aside className={styles.summary} aria-label="Resumo do membro">
             <h2>Resumo</h2>
             <dl>
-              <div><dt>Família</dt><dd>{familyCode ?? familyId}</dd></div>
+              <div><dt>Família</dt><dd>{familyName ?? "Família cadastrada"}</dd></div>
               <div><dt>Nome</dt><dd>{values.full_name || "Ainda não informado"}</dd></div>
               <div><dt>Responsável</dt><dd>{values.is_family_responsible ? "Sim" : "Não"}</dd></div>
               <div><dt>Renda</dt><dd>{formatCurrency(values.individual_income || 0)}</dd></div>

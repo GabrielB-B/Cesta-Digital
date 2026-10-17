@@ -73,9 +73,9 @@ const baseFamily = {
 
 const familyRows = [
   baseFamily,
-  { ...baseFamily, id: 2, internal_code: "FAM-01247", neighborhood: "Centro", city: "Osasco", status: "apta_recorrente", total_residents: 3, income_per_capita: "280.00", last_evaluation_date: "2026-08-10" },
-  { ...baseFamily, id: 3, internal_code: "FAM-01246", neighborhood: "Vila Nova", city: "São Paulo", status: "apta_emergencial", total_residents: 5, income_per_capita: "190.00", last_evaluation_date: "2026-08-08" },
-  { ...baseFamily, id: 4, internal_code: "FAM-01245", neighborhood: "Jardim Europa", city: "Guarulhos", status: "em_analise", total_residents: 2, income_per_capita: "420.00", last_evaluation_date: null },
+  { ...baseFamily, id: 2, internal_code: "FAM-01247", contacts: [{ ...baseFamily.contacts[0], id: 2, contact_name: "Joana Santos" }], neighborhood: "Centro", city: "Osasco", status: "apta_recorrente", total_residents: 3, income_per_capita: "280.00", last_evaluation_date: "2026-08-10" },
+  { ...baseFamily, id: 3, internal_code: "FAM-01246", contacts: [{ ...baseFamily.contacts[0], id: 3, contact_name: "Carlos Pereira" }], neighborhood: "Vila Nova", city: "São Paulo", status: "apta_emergencial", total_residents: 5, income_per_capita: "190.00", last_evaluation_date: "2026-08-08" },
+  { ...baseFamily, id: 4, internal_code: "FAM-01245", contacts: [{ ...baseFamily.contacts[0], id: 4, contact_name: "Luciana Costa" }], neighborhood: "Jardim Europa", city: "Guarulhos", status: "em_analise", total_residents: 2, income_per_capita: "420.00", last_evaluation_date: null },
   { ...baseFamily, id: 5, internal_code: "FAM-01244", neighborhood: "Bela Vista", city: "São Paulo", status: "inativa", total_residents: 4, income_per_capita: "510.00", last_evaluation_date: "2026-07-20" },
   { ...baseFamily, id: 6, internal_code: "FAM-01243", neighborhood: "Vila Mariana", city: "São Paulo", status: "apta_recorrente", total_residents: 6, income_per_capita: "240.00", last_evaluation_date: "2026-07-18" },
   { ...baseFamily, id: 7, internal_code: "FAM-01242", neighborhood: "Mooca", city: "São Paulo", status: "em_analise", total_residents: 3, income_per_capita: "360.00", last_evaluation_date: null },
@@ -209,9 +209,9 @@ test.beforeEach(async ({ page }) => {
 test("lista usa tabela no desktop, cards no mobile e não causa overflow", async ({ page }, testInfo) => {
   const viewportWidth = page.viewportSize()?.width ?? 0;
   const table = page.getByRole("table", { name: "Famílias cadastradas" });
-  const cards = page.getByRole("link", { name: /FAM-01/ });
+  const cards = page.getByRole("link", { name: /Família / });
 
-  if (viewportWidth >= 1100) {
+  if (viewportWidth >= 1280) {
     await expect(table).toBeVisible();
     await expect(page.getByLabel("Família selecionada")).toBeVisible();
   } else {
@@ -226,15 +226,15 @@ test("lista usa tabela no desktop, cards no mobile e não causa overflow", async
 
   await page.screenshot({
     path: testInfo.outputPath(`familias-${testInfo.project.name}.png`),
-    fullPage: viewportWidth >= 1100,
+    fullPage: viewportWidth >= 1280,
   });
 });
 
 test("seleção desktop persiste no URL e carrega apenas um detalhe", async ({ page }) => {
-  test.skip((page.viewportSize()?.width ?? 0) < 1100, "Seleção lateral exclusiva do desktop.");
-  await page.getByRole("button", { name: "FAM-01247", exact: true }).click();
+  test.skip((page.viewportSize()?.width ?? 0) < 1280, "Seleção lateral exclusiva do desktop amplo.");
+  await page.getByRole("button", { name: "Família Santos", exact: true }).click();
   await expect(page).toHaveURL(/selected=2/);
-  await expect(page.getByLabel("Família selecionada")).toContainText("FAM-01247");
+  await expect(page.getByLabel("Família selecionada")).toContainText("Família Santos");
 });
 
 test("busca e status permanecem no URL", async ({ page }) => {
@@ -248,7 +248,8 @@ test("busca e status permanecem no URL", async ({ page }) => {
 
 test("detalhe separa cálculo, decisão e conteúdo social", async ({ page }, testInfo) => {
   await page.goto("/families/1");
-  await expect(page.getByRole("heading", { name: "FAM-01248" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Família Silva" })).toBeVisible();
+  await expect(page.getByText("Código interno: FAM-01248")).toBeHidden();
   await expect(page.getByRole("heading", { name: "Sugestão do sistema e decisão da liderança" })).toBeVisible();
   await expect(page.getByText("Sugestão calculada")).toBeVisible();
   await expect(page.getByText("Última decisão registrada")).toBeVisible();

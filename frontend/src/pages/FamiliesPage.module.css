@@ -137,7 +137,7 @@
 
 .filterButton:focus-visible,
 .primaryAction:focus-visible,
-.codeButton:focus-visible,
+.familyButton:focus-visible,
 .selectButton:focus-visible,
 .pagination button:focus-visible,
 .familyCard:focus-visible,
@@ -253,13 +253,11 @@
   background: var(--cd-surface-muted);
 }
 
-.desktopTable th:nth-child(1) { width: 15%; }
-.desktopTable th:nth-child(2) { width: 20%; }
-.desktopTable th:nth-child(3) { width: 16%; }
-.desktopTable th:nth-child(4) { width: 10%; }
-.desktopTable th:nth-child(5) { width: 15%; }
-.desktopTable th:nth-child(6) { width: 19%; }
-.desktopTable th:nth-child(7) { width: 5%; }
+.desktopTable th:nth-child(1) { width: 27%; }
+.desktopTable th:nth-child(2) { width: 29%; }
+.desktopTable th:nth-child(3) { width: 24%; }
+.desktopTable th:nth-child(4) { width: 13%; }
+.desktopTable th:nth-child(5) { width: 7%; }
 
 .desktopTable tbody tr {
   position: relative;
@@ -276,7 +274,7 @@
   box-shadow: inset 3px 0 0 var(--cd-brand-action);
 }
 
-.codeButton,
+.familyButton,
 .selectButton {
   color: #24324a;
   background: transparent;
@@ -284,12 +282,13 @@
   cursor: pointer;
 }
 
-.codeButton {
+.familyButton {
   padding: 0.35rem 0;
   font-weight: 680;
+  text-align: left;
 }
 
-.codeButton:hover,
+.familyButton:hover,
 .selectButton:hover {
   color: var(--cd-brand-action);
 }
@@ -614,7 +613,7 @@
   }
 }
 
-@media (max-width: 1099px) {
+@media (max-width: 1279px) {
   .workspace {
     grid-template-columns: 1fr;
   }

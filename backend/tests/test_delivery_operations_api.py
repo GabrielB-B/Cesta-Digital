@@ -68,6 +68,7 @@ class DeliveryOperationsApiTests(ApiIntegrationTestCase):
         status: str,
         street: str = "Rua das Flores",
         neighborhood: str = "Jardim Primavera",
+        responsible_name: str | None = None,
     ) -> dict:
         family = self.create_family(
             self.operator_headers,
@@ -76,6 +77,19 @@ class DeliveryOperationsApiTests(ApiIntegrationTestCase):
             neighborhood=neighborhood,
             city="São Paulo",
             state="SP",
+            contacts=(
+                [
+                    {
+                        "contact_name": responsible_name,
+                        "phone": "11999990000",
+                        "contact_type": "principal",
+                        "is_whatsapp": True,
+                        "notes": None,
+                    }
+                ]
+                if responsible_name
+                else []
+            ),
         )
         response = self.client.post(
             "/delivery-schedules",
@@ -100,6 +114,7 @@ class DeliveryOperationsApiTests(ApiIntegrationTestCase):
             code="FAM-HOJE-01",
             scheduled_date=TEST_OPERATIONAL_DATE,
             status="agendado",
+            responsible_name="Maria Bomfim",
         )
         self._create_schedule(
             code="FAM-HOJE-02",
@@ -142,6 +157,7 @@ class DeliveryOperationsApiTests(ApiIntegrationTestCase):
         )
         first_item = body["items"][0]
         self.assertEqual(first_item["family_code"], "FAM-HOJE-01")
+        self.assertEqual(first_item["family_display_name"], "Família Bomfim")
         self.assertEqual(first_item["family_status"], "em_analise")
         self.assertEqual(first_item["basket_type_name"], "Cesta Essencial")
         self.assertEqual(first_item["street"], "Rua das Flores")
@@ -158,6 +174,7 @@ class DeliveryOperationsApiTests(ApiIntegrationTestCase):
             status="faltou",
             street="Avenida Central",
             neighborhood="Centro",
+            responsible_name="Joana Bomfim",
         )
         self._create_schedule(
             code="FAM-FUTURA",
@@ -168,7 +185,7 @@ class DeliveryOperationsApiTests(ApiIntegrationTestCase):
         search_response = self.client.get(
             "/delivery-operations",
             headers=self.operator_headers,
-            params={"period": "semana", "q": "Central", "status": "ocorrencia"},
+            params={"period": "semana", "q": "Bomfim", "status": "ocorrencia"},
         )
         self.assertEqual(search_response.status_code, 200, search_response.text)
         self.assertEqual(search_response.json()["total"], 1)

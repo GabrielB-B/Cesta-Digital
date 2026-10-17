@@ -18,7 +18,8 @@ import type {
   FamilyListItemResponse,
 } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
-import { formatCurrency, formatDateOnly } from "../utils/format";
+import { getFamilyDisplayName } from "../utils/family-identity";
+import { formatDateOnly } from "../utils/format";
 import {
   buildListSearchParams,
   getQueryOffset,
@@ -200,7 +201,7 @@ export function FamiliesPage() {
       <header className={styles.pageHeader}>
         <div>
           <h1>Famílias</h1>
-          <p>Gerencie os cadastros e acompanhe a situação social das famílias.</p>
+          <p>Cadastros e acompanhamento social.</p>
         </div>
       </header>
 
@@ -216,7 +217,7 @@ export function FamiliesPage() {
           <input
             type="search"
             name="families_search"
-            placeholder="Buscar por código, bairro, cidade ou status…"
+            placeholder="Buscar por família, bairro, cidade ou situação…"
             defaultValue={activeSearch}
             autoComplete="off"
             spellCheck={false}
@@ -292,28 +293,27 @@ export function FamiliesPage() {
                   <caption className={styles.srOnly}>Famílias cadastradas</caption>
                   <thead>
                     <tr>
-                      <th>Código</th>
-                      <th>Região</th>
-                      <th>Status</th>
+                      <th>Família</th>
+                      <th>Localidade</th>
+                      <th>Situação</th>
                       <th>Moradores</th>
-                      <th>Renda per capita</th>
-                      <th>Última avaliação</th>
                       <th><span className={styles.srOnly}>Selecionar</span></th>
                     </tr>
                   </thead>
                   <tbody>
                     {families.map((family) => {
                       const isSelected = family.id === selectedFamilyId;
+                      const familyDisplayName = getFamilyDisplayName(family);
                       return (
                         <tr key={family.id} className={isSelected ? styles.selectedRow : undefined}>
                           <td>
                             <button
-                              className={styles.codeButton}
+                              className={styles.familyButton}
                               type="button"
                               aria-pressed={isSelected}
                               onClick={() => handleSelectFamily(family.id)}
                             >
-                              {family.internal_code}
+                              {familyDisplayName}
                             </button>
                           </td>
                           <td>
@@ -328,13 +328,11 @@ export function FamiliesPage() {
                             </span>
                           </td>
                           <td>{family.total_residents}</td>
-                          <td>{formatCurrency(family.income_per_capita)}</td>
-                          <td>{family.last_evaluation_date ? formatDateOnly(family.last_evaluation_date) : "Não realizada"}</td>
                           <td>
                             <button
                               className={styles.selectButton}
                               type="button"
-                              aria-label={`Selecionar ${family.internal_code}`}
+                              aria-label={`Selecionar ${familyDisplayName}`}
                               aria-pressed={isSelected}
                               onClick={() => handleSelectFamily(family.id)}
                             >
@@ -349,25 +347,28 @@ export function FamiliesPage() {
               </div>
 
               <div className={styles.mobileList}>
-                {families.map((family) => (
-                  <Link key={family.id} to={`/families/${family.id}`} className={styles.familyCard}>
-                    <span className={styles.familyCardTop}>
-                      <strong>{family.internal_code}</strong>
-                      <span className={`${styles.statusBadge} ${getStatusTone(family.status)}`}>
-                        {formatStatus(family.status)}
+                {families.map((family) => {
+                  const familyDisplayName = getFamilyDisplayName(family);
+                  return (
+                    <Link key={family.id} to={`/families/${family.id}`} className={styles.familyCard}>
+                      <span className={styles.familyCardTop}>
+                        <strong>{familyDisplayName}</strong>
+                        <span className={`${styles.statusBadge} ${getStatusTone(family.status)}`}>
+                          {formatStatus(family.status)}
+                        </span>
                       </span>
-                    </span>
-                    <span className={styles.familyCardRegion}>
-                      <MapPin aria-hidden="true" />
-                      {family.neighborhood} · {family.city}/{family.state}
-                    </span>
-                    <span className={styles.familyCardMeta}>
-                      <span><UsersRound aria-hidden="true" />{family.total_residents} moradores</span>
-                      <span><CalendarDays aria-hidden="true" />{family.last_evaluation_date ? formatDateOnly(family.last_evaluation_date) : "Sem avaliação"}</span>
-                    </span>
-                    <span className={styles.cardAction}>Ver detalhes <ChevronRight aria-hidden="true" /></span>
-                  </Link>
-                ))}
+                      <span className={styles.familyCardRegion}>
+                        <MapPin aria-hidden="true" />
+                        {family.neighborhood} · {family.city}/{family.state}
+                      </span>
+                      <span className={styles.familyCardMeta}>
+                        <span><UsersRound aria-hidden="true" />{family.total_residents} moradores</span>
+                        <span><CalendarDays aria-hidden="true" />{family.last_evaluation_date ? formatDateOnly(family.last_evaluation_date) : "Sem avaliação"}</span>
+                      </span>
+                      <span className={styles.cardAction}>Ver detalhes <ChevronRight aria-hidden="true" /></span>
+                    </Link>
+                  );
+                })}
               </div>
 
               <footer className={styles.pagination}>
@@ -421,7 +422,7 @@ export function FamiliesPage() {
               <div className={styles.summaryIdentity}>
                 <span className={styles.familyIcon}><UsersRound aria-hidden="true" /></span>
                 <div>
-                  <strong>{selectedFamily.internal_code}</strong>
+                  <strong>{getFamilyDisplayName(selectedFamily)}</strong>
                   <span className={`${styles.statusBadge} ${getStatusTone(selectedFamily.status)}`}>
                     {formatStatus(selectedFamily.status)}
                   </span>

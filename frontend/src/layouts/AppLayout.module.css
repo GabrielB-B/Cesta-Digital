@@ -1,5 +1,5 @@
 .appShell {
-  --shell-sidebar-width: 17.25rem;
+  --shell-sidebar-width: 15.5rem;
   display: grid;
   grid-template-columns: var(--shell-sidebar-width) minmax(0, 1fr);
   min-height: 100vh;
@@ -10,7 +10,7 @@
 }
 
 .appShellCollapsed {
-  --shell-sidebar-width: 5rem;
+  --shell-sidebar-width: 4.5rem;
 }
 
 .skipLink {
@@ -192,7 +192,6 @@
 }
 
 .sidebarFooter {
-  position: relative;
   display: flex;
   align-items: center;
   min-height: 5.5rem;
@@ -220,29 +219,32 @@
   max-width: 10.5rem;
 }
 
-.collapseButton {
-  position: absolute;
-  right: -2.45rem;
-  bottom: 0.35rem;
+.desktopSidebarButton {
   display: grid;
   place-items: center;
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
   color: #526176;
-  background: var(--cd-surface);
+  background: var(--cd-neutral-100);
   border: 1px solid var(--cd-border);
-  border-radius: 50%;
-  box-shadow: var(--cd-shadow-xs);
+  border-radius: var(--cd-radius-md);
   cursor: pointer;
   transition:
+    background var(--cd-motion-fast) var(--cd-ease-standard),
     color var(--cd-motion-fast) var(--cd-ease-standard),
     border-color var(--cd-motion-fast) var(--cd-ease-standard);
 }
 
-.collapseButton:hover {
+.desktopSidebarButton:hover {
   color: var(--cd-brand-action);
+  background: var(--cd-brand-soft);
   border-color: var(--cd-brand-soft-strong);
+}
+
+.desktopSidebarButton:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--cd-brand-action) 25%, transparent);
+  outline-offset: 3px;
 }
 
 .appShellCollapsed .sidebar {
@@ -281,11 +283,7 @@
 }
 
 .appShellCollapsed .sidebarFooter {
-  justify-content: center;
-}
-
-.appShellCollapsed .collapseButton {
-  right: -2.15rem;
+  display: none;
 }
 
 .content {
@@ -312,6 +310,7 @@
 .topbarIdentity {
   display: flex;
   align-items: center;
+  gap: 0.875rem;
   min-width: 0;
 }
 
@@ -478,7 +477,7 @@
   display: none;
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1099px) {
   .appShell,
   .appShellCollapsed {
     display: block;
@@ -563,7 +562,7 @@
     padding-bottom: 0.75rem;
   }
 
-  .collapseButton {
+  .desktopSidebarButton {
     display: none;
   }
 

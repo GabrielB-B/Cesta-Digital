@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 
 from fastapi import HTTPException
-from sqlalchemy import case, func, or_, select
+from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -11,7 +11,9 @@ from app.models.basket_type_item import BasketTypeItem
 from app.models.delivery import Delivery
 from app.models.delivery_schedule import DeliverySchedule
 from app.models.family import Family
+from app.models.family_contact import FamilyContact
 from app.models.item import Item
+from app.models.person import Person
 from app.models.stock_batch import StockBatch
 from app.models.stock_movement import StockMovement
 from app.models.user import User
@@ -30,6 +32,45 @@ from app.services.stock_availability_policy import (
 )
 
 ACTIVE_SCHEDULE_STATUSES = {"agendado", "reagendado"}
+NAME_PARTICLES = {"da", "das", "de", "do", "dos", "e"}
+NAME_SUFFIXES = {
+    "filho",
+    "filha",
+    "júnior",
+    "junior",
+    "neto",
+    "neta",
+    "sobrinho",
+    "sobrinha",
+}
+
+
+def _family_display_name(responsible_name: str | None, neighborhood: str) -> str:
+    name_parts = (responsible_name or "").strip().split()
+    if name_parts:
+        last_part = name_parts[-1]
+        if last_part.casefold() in NAME_SUFFIXES and len(name_parts) > 1:
+            previous_part = next(
+                (
+                    part
+                    for part in reversed(name_parts[:-1])
+                    if part.casefold() not in NAME_PARTICLES
+                ),
+                None,
+            )
+            surname = f"{previous_part} {last_part}" if previous_part else last_part
+        else:
+            surname = next(
+                (
+                    part
+                    for part in reversed(name_parts)
+                    if part.casefold() not in NAME_PARTICLES
+                ),
+                last_part,
+            )
+        return f"Família {surname}"
+
+    return f"Família em {neighborhood}"
 
 
 def _delivery_period_conditions(
@@ -108,8 +149,41 @@ def get_delivery_operations(
                 Family.street.ilike(pattern),
                 Family.neighborhood.ilike(pattern),
                 Family.city.ilike(pattern),
+                Family.contacts.any(FamilyContact.contact_name.ilike(pattern)),
+                Family.people.any(
+                    and_(
+                        Person.is_family_responsible.is_(True),
+                        Person.full_name.ilike(pattern),
+                    )
+                ),
             )
         )
+
+    responsible_name = (
+        select(Person.full_name)
+        .where(
+            Person.family_id == Family.id,
+            Person.is_family_responsible.is_(True),
+        )
+        .order_by(Person.id)
+        .limit(1)
+        .correlate(Family)
+        .scalar_subquery()
+    )
+    primary_contact_name = (
+        select(FamilyContact.contact_name)
+        .where(
+            FamilyContact.family_id == Family.id,
+            FamilyContact.contact_name.is_not(None),
+        )
+        .order_by(
+            case((FamilyContact.contact_type == "principal", 0), else_=1),
+            FamilyContact.id,
+        )
+        .limit(1)
+        .correlate(Family)
+        .scalar_subquery()
+    )
 
     total_stmt = (
         select(func.count(DeliverySchedule.id))
@@ -121,6 +195,7 @@ def get_delivery_operations(
             DeliverySchedule.id,
             DeliverySchedule.family_id,
             Family.internal_code.label("family_code"),
+            func.coalesce(responsible_name, primary_contact_name).label("_responsible_name"),
             Family.status.label("family_status"),
             DeliverySchedule.basket_type_id,
             BasketType.name.label("basket_type_name"),
@@ -151,8 +226,17 @@ def get_delivery_operations(
         list_stmt.order_by(*ordering).offset(offset).limit(limit)
     ).mappings().all()
 
+    items = []
+    for row in rows:
+        item = dict(row)
+        item["family_display_name"] = _family_display_name(
+            item.pop("_responsible_name", None),
+            item["neighborhood"],
+        )
+        items.append(item)
+
     return {
-        "items": [dict(row) for row in rows],
+        "items": items,
         "total": total,
         "limit": limit,
         "offset": offset,

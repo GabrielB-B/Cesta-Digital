@@ -88,7 +88,7 @@ test("shell mantém localização, responsividade e ausência de overflow", asyn
   );
   expect(horizontalOverflow).toBe(false);
 
-  if (viewportWidth < 900) {
+  if (viewportWidth < 1100) {
     await expect(navigation).toHaveAttribute("aria-hidden", "true");
     await expect(navigation).toHaveAttribute("inert", "");
     await expect(page.getByRole("navigation", { name: "Atalhos principais" })).toBeVisible();
@@ -108,7 +108,7 @@ test("shell mantém localização, responsividade e ausência de overflow", asyn
 test("drawer mobile preserva foco, Escape e bloqueio de rolagem", async ({
   page,
 }, testInfo) => {
-  test.skip((page.viewportSize()?.width ?? 0) >= 900, "Fluxo exclusivo do shell móvel.");
+  test.skip((page.viewportSize()?.width ?? 0) >= 1100, "Fluxo exclusivo do shell móvel.");
 
   const navigation = page.getByLabel("Navegação principal");
   const trigger = page.getByRole("button", { name: "Abrir menu" });
@@ -146,7 +146,7 @@ test("rota filha mantém a seção correta ativa", async ({ page }) => {
     navigation.getByRole("link", { name: "Início", exact: true, includeHidden: true }),
   ).not.toHaveAttribute("aria-current", "page");
 
-  if ((page.viewportSize()?.width ?? 0) < 900) {
+  if ((page.viewportSize()?.width ?? 0) < 1100) {
     await expect(
       page
         .getByRole("navigation", { name: "Atalhos principais" })

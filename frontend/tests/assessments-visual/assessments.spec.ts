@@ -342,7 +342,7 @@ test("filtros operacionais permanecem na URL", async ({ page }) => {
 test("formulário separa cálculo, decisão técnica e retorno", async ({ page }, testInfo) => {
   test.skip(!["mobile-390", "desktop-1440"].includes(testInfo.project.name), "Evidência principal em mobile e desktop.");
   await page.goto("/families/1/assessments/new");
-  await expect(page.getByRole("heading", { name: "Avaliar FAM-01248" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Avaliar Família Silva" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cálculo de elegibilidade" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Decisão técnica" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Próxima reavaliação" })).toBeVisible();

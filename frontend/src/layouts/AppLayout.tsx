@@ -47,7 +47,7 @@ type MenuItem = {
 };
 
 const SIDEBAR_STORAGE_KEY = "cestaDigital.sidebarCollapsed";
-const MOBILE_BREAKPOINT = "(max-width: 899px)";
+const MOBILE_BREAKPOINT = "(max-width: 1099px)";
 
 function getInitialSidebarState(): boolean {
   if (typeof window === "undefined") return false;
@@ -385,21 +385,6 @@ export function AppLayout() {
               <Heart size={23} aria-hidden="true" />
               <span>Transformando doações em oportunidades.</span>
             </div>
-            <button
-              className={styles.collapseButton}
-              type="button"
-              aria-label={
-                isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"
-              }
-              title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
-              onClick={toggleSidebar}
-            >
-              {isSidebarCollapsed ? (
-                <PanelLeftOpen size={18} aria-hidden="true" />
-              ) : (
-                <PanelLeftClose size={18} aria-hidden="true" />
-              )}
-            </button>
           </div>
         </aside>
 
@@ -430,6 +415,23 @@ export function AppLayout() {
               <div className={styles.mobileBrand}>
                 <ShellBrand compact />
               </div>
+              <button
+                className={styles.desktopSidebarButton}
+                type="button"
+                aria-label={
+                  isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"
+                }
+                aria-controls="main-navigation"
+                aria-expanded={!isSidebarCollapsed}
+                title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+                onClick={toggleSidebar}
+              >
+                {isSidebarCollapsed ? (
+                  <PanelLeftOpen size={19} aria-hidden="true" />
+                ) : (
+                  <PanelLeftClose size={19} aria-hidden="true" />
+                )}
+              </button>
               <span className={styles.sectionTitle}>
                 {currentSection?.label ?? routeMeta.title}
               </span>

@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 from fastapi import HTTPException
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.benefit import Benefit
@@ -326,6 +326,15 @@ def list_families(
                 func.lower(Family.city).like(normalized_term),
                 func.lower(Family.neighborhood).like(normalized_term),
                 func.lower(Family.status).like(normalized_term),
+                Family.contacts.any(
+                    func.lower(FamilyContact.contact_name).like(normalized_term)
+                ),
+                Family.people.any(
+                    and_(
+                        Person.is_family_responsible.is_(True),
+                        func.lower(Person.full_name).like(normalized_term),
+                    )
+                ),
             )
         )
 

@@ -20,6 +20,7 @@ import type {
   FamilyDetailResponse,
 } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
+import { getFamilyDisplayName } from "../utils/family-identity";
 import { formatCurrency, formatTodayForInput } from "../utils/format";
 import styles from "./FamilyAssessmentCreatePage.module.css";
 
@@ -228,7 +229,7 @@ export function FamilyAssessmentCreatePage() {
             <span className={styles.eyebrow}>
               {family.assessments.length ? "Reavaliação de aptidão" : "Primeira avaliação"}
             </span>
-            <h1>Avaliar {family.internal_code}</h1>
+            <h1>Avaliar {getFamilyDisplayName(family)}</h1>
             <p>Confirme os dados atuais, revise o cálculo e registre a decisão técnica.</p>
           </div>
           <span className={styles.draftBadge}>Decisão não registrada</span>
@@ -257,7 +258,7 @@ export function FamilyAssessmentCreatePage() {
             <div className={styles.familySummary}>
               <div className={styles.familyIdentity}>
                 <span><UsersRound aria-hidden="true" /></span>
-                <div><strong>{family.internal_code}</strong><small>{family.total_residents} moradores</small></div>
+                <div><strong>{getFamilyDisplayName(family)}</strong><small>{family.total_residents} moradores</small></div>
               </div>
               <dl>
                 <div>
@@ -441,7 +442,7 @@ export function FamilyAssessmentCreatePage() {
           <h2>Resumo da decisão</h2>
 
           <dl className={styles.reviewSummary}>
-            <div><dt>Família</dt><dd>{family.internal_code}</dd></div>
+            <div><dt>Família</dt><dd>{getFamilyDisplayName(family)}</dd></div>
             <div><dt>Sugestão calculada</dt><dd>{formatDecision(preview.system_suggestion)}</dd></div>
             <div><dt>Decisão técnica</dt><dd>{formatDecision(formData.final_decision)}</dd></div>
             <div><dt>Próxima revisão</dt><dd>{formData.next_revaluation_date ? new Intl.DateTimeFormat("pt-BR").format(new Date(`${formData.next_revaluation_date}T12:00:00`)) : "Prazo não definido"}</dd></div>

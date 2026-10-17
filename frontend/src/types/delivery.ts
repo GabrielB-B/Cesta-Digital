@@ -20,6 +20,7 @@ export interface DeliveryOperationItemResponse {
   id: number;
   family_id: number;
   family_code: string;
+  family_display_name: string;
   family_status: string;
   basket_type_id: number;
   basket_type_name: string;

@@ -9,6 +9,7 @@ import type {
 } from "../types/delivery";
 import type { FamilyListItemResponse } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
+import { getFamilyDisplayName } from "../utils/family-identity";
 import { formatTodayForInput } from "../utils/format";
 import styles from "./DeliveryScheduleCreatePage.module.css";
 
@@ -137,7 +138,7 @@ export function DeliveryScheduleCreatePage() {
               <option value="">Selecione</option>
               {eligibleFamilies.map((family) => (
                 <option key={family.id} value={family.id}>
-                  {family.internal_code} · {family.city}/{family.state} · {family.status === "apta_recorrente" ? "Apta recorrente" : "Apta emergencial"}
+                  {getFamilyDisplayName(family)} · {family.city}/{family.state} · {family.status === "apta_recorrente" ? "Apta recorrente" : "Apta emergencial"}
                 </option>
               ))}
             </select>

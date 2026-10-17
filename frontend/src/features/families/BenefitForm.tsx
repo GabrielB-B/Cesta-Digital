@@ -18,7 +18,7 @@ import styles from "./BenefitForm.module.css";
 interface BenefitFormProps {
   mode: "create" | "edit";
   familyId: string;
-  familyCode: string;
+  familyName: string;
   people: FamilyPersonResponse[];
   defaultValues: BenefitFormValues;
   onSave: (payload: FamilyBenefitCreatePayload) => Promise<void>;
@@ -28,7 +28,7 @@ interface BenefitFormProps {
 export function BenefitForm({
   mode,
   familyId,
-  familyCode,
+  familyName,
   people,
   defaultValues,
   onSave,
@@ -97,7 +97,7 @@ export function BenefitForm({
       <header className={styles.pageHeader}>
         <span>Renda e benefícios</span>
         <h1>{mode === "create" ? "Novo benefício" : "Editar benefício"}</h1>
-        <p>Família {familyCode}</p>
+        <p>{familyName}</p>
       </header>
 
       <form
@@ -200,7 +200,7 @@ export function BenefitForm({
           <aside className={styles.summary} aria-label="Resumo do benefício">
             <h2>Resumo</h2>
             <dl>
-              <div><dt>Família</dt><dd>{familyCode}</dd></div>
+              <div><dt>Família</dt><dd>{familyName}</dd></div>
               <div><dt>Benefício</dt><dd>{values.benefit_type || "Ainda não informado"}</dd></div>
               <div><dt>Vínculo</dt><dd>{selectedPerson?.full_name ?? (missingSelectedPerson ? "Pessoa anterior" : "Toda a família")}</dd></div>
               <div><dt>Valor</dt><dd>{formatCurrency(values.monthly_amount)}</dd></div>

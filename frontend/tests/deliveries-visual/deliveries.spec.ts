@@ -16,14 +16,14 @@ const currentUser = {
 
 const operations = {
   items: [
-    { id: 124, family_id: 1, family_code: "FAM-01248", family_status: "apta_recorrente", basket_type_id: 1, basket_type_name: "Cesta Básica", scheduled_date: "2026-08-21", status: "agendado", notes: "Retirada confirmada por telefone.", street: "Rua das Flores", number: "123", complement: null, neighborhood: "Jardim Primavera", city: "São Paulo", state: "SP" },
-    { id: 123, family_id: 2, family_code: "FAM-01247", family_status: "apta_emergencial", basket_type_id: 2, basket_type_name: "Cesta Proteica", scheduled_date: "2026-08-21", status: "reagendado", notes: "Nova data combinada com a família.", street: "Avenida Central", number: "456", complement: null, neighborhood: "Centro", city: "São Paulo", state: "SP" },
-    { id: 122, family_id: 3, family_code: "FAM-01246", family_status: "apta_recorrente", basket_type_id: 1, basket_type_name: "Cesta Básica", scheduled_date: "2026-08-21", status: "agendado", notes: null, street: "Rua das Acácias", number: "789", complement: null, neighborhood: "Vila Nova", city: "São Paulo", state: "SP" },
-    { id: 121, family_id: 4, family_code: "FAM-01245", family_status: "apta_recorrente", basket_type_id: 3, basket_type_name: "Cesta Vegana", scheduled_date: "2026-08-21", status: "retirado", notes: "Entrega concluída no período da manhã.", street: "Rua dos Lírios", number: "321", complement: null, neighborhood: "Jardim Europa", city: "São Paulo", state: "SP" },
-    { id: 120, family_id: 5, family_code: "FAM-01244", family_status: "apta_recorrente", basket_type_id: 1, basket_type_name: "Cesta Básica", scheduled_date: "2026-08-21", status: "agendado", notes: null, street: "Avenida das Palmeiras", number: "654", complement: null, neighborhood: "Bela Vista", city: "São Paulo", state: "SP" },
-    { id: 119, family_id: 6, family_code: "FAM-01243", family_status: "em_analise", basket_type_id: 2, basket_type_name: "Cesta Proteica", scheduled_date: "2026-08-21", status: "cancelado", notes: "Avaliação deve ser revisada.", street: "Rua do Sol", number: "987", complement: null, neighborhood: "Centro", city: "São Paulo", state: "SP" },
-    { id: 118, family_id: 7, family_code: "FAM-01242", family_status: "apta_emergencial", basket_type_id: 1, basket_type_name: "Cesta Básica", scheduled_date: "2026-08-21", status: "faltou", notes: "Família não compareceu.", street: "Rua das Orquídeas", number: "147", complement: null, neighborhood: "Vila Nova", city: "São Paulo", state: "SP" },
-    { id: 117, family_id: 8, family_code: "FAM-01241", family_status: "apta_recorrente", basket_type_id: 3, basket_type_name: "Cesta Vegana", scheduled_date: "2026-08-21", status: "agendado", notes: null, street: "Avenida Brasil", number: "159", complement: null, neighborhood: "Jardim América", city: "São Paulo", state: "SP" },
+    { id: 124, family_id: 1, family_code: "FAM-01248", family_display_name: "Família Silva", family_status: "apta_recorrente", basket_type_id: 1, basket_type_name: "Cesta Básica", scheduled_date: "2026-08-21", status: "agendado", notes: "Retirada confirmada por telefone.", street: "Rua das Flores", number: "123", complement: null, neighborhood: "Jardim Primavera", city: "São Paulo", state: "SP" },
+    { id: 123, family_id: 2, family_code: "FAM-01247", family_display_name: "Família Santos", family_status: "apta_emergencial", basket_type_id: 2, basket_type_name: "Cesta Proteica", scheduled_date: "2026-08-21", status: "reagendado", notes: "Nova data combinada com a família.", street: "Avenida Central", number: "456", complement: null, neighborhood: "Centro", city: "São Paulo", state: "SP" },
+    { id: 122, family_id: 3, family_code: "FAM-01246", family_display_name: "Família Pereira", family_status: "apta_recorrente", basket_type_id: 1, basket_type_name: "Cesta Básica", scheduled_date: "2026-08-21", status: "agendado", notes: null, street: "Rua das Acácias", number: "789", complement: null, neighborhood: "Vila Nova", city: "São Paulo", state: "SP" },
+    { id: 121, family_id: 4, family_code: "FAM-01245", family_display_name: "Família Costa", family_status: "apta_recorrente", basket_type_id: 3, basket_type_name: "Cesta Vegana", scheduled_date: "2026-08-21", status: "retirado", notes: "Entrega concluída no período da manhã.", street: "Rua dos Lírios", number: "321", complement: null, neighborhood: "Jardim Europa", city: "São Paulo", state: "SP" },
+    { id: 120, family_id: 5, family_code: "FAM-01244", family_display_name: "Família Souza", family_status: "apta_recorrente", basket_type_id: 1, basket_type_name: "Cesta Básica", scheduled_date: "2026-08-21", status: "agendado", notes: null, street: "Avenida das Palmeiras", number: "654", complement: null, neighborhood: "Bela Vista", city: "São Paulo", state: "SP" },
+    { id: 119, family_id: 6, family_code: "FAM-01243", family_display_name: "Família Lima", family_status: "em_analise", basket_type_id: 2, basket_type_name: "Cesta Proteica", scheduled_date: "2026-08-21", status: "cancelado", notes: "Avaliação deve ser revisada.", street: "Rua do Sol", number: "987", complement: null, neighborhood: "Centro", city: "São Paulo", state: "SP" },
+    { id: 118, family_id: 7, family_code: "FAM-01242", family_display_name: "Família Rocha", family_status: "apta_emergencial", basket_type_id: 1, basket_type_name: "Cesta Básica", scheduled_date: "2026-08-21", status: "faltou", notes: "Família não compareceu.", street: "Rua das Orquídeas", number: "147", complement: null, neighborhood: "Vila Nova", city: "São Paulo", state: "SP" },
+    { id: 117, family_id: 8, family_code: "FAM-01241", family_display_name: "Família Alves", family_status: "apta_recorrente", basket_type_id: 3, basket_type_name: "Cesta Vegana", scheduled_date: "2026-08-21", status: "agendado", notes: null, street: "Avenida Brasil", number: "159", complement: null, neighborhood: "Jardim América", city: "São Paulo", state: "SP" },
   ],
   total: 15,
   limit: 8,
@@ -99,7 +99,7 @@ test("entregas segue a composição aprovada com dados operacionais reais", asyn
   const table = page.getByRole("table", { name: "Agenda de entregas" });
   if (viewportWidth >= 1100) {
     await expect(table).toBeVisible();
-    await expect(table.getByText("FAM-01248")).toBeVisible();
+    await expect(table.getByText("Família Silva")).toBeVisible();
     await expect(table.getByText("Apta recorrente").first()).toBeVisible();
     await expect(page.getByLabel("Entrega selecionada")).toBeVisible();
     await expect(
@@ -109,7 +109,7 @@ test("entregas segue a composição aprovada com dados operacionais reais", asyn
     await expect(table).toBeHidden();
     const mobileAgenda = page.getByLabel("Agenda em cartões");
     await expect(mobileAgenda.getByRole("button").first()).toBeVisible();
-    await expect(mobileAgenda.getByText("FAM-01248")).toBeVisible();
+    await expect(mobileAgenda.getByText("Família Silva")).toBeVisible();
     await expect(mobileAgenda.getByText(/Apta recorrente/).first()).toBeVisible();
     await expect(
       page.getByLabel("Atalhos principais").getByRole("link", { name: "Entregas" }),

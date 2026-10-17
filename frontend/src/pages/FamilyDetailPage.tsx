@@ -22,6 +22,7 @@ import type {
   FamilyDetailResponse,
 } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
+import { getFamilyDisplayName } from "../utils/family-identity";
 import { formatCurrency, formatDateOnly } from "../utils/format";
 import styles from "./FamilyDetailPage.module.css";
 
@@ -190,6 +191,8 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
     );
   }
 
+  const familyDisplayName = getFamilyDisplayName(family);
+
   return (
     <div className={styles.page}>
       <header className={styles.detailHeader}>
@@ -204,7 +207,7 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
               <span className={`${styles.statusBadge} ${getStatusTone(family.status)}`}>
                 {formatFamilyStatus(family.status)}
               </span>
-              <h1>{family.internal_code}</h1>
+              <h1>{familyDisplayName}</h1>
               <p><MapPin aria-hidden="true" />{formattedAddress}</p>
             </div>
           </div>
@@ -260,6 +263,10 @@ function FamilyDetailContent({ familyId }: { familyId: string | undefined }) {
               <dd>{family.housing_type || "Não informada"}</dd>
             </div>
           </dl>
+          <details className={styles.technicalIdentity}>
+            <summary>Identificação técnica</summary>
+            <span translate="no">Código interno: {family.internal_code}</span>
+          </details>
         </aside>
 
         <main className={styles.content}>

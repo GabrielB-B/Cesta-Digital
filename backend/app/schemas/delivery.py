@@ -54,6 +54,7 @@ class DeliveryOperationItemResponse(BaseModel):
     id: int
     family_id: int
     family_code: str
+    family_display_name: str
     family_status: str
     basket_type_id: int
     basket_type_name: str

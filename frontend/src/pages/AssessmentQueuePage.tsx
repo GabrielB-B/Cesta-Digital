@@ -23,6 +23,7 @@ import type {
   AssessmentQueueSummaryResponse,
 } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
+import { getFamilyDisplayName } from "../utils/family-identity";
 import { formatDateOnly } from "../utils/format";
 import {
   buildListSearchParams,
@@ -296,7 +297,7 @@ export function AssessmentQueuePage() {
               type="search"
               name="assessment_search"
               defaultValue={activeSearch}
-              placeholder="Buscar por código, responsável, bairro ou cidade…"
+              placeholder="Buscar por família, responsável, bairro ou cidade…"
               autoComplete="off"
               spellCheck={false}
             />
@@ -366,6 +367,7 @@ export function AssessmentQueuePage() {
                   <tbody>
                     {items.map((item) => {
                       const isSelected = item.family_id === selectedItem?.family_id;
+                      const familyDisplayName = getFamilyDisplayName(item);
                       return (
                         <tr key={item.family_id} className={isSelected ? styles.selectedRow : undefined}>
                           <td>
@@ -375,7 +377,7 @@ export function AssessmentQueuePage() {
                               aria-pressed={isSelected}
                               onClick={() => handleSelect(item.family_id)}
                             >
-                              <strong>{item.internal_code}</strong>
+                              <strong>{familyDisplayName}</strong>
                               <span>{item.responsible_name ?? "Responsável não definido"}</span>
                             </button>
                           </td>
@@ -398,7 +400,7 @@ export function AssessmentQueuePage() {
                             <button
                               className={styles.selectButton}
                               type="button"
-                              aria-label={`Selecionar ${item.internal_code}`}
+                              aria-label={`Selecionar ${familyDisplayName}`}
                               onClick={() => handleSelect(item.family_id)}
                             >
                               <ChevronRight aria-hidden="true" />
@@ -412,11 +414,13 @@ export function AssessmentQueuePage() {
               </div>
 
               <div className={styles.mobileList}>
-                {items.map((item) => (
+                {items.map((item) => {
+                  const familyDisplayName = getFamilyDisplayName(item);
+                  return (
                   <article key={item.family_id} className={styles.queueCard}>
                     <div className={styles.cardTop}>
                       <div>
-                        <strong>{item.internal_code}</strong>
+                        <strong>{familyDisplayName}</strong>
                         <span>{item.responsible_name ?? "Responsável não definido"}</span>
                       </div>
                       <span className={`${styles.queueBadge} ${styles[`queue${item.queue_status}`]}`}>
@@ -451,7 +455,8 @@ export function AssessmentQueuePage() {
                       </Link>
                     </div>
                   </article>
-                ))}
+                  );
+                })}
               </div>
 
               <div className={styles.pagination}>
@@ -500,7 +505,7 @@ export function AssessmentQueuePage() {
               <div className={styles.detailHeading}>
                 <div>
                   <span className={styles.detailEyebrow}>Família selecionada</span>
-                  <h2>{selectedItem.internal_code}</h2>
+                  <h2>{getFamilyDisplayName(selectedItem)}</h2>
                 </div>
                 <span className={`${styles.queueBadge} ${styles[`queue${selectedItem.queue_status}`]}`}>
                   {formatQueueStatus(selectedItem.queue_status)}

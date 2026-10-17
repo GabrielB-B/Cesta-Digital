@@ -318,7 +318,7 @@ export function FamilyForm({
           <p>
             {mode === "create"
               ? "Preencha os dados essenciais para iniciar o acompanhamento."
-              : `Atualize os dados de ${defaultValues.internal_code}.`}
+              : "Revise os dados cadastrais e sociais da família."}
           </p>
         </div>
       </header>
@@ -395,13 +395,6 @@ export function FamilyForm({
 
             {activeStep === 0 ? (
               <div className={styles.fields}>
-                {mode === "edit" ? (
-                  <div className={styles.readOnlyField}>
-                    <span>Código interno</span>
-                    <strong>{defaultValues.internal_code}</strong>
-                  </div>
-                ) : null}
-
                 <label className={styles.field}>
                   <span>
                     {mode === "create" ? "Status inicial" : "Status do cadastro"}

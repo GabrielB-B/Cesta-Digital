@@ -553,7 +553,7 @@ export function DeliveriesPage() {
                                 {formatScheduleCode(item.id)}
                               </button>
                             </td>
-                            <td><span className={styles.familyCell}><strong>{item.family_code}</strong><small>{formatFamilyStatus(item.family_status)}</small></span></td>
+                            <td><span className={styles.familyCell}><strong>{item.family_display_name}</strong><small>{formatFamilyStatus(item.family_status)}</small></span></td>
                             <td>{item.basket_type_name}</td>
                             <td><span className={styles.addressCell}><MapPin aria-hidden="true" /><span>{formatAddress(item)}<small>{item.neighborhood} · {item.city}/{item.state}</small></span></span></td>
                             <td>{formatDateOnly(item.scheduled_date)}</td>
@@ -580,7 +580,7 @@ export function DeliveriesPage() {
                           <span className={`${styles.statusBadge} ${status.className}`}>{status.label}</span>
                         </span>
                         <span className={styles.cardIdentity}>
-                          <b>{item.family_code}</b>
+                          <b>{item.family_display_name}</b>
                           <small>{item.basket_type_name} · {formatFamilyStatus(item.family_status)}</small>
                         </span>
                         <span className={styles.cardMeta}><CalendarDays aria-hidden="true" /> {formatDateOnly(item.scheduled_date)}</span>
@@ -609,7 +609,7 @@ export function DeliveriesPage() {
                   <span className={styles.detailIcon}><Truck aria-hidden="true" /></span>
                   <div>
                     <span>{formatScheduleCode(selectedItem.id)}</span>
-                    <h2>{selectedItem.family_code}</h2>
+                    <h2>{selectedItem.family_display_name}</h2>
                     <p>{selectedItem.basket_type_name}</p>
                   </div>
                   <span className={`${styles.statusBadge} ${getStatus(selectedItem.status).className}`}>

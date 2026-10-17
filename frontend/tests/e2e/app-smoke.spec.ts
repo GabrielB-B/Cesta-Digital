@@ -458,6 +458,7 @@ const deliveryOperations = {
       id: 1,
       family_id: 1,
       family_code: "FAM-0001",
+      family_display_name: "Família Silva",
       family_status: "apta_recorrente",
       basket_type_id: 1,
       basket_type_name: "Cesta padrao",
@@ -1465,7 +1466,7 @@ test("login, dashboard and core operational routes render", async ({ page }) => 
 
   await mainNav.getByRole("link", { name: /Famílias/i }).click();
   await expect(page.getByRole("heading", { name: "Famílias", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "FAM-0001", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Família Silva", exact: true })).toBeVisible();
 
   await mainNav.getByRole("link", { name: /^Estoque$/i }).click();
   await expect(page.getByRole("heading", { name: "Estoque", exact: true })).toBeVisible();
