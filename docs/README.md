@@ -18,6 +18,7 @@ Em 14/07/2026, a decisão vigente é **NO-GO para ampliar uso com dados e entreg
 - [OPERACAO_STAGING_E_BACKUP.md](./OPERACAO_STAGING_E_BACKUP.md): procedimento de staging, backup, restore e checklist de release.
 - [LGPD_PRIVACIDADE.md](./LGPD_PRIVACIDADE.md): politica tecnica minima de privacidade, dados tratados, retencao e incidentes.
 - [HOMOLOGACAO_MVP.md](./HOMOLOGACAO_MVP.md): matriz vigente de homologação funcional, segurança, UX e operação.
+- [HOMOLOGACAO_LOCAL_LIMPA_2026-09-17.md](./HOMOLOGACAO_LOCAL_LIMPA_2026-09-17.md): sandbox local vazio, acesso, reset seguro e roteiro para o cadastro manual de testes.
 - [CHECKPOINT_2026-04-28.md](./CHECKPOINT_2026-04-28.md): checkpoint detalhado do que foi feito ate o momento.
 - [CHECKPOINT_2026-05-01.md](./CHECKPOINT_2026-05-01.md): checkpoint da rodada premium, design inicial e preparacao para GitHub.
 - [CHECKLIST_ENTREGA_2026-05-02.md](./CHECKLIST_ENTREGA_2026-05-02.md): checklist de QA visual/responsivo e fechamento tecnico da entrega.

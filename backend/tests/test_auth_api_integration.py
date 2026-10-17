@@ -29,17 +29,14 @@ class AuthApiIntegrationTests(ApiIntegrationTestCase):
 
         self.assertEqual(login_response.status_code, 200, login_response.text)
         body = login_response.json()
-        self.assertIn("access_token", body)
+        self.assertNotIn("access_token", body)
         self.assertEqual(body["login_name"], "admin")
         self.assertEqual(body["email"], "admin@example.com")
         self.assertEqual(body["roles"], ["admin"])
         self.assertTrue(login_response.headers.get("X-Request-ID"))
         self.assertIn("cesta_digital_session", login_response.cookies)
 
-        me_response = self.client.get(
-            "/auth/me",
-            headers={"Authorization": f"Bearer {body['access_token']}"},
-        )
+        me_response = self.client.get("/auth/me")
 
         self.assertEqual(me_response.status_code, 200, me_response.text)
         me_body = me_response.json()
@@ -54,6 +51,36 @@ class AuthApiIntegrationTests(ApiIntegrationTestCase):
 
         logout_response = self.client.post("/auth/logout")
         self.assertEqual(logout_response.status_code, 204, logout_response.text)
+
+    def test_cookie_authenticated_mutation_rejects_untrusted_origin(self):
+        self.login_and_get_headers("admin", "Admin@12345")
+
+        response = self.client.post(
+            "/auth/logout",
+            headers={"Origin": "https://site-malicioso.example"},
+        )
+
+        self.assertEqual(response.status_code, 403, response.text)
+        self.assertEqual(
+            response.json()["detail"],
+            "Origem da requisicao nao autorizada.",
+        )
+
+    def test_password_recovery_is_rate_limited_without_revealing_account(self):
+        for _ in range(5):
+            response = self.client.post(
+                "/auth/password-recovery",
+                json={"email": "desconhecido@example.com"},
+            )
+            self.assertEqual(response.status_code, 200, response.text)
+
+        blocked = self.client.post(
+            "/auth/password-recovery",
+            json={"email": "outro@example.com"},
+        )
+
+        self.assertEqual(blocked.status_code, 429, blocked.text)
+        self.assertTrue(blocked.headers.get("Retry-After"))
 
     def test_login_rejects_invalid_password_and_blocks_after_limit(self):
         for attempt in range(1, 5):

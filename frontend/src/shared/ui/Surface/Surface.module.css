@@ -1,0 +1,25 @@
+.surface {
+  min-width: 0;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius-md);
+  box-shadow: var(--cd-shadow-xs);
+}
+
+.none {
+  padding: 0;
+}
+
+.sm {
+  padding: var(--cd-space-4);
+}
+
+.md {
+  padding: var(--cd-space-6);
+}
+
+@media (max-width: 599px) {
+  .md {
+    padding: var(--cd-space-4);
+  }
+}

@@ -1,7 +1,8 @@
 from collections import defaultdict
+from datetime import date, timedelta
 
 from fastapi import HTTPException
-from sqlalchemy import func, select
+from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -10,22 +11,245 @@ from app.models.basket_type_item import BasketTypeItem
 from app.models.delivery import Delivery
 from app.models.delivery_schedule import DeliverySchedule
 from app.models.family import Family
+from app.models.family_contact import FamilyContact
 from app.models.item import Item
+from app.models.person import Person
 from app.models.stock_batch import StockBatch
 from app.models.stock_movement import StockMovement
 from app.models.user import User
 from app.schemas.delivery import (
     DeliveryFromScheduleCreate,
+    DeliveryOperationsPeriod,
+    DeliveryOperationsStatus,
     DeliveryScheduleCreate,
     DeliveryScheduleUpdate,
 )
 from app.services.audit_log_service import record_audit_log
 from app.services.stock_availability_policy import (
+    operational_today,
     stock_batch_fefo_ordering,
     usable_stock_batch_condition,
 )
 
 ACTIVE_SCHEDULE_STATUSES = {"agendado", "reagendado"}
+NAME_PARTICLES = {"da", "das", "de", "do", "dos", "e"}
+NAME_SUFFIXES = {
+    "filho",
+    "filha",
+    "júnior",
+    "junior",
+    "neto",
+    "neta",
+    "sobrinho",
+    "sobrinha",
+}
+
+
+def _family_display_name(responsible_name: str | None, neighborhood: str) -> str:
+    name_parts = (responsible_name or "").strip().split()
+    if name_parts:
+        last_part = name_parts[-1]
+        if last_part.casefold() in NAME_SUFFIXES and len(name_parts) > 1:
+            previous_part = next(
+                (
+                    part
+                    for part in reversed(name_parts[:-1])
+                    if part.casefold() not in NAME_PARTICLES
+                ),
+                None,
+            )
+            surname = f"{previous_part} {last_part}" if previous_part else last_part
+        else:
+            surname = next(
+                (
+                    part
+                    for part in reversed(name_parts)
+                    if part.casefold() not in NAME_PARTICLES
+                ),
+                last_part,
+            )
+        return f"Família {surname}"
+
+    return f"Família em {neighborhood}"
+
+
+def _delivery_period_conditions(
+    period: DeliveryOperationsPeriod,
+    reference_date: date,
+):
+    if period == "hoje":
+        return [DeliverySchedule.scheduled_date == reference_date]
+    if period == "amanha":
+        return [DeliverySchedule.scheduled_date == reference_date + timedelta(days=1)]
+    if period == "semana":
+        return [
+            DeliverySchedule.scheduled_date >= reference_date,
+            DeliverySchedule.scheduled_date <= reference_date + timedelta(days=6),
+        ]
+    return []
+
+
+def _delivery_status_condition(status: DeliveryOperationsStatus | None):
+    if status == "ocorrencia":
+        return DeliverySchedule.status.in_(("cancelado", "faltou"))
+    if status:
+        return DeliverySchedule.status == status
+    return None
+
+
+def get_delivery_operations(
+    db: Session,
+    *,
+    q: str | None = None,
+    period: DeliveryOperationsPeriod = "hoje",
+    status: DeliveryOperationsStatus | None = None,
+    limit: int = 25,
+    offset: int = 0,
+    reference_date: date | None = None,
+) -> dict:
+    """Lista a agenda enriquecida e seus contadores globais por período."""
+
+    operational_date = reference_date or operational_today()
+    period_conditions = _delivery_period_conditions(period, operational_date)
+
+    summary_stmt = select(
+        func.count(DeliverySchedule.id).label("total"),
+        func.sum(
+            case((DeliverySchedule.status == "agendado", 1), else_=0)
+        ).label("scheduled"),
+        func.sum(
+            case((DeliverySchedule.status == "reagendado", 1), else_=0)
+        ).label("rescheduled"),
+        func.sum(
+            case((DeliverySchedule.status == "retirado", 1), else_=0)
+        ).label("completed"),
+        func.sum(
+            case(
+                (DeliverySchedule.status.in_(("cancelado", "faltou")), 1),
+                else_=0,
+            )
+        ).label("exceptions"),
+    )
+    if period_conditions:
+        summary_stmt = summary_stmt.where(*period_conditions)
+    summary_row = db.execute(summary_stmt).one()
+
+    filters = list(period_conditions)
+    status_condition = _delivery_status_condition(status)
+    if status_condition is not None:
+        filters.append(status_condition)
+
+    normalized_query = (q or "").strip()
+    if normalized_query:
+        pattern = f"%{normalized_query}%"
+        filters.append(
+            or_(
+                Family.internal_code.ilike(pattern),
+                BasketType.name.ilike(pattern),
+                Family.street.ilike(pattern),
+                Family.neighborhood.ilike(pattern),
+                Family.city.ilike(pattern),
+                Family.contacts.any(FamilyContact.contact_name.ilike(pattern)),
+                Family.people.any(
+                    and_(
+                        Person.is_family_responsible.is_(True),
+                        Person.full_name.ilike(pattern),
+                    )
+                ),
+            )
+        )
+
+    responsible_name = (
+        select(Person.full_name)
+        .where(
+            Person.family_id == Family.id,
+            Person.is_family_responsible.is_(True),
+        )
+        .order_by(Person.id)
+        .limit(1)
+        .correlate(Family)
+        .scalar_subquery()
+    )
+    primary_contact_name = (
+        select(FamilyContact.contact_name)
+        .where(
+            FamilyContact.family_id == Family.id,
+            FamilyContact.contact_name.is_not(None),
+        )
+        .order_by(
+            case((FamilyContact.contact_type == "principal", 0), else_=1),
+            FamilyContact.id,
+        )
+        .limit(1)
+        .correlate(Family)
+        .scalar_subquery()
+    )
+
+    total_stmt = (
+        select(func.count(DeliverySchedule.id))
+        .join(Family, Family.id == DeliverySchedule.family_id)
+        .join(BasketType, BasketType.id == DeliverySchedule.basket_type_id)
+    )
+    list_stmt = (
+        select(
+            DeliverySchedule.id,
+            DeliverySchedule.family_id,
+            Family.internal_code.label("family_code"),
+            func.coalesce(responsible_name, primary_contact_name).label("_responsible_name"),
+            Family.status.label("family_status"),
+            DeliverySchedule.basket_type_id,
+            BasketType.name.label("basket_type_name"),
+            DeliverySchedule.scheduled_date,
+            DeliverySchedule.status,
+            DeliverySchedule.notes,
+            Family.street,
+            Family.number,
+            Family.complement,
+            Family.neighborhood,
+            Family.city,
+            Family.state,
+        )
+        .join(Family, Family.id == DeliverySchedule.family_id)
+        .join(BasketType, BasketType.id == DeliverySchedule.basket_type_id)
+    )
+    if filters:
+        total_stmt = total_stmt.where(*filters)
+        list_stmt = list_stmt.where(*filters)
+
+    total = int(db.scalar(total_stmt) or 0)
+    ordering = (
+        (DeliverySchedule.scheduled_date.desc(), DeliverySchedule.id.desc())
+        if period == "todos"
+        else (DeliverySchedule.scheduled_date.asc(), DeliverySchedule.id.asc())
+    )
+    rows = db.execute(
+        list_stmt.order_by(*ordering).offset(offset).limit(limit)
+    ).mappings().all()
+
+    items = []
+    for row in rows:
+        item = dict(row)
+        item["family_display_name"] = _family_display_name(
+            item.pop("_responsible_name", None),
+            item["neighborhood"],
+        )
+        items.append(item)
+
+    return {
+        "items": items,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "reference_date": operational_date,
+        "period": period,
+        "summary": {
+            "scheduled": int(summary_row.scheduled or 0),
+            "rescheduled": int(summary_row.rescheduled or 0),
+            "completed": int(summary_row.completed or 0),
+            "exceptions": int(summary_row.exceptions or 0),
+            "total": int(summary_row.total or 0),
+        },
+    }
 
 
 def _require_user_id(current_user: User) -> int:

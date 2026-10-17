@@ -2,12 +2,14 @@ import logging
 from time import perf_counter
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.router import api_router
 from app.core.config import settings
+from app.core.csrf import has_trusted_request_origin
 from app.core.logging import configure_logging, log_backend_event
 from app.core.request_context import RequestContext, reset_request_context, set_request_context
 from app.db.session import test_db_connection
@@ -18,6 +20,9 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
+    docs_url="/docs" if settings.api_docs_enabled else None,
+    redoc_url="/redoc" if settings.api_docs_enabled else None,
+    openapi_url="/openapi.json" if settings.api_docs_enabled else None,
 )
 
 app.add_middleware(
@@ -54,6 +59,23 @@ async def request_context_middleware(request: Request, call_next):
     )
     token = set_request_context(context)
     started_at = perf_counter()
+
+    if not has_trusted_request_origin(request):
+        response = JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"detail": "Origem da requisicao nao autorizada."},
+        )
+        response.headers["X-Request-ID"] = request_id
+        _apply_security_headers(response)
+        log_backend_event(
+            logger,
+            "csrf_request_blocked",
+            level=logging.WARNING,
+            status_code=response.status_code,
+            origin=request.headers.get("origin"),
+        )
+        reset_request_context(token)
+        return response
 
     try:
         response = await call_next(request)

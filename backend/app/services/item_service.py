@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy import func, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.item import Item
@@ -7,6 +8,24 @@ from app.models.item_category import ItemCategory
 from app.models.user import User
 from app.schemas.item import ItemCreate, ItemUpdate
 from app.services.audit_log_service import record_audit_log
+
+
+def _ensure_unique_barcode(
+    db: Session,
+    *,
+    barcode: str | None,
+    exclude_item_id: int | None = None,
+) -> None:
+    if barcode is None:
+        return
+    stmt = select(Item.id).where(Item.barcode == barcode)
+    if exclude_item_id is not None:
+        stmt = stmt.where(Item.id != exclude_item_id)
+    if db.scalar(stmt.limit(1)) is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Este codigo de barras ja pertence a outro produto.",
+        )
 
 
 def create_item(db: Session, payload: ItemCreate, current_user: User) -> Item:
@@ -30,9 +49,12 @@ def create_item(db: Session, payload: ItemCreate, current_user: User) -> Item:
             detail="Já existe um item com esse nome nesta categoria.",
         )
 
+    _ensure_unique_barcode(db, barcode=payload.barcode)
+
     item = Item(
         category_id=payload.category_id,
         name=payload.name,
+        barcode=payload.barcode,
         unit_measure=payload.unit_measure,
         tracks_expiration=payload.tracks_expiration,
         is_active=payload.is_active,
@@ -41,8 +63,15 @@ def create_item(db: Session, payload: ItemCreate, current_user: User) -> Item:
         notes=payload.notes,
     )
 
-    db.add(item)
-    db.flush()
+    try:
+        db.add(item)
+        db.flush()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Nome ou codigo de barras ja cadastrado.",
+        ) from exc
     record_audit_log(
         db,
         event_type="item.created",
@@ -52,6 +81,7 @@ def create_item(db: Session, payload: ItemCreate, current_user: User) -> Item:
         details={
             "category_id": item.category_id,
             "name": item.name,
+            "barcode": item.barcode,
             "unit_measure": item.unit_measure,
             "is_active": item.is_active,
             "tracks_expiration": item.tracks_expiration,
@@ -78,6 +108,7 @@ def list_items(
         filters.append(
             or_(
                 func.lower(Item.name).like(normalized_term),
+                Item.barcode.like(f"%{search_term}%"),
                 func.lower(Item.unit_measure).like(normalized_term),
                 func.lower(ItemCategory.name).like(normalized_term),
             )
@@ -153,9 +184,16 @@ def update_item(
             detail="Ja existe um item com esse nome nesta categoria.",
         )
 
+    _ensure_unique_barcode(
+        db,
+        barcode=payload.barcode,
+        exclude_item_id=item_id,
+    )
+
     previous_state = {
         "category_id": item.category_id,
         "name": item.name,
+        "barcode": item.barcode,
         "unit_measure": item.unit_measure,
         "tracks_expiration": item.tracks_expiration,
         "is_active": item.is_active,
@@ -165,12 +203,22 @@ def update_item(
 
     item.category_id = payload.category_id
     item.name = payload.name
+    item.barcode = payload.barcode
     item.unit_measure = payload.unit_measure
     item.tracks_expiration = payload.tracks_expiration
     item.is_active = payload.is_active
     item.reference_unit_value = payload.reference_unit_value
     item.minimum_stock_alert = payload.minimum_stock_alert
     item.notes = payload.notes
+
+    try:
+        db.flush()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Nome ou codigo de barras ja cadastrado.",
+        ) from exc
 
     record_audit_log(
         db,
@@ -183,6 +231,7 @@ def update_item(
             "current": {
                 "category_id": item.category_id,
                 "name": item.name,
+                "barcode": item.barcode,
                 "unit_measure": item.unit_measure,
                 "tracks_expiration": item.tracks_expiration,
                 "is_active": item.is_active,

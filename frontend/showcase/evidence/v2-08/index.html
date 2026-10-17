@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-08B/C · Estoque e imagens de produto</title>
+    <style>
+      :root { color: #142033; background: #f5f6f8; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+      header { display: grid; gap: 8px; margin-bottom: 28px; }
+      h1, h2, p { margin: 0; }
+      h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.04em; }
+      h2 { font-size: 18px; }
+      p { color: #667085; line-height: 1.55; }
+      .status { width: fit-content; margin-top: 8px; padding: 7px 12px; color: #a15c00; background: #fff2dc; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      section { margin-top: 32px; }
+      .section-heading { display: grid; gap: 4px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+      .responsive { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      figure { margin: 0; overflow: hidden; background: white; border: 1px solid #e2e5e9; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.07); }
+      figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; color: #263247; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8eaed; }
+      figcaption span { color: #7b8492; font-weight: 500; }
+      figure a { display: block; background: #eef0f3; }
+      img { display: block; width: 100%; height: auto; }
+      .mobile img { width: min(100%, 390px); margin: 0 auto; }
+      .notes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
+      .note strong { display: block; margin-bottom: 5px; font-size: 14px; }
+      .note p { font-size: 13px; }
+      .flow { counter-reset: step; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .flow .note strong::before { counter-increment: step; content: counter(step); display: inline-grid; place-items: center; width: 24px; height: 24px; margin-right: 8px; color: #fff; background: #ef1768; border-radius: 999px; font-size: 12px; }
+      @media (max-width: 900px) {
+        main { width: min(100% - 20px, 680px); padding-top: 24px; }
+        .grid, .responsive, .notes, .flow { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>V2-08B/C · Estoque</h1>
+        <p>Comparação da direção aprovada com a visão operacional real e a nova identificação visual dos produtos.</p>
+        <span class="status">Aprovado em 21/08/2026</span>
+      </header>
+
+      <section>
+        <div class="section-heading">
+          <h2>Referência × implementação</h2>
+          <p>Clique em qualquer imagem para abrir a captura original em uma nova aba.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Referência específica <span>direção visual</span></figcaption>
+            <a href="referencia-estoque-desktop.png" target="_blank" rel="noreferrer"><img src="referencia-estoque-desktop.png" alt="Referência visual aprovada da tela Estoque" /></a>
+          </figure>
+          <figure>
+            <figcaption>Implementação desktop <span>1440 px · captura completa</span></figcaption>
+            <a href="estoque-desktop-1440.png" target="_blank" rel="noreferrer"><img src="estoque-desktop-1440.png" alt="Estoque V2 em desktop com foto real de produto" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Imagens de produto</h2>
+          <p>Upload próprio e consulta assistida por código de barras, sem importação automática. A foto escolhida fica salva no Cesta Digital.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Cadastro no desktop <span>upload + Open Facts</span></figcaption>
+            <a href="estoque-imagens-desktop-1440.png" target="_blank" rel="noreferrer"><img src="estoque-imagens-desktop-1440.png" alt="Seletor de imagem de produto no desktop" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Cadastro no mobile <span>390 px</span></figcaption>
+            <a href="estoque-imagens-mobile-390.png" target="_blank" rel="noreferrer"><img src="estoque-imagens-mobile-390.png" alt="Seletor de imagem de produto no mobile" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Composição responsiva</h2>
+          <p>Desktop mantém sidebar, tabela e painel contextual; tablet e mobile recebem cards próprios e a aba Estoque ativa.</p>
+        </div>
+        <div class="grid responsive">
+          <figure class="mobile">
+            <figcaption>Mobile compacto <span>360 × 800</span></figcaption>
+            <a href="estoque-mobile-360.png" target="_blank" rel="noreferrer"><img src="estoque-mobile-360.png" alt="Estoque em 360 pixels" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Mobile principal <span>390 × 844</span></figcaption>
+            <a href="estoque-mobile-390.png" target="_blank" rel="noreferrer"><img src="estoque-mobile-390.png" alt="Estoque em 390 pixels" /></a>
+          </figure>
+          <figure>
+            <figcaption>Tablet <span>768 × 1024</span></figcaption>
+            <a href="estoque-tablet-768.png" target="_blank" rel="noreferrer"><img src="estoque-tablet-768.png" alt="Estoque em tablet" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Fluxo de decisão</h2></div>
+        <div class="flow">
+          <div class="note"><strong>Identificar</strong><p>O operador informa um EAN/GTIN válido ou envia uma imagem JPEG, PNG ou WebP de até 5 MB.</p></div>
+          <div class="note"><strong>Conferir</strong><p>A consulta mostra nome, marca, quantidade, foto e atribuição antes de qualquer vínculo.</p></div>
+          <div class="note"><strong>Salvar</strong><p>Somente a foto selecionada é otimizada, copiada para o sistema e auditada junto do produto.</p></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Fidelidade funcional</h2></div>
+        <div class="notes">
+          <div class="note"><strong>Imagem governada</strong><p>A lista não depende de serviço externo. Imagens importadas são armazenadas localmente, versionadas e servidas pelo backend.</p></div>
+          <div class="note"><strong>Fallback consistente</strong><p>Produto sem foto, falha de carregamento ou catálogo sem imagem mantém o ícone neutro; a operação nunca fica bloqueada.</p></div>
+          <div class="note"><strong>Segurança e desempenho</strong><p>Formato, tamanho, dimensões e origem são validados; metadados são removidos e a saída é normalizada para WebP.</p></div>
+          <div class="note"><strong>Fonte transparente</strong><p>Fotos externas mantêm origem e atribuição visíveis. O exemplo de homologação usa Open Food Facts, sob CC BY-SA 3.0.</p></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

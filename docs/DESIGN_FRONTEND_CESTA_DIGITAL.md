@@ -1,6 +1,12 @@
 # Design Frontend Cesta Digital
 
-> **Documento histórico.** A direção visual vigente, os problemas encontrados em produção e o plano de redesign estão em [`PROJETO_PROFISSIONAL_CESTA_DIGITAL.md`](./PROJETO_PROFISSIONAL_CESTA_DIGITAL.md). As declarações de QA abaixo registram rodadas passadas e não representam aprovação atual.
+> **Documento histórico e integralmente superado na identidade visual.** A
+> direção vigente é o Frontend V2 aprovado em 18/08/2026, documentado em
+> [`PROJETO_PROFISSIONAL_CESTA_DIGITAL.md`](./PROJETO_PROFISSIONAL_CESTA_DIGITAL.md)
+> e no
+> [`Plano de Engenharia Frontend V2`](./direção_visual/PLANO_ENGENHARIA_FRONTEND_V2_CESTA_DIGITAL.md).
+> As referências `dark premium`, verde escuro, dourado, gradientes, texturas e
+> cards abaixo registram rodadas passadas e não devem orientar código novo.
 
 Este documento registra a direcao visual aplicada na rodada de refinamento do frontend.
 

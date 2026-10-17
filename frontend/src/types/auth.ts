@@ -1,12 +1,4 @@
-export interface LoginResponse {
-  access_token: string;
-  token_type: string;
-  user_id: number;
-  name: string;
-  login_name: string;
-  email: string;
-  roles: string[];
-}
+export type AppRole = "admin" | "lider_social" | "operador" | "colaborador";
 
 export interface CurrentUserResponse {
   id: number;
@@ -14,12 +6,10 @@ export interface CurrentUserResponse {
   login_name: string;
   email: string;
   is_active: boolean;
-  roles: string[];
+  roles: AppRole[];
 }
 
 export interface AuthContextData {
-  /** Mantido apenas por compatibilidade; a sessão real usa cookie HttpOnly. */
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   user: CurrentUserResponse | null;

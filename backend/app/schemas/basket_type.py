@@ -1,3 +1,6 @@
+from datetime import datetime
+from decimal import Decimal
+
 from pydantic import BaseModel, ConfigDict, field_validator
 
 
@@ -30,6 +33,14 @@ class BasketTypeResponse(BaseModel):
 
 class BasketTypeUpdate(BasketTypeCreate):
     pass
+
+
+class BasketTypeOverviewItemResponse(BasketTypeResponse):
+    """Resumo real de uma composição para os cartões da operação."""
+
+    item_count: int
+    estimated_value: Decimal
+    updated_at: datetime
 
 
 class BasketTypeItemCreate(BaseModel):
@@ -69,10 +80,18 @@ class BasketTypeItemUpdate(BaseModel):
 
 
 class BasketTypeRecipeItemResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     item_id: int
     item_name: str
+    category_name: str
     unit_measure: str
+    tracks_expiration: bool
+    reference_unit_value: Decimal
+    image_path: str | None
+    image_source: str | None
+    image_attribution: str | None
     required_quantity: int
 
 

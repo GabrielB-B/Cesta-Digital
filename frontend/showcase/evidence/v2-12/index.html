@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-12 · Relatórios</title>
+    <style>
+      :root { color: #142033; background: #f5f6f8; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+      header { display: grid; gap: 8px; margin-bottom: 28px; }
+      h1, h2, p { margin: 0; }
+      h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.04em; }
+      h2 { font-size: 18px; }
+      p { color: #667085; line-height: 1.55; }
+      .status { width: fit-content; margin-top: 8px; padding: 7px 12px; color: #087443; background: #e8f7ef; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      section { margin-top: 32px; }
+      .section-heading { display: grid; gap: 4px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+      .responsive { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      figure { margin: 0; overflow: hidden; background: white; border: 1px solid #e2e5e9; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.07); }
+      figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; color: #263247; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8eaed; }
+      figcaption span { color: #7b8492; font-weight: 500; }
+      figure a { display: block; background: #eef0f3; cursor: zoom-in; }
+      img { display: block; width: 100%; height: auto; }
+      .mobile img { width: min(100%, 390px); margin: 0 auto; }
+      .notes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
+      .note strong { display: block; margin-bottom: 5px; font-size: 14px; }
+      .note p { font-size: 13px; }
+      @media (max-width: 900px) {
+        main { width: min(100% - 20px, 680px); padding-top: 24px; }
+        .grid, .responsive, .notes { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>V2-12 · Relatórios</h1>
+        <p>Comparação da direção visual com indicadores por período e arquivos realmente gerados pelo Cesta Digital.</p>
+        <span class="status">Aprovado por Gabriel · 26/08/2026</span>
+      </header>
+
+      <section>
+        <div class="section-heading">
+          <h2>Referência × implementação</h2>
+          <p>Clique em qualquer imagem para abrir a captura integral em uma nova aba.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Referência específica <span>direção visual 08</span></figcaption>
+            <a href="referencia-relatorios-desktop.png" target="_blank" rel="noreferrer"><img src="referencia-relatorios-desktop.png" alt="Referência aprovada da tela Relatórios" /></a>
+          </figure>
+          <figure>
+            <figcaption>Implementação desktop <span>1440 px · seis exports reais</span></figcaption>
+            <a href="relatorios-desktop-1440.png" target="_blank" rel="noreferrer"><img src="relatorios-desktop-1440.png" alt="Relatórios V2 em desktop" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Composição responsiva</h2>
+          <p>Filtros, indicadores e downloads são reorganizados sem reduzir legibilidade ou criar overflow horizontal.</p>
+        </div>
+        <div class="grid responsive">
+          <figure class="mobile">
+            <figcaption>Mobile compacto <span>360 × 800</span></figcaption>
+            <a href="relatorios-mobile-360.png" target="_blank" rel="noreferrer"><img src="relatorios-mobile-360.png" alt="Relatórios em 360 pixels" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Mobile principal <span>390 × 844</span></figcaption>
+            <a href="relatorios-mobile-390.png" target="_blank" rel="noreferrer"><img src="relatorios-mobile-390.png" alt="Relatórios em 390 pixels" /></a>
+          </figure>
+          <figure>
+            <figcaption>Tablet <span>768 × 1024</span></figcaption>
+            <a href="relatorios-tablet-768.png" target="_blank" rel="noreferrer"><img src="relatorios-tablet-768.png" alt="Relatórios em tablet" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Fidelidade funcional</h2></div>
+        <div class="notes">
+          <div class="note"><strong>Indicadores reais</strong><p>Famílias atendidas, cestas concluídas e unidades distribuídas são calculadas no servidor para o período informado.</p></div>
+          <div class="note"><strong>Downloads verdadeiros</strong><p>As seis opções do administrador geram CSV UTF-8 compatível com Excel; nenhum botão cenográfico foi mantido.</p></div>
+          <div class="note"><strong>Permissões preservadas</strong><p>Liderança recebe relatórios sociais, operação recebe estoque e entregas, e administrador pode gerar os seis.</p></div>
+          <div class="note"><strong>Rastro de auditoria</strong><p>Cada exportação registra ator, relatório, período, formato e quantidade de linhas, sem copiar o conteúdo exportado para o log.</p></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

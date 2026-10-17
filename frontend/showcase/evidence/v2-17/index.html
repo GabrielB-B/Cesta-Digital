@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-17 · Cadastro e edição de famílias</title>
+    <style>
+      :root { color: #142033; background: #f5f6f8; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+      header { display: grid; gap: 8px; margin-bottom: 28px; }
+      h1, h2, p { margin: 0; }
+      h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.04em; }
+      h2 { font-size: 18px; }
+      p { color: #667085; line-height: 1.55; }
+      .status { width: fit-content; margin-top: 8px; padding: 7px 12px; color: #9a5b00; background: #fff2dc; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      section { margin-top: 32px; }
+      .section-heading { display: grid; gap: 4px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+      figure { margin: 0; overflow: hidden; background: white; border: 1px solid #e2e5e9; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.07); }
+      figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; color: #263247; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8eaed; }
+      figcaption span { color: #7b8492; font-weight: 500; }
+      figure a { display: block; background: #eef0f3; }
+      img { display: block; width: 100%; height: auto; }
+      .mobile img { width: min(100%, 390px); margin: 0 auto; }
+      .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
+      .note strong { display: block; margin-bottom: 5px; font-size: 14px; }
+      .note p { font-size: 13px; }
+      @media (max-width: 900px) {
+        main { width: min(100% - 20px, 680px); padding-top: 24px; }
+        .grid, .notes { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>V2-17 · Cadastro e edição de famílias</h1>
+        <p>Formulário social em etapas, alinhado à tela de Famílias e ao fluxo real de avaliação.</p>
+        <span class="status">Aguardando aprovação visual</span>
+      </header>
+
+      <section>
+        <div class="section-heading">
+          <h2>Referência × cadastro desktop</h2>
+          <p>Clique em qualquer imagem para abrir a captura original em uma nova aba.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Referência Famílias <span>direção visual aprovada</span></figcaption>
+            <a href="../v2-06/referencia-familias-desktop.png" target="_blank" rel="noreferrer"><img src="../v2-06/referencia-familias-desktop.png" alt="Referência aprovada da tela Famílias" /></a>
+          </figure>
+          <figure>
+            <figcaption>Novo cadastro <span>1440 × 900</span></figcaption>
+            <a href="familia-cadastro-desktop-1440.png" target="_blank" rel="noreferrer"><img src="familia-cadastro-desktop-1440.png" alt="Cadastro de família V2 em desktop" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Revisão e adaptação mobile</h2>
+          <p>Desktop mantém menu lateral e resumo contextual; mobile usa progresso compacto e ações acima da navegação inferior.</p>
+        </div>
+        <div class="grid">
+          <figure>
+            <figcaption>Revisão da edição <span>1440 × 900</span></figcaption>
+            <a href="familia-edicao-revisao-desktop-1440.png" target="_blank" rel="noreferrer"><img src="familia-edicao-revisao-desktop-1440.png" alt="Revisão da edição de família V2 em desktop" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Novo cadastro <span>390 × 844</span></figcaption>
+            <a href="familia-cadastro-mobile-390.png" target="_blank" rel="noreferrer"><img src="familia-cadastro-mobile-390.png" alt="Cadastro de família V2 no mobile" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Revisão da edição <span>390 × 844</span></figcaption>
+            <a href="familia-edicao-revisao-mobile-390.png" target="_blank" rel="noreferrer"><img src="familia-edicao-revisao-mobile-390.png" alt="Revisão da edição de família V2 no mobile" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="notes">
+          <div class="note"><strong>Avaliação preservada</strong><p>A família entra em análise; aptidão e reavaliação continuam pertencendo ao fluxo de Avaliações.</p></div>
+          <div class="note"><strong>Sem dados cenográficos</strong><p>Não há placeholders de exemplo, rascunho persistente ou campos que o backend não grave.</p></div>
+          <div class="note"><strong>Contrato preservado</strong><p>Criação e edição mantêm rotas, RBAC, payload, contatos existentes e datas de avaliação.</p></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

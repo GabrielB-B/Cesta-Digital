@@ -17,7 +17,12 @@ from app.models.user import User
 from app.models.user_role import UserRole
 
 
-ROLE_NAMES = ["admin", "lider_social", "operador"]
+ROLE_DEFINITIONS = {
+    "admin": "Administração, auditoria e acesso completo.",
+    "lider_social": "Análises sociais e relatórios autorizados.",
+    "operador": "Configuração e operação de estoque, cestas e entregas.",
+    "colaborador": "Famílias, alimentos, entradas e entregas do atendimento diário.",
+}
 DEFAULT_ITEM_CATEGORIES = [
     ("alimentos", "Itens alimenticios de cesta e estoque."),
     ("higiene", "Itens de higiene pessoal."),
@@ -33,9 +38,9 @@ def seed_roles(db):
     existing_roles = db.scalars(select(Role)).all()
     existing_role_names = {role.name for role in existing_roles}
 
-    for role_name in ROLE_NAMES:
+    for role_name, description in ROLE_DEFINITIONS.items():
         if role_name not in existing_role_names:
-            db.add(Role(name=role_name, description=f"Perfil {role_name}"))
+            db.add(Role(name=role_name, description=description))
 
     db.commit()
 

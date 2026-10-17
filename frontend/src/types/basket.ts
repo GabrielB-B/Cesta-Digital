@@ -5,6 +5,12 @@ export interface BasketTypeResponse {
   notes: string | null;
 }
 
+export interface BasketTypeOverviewItemResponse extends BasketTypeResponse {
+  item_count: number;
+  estimated_value: string;
+  updated_at: string;
+}
+
 export interface BasketTypeCreatePayload {
   name: string;
   is_active: boolean;
@@ -20,7 +26,13 @@ export interface BasketTypeRecipeItemResponse {
   id: number;
   item_id: number;
   item_name: string;
+  category_name: string;
   unit_measure: string;
+  tracks_expiration: boolean;
+  reference_unit_value: string;
+  image_path: string | null;
+  image_source: string | null;
+  image_attribution: string | null;
   required_quantity: number;
 }
 

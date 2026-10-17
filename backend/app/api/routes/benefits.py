@@ -16,7 +16,7 @@ from app.services.benefit_service import (
 
 router = APIRouter(
     tags=["Beneficios"],
-    dependencies=[Depends(require_any_role("admin", "lider_social"))],
+    dependencies=[Depends(require_any_role("admin", "lider_social", "colaborador"))],
 )
 
 

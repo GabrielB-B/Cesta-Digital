@@ -12,6 +12,7 @@ from app.schemas.basket_type import (
     BasketTypeItemCreate,
     BasketTypeItemResponse,
     BasketTypeItemUpdate,
+    BasketTypeOverviewItemResponse,
     BasketTypeResponse,
     BasketTypeUpdate,
 )
@@ -20,19 +21,22 @@ from app.services.basket_type_service import (
     create_basket_type,
     delete_basket_type_item,
     get_basket_type_detail,
+    list_basket_types_overview,
     list_basket_type_items,
     list_basket_types,
     update_basket_type,
     update_basket_type_item,
 )
 
-router = APIRouter(
-    tags=["Tipos de Cesta"],
+router = APIRouter(tags=["Tipos de Cesta"])
+
+
+@router.post(
+    "/basket-types",
+    response_model=BasketTypeResponse,
+    status_code=201,
     dependencies=[Depends(require_any_role("admin", "operador"))],
 )
-
-
-@router.post("/basket-types", response_model=BasketTypeResponse, status_code=201)
 def create_basket_type_endpoint(
     payload: BasketTypeCreate,
     db: Annotated[Session, Depends(get_db)],
@@ -42,7 +46,11 @@ def create_basket_type_endpoint(
     return create_basket_type(db, payload, current_user)
 
 
-@router.get("/basket-types", response_model=list[BasketTypeResponse])
+@router.get(
+    "/basket-types",
+    response_model=list[BasketTypeResponse],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
+)
 def list_basket_types_endpoint(
     response: Response,
     db: Annotated[Session, Depends(get_db)],
@@ -64,7 +72,37 @@ def list_basket_types_endpoint(
     return basket_types
 
 
-@router.get("/basket-types/{basket_type_id}", response_model=BasketTypeDetailResponse)
+@router.get(
+    "/basket-types/overview",
+    response_model=list[BasketTypeOverviewItemResponse],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
+)
+def list_basket_types_overview_endpoint(
+    response: Response,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    q: str | None = Query(default=None),
+    is_active: bool | None = Query(default=None),
+    limit: int = Query(default=12, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
+):
+    """Lista composições com quantidade de produtos e valor de referência."""
+    basket_types, total = list_basket_types_overview(
+        db,
+        q=q,
+        is_active=is_active,
+        limit=limit,
+        offset=offset,
+    )
+    response.headers["X-Total-Count"] = str(total)
+    return basket_types
+
+
+@router.get(
+    "/basket-types/{basket_type_id}",
+    response_model=BasketTypeDetailResponse,
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
+)
 def get_basket_type_detail_endpoint(
     basket_type_id: int,
     db: Annotated[Session, Depends(get_db)],
@@ -74,7 +112,11 @@ def get_basket_type_detail_endpoint(
     return get_basket_type_detail(db, basket_type_id)
 
 
-@router.put("/basket-types/{basket_type_id}", response_model=BasketTypeDetailResponse)
+@router.put(
+    "/basket-types/{basket_type_id}",
+    response_model=BasketTypeDetailResponse,
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 def update_basket_type_endpoint(
     basket_type_id: int,
     payload: BasketTypeUpdate,
@@ -89,6 +131,7 @@ def update_basket_type_endpoint(
     "/basket-types/{basket_type_id}/items",
     response_model=BasketTypeItemResponse,
     status_code=201,
+    dependencies=[Depends(require_any_role("admin", "operador"))],
 )
 def add_item_to_basket_type_endpoint(
     basket_type_id: int,
@@ -103,6 +146,7 @@ def add_item_to_basket_type_endpoint(
 @router.put(
     "/basket-types/{basket_type_id}/items/{item_id}",
     response_model=BasketTypeItemResponse,
+    dependencies=[Depends(require_any_role("admin", "operador"))],
 )
 def update_basket_type_item_endpoint(
     basket_type_id: int,
@@ -115,7 +159,11 @@ def update_basket_type_item_endpoint(
     return update_basket_type_item(db, basket_type_id, item_id, payload, current_user)
 
 
-@router.delete("/basket-types/{basket_type_id}/items/{item_id}", status_code=204)
+@router.delete(
+    "/basket-types/{basket_type_id}/items/{item_id}",
+    status_code=204,
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 def delete_basket_type_item_endpoint(
     basket_type_id: int,
     item_id: int,
@@ -129,6 +177,7 @@ def delete_basket_type_item_endpoint(
 @router.get(
     "/basket-types/{basket_type_id}/items",
     response_model=list[BasketTypeItemResponse],
+    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
 )
 def list_basket_type_items_endpoint(
     basket_type_id: int,

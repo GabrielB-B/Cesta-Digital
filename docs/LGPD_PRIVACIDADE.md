@@ -29,6 +29,9 @@ Os dados devem ser usados somente para:
 - `admin`: administracao de usuarios, auditoria e acesso amplo aos modulos.
 - `lider_social`: familias, pessoas, beneficios, avaliacoes e resumo financeiro.
 - `operador`: estoque, tipos de cesta, agendamentos e entregas.
+- `colaborador`: cadastro de familias, pessoas e beneficios; operacao de produtos,
+  entradas, movimentacoes e entregas. Nao acessa historico/decisao de avaliacao
+  social, relatorios, configuracao de categorias/cestas, usuarios ou auditoria.
 
 Qualquer novo perfil deve ser documentado antes de entrar em uso.
 
@@ -76,6 +79,9 @@ Em caso de suspeita de vazamento, acesso indevido ou exposicao de backup:
 6. avaliar necessidade de comunicacao aos titulares e autoridades competentes.
 
 ## Pendencias Para Producao
+
+O modelo que deve ser preenchido e aprovado está em
+[`AVISO_PRIVACIDADE_MODELO.md`](./AVISO_PRIVACIDADE_MODELO.md).
 
 - Definir encarregado/responsavel formal pelo tratamento dos dados.
 - Criar aviso de privacidade em linguagem simples para a operacao social.

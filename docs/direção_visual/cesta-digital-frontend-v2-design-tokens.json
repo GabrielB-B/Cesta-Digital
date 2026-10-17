@@ -1,0 +1,314 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": {
+    "product": "Cesta Digital",
+    "designDirection": "Frontend V2 - Clean Humanitarian Operations",
+    "baselineCommit": "4e3d24e12a3ab24bba06895052a6f2768e6881c7",
+    "approvedVisualReference": "Cesta_Digital_Frontend_V2_Baseline_Desktop.png",
+    "rule": "The original gradient mark is preserved as an image asset. Gradients are not recreated as UI decoration."
+  },
+  "color": {
+    "brand": {
+      "logoPink": {
+        "$value": "#EB3385"
+      },
+      "logoPurple": {
+        "$value": "#7C55F4"
+      },
+      "action": {
+        "$value": "#D92676"
+      },
+      "actionHover": {
+        "$value": "#C2186A"
+      },
+      "actionPressed": {
+        "$value": "#B1125F"
+      },
+      "soft": {
+        "$value": "#FDECF4"
+      },
+      "softStrong": {
+        "$value": "#F9D5E6"
+      }
+    },
+    "neutral": {
+      "0": {
+        "$value": "#FFFFFF"
+      },
+      "25": {
+        "$value": "#FBFCFD"
+      },
+      "50": {
+        "$value": "#F7F8FA"
+      },
+      "100": {
+        "$value": "#F1F3F5"
+      },
+      "200": {
+        "$value": "#E5E7EB"
+      },
+      "300": {
+        "$value": "#D1D5DB"
+      },
+      "500": {
+        "$value": "#6E7583"
+      },
+      "700": {
+        "$value": "#374151"
+      },
+      "900": {
+        "$value": "#111827"
+      }
+    },
+    "semantic": {
+      "success": {
+        "$value": "#16A34A"
+      },
+      "successSoft": {
+        "$value": "#ECFDF3"
+      },
+      "warning": {
+        "$value": "#F59E0B"
+      },
+      "warningSoft": {
+        "$value": "#FFF7E6"
+      },
+      "danger": {
+        "$value": "#EF4444"
+      },
+      "dangerSoft": {
+        "$value": "#FEF2F2"
+      },
+      "info": {
+        "$value": "#2563EB"
+      },
+      "infoSoft": {
+        "$value": "#EFF6FF"
+      }
+    },
+    "surface": {
+      "page": {
+        "$value": "#F7F8FA"
+      },
+      "panel": {
+        "$value": "#FFFFFF"
+      },
+      "muted": {
+        "$value": "#FBFCFD"
+      },
+      "border": {
+        "$value": "#E5E7EB"
+      },
+      "borderStrong": {
+        "$value": "#D1D5DB"
+      }
+    },
+    "text": {
+      "primary": {
+        "$value": "#111827"
+      },
+      "secondary": {
+        "$value": "#4B5563"
+      },
+      "muted": {
+        "$value": "#6E7583"
+      },
+      "inverse": {
+        "$value": "#FFFFFF"
+      },
+      "link": {
+        "$value": "#B1125F"
+      }
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "$value": "Inter Variable, Inter, Arial, sans-serif"
+    },
+    "display": {
+      "fontSize": {
+        "$value": "28px"
+      },
+      "lineHeight": {
+        "$value": "36px"
+      },
+      "fontWeight": {
+        "$value": 700
+      }
+    },
+    "h1": {
+      "fontSize": {
+        "$value": "24px"
+      },
+      "lineHeight": {
+        "$value": "32px"
+      },
+      "fontWeight": {
+        "$value": 700
+      }
+    },
+    "h2": {
+      "fontSize": {
+        "$value": "20px"
+      },
+      "lineHeight": {
+        "$value": "28px"
+      },
+      "fontWeight": {
+        "$value": 650
+      }
+    },
+    "h3": {
+      "fontSize": {
+        "$value": "16px"
+      },
+      "lineHeight": {
+        "$value": "24px"
+      },
+      "fontWeight": {
+        "$value": 650
+      }
+    },
+    "body": {
+      "fontSize": {
+        "$value": "14px"
+      },
+      "lineHeight": {
+        "$value": "20px"
+      },
+      "fontWeight": {
+        "$value": 400
+      }
+    },
+    "bodyMobile": {
+      "fontSize": {
+        "$value": "15px"
+      },
+      "lineHeight": {
+        "$value": "22px"
+      },
+      "fontWeight": {
+        "$value": 400
+      }
+    },
+    "label": {
+      "fontSize": {
+        "$value": "13px"
+      },
+      "lineHeight": {
+        "$value": "18px"
+      },
+      "fontWeight": {
+        "$value": 600
+      }
+    },
+    "caption": {
+      "fontSize": {
+        "$value": "12px"
+      },
+      "lineHeight": {
+        "$value": "16px"
+      },
+      "fontWeight": {
+        "$value": 400
+      }
+    }
+  },
+  "space": {
+    "4": {
+      "$value": "4px"
+    },
+    "8": {
+      "$value": "8px"
+    },
+    "12": {
+      "$value": "12px"
+    },
+    "16": {
+      "$value": "16px"
+    },
+    "20": {
+      "$value": "20px"
+    },
+    "24": {
+      "$value": "24px"
+    },
+    "32": {
+      "$value": "32px"
+    },
+    "40": {
+      "$value": "40px"
+    },
+    "48": {
+      "$value": "48px"
+    },
+    "64": {
+      "$value": "64px"
+    }
+  },
+  "radius": {
+    "sm": {
+      "$value": "6px"
+    },
+    "md": {
+      "$value": "10px"
+    },
+    "lg": {
+      "$value": "14px"
+    },
+    "pill": {
+      "$value": "999px"
+    }
+  },
+  "shadow": {
+    "xs": {
+      "$value": "0 1px 2px rgba(17, 24, 39, 0.04)"
+    },
+    "sm": {
+      "$value": "0 4px 12px rgba(17, 24, 39, 0.06)"
+    },
+    "overlay": {
+      "$value": "0 16px 40px rgba(17, 24, 39, 0.14)"
+    }
+  },
+  "layout": {
+    "sidebarWidth": {
+      "$value": "232px"
+    },
+    "sidebarCollapsedWidth": {
+      "$value": "72px"
+    },
+    "topbarHeight": {
+      "$value": "64px"
+    },
+    "mobileTopbarHeight": {
+      "$value": "56px"
+    },
+    "mobileBottomNavHeight": {
+      "$value": "64px"
+    },
+    "contentMax": {
+      "$value": "1440px"
+    },
+    "formMax": {
+      "$value": "720px"
+    },
+    "breakpointShell": {
+      "$value": "900px"
+    }
+  },
+  "motion": {
+    "fast": {
+      "$value": "120ms"
+    },
+    "normal": {
+      "$value": "180ms"
+    },
+    "slow": {
+      "$value": "240ms"
+    },
+    "easing": {
+      "$value": "cubic-bezier(0.2, 0, 0, 1)"
+    }
+  }
+}

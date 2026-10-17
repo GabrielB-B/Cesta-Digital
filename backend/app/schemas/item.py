@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
+from app.core.barcode import normalize_barcode
+
 
 ALLOWED_UNIT_MEASURES = {
     "unidade",
@@ -18,6 +20,7 @@ class ItemCreate(BaseModel):
 
     category_id: int
     name: str
+    barcode: str | None = None
     unit_measure: str
     tracks_expiration: bool = True
     is_active: bool = True
@@ -40,6 +43,11 @@ class ItemCreate(BaseModel):
         if value not in ALLOWED_UNIT_MEASURES:
             raise ValueError("Unidade de medida inválida.")
         return value
+
+    @field_validator("barcode")
+    @classmethod
+    def validate_barcode(cls, value: str | None) -> str | None:
+        return normalize_barcode(value)
 
     @field_validator("reference_unit_value")
     @classmethod
@@ -64,12 +72,17 @@ class ItemResponse(BaseModel):
     id: int
     category_id: int
     name: str
+    barcode: str | None
     unit_measure: str
     tracks_expiration: bool
     is_active: bool
     reference_unit_value: Decimal
     minimum_stock_alert: int
     notes: str | None
+    has_image: bool
+    image_path: str | None
+    image_source: str | None
+    image_attribution: str | None
 
 
 class ItemDetailResponse(ItemResponse):

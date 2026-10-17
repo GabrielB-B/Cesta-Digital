@@ -48,6 +48,53 @@ class FamiliesApiIntegrationTests(ApiIntegrationTestCase):
 
         self.assertRegex(family["internal_code"], r"^FAM-\d{4,}$")
 
+    def test_list_families_searches_by_contact_and_responsible_name(self):
+        contact_family = self.create_family(
+            self.headers,
+            internal_code="FAM-BUSCA-CONTATO",
+            contacts=[
+                {
+                    "contact_name": "Ana Bomfim",
+                    "phone": "79999990001",
+                    "contact_type": "principal",
+                    "is_whatsapp": True,
+                    "notes": None,
+                }
+            ],
+        )
+        responsible_family = self.create_family(
+            self.headers,
+            internal_code="FAM-BUSCA-RESPONSAVEL",
+        )
+        person_response = self.client.post(
+            f"/families/{responsible_family['id']}/people",
+            json=self._person_payload(
+                full_name="Joana Nascimento",
+                is_family_responsible=True,
+            ),
+            headers=self.headers,
+        )
+        self.assertEqual(person_response.status_code, 201, person_response.text)
+
+        contact_search = self.client.get(
+            "/families",
+            params={"q": "bomfim"},
+            headers=self.headers,
+        )
+        responsible_search = self.client.get(
+            "/families",
+            params={"q": "nascimento"},
+            headers=self.headers,
+        )
+
+        self.assertEqual(contact_search.status_code, 200, contact_search.text)
+        self.assertEqual(responsible_search.status_code, 200, responsible_search.text)
+        self.assertEqual([item["id"] for item in contact_search.json()], [contact_family["id"]])
+        self.assertEqual(
+            [item["id"] for item in responsible_search.json()],
+            [responsible_family["id"]],
+        )
+
     def test_create_family_and_prevent_duplicate_responsible_person(self):
         family = self.create_family(self.headers)
 

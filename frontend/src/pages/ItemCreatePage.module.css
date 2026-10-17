@@ -1,0 +1,98 @@
+.page {
+  display: grid;
+  gap: 1.25rem;
+  width: min(78rem, 100%);
+  margin: 0 auto;
+  color: var(--cd-text);
+  font-family: var(--cd-font-sans);
+}
+
+.pageHeader h1 {
+  margin: 0;
+  color: #142033;
+  font-size: clamp(1.875rem, 2.4vw, 2.25rem);
+  font-weight: 730;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.pageHeader p {
+  margin: 0.4rem 0 0;
+  color: var(--cd-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5rem;
+}
+
+.form { display: grid; gap: 1rem; min-width: 0; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(21rem, 0.85fr); align-items: start; gap: 1.25rem; min-width: 0; }
+.detailsCard { overflow: hidden; min-width: 0; background: var(--cd-surface); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-lg); box-shadow: var(--cd-shadow-sm); }
+.cardHeader { display: flex; align-items: center; gap: 0.875rem; min-height: 5.25rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--cd-border); }
+.cardHeader h2 { margin: 0; color: #1c293d; font-size: 1.0625rem; font-weight: 720; }
+.cardIcon { display: grid; place-items: center; flex: 0 0 auto; width: 3rem; height: 3rem; color: var(--cd-brand-action); background: var(--cd-brand-soft); border-radius: 0.875rem; }
+.cardIcon svg { width: 1.35rem; height: 1.35rem; stroke-width: 1.9; }
+
+.fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem; padding: 1.35rem 1.25rem 1.5rem; }
+.field { display: grid; align-content: start; gap: 0.45rem; min-width: 0; color: #344054; font-size: 0.8125rem; font-weight: 650; }
+.field > span b { color: var(--cd-brand-action); }
+.field > span em { color: var(--cd-text-muted); font-size: 0.75rem; font-style: normal; font-weight: 500; }
+.field input,
+.field select,
+.field textarea { width: 100%; min-height: 3.125rem; padding: 0.75rem 0.85rem; color: #263247; font: inherit; font-weight: 520; background: #fff; border: 1px solid var(--cd-border-strong); border-radius: var(--cd-radius-md); color-scheme: light; transition: border-color 150ms ease, box-shadow 150ms ease; }
+.field textarea { min-height: 7.5rem; resize: vertical; }
+.field small { color: var(--cd-text-muted); font-size: 0.75rem; font-weight: 500; line-height: 1.1rem; }
+.field small a { color: var(--cd-brand-action); font-weight: 680; }
+.fieldName { grid-column: span 2; }
+.fieldWide { grid-column: 1 / -1; }
+
+.switches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.875rem; grid-column: 1 / -1; }
+.switchField { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4.75rem; padding: 0.9rem 1rem; background: var(--cd-surface-muted); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-md); cursor: pointer; }
+.switchField > span { display: grid; gap: 0.2rem; min-width: 0; }
+.switchField strong { color: #344054; font-size: 0.8125rem; font-weight: 680; }
+.switchField small { color: var(--cd-text-muted); font-size: 0.75rem; font-weight: 500; line-height: 1.15rem; }
+.switchField input { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.switchField i { position: relative; flex: 0 0 auto; width: 2.25rem; height: 1.25rem; background: #cdd3dc; border-radius: 999px; transition: background 160ms ease; }
+.switchField i::after { content: ""; position: absolute; top: 0.1875rem; left: 0.1875rem; width: 0.875rem; height: 0.875rem; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(31, 41, 55, 0.22); transition: transform 160ms ease; }
+.switchField input:checked ~ i { background: var(--cd-brand-action); }
+.switchField input:checked ~ i::after { transform: translateX(1rem); }
+
+.imageColumn { position: sticky; top: calc(var(--cd-header-height, 4.5rem) + 1rem); min-width: 0; }
+.error { margin: 0; padding: 0.875rem 1rem; color: #a32246; font-size: 0.8125rem; font-weight: 620; background: #fff1f4; border: 1px solid #f5c9d4; border-radius: var(--cd-radius-md); }
+.actions { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.25rem; background: var(--cd-surface); border: 1px solid var(--cd-border); border-radius: var(--cd-radius-lg); box-shadow: var(--cd-shadow-sm); }
+.secondaryAction,
+.primaryAction { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 3rem; padding: 0.7rem 1.15rem; font-size: 0.8125rem; font-weight: 690; text-decoration: none; border-radius: var(--cd-radius-md); }
+.secondaryAction { color: #4b5870; background: #fff; border: 1px solid var(--cd-border-strong); }
+.primaryAction { color: #fff; background: linear-gradient(100deg, #ed1970, #cf277e 70%, #9b48bd); border: 1px solid transparent; box-shadow: 0 5px 12px rgba(213, 38, 119, 0.16); cursor: pointer; }
+.primaryAction svg { width: 1.05rem; height: 1.05rem; }
+.primaryAction:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible,
+.switchField:has(input:focus-visible),
+.secondaryAction:focus-visible,
+.primaryAction:focus-visible { outline: 3px solid color-mix(in srgb, var(--cd-brand-action) 22%, transparent); outline-offset: 2px; }
+
+@media (max-width: 1120px) {
+  .workspace { grid-template-columns: minmax(0, 1.45fr) minmax(19rem, 0.85fr); }
+  .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fieldName { grid-column: auto; }
+}
+
+@media (max-width: 880px) {
+  .workspace { grid-template-columns: 1fr; }
+  .imageColumn { position: static; }
+}
+
+@media (max-width: 620px) {
+  .page { gap: 1rem; }
+  .pageHeader h1 { font-size: 1.75rem; }
+  .pageHeader p { font-size: 0.875rem; line-height: 1.35rem; }
+  .cardHeader { min-height: 4.75rem; padding: 0.875rem 1rem; }
+  .cardIcon { width: 2.75rem; height: 2.75rem; }
+  .fields { grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }
+  .fieldName,
+  .fieldWide { grid-column: auto; }
+  .switches { grid-template-columns: 1fr; grid-column: auto; }
+  .actions { display: grid; grid-template-columns: 1fr; padding: 1rem; }
+  .primaryAction { grid-row: 1; }
+}

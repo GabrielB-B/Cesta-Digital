@@ -1,0 +1,78 @@
+.page {
+  display: grid;
+  width: min(48rem, 100%);
+  min-height: min(30rem, calc(100dvh - 10rem));
+  margin: 0 auto;
+  place-items: center;
+  color: var(--cd-text);
+  font-family: var(--cd-font-sans);
+}
+
+.panel {
+  display: grid;
+  justify-items: start;
+  gap: 0.9rem;
+  width: 100%;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius-lg);
+  box-shadow: var(--cd-shadow-xs);
+}
+
+.icon {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  color: var(--cd-brand-action);
+  background: var(--cd-brand-soft);
+  border-radius: var(--cd-radius-lg);
+  place-items: center;
+}
+
+.icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.eyebrow {
+  color: var(--cd-brand-action);
+  font-size: 0.75rem;
+  font-weight: 720;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.panel h1 {
+  margin: 0;
+  color: #142033;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.description {
+  max-width: 38rem;
+  color: var(--cd-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.5rem;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  color: var(--cd-brand-action);
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-brand-action);
+  border-radius: var(--cd-radius-md);
+  font-size: 0.875rem;
+  font-weight: 680;
+  text-decoration: none;
+}
+
+.action:hover {
+  background: var(--cd-brand-soft);
+}

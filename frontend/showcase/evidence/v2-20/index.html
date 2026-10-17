@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-20 · Auditoria visual final</title>
+    <style>
+      :root { color: #142033; background: #f5f6f8; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1540px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0 72px; }
+      h1, h2, h3, p { margin: 0; }
+      header { display: grid; gap: 10px; max-width: 920px; }
+      h1 { font-size: clamp(30px, 4vw, 48px); line-height: 1.05; letter-spacing: -0.045em; }
+      header p, .sectionHeading p, .card p { color: #667085; line-height: 1.55; }
+      .status { width: fit-content; margin-top: 7px; padding: 8px 13px; color: #137a38; background: #eaf8ef; border: 1px solid #ccebd7; border-radius: 999px; font-size: 13px; font-weight: 750; }
+      section { margin-top: 44px; }
+      .sectionHeading { display: grid; gap: 6px; margin-bottom: 18px; }
+      h2 { font-size: clamp(22px, 2.5vw, 30px); letter-spacing: -0.025em; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+      .card { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #e1e5ea; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.06); }
+      .cardHeader { display: grid; gap: 5px; padding: 18px 18px 14px; border-bottom: 1px solid #eceef1; }
+      h3 { font-size: 17px; }
+      .card p { font-size: 13px; }
+      .previews { display: grid; grid-template-columns: minmax(0, 2fr) minmax(150px, 0.7fr); gap: 1px; background: #e6e8ec; }
+      .preview { position: relative; display: grid; align-content: start; min-width: 0; min-height: 190px; overflow: hidden; color: inherit; background: #f0f2f5; text-decoration: none; }
+      .preview img { display: block; width: 100%; height: 100%; min-height: 190px; max-height: 370px; object-fit: cover; object-position: top; transition: transform 160ms ease; }
+      .preview.mobile img { object-fit: contain; background: #eef0f3; }
+      .preview span { position: absolute; right: 10px; bottom: 10px; padding: 6px 9px; color: #fff; background: rgba(20, 32, 51, 0.86); border-radius: 8px; font-size: 12px; font-weight: 700; }
+      .preview:hover img { transform: scale(1.012); }
+      .preview:focus-visible { z-index: 1; outline: 3px solid #d92676; outline-offset: -3px; }
+      .notes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: #fff; border: 1px solid #e1e5ea; border-radius: 13px; }
+      .note strong { display: block; margin-bottom: 6px; font-size: 14px; }
+      .note p { color: #667085; font-size: 13px; line-height: 1.5; }
+      @media (max-width: 940px) {
+        main { width: min(100% - 20px, 720px); padding-top: 26px; }
+        .grid, .notes { grid-template-columns: 1fr; }
+        .previews { grid-template-columns: minmax(0, 1.65fr) minmax(120px, 0.7fr); }
+        .preview, .preview img { min-height: 150px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Auditoria visual final · Frontend V2</h1>
+        <p>Revisão consolidada das abas, jornadas secundárias e estados de sistema em desktop e mobile. Clique em qualquer captura para abrir o arquivo original em resolução completa.</p>
+        <span class="status">Vistoria automatizada aprovada · aguardando aceite visual final</span>
+      </header>
+
+      <section>
+        <div class="sectionHeading"><h2>Abas e entrada do sistema</h2><p>Localização ativa, conteúdo do domínio e adaptação responsiva revisados em cada área.</p></div>
+        <div class="grid">
+          <article class="card"><div class="cardHeader"><h3>Login</h3><p>Entrada imediata, marca legível e recuperação de acesso.</p></div><div class="previews"><a class="preview" href="../v2-04/login-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-04/login-desktop-1440.png" alt="Login no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-04/login-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-04/login-mobile-390.png" alt="Login no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Início</h3><p>Resumo operacional sem duplicações ou indicadores inventados.</p></div><div class="previews"><a class="preview" href="../v2-05/inicio-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-05/inicio-desktop-1440.png" alt="Início no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-05/inicio-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-05/inicio-mobile-390.png" alt="Início no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Famílias</h3><p>Cadastro social, situação e seleção contextual coerentes.</p></div><div class="previews"><a class="preview" href="../v2-06/familias-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-06/familias-desktop-1440.png" alt="Famílias no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-06/familias-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-06/familias-mobile-390.png" alt="Famílias no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Avaliações</h3><p>Fila de reavaliação, cálculo do sistema e parecer social separados.</p></div><div class="previews"><a class="preview" href="../v2-07/avaliacoes-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-07/avaliacoes-desktop-1440.png" alt="Avaliações no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-07/avaliacoes-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-07/avaliacoes-mobile-390.png" alt="Avaliações no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Estoque</h3><p>Produtos, categorias, quantidades, lotes e validade — sem famílias.</p></div><div class="previews"><a class="preview" href="../v2-08/estoque-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-08/estoque-desktop-1440.png" alt="Estoque no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-08/estoque-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-08/estoque-mobile-390.png" alt="Estoque no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Entradas</h3><p>Histórico de lotes e registro de recebimento no mesmo fluxo.</p></div><div class="previews"><a class="preview" href="../v2-09/entradas-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-09/entradas-desktop-1440.png" alt="Entradas no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-09/entradas-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-09/entradas-mobile-390.png" alt="Entradas no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Categorias</h3><p>Catálogo e edição totalmente incorporados à linguagem clara.</p></div><div class="previews"><a class="preview" href="../v2-14/categorias-desktop-1920.png" target="_blank"><img loading="lazy" src="../v2-14/categorias-desktop-1920.png" alt="Categorias no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-14/categorias-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-14/categorias-mobile-390.png" alt="Categorias no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Entregas</h3><p>Agenda, aptidão da família e rastreabilidade operacional.</p></div><div class="previews"><a class="preview" href="../v2-10/entregas-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-10/entregas-desktop-1440.png" alt="Entregas no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-10/entregas-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-10/entregas-mobile-390.png" alt="Entregas no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Tipos de Cesta</h3><p>Composição, capacidade real e resumo contextual.</p></div><div class="previews"><a class="preview" href="../v2-11/tipos-cesta-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-11/tipos-cesta-desktop-1440.png" alt="Tipos de cesta no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-11/tipos-cesta-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-11/tipos-cesta-mobile-390.png" alt="Tipos de cesta no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Relatórios</h3><p>Indicadores e exportações existentes, com período preservado.</p></div><div class="previews"><a class="preview" href="../v2-12/relatorios-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-12/relatorios-desktop-1440.png" alt="Relatórios no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-12/relatorios-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-12/relatorios-mobile-390.png" alt="Relatórios no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Administração</h3><p>Usuários, perfis e auditoria sem configurações cenográficas.</p></div><div class="previews"><a class="preview" href="../v2-13/administracao-usuarios-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-13/administracao-usuarios-desktop-1440.png" alt="Administração no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-13/administracao-usuarios-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-13/administracao-usuarios-mobile-390.png" alt="Administração no celular" /><span>Mobile</span></a></div></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="sectionHeading"><h2>Jornadas internas</h2><p>Detalhes, cadastros e edições que antes podiam escapar da direção visual principal.</p></div>
+        <div class="grid">
+          <article class="card"><div class="cardHeader"><h3>Detalhe do produto</h3><p>Imagem governada, saldo, lotes, validade e histórico em superfícies claras.</p></div><div class="previews"><a class="preview" href="detalhe-item-desktop-1440.png" target="_blank"><img loading="lazy" src="detalhe-item-desktop-1440.png" alt="Detalhe do produto no desktop" /><span>Desktop</span></a><a class="preview mobile" href="detalhe-item-mobile-390.png" target="_blank"><img loading="lazy" src="detalhe-item-mobile-390.png" alt="Detalhe do produto no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Novo produto</h3><p>Dados reais do catálogo, imagem opcional e nenhum exemplo pré-preenchido.</p></div><div class="previews"><a class="preview" href="../v2-15/novo-produto-desktop-1920.png" target="_blank"><img loading="lazy" src="../v2-15/novo-produto-desktop-1920.png" alt="Novo produto no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-15/novo-produto-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-15/novo-produto-mobile-390.png" alt="Novo produto no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Movimentação de estoque</h3><p>Lote, saldo atual e saldo projetado antes da confirmação.</p></div><div class="previews"><a class="preview" href="../v2-16/movimentacao-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-16/movimentacao-desktop-1440.png" alt="Movimentação no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-16/movimentacao-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-16/movimentacao-mobile-390.png" alt="Movimentação no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Nova avaliação</h3><p>Sugestão calculada e decisão técnica apresentadas sem confusão.</p></div><div class="previews"><a class="preview" href="../v2-07/avaliacao-formulario-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-07/avaliacao-formulario-desktop-1440.png" alt="Formulário de avaliação no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-07/avaliacao-formulario-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-07/avaliacao-formulario-mobile-390.png" alt="Formulário de avaliação no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Agendamento de entrega</h3><p>Cadastro oferece somente famílias aptas e preserva o fluxo real.</p></div><div class="previews"><a class="preview" href="../v2-10/entregas-formulario-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-10/entregas-formulario-desktop-1440.png" alt="Nova entrega no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-10/entregas-formulario-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-10/entregas-formulario-mobile-390.png" alt="Nova entrega no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Composição de cesta</h3><p>Edição e cadastro sem prometer operações que o backend não oferece.</p></div><div class="previews"><a class="preview" href="../v2-11/tipos-cesta-editor-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-11/tipos-cesta-editor-desktop-1440.png" alt="Editor de cesta no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-11/tipos-cesta-editor-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-11/tipos-cesta-editor-mobile-390.png" alt="Editor de cesta no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Cadastro de família</h3><p>Fluxo por etapas; a aptidão continua pertencendo à avaliação.</p></div><div class="previews"><a class="preview" href="../v2-17/familia-cadastro-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-17/familia-cadastro-desktop-1440.png" alt="Cadastro de família no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-17/familia-cadastro-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-17/familia-cadastro-mobile-390.png" alt="Cadastro de família no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Membros da família</h3><p>Dados pessoais, renda e condições individuais com hierarquia comum.</p></div><div class="previews"><a class="preview" href="../v2-18/membro-cadastro-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-18/membro-cadastro-desktop-1440.png" alt="Cadastro de membro no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-18/membro-cadastro-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-18/membro-cadastro-mobile-390.png" alt="Cadastro de membro no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Benefícios</h3><p>Vigência, valor e impacto na renda sem conteúdo cenográfico.</p></div><div class="previews"><a class="preview" href="../v2-19/beneficio-cadastro-desktop-1440.png" target="_blank"><img loading="lazy" src="../v2-19/beneficio-cadastro-desktop-1440.png" alt="Cadastro de benefício no desktop" /><span>Desktop</span></a><a class="preview mobile" href="../v2-19/beneficio-cadastro-mobile-390.png" target="_blank"><img loading="lazy" src="../v2-19/beneficio-cadastro-mobile-390.png" alt="Cadastro de benefício no celular" /><span>Mobile</span></a></div></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="sectionHeading"><h2>Estados de sistema</h2><p>Permissão insuficiente e rota inexistente também seguem a identidade final.</p></div>
+        <div class="grid">
+          <article class="card"><div class="cardHeader"><h3>Acesso restrito</h3><p>Explica o perfil permitido sem expor detalhes técnicos.</p></div><div class="previews"><a class="preview" href="acesso-restrito-desktop-1440.png" target="_blank"><img loading="lazy" src="acesso-restrito-desktop-1440.png" alt="Acesso restrito no desktop" /><span>Desktop</span></a><a class="preview mobile" href="acesso-restrito-mobile-390.png" target="_blank"><img loading="lazy" src="acesso-restrito-mobile-390.png" alt="Acesso restrito no celular" /><span>Mobile</span></a></div></article>
+          <article class="card"><div class="cardHeader"><h3>Página não encontrada</h3><p>Recuperação simples, clara e integrada ao shell responsivo.</p></div><div class="previews"><a class="preview" href="pagina-nao-encontrada-desktop-1440.png" target="_blank"><img loading="lazy" src="pagina-nao-encontrada-desktop-1440.png" alt="Página não encontrada no desktop" /><span>Desktop</span></a><a class="preview mobile" href="pagina-nao-encontrada-mobile-390.png" target="_blank"><img loading="lazy" src="pagina-nao-encontrada-mobile-390.png" alt="Página não encontrada no celular" /><span>Mobile</span></a></div></article>
+        </div>
+      </section>
+
+      <section class="notes">
+        <div class="note"><strong>Legado removido</strong><p>O tema global escuro, componentes mortos e fontes antigas não são mais carregados.</p></div>
+        <div class="note"><strong>Conteúdo coerente</strong><p>Estoque mostra produtos; avaliação decide aptidão; entrega consome apenas contratos reais.</p></div>
+        <div class="note"><strong>Responsivo validado</strong><p>Sidebar no desktop e navegação compacta no mobile, sem overflow documental.</p></div>
+        <div class="note"><strong>Contratos preservados</strong><p>As 28 rotas, RBAC, APIs e regras de domínio continuam cobertos por regressão.</p></div>
+      </section>
+    </main>
+  </body>
+</html>

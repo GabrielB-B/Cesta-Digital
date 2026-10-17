@@ -35,6 +35,7 @@ Assert-HttpOk -Name "Health DB" -Url "$normalizedApiUrl/health/db"
 $loginResponse = Invoke-RestMethod `
     -Method Post `
     -Uri "$normalizedApiUrl/auth/login" `
+    -SessionVariable cestaSession `
     -ContentType "application/x-www-form-urlencoded" `
     -Body @{
         username = $LoginName
@@ -42,15 +43,14 @@ $loginResponse = Invoke-RestMethod `
         grant_type = "password"
     }
 
-if (-not $loginResponse.access_token) {
-    throw "Login nao retornou access_token."
+if (-not $loginResponse.user_id) {
+    throw "Login nao retornou a identificacao do usuario."
 }
 
-$headers = @{
-    Authorization = "Bearer $($loginResponse.access_token)"
-}
-
-$me = Invoke-RestMethod -Method Get -Uri "$normalizedApiUrl/auth/me" -Headers $headers
+$me = Invoke-RestMethod `
+    -Method Get `
+    -Uri "$normalizedApiUrl/auth/me" `
+    -WebSession $cestaSession
 if (-not $me.email) {
     throw "Consulta /auth/me nao retornou usuario."
 }
@@ -58,7 +58,7 @@ if (-not $me.email) {
 $dashboard = Invoke-RestMethod `
     -Method Get `
     -Uri "$normalizedApiUrl/dashboard/overview" `
-    -Headers $headers
+    -WebSession $cestaSession
 
 if ($null -eq $dashboard.total_families) {
     throw "Dashboard nao retornou total_families."

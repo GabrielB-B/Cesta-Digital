@@ -1,6 +1,7 @@
 import os
 import unittest
 from collections.abc import Generator
+from datetime import timedelta
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
@@ -18,11 +19,12 @@ os.environ.setdefault("FIRST_ADMIN_LOGIN_NAME", "admin")
 os.environ.setdefault("FIRST_ADMIN_EMAIL", "admin@example.com")
 os.environ.setdefault("FIRST_ADMIN_PASSWORD", "Admin@12345")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-with-32-plus-chars")
+os.environ.setdefault("FRONTEND_CORS_ORIGINS", "http://testserver")
 os.environ.setdefault("EXTREME_POVERTY_MAX_INCOME_PER_CAPITA", "109")
 os.environ.setdefault("POVERTY_MAX_INCOME_PER_CAPITA", "218")
 
 from app.api.deps import get_db
-from app.core.security import get_password_hash
+from app.core.security import create_access_token, get_password_hash
 from app.db.base import Base
 from app.main import app
 from app.models.role import Role
@@ -31,7 +33,7 @@ from app.models.user_role import UserRole
 from app.services.auth_rate_limit_service import clear_login_rate_limits
 
 
-ROLE_NAMES = ("admin", "lider_social", "operador")
+ROLE_NAMES = ("admin", "lider_social", "operador", "colaborador")
 
 
 class ApiIntegrationTestCase(unittest.TestCase):
@@ -59,7 +61,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
                 db.close()
 
         app.dependency_overrides[get_db] = override_get_db
-        self.client = TestClient(app)
+        self.client = TestClient(app, headers={"Origin": "http://testserver"})
         self._seed_roles()
 
     def tearDown(self):
@@ -121,7 +123,10 @@ class ApiIntegrationTestCase(unittest.TestCase):
             },
         )
         self.assertEqual(response.status_code, 200, response.text)
-        token = response.json()["access_token"]
+        token = create_access_token(
+            subject=str(response.json()["user_id"]),
+            expires_delta=timedelta(minutes=5),
+        )
         return {"Authorization": f"Bearer {token}"}
 
     def family_payload(self, **overrides) -> dict:
@@ -187,7 +192,7 @@ class ApiIntegrationTestCase(unittest.TestCase):
     ) -> dict:
         payload = {
             "assessment_date": "2026-04-15",
-            "vulnerability_score": 40,
+            "vulnerability_score": 0,
             "final_decision": "apta_recorrente",
             "decision_reason": "Avaliacao social registrada no teste.",
             "exception_reason": None,

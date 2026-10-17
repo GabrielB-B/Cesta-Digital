@@ -1,30 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, PackagePlus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
-import { FormActions } from "../components/FormActions";
-import { FormSection } from "../components/FormSection";
-import { PageHeader } from "../components/PageHeader";
-import { StateMessage } from "../components/StateMessage";
-import { getApiErrorMessage } from "../utils/api-error";
+import {
+  ProductImagePicker,
+  type ProductImageSelection,
+} from "../components/ProductImagePicker";
 import type {
   ItemCategoryResponse,
   ItemCreatePayload,
 } from "../types/item";
+import { getApiErrorMessage } from "../utils/api-error";
+import { persistProductImageSelection } from "../utils/product-image";
+import styles from "./ItemCreatePage.module.css";
 
-/**
- * Cadastro operacional de item no catálogo.
- */
+/** Cadastro operacional de produto no catálogo. */
 export function ItemCreatePage() {
   const navigate = useNavigate();
-
   const [categories, setCategories] = useState<ItemCategoryResponse[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState("");
-
+  const [imageSelection, setImageSelection] = useState<ProductImageSelection>({
+    kind: "unchanged",
+  });
   const [formData, setFormData] = useState({
     category_id: "",
     name: "",
+    barcode: "",
     unit_measure: "unidade",
     tracks_expiration: true,
     is_active: true,
@@ -33,6 +37,11 @@ export function ItemCreatePage() {
     notes: "",
   });
 
+  const activeCategories = useMemo(
+    () => categories.filter((category) => category.is_active),
+    [categories],
+  );
+
   useEffect(() => {
     let isMounted = true;
 
@@ -40,37 +49,42 @@ export function ItemCreatePage() {
       try {
         setIsLoadingCategories(true);
         const response = await api.get<ItemCategoryResponse[]>("/item-categories");
-
-        if (isMounted) {
-          setCategories(response.data);
-        }
-      } catch (err) {
+        if (isMounted) setCategories(response.data);
+      } catch (requestError) {
         if (isMounted) {
           setError(
             getApiErrorMessage(
-              err,
-              "Não foi possível carregar as categorias de item."
-            )
+              requestError,
+              "Não foi possível carregar as categorias.",
+            ),
           );
         }
       } finally {
-        if (isMounted) {
-          setIsLoadingCategories(false);
-        }
+        if (isMounted) setIsLoadingCategories(false);
       }
     }
 
     void loadCategories();
-
     return () => {
       isMounted = false;
     };
   }, []);
 
+  useEffect(() => {
+    function protectUnsavedChanges(event: BeforeUnloadEvent) {
+      if (!isDirty || isSubmitting) return;
+      event.preventDefault();
+    }
+
+    window.addEventListener("beforeunload", protectUnsavedChanges);
+    return () => window.removeEventListener("beforeunload", protectUnsavedChanges);
+  }, [isDirty, isSubmitting]);
+
   function handleInputChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) {
     const { name, value, type } = event.target as HTMLInputElement;
+    setIsDirty(true);
 
     if (type === "checkbox") {
       setFormData((previous) => ({
@@ -80,10 +94,12 @@ export function ItemCreatePage() {
       return;
     }
 
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+    setFormData((previous) => ({ ...previous, [name]: value }));
+  }
+
+  function handleCancel(event: React.MouseEvent<HTMLAnchorElement>) {
+    if (!isDirty || window.confirm("Descartar as alterações deste produto?")) return;
+    event.preventDefault();
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -101,6 +117,7 @@ export function ItemCreatePage() {
       const payload: ItemCreatePayload = {
         category_id: Number(formData.category_id),
         name: formData.name.trim(),
+        barcode: formData.barcode.trim() || null,
         unit_measure: formData.unit_measure,
         tracks_expiration: formData.tracks_expiration,
         is_active: formData.is_active,
@@ -111,17 +128,32 @@ export function ItemCreatePage() {
 
       const response = await api.post<{ id: number; is_active: boolean }>(
         "/items",
-        payload
+        payload,
       );
 
-      if (!response.data.is_active) {
+      try {
+        await persistProductImageSelection(response.data.id, imageSelection);
+      } catch (imageError) {
+        setIsDirty(false);
         navigate(`/items/${response.data.id}`, {
           state: {
             flash: {
-              type: "success",
-              message:
-                "Item inativo cadastrado. Ative-o antes de registrar uma entrada de estoque.",
+              type: "error",
+              message: `Produto cadastrado, mas a imagem não foi salva. ${getApiErrorMessage(
+                imageError,
+                "Revise a imagem no cadastro do produto.",
+              )}`,
             },
+          },
+        });
+        return;
+      }
+
+      setIsDirty(false);
+      if (!response.data.is_active) {
+        navigate(`/items/${response.data.id}`, {
+          state: {
+            flash: { type: "success", message: "Produto inativo cadastrado." },
           },
         });
         return;
@@ -131,146 +163,205 @@ export function ItemCreatePage() {
         state: {
           flash: {
             type: "success",
-            message:
-              "Item cadastrado. Agora registre a primeira entrada para adicionar saldo ao estoque.",
+            message: "Produto cadastrado. Registre a primeira entrada.",
           },
         },
       });
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Não foi possível cadastrar o item."));
+    } catch (requestError) {
+      setError(
+        getApiErrorMessage(requestError, "Não foi possível cadastrar o produto."),
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  function updateBarcode(barcode: string) {
+    setIsDirty(true);
+    setFormData((previous) => ({ ...previous, barcode }));
+  }
+
+  function updateImageSelection(selection: ProductImageSelection) {
+    setIsDirty(true);
+    setImageSelection(selection);
+  }
+
   return (
-    <div className="page-stack">
-      <PageHeader
-        eyebrow="Novo item"
-        title="Cadastrar item"
-        description="Crie um novo item no catálogo do estoque para uso em lotes, movimentações e montagem de cestas."
-      />
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
+        <h1>Novo produto</h1>
+        <p>Dados do catálogo e controle de estoque.</p>
+      </header>
 
-      <form onSubmit={handleSubmit} className="panel-card form-panel">
-        <FormSection eyebrow="Catálogo" title="Dados principais do item">
-          <label className="form__group">
-            <span>Categoria</span>
-            <select
-              name="category_id"
-              value={formData.category_id}
-              onChange={handleInputChange}
-              disabled={isLoadingCategories}
-              required
-            >
-              <option value="">Selecione</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </label>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.workspace}>
+          <section className={styles.detailsCard} aria-labelledby="product-data-title">
+            <header className={styles.cardHeader}>
+              <span className={styles.cardIcon}>
+                <PackagePlus aria-hidden="true" />
+              </span>
+              <h2 id="product-data-title">Dados do produto</h2>
+            </header>
 
-          <label className="form__group">
-            <span>Nome do item</span>
-            <input
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Ex.: Óleo 900ml"
-              required
+            <div className={styles.fields}>
+              <label className={styles.field}>
+                <span>Categoria <b>*</b></span>
+                <select
+                  name="category_id"
+                  value={formData.category_id}
+                  onChange={handleInputChange}
+                  disabled={isLoadingCategories || activeCategories.length === 0}
+                  required
+                >
+                  <option value="">
+                    {isLoadingCategories
+                      ? "Carregando…"
+                      : activeCategories.length
+                        ? "Selecione"
+                        : "Nenhuma categoria ativa"}
+                  </option>
+                  {activeCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                {!isLoadingCategories && activeCategories.length === 0 ? (
+                  <small>
+                    <Link to="/item-categories">Cadastre uma categoria</Link> para continuar.
+                  </small>
+                ) : null}
+              </label>
+
+              <label className={`${styles.field} ${styles.fieldName}`}>
+                <span>Nome do produto <b>*</b></span>
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  autoComplete="off"
+                  required
+                />
+              </label>
+
+              <label className={styles.field}>
+                <span>Unidade de medida <b>*</b></span>
+                <select
+                  name="unit_measure"
+                  value={formData.unit_measure}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="unidade">Unidade</option>
+                  <option value="pacote">Pacote</option>
+                  <option value="kg">Quilograma</option>
+                  <option value="litro">Litro</option>
+                  <option value="caixa">Caixa</option>
+                  <option value="frasco">Frasco</option>
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span>Valor estimado (R$)</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  name="reference_unit_value"
+                  value={formData.reference_unit_value}
+                  onChange={handleInputChange}
+                />
+              </label>
+
+              <label className={styles.field}>
+                <span>Estoque mínimo</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputMode="numeric"
+                  name="minimum_stock_alert"
+                  value={formData.minimum_stock_alert}
+                  onChange={handleInputChange}
+                />
+              </label>
+
+              <div className={styles.switches}>
+                <label className={styles.switchField}>
+                  <span>
+                    <strong>Controlar validade por lote</strong>
+                    <small>Exige validade em cada recebimento.</small>
+                  </span>
+                  <input
+                    type="checkbox"
+                    name="tracks_expiration"
+                    checked={formData.tracks_expiration}
+                    onChange={handleInputChange}
+                  />
+                  <i aria-hidden="true" />
+                </label>
+
+                <label className={styles.switchField}>
+                  <span>
+                    <strong>Produto ativo</strong>
+                    <small>Disponível para entradas e cestas.</small>
+                  </span>
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={handleInputChange}
+                  />
+                  <i aria-hidden="true" />
+                </label>
+              </div>
+
+              <label className={`${styles.field} ${styles.fieldWide}`}>
+                <span>Observações <em>(opcional)</em></span>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  rows={4}
+                />
+              </label>
+            </div>
+          </section>
+
+          <aside className={styles.imageColumn} aria-label="Imagem do produto">
+            <ProductImagePicker
+              productName={formData.name}
+              barcode={formData.barcode}
+              onBarcodeChange={updateBarcode}
+              selection={imageSelection}
+              onSelectionChange={updateImageSelection}
+              disabled={isSubmitting}
             />
-          </label>
+          </aside>
+        </div>
 
-          <label className="form__group">
-            <span>Unidade de medida</span>
-            <select
-              name="unit_measure"
-              value={formData.unit_measure}
-              onChange={handleInputChange}
-            >
-              <option value="unidade">unidade</option>
-              <option value="pacote">pacote</option>
-              <option value="kg">kg</option>
-              <option value="litro">litro</option>
-              <option value="caixa">caixa</option>
-              <option value="frasco">frasco</option>
-            </select>
-          </label>
+        {error ? <p className={styles.error} role="alert">{error}</p> : null}
 
-          <label className="form__group">
-            <span>Valor de referência</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              name="reference_unit_value"
-              value={formData.reference_unit_value}
-              onChange={handleInputChange}
-            />
-          </label>
-
-          <label className="form__group">
-            <span>Alerta mínimo</span>
-            <input
-              type="number"
-              min="0"
-              name="minimum_stock_alert"
-              value={formData.minimum_stock_alert}
-              onChange={handleInputChange}
-            />
-          </label>
-
-          <label className="checkbox-card">
-            <input
-              type="checkbox"
-              name="tracks_expiration"
-              checked={formData.tracks_expiration}
-              onChange={handleInputChange}
-            />
-            <span className="checkbox-card__content">
-              <strong>Controla validade por lote</strong>
-              <small>
-                A data não pertence ao item. Ela será informada em cada entrada,
-                conforme a embalagem recebida.
-              </small>
-            </span>
-          </label>
-
-          <label className="checkbox-card">
-            <input
-              type="checkbox"
-              name="is_active"
-              checked={formData.is_active}
-              onChange={handleInputChange}
-            />
-            <span>Item ativo</span>
-          </label>
-
-          <label className="form__group form__group--wide">
-            <span>Observações</span>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleInputChange}
-              rows={4}
-            />
-          </label>
-        </FormSection>
-
-        {error ? (
-          <StateMessage variant="error">{error}</StateMessage>
-        ) : null}
-
-        <FormActions>
-          <Link to="/items" className="button button--secondary button--link">
+        <footer className={styles.actions}>
+          <Link to="/items" className={styles.secondaryAction} onClick={handleCancel}>
             Cancelar
           </Link>
-
-          <button type="submit" className="button" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando…" : "Cadastrar item"}
+          <button
+            type="submit"
+            className={styles.primaryAction}
+            disabled={
+              isSubmitting || isLoadingCategories || activeCategories.length === 0
+            }
+          >
+            <CheckCircle2 aria-hidden="true" />
+            {isSubmitting
+              ? "Salvando…"
+              : formData.is_active
+                ? "Salvar e registrar entrada"
+                : "Cadastrar produto"}
           </button>
-        </FormActions>
+        </footer>
       </form>
     </div>
   );

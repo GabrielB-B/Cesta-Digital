@@ -30,7 +30,12 @@ def _calculate_age(birth_date: date) -> int:
     return age
 
 
-def _calculate_social_weight(db: Session, family: Family) -> dict:
+def _calculate_social_weight(
+    db: Session,
+    family: Family,
+    *,
+    people: list[Person] | None = None,
+) -> dict:
     """
     Calcula o score social complementar da família.
 
@@ -38,11 +43,12 @@ def _calculate_social_weight(db: Session, family: Family) -> dict:
     - este score NÃO altera a fórmula da renda per capita
     - ele serve como agravante social para a liderança
     """
-    people = list(
-        db.scalars(
-            select(Person).where(Person.family_id == family.id)
-        ).all()
-    )
+    if people is None:
+        people = list(
+            db.scalars(
+                select(Person).where(Person.family_id == family.id)
+            ).all()
+        )
 
     score = 0
     factors: list[str] = []
@@ -123,7 +129,12 @@ def _calculate_social_weight(db: Session, family: Family) -> dict:
     }
 
 
-def calculate_system_suggestion(db: Session, family: Family) -> dict:
+def calculate_system_suggestion(
+    db: Session,
+    family: Family,
+    *,
+    people: list[Person] | None = None,
+) -> dict:
     """
     Calcula a sugestão automática principal do sistema com base
     na renda per capita, e agrega o score social como camada complementar.
@@ -157,7 +168,7 @@ def calculate_system_suggestion(db: Session, family: Family) -> dict:
             ),
         }
 
-    social = _calculate_social_weight(db, family)
+    social = _calculate_social_weight(db, family, people=people)
 
     return {
         "income_per_capita": income_per_capita,

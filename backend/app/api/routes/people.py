@@ -16,7 +16,7 @@ from app.services.person_service import (
 
 router = APIRouter(
     tags=["Pessoas da Família"],
-    dependencies=[Depends(require_any_role("admin", "lider_social"))],
+    dependencies=[Depends(require_any_role("admin", "lider_social", "colaborador"))],
 )
 
 

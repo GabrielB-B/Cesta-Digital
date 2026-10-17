@@ -33,6 +33,7 @@ from app.services.auth_service import (
 
 router = APIRouter(prefix="/auth", tags=["Autenticacao"])
 logger = logging.getLogger(__name__)
+PASSWORD_RECOVERY_RATE_LIMIT_KEY = "__password_recovery__"
 
 
 def _normalize_login_name(login_name: str) -> str:
@@ -43,6 +44,14 @@ def _build_retry_message(retry_after_seconds: int) -> str:
     retry_after_minutes = max(1, (retry_after_seconds + 59) // 60)
     return (
         "Muitas tentativas de login. "
+        f"Tente novamente em aproximadamente {retry_after_minutes} minuto(s)."
+    )
+
+
+def _build_recovery_retry_message(retry_after_seconds: int) -> str:
+    retry_after_minutes = max(1, (retry_after_seconds + 59) // 60)
+    return (
+        "Muitas solicitacoes de recuperacao. "
         f"Tente novamente em aproximadamente {retry_after_minutes} minuto(s)."
     )
 
@@ -205,8 +214,6 @@ def login(
     _set_auth_cookie(response, access_token)
 
     return LoginResponse(
-        access_token=access_token,
-        token_type="bearer",
         user_id=user.id,
         name=user.name,
         login_name=user.login_name,
@@ -229,6 +236,24 @@ def request_password_recovery(
     db: Annotated[Session, Depends(get_db)],
 ):
     normalized_email = payload.email.strip().lower()
+    client_ip = request.client.host if request.client is not None else None
+    is_allowed, retry_after_seconds = is_login_allowed(
+        db,
+        PASSWORD_RECOVERY_RATE_LIMIT_KEY,
+        client_ip,
+    )
+    if not is_allowed and retry_after_seconds is not None:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=_build_recovery_retry_message(retry_after_seconds),
+            headers={"Retry-After": str(retry_after_seconds)},
+        )
+
+    retry_after_seconds = record_failed_login(
+        db,
+        PASSWORD_RECOVERY_RATE_LIMIT_KEY,
+        client_ip,
+    )
     user = db.scalar(select(User).where(User.email == normalized_email))
 
     if user is not None:
@@ -254,7 +279,8 @@ def request_password_recovery(
     log_backend_event(
         logger,
         "auth_password_recovery_requested",
-        client_ip=request.client.host if request.client is not None else None,
+        client_ip=client_ip,
+        rate_limited=retry_after_seconds is not None,
     )
 
     return PasswordRecoveryResponse(

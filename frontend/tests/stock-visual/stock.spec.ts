@@ -1,0 +1,729 @@
+import path from "node:path";
+import { mkdir } from "node:fs/promises";
+import { expect, test, type Route } from "@playwright/test";
+import { openFactsProductImageBase64 } from "./fixtures";
+
+const evidenceDirectory = path.resolve("showcase/evidence/v2-08");
+const polishEvidenceDirectory = path.resolve("showcase/evidence/v2-14");
+const itemCreateEvidenceDirectory = path.resolve("showcase/evidence/v2-15");
+const movementEvidenceDirectory = path.resolve("showcase/evidence/v2-16");
+const finalAuditEvidenceDirectory = path.resolve("showcase/evidence/v2-20");
+const openFactsImageUrl =
+  "https://images.openfoodfacts.org/images/products/789/100/010/0103/front_pt.34.400.jpg";
+const persistedProductImagePath = "/public/items/1/image?v=visual-fixture";
+
+const currentUser = {
+  id: 1,
+  name: "Ana Silva",
+  login_name: "ana.silva",
+  email: "ana.silva@cestadigital.org",
+  is_active: true,
+  roles: ["admin", "lider_social", "operador"],
+};
+
+const stockItems = [
+  {
+    item_id: 1,
+    item_name: "Leite Condensado Moça 395g",
+    category_id: 1,
+    category_name: "Laticínios",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    minimum_stock_alert: 30,
+    total_quantity: 24,
+    total_batches: 2,
+    is_below_minimum: true,
+    next_expiration_date: "2026-08-28",
+    expiring_soon_batches: 1,
+    expired_batches: 0,
+    missing_expiration_batches: 0,
+    restricted_batches: 0,
+  },
+  {
+    item_id: 2,
+    item_name: "Óleo de Soja 900ml",
+    category_id: 2,
+    category_name: "Óleos",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    minimum_stock_alert: 10,
+    total_quantity: 15,
+    total_batches: 1,
+    is_below_minimum: false,
+    next_expiration_date: "2026-08-26",
+    expiring_soon_batches: 1,
+    expired_batches: 0,
+    missing_expiration_batches: 0,
+    restricted_batches: 0,
+  },
+  {
+    item_id: 3,
+    item_name: "Feijão Carioca 1kg",
+    category_id: 3,
+    category_name: "Grãos",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    minimum_stock_alert: 5,
+    total_quantity: 0,
+    total_batches: 1,
+    is_below_minimum: true,
+    next_expiration_date: null,
+    expiring_soon_batches: 0,
+    expired_batches: 1,
+    missing_expiration_batches: 0,
+    restricted_batches: 0,
+  },
+  {
+    item_id: 4,
+    item_name: "Arroz Branco 5kg",
+    category_id: 3,
+    category_name: "Grãos",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    minimum_stock_alert: 20,
+    total_quantity: 42,
+    total_batches: 2,
+    is_below_minimum: false,
+    next_expiration_date: "2026-10-12",
+    expiring_soon_batches: 0,
+    expired_batches: 0,
+    missing_expiration_batches: 0,
+    restricted_batches: 0,
+  },
+  {
+    item_id: 5,
+    item_name: "Açúcar Cristal 1kg",
+    category_id: 4,
+    category_name: "Açúcares",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    minimum_stock_alert: 10,
+    total_quantity: 30,
+    total_batches: 1,
+    is_below_minimum: false,
+    next_expiration_date: "2026-09-18",
+    expiring_soon_batches: 0,
+    expired_batches: 0,
+    missing_expiration_batches: 0,
+    restricted_batches: 0,
+  },
+  {
+    item_id: 6,
+    item_name: "Café Torrado 500g",
+    category_id: 5,
+    category_name: "Bebidas",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    minimum_stock_alert: 10,
+    total_quantity: 0,
+    total_batches: 1,
+    is_below_minimum: true,
+    next_expiration_date: null,
+    expiring_soon_batches: 0,
+    expired_batches: 0,
+    missing_expiration_batches: 0,
+    restricted_batches: 1,
+  },
+  {
+    item_id: 7,
+    item_name: "Macarrão Espaguete 500g",
+    category_id: 6,
+    category_name: "Massas",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    minimum_stock_alert: 15,
+    total_quantity: 60,
+    total_batches: 2,
+    is_below_minimum: false,
+    next_expiration_date: "2026-11-20",
+    expiring_soon_batches: 0,
+    expired_batches: 0,
+    missing_expiration_batches: 0,
+    restricted_batches: 0,
+  },
+  {
+    item_id: 8,
+    item_name: "Sabonete Neutro",
+    category_id: 7,
+    category_name: "Higiene",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    minimum_stock_alert: 12,
+    total_quantity: 25,
+    total_batches: 1,
+    is_below_minimum: false,
+    next_expiration_date: null,
+    expiring_soon_batches: 0,
+    expired_batches: 0,
+    missing_expiration_batches: 1,
+    restricted_batches: 0,
+  },
+].map((item, index) => ({
+  ...item,
+  barcode: index === 0 ? "7891000100103" : null,
+  image_path: index === 0 ? persistedProductImagePath : null,
+  image_source: index === 0 ? "open_facts" : null,
+  image_attribution:
+    index === 0 ? "Open Food Facts contributors · CC BY-SA 3.0" : null,
+}));
+
+const overview = {
+  items: stockItems,
+  total: 128,
+  limit: 25,
+  offset: 0,
+  reference_date: "2026-08-20",
+  due_soon_days: 15,
+  summary: {
+    total_items: 128,
+    active_items: 126,
+    low_stock_items: 23,
+    expiring_soon_batches: 18,
+    expired_batches: 3,
+    missing_expiration_batches: 1,
+    restricted_batches: 1,
+  },
+};
+
+const movements = [
+  { id: 3, batch_id: 22, item_id: 1, movement_type: "ajuste_positivo", quantity: 20, notes: "Conferência", created_by_user_id: 1 },
+  { id: 2, batch_id: 18, item_id: 1, movement_type: "saida_manual", quantity: 10, notes: null, created_by_user_id: 1 },
+  { id: 1, batch_id: 11, item_id: 1, movement_type: "ajuste_positivo", quantity: 15, notes: "Recebimento", created_by_user_id: 1 },
+];
+
+async function fulfillJson(route: Route, body: unknown, status = 200) {
+  await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+}
+
+test.beforeEach(async ({ page }) => {
+  const productImageBody = Buffer.from(openFactsProductImageBase64, "base64");
+  await page.route("**/public/items/1/image**", (route) =>
+    route.fulfill({ status: 200, contentType: "image/jpeg", body: productImageBody }),
+  );
+  await page.route(openFactsImageUrl, (route) =>
+    route.fulfill({ status: 200, contentType: "image/jpeg", body: productImageBody }),
+  );
+  await page.route("**/auth/me", (route) => fulfillJson(route, currentUser));
+  await page.route("**/stock-overview**", (route) => fulfillJson(route, overview));
+  await page.route("**/stock-movements**", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+    const itemId = Number(new URL(route.request().url()).searchParams.get("item_id"));
+    await fulfillJson(
+      route,
+      movements.filter((movement) => movement.item_id === itemId),
+    );
+  });
+  await page.goto("/items");
+  await page.evaluate(() => document.fonts.ready);
+  await expect(page.getByRole("heading", { name: "Estoque", exact: true })).toBeVisible();
+});
+
+test("estoque usa painel no desktop, cards nas telas menores e não causa overflow", async ({ page }, testInfo) => {
+  const viewportWidth = page.viewportSize()?.width ?? 0;
+  const table = page.getByRole("table", { name: "Produtos e saldos disponíveis" });
+  const visibleProductImage = page
+    .locator('img[alt="Produto Leite Condensado Moça 395g"]:visible')
+    .first();
+
+  await expect(visibleProductImage).toBeVisible();
+  await expect
+    .poll(() =>
+      visibleProductImage.evaluate(
+        (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
+      ),
+    )
+    .toBe(true);
+
+  if (viewportWidth >= 1100) {
+    await expect(table).toBeVisible();
+    await expect(page.getByLabel("Item selecionado")).toBeVisible();
+    await expect(
+      page.getByLabel("Navegação principal").getByRole("link", { name: "Estoque" }),
+    ).toHaveAttribute("aria-current", "page");
+  } else {
+    await expect(table).toBeHidden();
+    await expect(page.locator("article").first()).toBeVisible();
+    await expect(page.getByLabel("Item selecionado")).toBeHidden();
+    await expect(
+      page.getByLabel("Atalhos principais").getByRole("link", { name: "Estoque" }),
+    ).toHaveAttribute("aria-current", "page");
+  }
+
+  await expect(page.getByText("Família Silva")).toHaveCount(0);
+  await expect(page.getByText("Exportar", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Transferir estoque", { exact: true })).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await page.screenshot({
+    path: path.join(evidenceDirectory, `estoque-${testInfo.project.name}.png`),
+    fullPage: viewportWidth >= 1100,
+  });
+});
+
+test("cadastro mostra upload, consulta assistida e fallback de forma responsiva", async ({ page }, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência do formulário concentrada nos dois viewports de aprovação.",
+  );
+
+  await page.route("**/item-categories**", (route) =>
+    fulfillJson(route, [
+      { id: 1, name: "Laticínios", description: null, is_active: true },
+      { id: 2, name: "Higiene", description: null, is_active: true },
+    ]),
+  );
+  await page.route("**/product-images/open-facts**", (route) =>
+    fulfillJson(route, {
+      barcode: "7891000100103",
+      found: true,
+      has_image: true,
+      product_name: "Leite Condensado Integral Moça",
+      brands: "Nestlé, Moça",
+      quantity: "395 g",
+      image_url: openFactsImageUrl,
+      source_name: "Open Food Facts",
+      attribution: "Open Food Facts contributors · CC BY-SA 3.0",
+      license_name: "CC BY-SA 3.0",
+      license_url: "https://creativecommons.org/licenses/by-sa/3.0/",
+    }),
+  );
+
+  await page.goto("/items/new");
+  await page.getByLabel("Nome do produto").fill("Leite Condensado Moça 395g");
+  await page.getByLabel("Código EAN/GTIN").fill("7891000100103");
+  await page.getByRole("button", { name: "Consultar" }).click();
+  await expect(page.getByText("Leite Condensado Integral Moça")).toBeVisible();
+  await expect(page.getByText("Open Food Facts contributors · CC BY-SA 3.0")).toBeVisible();
+  await page.getByRole("button", { name: "Usar esta foto" }).click();
+  await expect(page.getByRole("button", { name: "Selecionada" })).toBeDisabled();
+
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    window.scrollTo(0, 0);
+  });
+  await page.waitForTimeout(100);
+
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await page.screenshot({
+    path: path.join(evidenceDirectory, `estoque-imagens-${testInfo.project.name}.png`),
+    fullPage: true,
+  });
+});
+
+test("novo produto usa o formulário claro V2 sem conteúdo de exemplo", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência do cadastro concentrada nos viewports de aprovação.",
+  );
+
+  const isDesktop = testInfo.project.name === "desktop-1440";
+  await page.setViewportSize(
+    isDesktop ? { width: 1920, height: 950 } : { width: 390, height: 844 },
+  );
+  await page.route("**/item-categories**", (route) =>
+    fulfillJson(route, [
+      { id: 1, name: "Alimentos", description: null, is_active: true },
+      { id: 2, name: "Higiene", description: null, is_active: true },
+      { id: 3, name: "Descontinuada", description: null, is_active: false },
+    ]),
+  );
+
+  await page.goto("/items/new");
+  await expect(page.getByRole("heading", { level: 1, name: "Novo produto" })).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+  await expect(page.getByLabel("Nome do produto")).toHaveValue("");
+  await expect(page.getByLabel("Nome do produto")).not.toHaveAttribute("placeholder");
+  await expect(page.getByLabel("Categoria").locator("option", { hasText: "Descontinuada" })).toHaveCount(0);
+
+  const dataPanel = page.getByRole("region", { name: "Dados do produto" });
+  const imagePanel = page.getByRole("complementary", { name: "Imagem do produto" });
+  const [dataBox, imageBox] = await Promise.all([
+    dataPanel.boundingBox(),
+    imagePanel.boundingBox(),
+  ]);
+  expect(dataBox).not.toBeNull();
+  expect(imageBox).not.toBeNull();
+  if (isDesktop) {
+    expect(imageBox!.x).toBeGreaterThan(dataBox!.x + dataBox!.width);
+  } else {
+    expect(imageBox!.y).toBeGreaterThan(dataBox!.y + dataBox!.height);
+  }
+
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(itemCreateEvidenceDirectory, { recursive: true });
+  if (isDesktop) {
+    await page.screenshot({
+      path: path.join(itemCreateEvidenceDirectory, "novo-produto-desktop-1920.png"),
+      fullPage: true,
+    });
+  } else {
+    await page.screenshot({
+      path: path.join(itemCreateEvidenceDirectory, "novo-produto-mobile-390.png"),
+    });
+    await page
+      .getByRole("navigation", { name: "Atalhos principais" })
+      .evaluate((navigation) => {
+        navigation.style.display = "none";
+      });
+    await page.screenshot({
+      path: path.join(itemCreateEvidenceDirectory, "novo-produto-mobile-completo-390.png"),
+      fullPage: true,
+    });
+  }
+});
+
+test("movimentação usa contexto do lote e saldo projetado em desktop e mobile", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência da movimentação concentrada nos viewports de aprovação.",
+  );
+
+  const isDesktop = testInfo.project.name === "desktop-1440";
+  const movementItems = [
+    {
+      id: 1,
+      category_id: 1,
+      category_name: "Laticínios",
+      name: "Leite Condensado Moça 395g",
+      barcode: "7891000100103",
+      unit_measure: "un.",
+      tracks_expiration: true,
+      is_active: true,
+      reference_unit_value: "8.90",
+      minimum_stock_alert: 30,
+      notes: null,
+      has_image: true,
+      image_path: persistedProductImagePath,
+      image_source: "open_facts",
+      image_attribution: "Open Food Facts contributors · CC BY-SA 3.0",
+    },
+  ];
+  const movementBatches = [
+    {
+      id: 1,
+      item_id: 1,
+      batch_code: "LT-2026-041",
+      source_type: "doacao_item",
+      status: "disponivel",
+      entry_quantity: 24,
+      current_quantity: 24,
+      entry_date: "2026-08-20",
+      expiration_date: "2027-06-15",
+      storage_location: "Prateleira A1",
+      quarantine_reason: null,
+      estimated_unit_value: "8.90",
+      notes: null,
+      created_by_user_id: 1,
+    },
+    {
+      id: 2,
+      item_id: 1,
+      batch_code: "LT-2025-011",
+      source_type: "doacao_item",
+      status: "disponivel",
+      entry_quantity: 3,
+      current_quantity: 3,
+      entry_date: "2025-02-10",
+      expiration_date: "2025-10-10",
+      storage_location: "Área de descarte",
+      quarantine_reason: null,
+      estimated_unit_value: "8.50",
+      notes: null,
+      created_by_user_id: 1,
+    },
+  ];
+
+  await page.route("**/items", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+    await fulfillJson(route, movementItems);
+  });
+  await page.route("**/stock-batches**", (route) =>
+    fulfillJson(route, movementBatches),
+  );
+
+  await page.goto("/stock-movements/new?itemId=1");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Registrar movimentação" }),
+  ).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+
+  const formPanel = page.getByRole("region", { name: "Dados da movimentação" });
+  const summaryPanel = page.getByRole("complementary", {
+    name: "Resumo da movimentação",
+  });
+  await expect(formPanel).toBeVisible();
+  await expect(summaryPanel).toBeVisible();
+  await expect(page.getByLabel("Lote", { exact: true })).toHaveValue("1");
+  await page.getByLabel("Quantidade").fill("4");
+  await expect(page.getByLabel("Saldo após a movimentação")).toContainText(
+    "20",
+  );
+  await expect(page.getByLabel("Observações")).not.toHaveAttribute("placeholder");
+
+  const [formBox, summaryBox] = await Promise.all([
+    formPanel.boundingBox(),
+    summaryPanel.boundingBox(),
+  ]);
+  expect(formBox).not.toBeNull();
+  expect(summaryBox).not.toBeNull();
+  if (isDesktop) {
+    expect(summaryBox!.x).toBeGreaterThan(formBox!.x + formBox!.width);
+  } else {
+    expect(summaryBox!.y).toBeGreaterThan(formBox!.y + formBox!.height);
+  }
+
+  const fieldFontSize = await page
+    .getByLabel("Tipo", { exact: true })
+    .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
+  expect(fieldFontSize).toBeGreaterThanOrEqual(14);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(movementEvidenceDirectory, { recursive: true });
+  if (isDesktop) {
+    await page.screenshot({
+      path: path.join(movementEvidenceDirectory, "movimentacao-desktop-1440.png"),
+      fullPage: true,
+    });
+  } else {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({
+      path: path.join(movementEvidenceDirectory, "movimentacao-mobile-390.png"),
+    });
+    await page
+      .getByRole("navigation", { name: "Atalhos principais" })
+      .evaluate((navigation) => {
+        navigation.style.display = "none";
+      });
+    await page.screenshot({
+      path: path.join(
+        movementEvidenceDirectory,
+        "movimentacao-mobile-completo-390.png",
+      ),
+      fullPage: true,
+    });
+  }
+});
+
+test("indicadores e busca mantêm o filtro operacional na URL", async ({ page }) => {
+  await page.getByRole("button", { name: /Estoque baixo/ }).click();
+  await expect(page).toHaveURL(/attention=estoque_baixo/);
+
+  await page.getByLabel("Buscar produtos no estoque").fill("Higiene");
+  await page.getByLabel("Buscar produtos no estoque").press("Enter");
+  await expect(page).toHaveURL(/q=Higiene/);
+});
+
+test("seleção desktop troca o contexto sem inventar operações", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-1440", "Painel contextual existe somente no desktop.");
+
+  await page.getByRole("button", { name: "Selecionar Óleo de Soja 900ml" }).click();
+  await expect(page).toHaveURL(/selected=2/);
+  await expect(page.getByLabel("Item selecionado").getByText("Óleo de Soja 900ml")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Registrar saída ou ajuste" })).toHaveAttribute(
+    "href",
+    "/stock-movements/new?itemId=2",
+  );
+});
+
+test("estoque amplia a leitura operacional em monitores Full HD", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== "desktop-1440",
+    "Evidência Full HD concentrada no projeto desktop.",
+  );
+
+  await page.setViewportSize({ width: 1920, height: 950 });
+  await page.goto("/items");
+  await expect(page.getByRole("heading", { name: "Estoque", exact: true })).toBeVisible();
+
+  const table = page.getByRole("table", { name: "Produtos e saldos disponíveis" });
+  await expect(table).toBeVisible();
+  const dimensions = await table.evaluate((element) => {
+    const firstCell = element.querySelector("tbody td");
+    const firstRow = element.querySelector("tbody tr");
+    return {
+      fontSize: firstCell ? Number.parseFloat(getComputedStyle(firstCell).fontSize) : 0,
+      rowHeight: firstRow?.getBoundingClientRect().height ?? 0,
+    };
+  });
+
+  expect(dimensions.fontSize).toBeGreaterThanOrEqual(13);
+  expect(dimensions.rowHeight).toBeGreaterThanOrEqual(74);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(polishEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(polishEvidenceDirectory, "estoque-escala-desktop-1920.png"),
+    fullPage: true,
+  });
+});
+
+test("categorias abandona o legado escuro em desktop e mobile", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência de Categorias concentrada nos viewports de aprovação.",
+  );
+
+  await page.route("**/item-categories**", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+    await fulfillJson(route, [
+      { id: 1, name: "Alimentos", description: "Alimentos e itens essenciais de cesta.", is_active: true },
+      { id: 2, name: "Higiene", description: "Produtos de higiene pessoal.", is_active: true },
+      { id: 3, name: "Limpeza", description: "Produtos de limpeza doméstica.", is_active: true },
+      { id: 4, name: "Vestuário", description: null, is_active: false },
+    ]);
+  });
+
+  if (testInfo.project.name === "desktop-1440") {
+    await page.setViewportSize({ width: 1920, height: 950 });
+  }
+
+  await page.goto("/item-categories");
+  await expect(page.getByRole("heading", { level: 1, name: "Categorias" })).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+  await expect(page.getByRole("article", { name: "Categoria Alimentos" })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(polishEvidenceDirectory, { recursive: true });
+  const suffix = testInfo.project.name === "desktop-1440" ? "desktop-1920" : "mobile-390";
+  await page.screenshot({
+    path: path.join(polishEvidenceDirectory, `categorias-${suffix}.png`),
+    fullPage: testInfo.project.name === "desktop-1440",
+  });
+});
+
+test("detalhe do item permanece claro e coerente no desktop e no mobile", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    !["mobile-390", "desktop-1440"].includes(testInfo.project.name),
+    "Evidência final concentrada nos dois viewports de aprovação.",
+  );
+
+  const itemDetail = {
+    id: 1,
+    category_id: 1,
+    category_name: "Laticínios",
+    name: "Leite Condensado Moça 395g",
+    barcode: "7891000100103",
+    unit_measure: "un.",
+    tracks_expiration: true,
+    is_active: true,
+    reference_unit_value: "8.90",
+    minimum_stock_alert: 30,
+    notes: null,
+    image_path: persistedProductImagePath,
+    image_source: "open_facts",
+    image_attribution: "Open Food Facts contributors · CC BY-SA 3.0",
+  };
+  const batches = [
+    {
+      id: 1,
+      item_id: 1,
+      batch_code: "LT-2026-041",
+      source_type: "doacao_item",
+      status: "disponivel",
+      entry_quantity: 24,
+      current_quantity: 24,
+      entry_date: "2026-08-20",
+      expiration_date: "2027-06-15",
+      storage_location: "Prateleira A1",
+      quarantine_reason: null,
+      estimated_unit_value: "8.90",
+      notes: null,
+      created_by_user_id: 1,
+    },
+  ];
+
+  await page.route("**/items/1", async (route) => {
+    if (route.request().resourceType() === "document") {
+      await route.fallback();
+      return;
+    }
+    await fulfillJson(route, itemDetail);
+  });
+  await page.route("**/stock-summary**", (route) =>
+    fulfillJson(route, [{ ...stockItems[0], total_batches: 1 }]),
+  );
+  await page.route("**/stock-batches**", (route) => fulfillJson(route, batches));
+  await page.route("**/item-categories", (route) =>
+    fulfillJson(route, [
+      { id: 1, name: "Laticínios", description: null, is_active: true },
+      { id: 2, name: "Higiene", description: null, is_active: true },
+    ]),
+  );
+
+  await page.goto("/items/1");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Leite Condensado Moça 395g" }),
+  ).toBeVisible();
+  await expect(page.locator(".hero-card, .panel-card")).toHaveCount(0);
+  await expect(page.getByLabel("Resumo do produto")).toBeVisible();
+  await expect(page.getByLabel("Lotes do item")).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+
+  await mkdir(finalAuditEvidenceDirectory, { recursive: true });
+  await page.screenshot({
+    path: path.join(
+      finalAuditEvidenceDirectory,
+      `detalhe-item-${testInfo.project.name}.png`,
+    ),
+    fullPage: true,
+  });
+});

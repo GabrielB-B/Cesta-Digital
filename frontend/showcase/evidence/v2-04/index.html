@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evidências V2-04 · Login Cesta Digital</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px;
+        color: #111827;
+        background: #f7f8fa;
+        font-family: Inter, Arial, sans-serif;
+      }
+      main { width: min(100%, 1500px); margin: 0 auto; }
+      h1 { margin: 0; font-size: 28px; }
+      .intro { max-width: 900px; margin: 10px 0 24px; color: #6e7583; line-height: 1.55; }
+      .notice {
+        max-width: 1000px;
+        margin: 0;
+        padding: 14px 16px;
+        color: #7a294f;
+        background: #fdecf4;
+        border: 1px solid #f9d5e6;
+        border-radius: 10px;
+        line-height: 1.5;
+      }
+      section { margin-top: 40px; }
+      h2 { margin-bottom: 16px; font-size: 18px; }
+      .compare,
+      .devices {
+        display: grid;
+        gap: 24px;
+        align-items: start;
+      }
+      .compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .devices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      figure { margin: 0; }
+      figcaption { margin-bottom: 8px; color: #4b5563; font-size: 13px; }
+      a { display: block; }
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgb(17 24 39 / 6%);
+      }
+      .mobile img { max-width: 390px; margin-inline: auto; }
+      a:focus-visible { outline: 3px solid #d92676; outline-offset: 3px; }
+      @media (max-width: 900px) {
+        body { padding: 20px 16px; }
+        .compare,
+        .devices { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Evidências visuais · V2-04 Login</h1>
+      <p class="intro">
+        Comparação direta com a referência específica de Login e a adaptação
+        responsiva validada. Clique em qualquer captura para abrir em tamanho
+        integral.
+      </p>
+      <p class="notice">
+        Diferenças funcionais deliberadas: o campo permanece “Nome de login”;
+        não há “lembrar-me”, contato fictício ou moldura de navegador. A
+        recuperação de senha existente foi preservada como fluxo acessível.
+      </p>
+
+      <section>
+        <h2>Comparação desktop</h2>
+        <div class="compare">
+          <figure>
+            <figcaption>Referência aprovada · 1586 × 992</figcaption>
+            <a href="referencia-login-desktop.png"><img src="referencia-login-desktop.png" alt="Referência original do Login desktop" /></a>
+          </figure>
+          <figure>
+            <figcaption>Login implementado · 1440 × 900</figcaption>
+            <a href="login-desktop-1440.png"><img src="login-desktop-1440.png" alt="Login V2 implementado em desktop" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>Adaptação responsiva</h2>
+        <div class="devices">
+          <figure class="mobile">
+            <figcaption>Mobile · 360 × 800</figcaption>
+            <a href="login-mobile-360.png"><img src="login-mobile-360.png" alt="Login V2 em 360 pixels" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Mobile · 390 × 844</figcaption>
+            <a href="login-mobile-390.png"><img src="login-mobile-390.png" alt="Login V2 em 390 pixels" /></a>
+          </figure>
+          <figure>
+            <figcaption>Tablet · 768 × 1024</figcaption>
+            <a href="login-tablet-768.png"><img src="login-tablet-768.png" alt="Login V2 em 768 pixels" /></a>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>Recuperação de senha real</h2>
+        <div class="compare">
+          <figure>
+            <figcaption>Desktop · painel de recuperação</figcaption>
+            <a href="login-desktop-1440-recovery.png"><img src="login-desktop-1440-recovery.png" alt="Recuperação de senha no Login desktop" /></a>
+          </figure>
+          <figure class="mobile">
+            <figcaption>Mobile · painel de recuperação</figcaption>
+            <a href="login-mobile-390-recovery.png"><img src="login-mobile-390-recovery.png" alt="Recuperação de senha no Login mobile" /></a>
+          </figure>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

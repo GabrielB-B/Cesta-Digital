@@ -41,3 +41,27 @@ class BasketTypeItem(TimestampMixin, Base):
     def unit_measure(self) -> str:
         """Retorna a unidade de medida do item da receita."""
         return self.item.unit_measure
+
+    @property
+    def category_name(self) -> str:
+        return self.item.category_name
+
+    @property
+    def tracks_expiration(self) -> bool:
+        return self.item.tracks_expiration
+
+    @property
+    def reference_unit_value(self):
+        return self.item.reference_unit_value
+
+    @property
+    def image_path(self) -> str | None:
+        return self.item.image_path
+
+    @property
+    def image_source(self) -> str | None:
+        return self.item.image_source
+
+    @property
+    def image_attribution(self) -> str | None:
+        return self.item.image_attribution

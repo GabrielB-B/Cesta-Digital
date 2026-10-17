@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>V2-19 · Benefícios da família</title>
+    <style>
+      :root { color: #142033; background: #f5f6f8; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+      header { display: grid; gap: 8px; margin-bottom: 28px; }
+      h1, h2, p { margin: 0; }
+      h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.04em; }
+      h2 { font-size: 18px; }
+      p { color: #667085; line-height: 1.5; }
+      .status { width: fit-content; margin-top: 8px; padding: 7px 12px; color: #9a5b00; background: #fff2dc; border-radius: 999px; font-size: 13px; font-weight: 700; }
+      section { margin-top: 32px; }
+      .section-heading { display: grid; gap: 4px; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+      figure { margin: 0; overflow: hidden; background: white; border: 1px solid #e2e5e9; border-radius: 16px; box-shadow: 0 8px 26px rgba(17, 24, 39, 0.07); }
+      figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; color: #263247; font-size: 13px; font-weight: 700; border-bottom: 1px solid #e8eaed; }
+      figcaption span { color: #7b8492; font-weight: 500; }
+      figure a { display: block; background: #eef0f3; }
+      img { display: block; width: 100%; height: auto; }
+      .mobile img { width: min(100%, 390px); margin: 0 auto; }
+      .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
+      .note strong { display: block; margin-bottom: 5px; font-size: 14px; }
+      .note p { font-size: 13px; }
+      @media (max-width: 900px) { main { width: min(100% - 20px, 680px); padding-top: 24px; } .grid, .notes { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>V2-19 · Benefícios da família</h1>
+        <p>Cadastro e edição alinhados à direção aprovada de Famílias. Clique nas imagens para abrir a captura original.</p>
+        <span class="status">Aguardando aprovação visual</span>
+      </header>
+
+      <section>
+        <div class="section-heading"><h2>Referência × cadastro</h2><p>Mesmo shell, superfícies claras, campos amplos e ação primária única.</p></div>
+        <div class="grid">
+          <figure><figcaption>Referência Famílias <span>direção aprovada</span></figcaption><a href="../v2-06/referencia-familias-desktop.png" target="_blank" rel="noreferrer"><img src="../v2-06/referencia-familias-desktop.png" alt="Referência aprovada da tela Famílias" /></a></figure>
+          <figure><figcaption>Novo benefício <span>desktop 1440</span></figcaption><a href="beneficio-cadastro-desktop-1440.png" target="_blank" rel="noreferrer"><img src="beneficio-cadastro-desktop-1440.png" alt="Cadastro de benefício no desktop" /></a></figure>
+          <figure class="mobile"><figcaption>Novo benefício <span>mobile 390</span></figcaption><a href="beneficio-cadastro-mobile-390.png" target="_blank" rel="noreferrer"><img src="beneficio-cadastro-mobile-390.png" alt="Cadastro de benefício no celular" /></a></figure>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading"><h2>Edição e segurança</h2><p>Vínculo, valor, vigência e impacto na renda permanecem visíveis; exclusão exige confirmação.</p></div>
+        <div class="grid">
+          <figure><figcaption>Editar benefício <span>desktop 1440</span></figcaption><a href="beneficio-edicao-desktop-1440.png" target="_blank" rel="noreferrer"><img src="beneficio-edicao-desktop-1440.png" alt="Edição de benefício no desktop" /></a></figure>
+          <figure class="mobile"><figcaption>Editar benefício <span>mobile 390</span></figcaption><a href="beneficio-edicao-mobile-390.png" target="_blank" rel="noreferrer"><img src="beneficio-edicao-mobile-390.png" alt="Edição de benefício no celular" /></a></figure>
+        </div>
+      </section>
+
+      <section class="notes">
+        <div class="note"><strong>Sem campos cenográficos</strong><p>Todos os campos pertencem ao contrato atual da API; exemplos foram removidos.</p></div>
+        <div class="note"><strong>Renda explícita</strong><p>O operador decide claramente se o benefício compõe o cálculo familiar.</p></div>
+        <div class="note"><strong>Contrato preservado</strong><p>Rotas, RBAC, vínculo opcional, payloads e recálculo do backend não mudaram.</p></div>
+      </section>
+    </main>
+  </body>
+</html>

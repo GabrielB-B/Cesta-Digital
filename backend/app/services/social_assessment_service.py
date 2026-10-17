@@ -25,6 +25,19 @@ def create_social_assessment(
 
     eligibility = calculate_system_suggestion(db, family)
     system_suggestion = eligibility["system_suggestion"]
+    calculated_vulnerability_score = eligibility["social_weight_score"]
+
+    if (
+        payload.vulnerability_score is not None
+        and payload.vulnerability_score != calculated_vulnerability_score
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "A pontuacao de vulnerabilidade e calculada pelo servidor e nao "
+                "pode divergir da previa atual. Atualize os dados e tente novamente."
+            ),
+        )
 
     diverges_from_system = payload.final_decision != system_suggestion
     has_override_reason = bool(
@@ -60,7 +73,7 @@ def create_social_assessment(
         assessment_date=payload.assessment_date,
         monthly_income_total_at_time=family.monthly_income_total,
         income_per_capita_at_time=family.income_per_capita,
-        vulnerability_score=payload.vulnerability_score,
+        vulnerability_score=calculated_vulnerability_score,
         system_suggestion=system_suggestion,
         final_decision=payload.final_decision,
         decision_reason=payload.decision_reason,
@@ -89,7 +102,7 @@ def create_social_assessment(
             "family_id": family.id,
             "system_suggestion": system_suggestion,
             "final_decision": payload.final_decision,
-            "vulnerability_score": payload.vulnerability_score,
+            "vulnerability_score": calculated_vulnerability_score,
         },
     )
 
