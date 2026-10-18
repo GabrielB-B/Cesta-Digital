@@ -84,6 +84,8 @@
 .sidebarHeader {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
   min-height: 5.5rem;
 }
 
@@ -222,6 +224,7 @@
 .desktopSidebarButton {
   display: grid;
   place-items: center;
+  flex: 0 0 auto;
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
@@ -257,13 +260,8 @@
   justify-content: center;
 }
 
-.appShellCollapsed .brand {
-  justify-content: center;
-}
-
-.appShellCollapsed .brand img {
-  width: 3.25rem;
-  height: 3.25rem;
+.appShellCollapsed .sidebarHeader .brand {
+  display: none;
 }
 
 .appShellCollapsed .brandText,
@@ -566,7 +564,8 @@
     min-height: 4.5rem;
   }
 
-  .appShellCollapsed .brand {
+  .appShellCollapsed .sidebarHeader .brand {
+    display: inline-flex;
     justify-content: flex-start;
   }
 

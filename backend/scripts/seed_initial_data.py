@@ -19,9 +19,9 @@ from app.models.user_role import UserRole
 
 ROLE_DEFINITIONS = {
     "admin": "Administração, auditoria e acesso completo.",
-    "lider_social": "Análises sociais e relatórios autorizados.",
-    "operador": "Configuração e operação de estoque, cestas e entregas.",
-    "colaborador": "Famílias, alimentos, entradas e entregas do atendimento diário.",
+    "lider_social": "Coordenação de análises sociais e relatórios autorizados.",
+    "operador": "Gestão do catálogo, estoque, cestas e relatórios operacionais.",
+    "colaborador": "Uso diário de famílias, novos alimentos, entradas e entregas, sem relatórios.",
 }
 DEFAULT_ITEM_CATEGORIES = [
     ("alimentos", "Itens alimenticios de cesta e estoque."),

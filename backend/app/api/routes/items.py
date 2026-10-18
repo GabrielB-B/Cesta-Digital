@@ -62,7 +62,11 @@ def get_item_detail_endpoint(
     return get_item_detail(db, item_id)
 
 
-@router.put("/items/{item_id}", response_model=ItemDetailResponse)
+@router.put(
+    "/items/{item_id}",
+    response_model=ItemDetailResponse,
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 def update_item_endpoint(
     item_id: int,
     payload: ItemUpdate,

@@ -1129,6 +1129,7 @@ test("route access groups remain equal to the approved RBAC baseline", () => {
     familyRecords: ["admin", "lider_social", "colaborador"],
     socialAssessments: ["admin", "lider_social"],
     inventory: ["admin", "operador", "colaborador"],
+    inventoryCatalog: ["admin", "operador"],
     inventoryConfiguration: ["admin", "operador"],
     deliveries: ["admin", "operador", "colaborador"],
     reports: ["admin", "lider_social", "operador"],
@@ -1214,6 +1215,25 @@ test("collaborator family detail omits social analysis controls", async ({ page 
   await expect(page.getByRole("link", { name: "Análises sociais" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Histórico de aptidão" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Salvar status" })).toHaveCount(0);
+});
+
+test("collaborator can operate stock without editing the product catalog", async ({ page }) => {
+  const collaborator = routeAccessUsers.find(
+    (scenario) => scenario.role === "colaborador",
+  );
+  if (!collaborator) throw new Error("Cenário de colaborador ausente.");
+
+  await page.unroute("**/auth/me");
+  await page.route("**/auth/me", async (route) =>
+    fulfillJson(route, collaborator.user),
+  );
+
+  await page.goto("/items/1");
+
+  await expect(page.getByRole("heading", { level: 1, name: "Arroz 1kg" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Editar produto" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Registrar entrada" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Relatórios" })).toHaveCount(0);
 });
 
 test("anonymous deep links return to login without protected content", async ({ page }) => {

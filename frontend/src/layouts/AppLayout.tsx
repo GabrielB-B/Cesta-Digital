@@ -352,6 +352,19 @@ export function AppLayout() {
           <div className={styles.sidebarHeader}>
             <ShellBrand />
             <button
+              className={styles.desktopSidebarButton}
+              type="button"
+              aria-label={
+                isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"
+              }
+              aria-controls="main-navigation"
+              aria-expanded={!isSidebarCollapsed}
+              title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+              onClick={toggleSidebar}
+            >
+              <Menu size={22} aria-hidden="true" />
+            </button>
+            <button
               className={styles.mobileClose}
               type="button"
               aria-label="Fechar menu"
@@ -416,19 +429,6 @@ export function AppLayout() {
                 <div className={styles.mobileBrand}>
                   <ShellBrand compact />
                 </div>
-                <button
-                  className={styles.desktopSidebarButton}
-                  type="button"
-                  aria-label={
-                    isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"
-                  }
-                  aria-controls="main-navigation"
-                  aria-expanded={!isSidebarCollapsed}
-                  title={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
-                  onClick={toggleSidebar}
-                >
-                  <Menu size={22} aria-hidden="true" />
-                </button>
                 <nav className={styles.breadcrumb} aria-label="Localização atual">
                   <span className={styles.breadcrumbSection}>{routeMeta.section}</span>
                   {routeMeta.title !== routeMeta.section ? (

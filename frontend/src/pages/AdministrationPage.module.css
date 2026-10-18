@@ -708,9 +708,11 @@
 }
 
 .dialog {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   width: min(43rem, 100%);
   max-height: min(49rem, calc(100vh - 2rem));
-  overflow-y: auto;
+  overflow: hidden;
   background: #fff;
   border: 1px solid #dfe3e9;
   border-radius: 0.875rem;
@@ -722,9 +724,6 @@
 }
 
 .dialogHeader {
-  position: sticky;
-  top: 0;
-  z-index: 2;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -769,7 +768,10 @@
 .dialogBody {
   display: grid;
   gap: 1rem;
+  min-height: 0;
   padding: 1.25rem 1.375rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .formGrid {
@@ -841,7 +843,7 @@
 
 .roleChoices {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
 }
 
@@ -874,6 +876,10 @@
 }
 
 .checkCard strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.75rem;
 }
 
@@ -881,6 +887,27 @@
   color: #768196;
   font-size: 0.75rem;
   line-height: 1.35;
+}
+
+.recommendedRole {
+  padding: 0.1rem 0.35rem;
+  color: #126b34;
+  background: #e9f8ef;
+  border-radius: var(--cd-radius-pill);
+  font-size: 0.625rem;
+  font-style: normal;
+  font-weight: 750;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
+.permissionWarning {
+  padding: 0.65rem 0.75rem;
+  color: #7a4c00 !important;
+  background: #fff8e8;
+  border: 1px solid #f0d38b;
+  border-radius: 0.55rem;
+  font-weight: 620;
 }
 
 .inlineForm {
@@ -914,8 +941,6 @@
 }
 
 .dialogFooter {
-  position: sticky;
-  bottom: 0;
   display: flex;
   justify-content: flex-end;
   gap: 0.65rem;

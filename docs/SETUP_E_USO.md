@@ -120,7 +120,7 @@ Matriz vigente:
 
 | Perfil | Uso principal | Não acessa |
 |---|---|---|
-| `colaborador` | famílias, membros, benefícios, produtos, entradas, movimentações e entregas | análises sociais, relatórios, configuração de categorias/cestas, usuários e auditoria |
+| `colaborador` | famílias, membros, benefícios, cadastro de novos produtos, entradas, movimentações e entregas | edição do cadastro mestre de produtos, análises sociais, relatórios, configuração de categorias/cestas, usuários e auditoria |
 | `lider_social` | famílias, análises sociais e relatórios autorizados | estoque, configuração operacional e administração |
 | `operador` | estoque, categorias, tipos de cesta, entregas e relatórios operacionais | famílias, análises sociais e administração |
 | `admin` | acesso completo, usuários e auditoria | — |
@@ -136,7 +136,7 @@ rotas de configuração nem permissão de escrita nesses cadastros.
 3. Edite ou exclua membros quando necessario.
 4. Cadastre beneficios.
 5. Edite ou exclua beneficios quando necessario.
-6. Cadastre produtos e registre entradas ou movimentações.
+6. Cadastre novos produtos e registre entradas ou movimentações. A revisão posterior do cadastro mestre fica com `operador` ou `admin`.
 7. Agende e confirme entregas.
 
 ### Análise social (`lider_social` ou `admin`)

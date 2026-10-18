@@ -11,6 +11,7 @@ export const ROUTE_ACCESS = {
   familyRecords: ["admin", "lider_social", "colaborador"],
   socialAssessments: ["admin", "lider_social"],
   inventory: ["admin", "operador", "colaborador"],
+  inventoryCatalog: ["admin", "operador"],
   inventoryConfiguration: ["admin", "operador"],
   deliveries: ["admin", "operador", "colaborador"],
   reports: ["admin", "lider_social", "operador"],

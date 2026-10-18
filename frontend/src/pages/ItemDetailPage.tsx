@@ -23,6 +23,8 @@ import {
   ProductImagePicker,
   type ProductImageSelection,
 } from "../components/ProductImagePicker";
+import { useAuth } from "../contexts/useAuth";
+import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
 import type {
   ItemCategoryResponse,
   ItemDetailResponse,
@@ -96,6 +98,11 @@ function formatBatchStatus(status: StockBatchStatus): string {
 
 export function ItemDetailPage() {
   const { itemId } = useParams();
+  const { user } = useAuth();
+  const canManageInventoryCatalog = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.inventoryCatalog,
+  );
   const [item, setItem] = useState<ItemDetailResponse | null>(null);
   const [summary, setSummary] = useState<StockSummaryResponse | null>(null);
   const [batches, setBatches] = useState<StockBatchResponse[]>([]);
@@ -522,16 +529,18 @@ export function ItemDetailPage() {
           </div>
 
           <div className={styles.headerActions}>
-            <button
-              ref={editButtonRef}
-              type="button"
-              className={styles.secondaryAction}
-              onClick={openEditor}
-              aria-expanded={isEditorOpen}
-              aria-controls="item-editor"
-            >
-              <Edit3 aria-hidden="true" /> Editar produto
-            </button>
+            {canManageInventoryCatalog ? (
+              <button
+                ref={editButtonRef}
+                type="button"
+                className={styles.secondaryAction}
+                onClick={openEditor}
+                aria-expanded={isEditorOpen}
+                aria-controls="item-editor"
+              >
+                <Edit3 aria-hidden="true" /> Editar produto
+              </button>
+            ) : null}
             {item.is_active ? (
               <Link
                 className={styles.primaryAction}
@@ -638,7 +647,7 @@ export function ItemDetailPage() {
         </section>
       ) : null}
 
-      {isEditorOpen ? (
+      {canManageInventoryCatalog && isEditorOpen ? (
         <section id="item-editor" className={styles.editorPanel} aria-labelledby="item-editor-title">
           <div className={styles.editorHeader}>
             <div>

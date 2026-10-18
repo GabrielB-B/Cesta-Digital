@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from integration_test_case import ApiIntegrationTestCase
 from app.models.family import Family
+from app.models.item_category import ItemCategory
 from app.models.social_assessment import SocialAssessment
 from app.models.user import User
 
@@ -69,6 +70,58 @@ class CollaboratorAccessApiIntegrationTests(ApiIntegrationTestCase):
 
         self.assertEqual(create_category.status_code, 403, create_category.text)
         self.assertEqual(create_basket.status_code, 403, create_basket.text)
+
+    def test_collaborator_can_register_but_cannot_edit_product_catalog(self):
+        with self.session_factory() as db:
+            category = ItemCategory(
+                name="alimentos-colaborador",
+                description="Categoria para validar o menor privilegio.",
+                is_active=True,
+            )
+            db.add(category)
+            db.commit()
+            db.refresh(category)
+            category_id = category.id
+
+        created = self.client.post(
+            "/items",
+            headers=self.headers,
+            json={
+                "category_id": category_id,
+                "name": "Arroz cadastrado pelo colaborador",
+                "unit_measure": "pacote",
+                "tracks_expiration": True,
+                "is_active": True,
+                "reference_unit_value": 7.5,
+                "minimum_stock_alert": 5,
+                "notes": None,
+            },
+        )
+        self.assertEqual(created.status_code, 201, created.text)
+
+        updated = self.client.put(
+            f"/items/{created.json()['id']}",
+            headers=self.headers,
+            json={
+                "category_id": category_id,
+                "name": "Alteracao indevida",
+                "unit_measure": "pacote",
+                "tracks_expiration": True,
+                "is_active": False,
+                "reference_unit_value": 7.5,
+                "minimum_stock_alert": 5,
+                "notes": None,
+            },
+        )
+        detail = self.client.get(
+            f"/items/{created.json()['id']}",
+            headers=self.headers,
+        )
+
+        self.assertEqual(updated.status_code, 403, updated.text)
+        self.assertEqual(detail.status_code, 200, detail.text)
+        self.assertEqual(detail.json()["name"], "Arroz cadastrado pelo colaborador")
+        self.assertTrue(detail.json()["is_active"])
 
     def test_collaborator_cannot_read_assessment_history_or_update_social_status(self):
         family = self.create_family(self.headers)

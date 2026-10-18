@@ -45,16 +45,16 @@ type UserFormState = {
 
 const roleLabels: Record<string, string> = {
   admin: "Administrador",
-  lider_social: "Liderança social",
-  operador: "Operador",
-  colaborador: "Colaborador",
+  lider_social: "Coordenação social",
+  operador: "Responsável por estoque",
+  colaborador: "Colaborador (uso diário)",
 };
 
 const roleDescriptions: Record<string, string> = {
   admin: "Administra acessos, acompanha auditoria e opera todos os módulos.",
-  lider_social: "Gerencia famílias, benefícios, avaliações e relatórios sociais.",
-  operador: "Opera estoque, entradas, cestas, agendamentos e entregas.",
-  colaborador: "Cadastra famílias, controla alimentos e realiza entregas sem acesso gerencial.",
+  lider_social: "Aprova análises e acessa relatórios sociais, além de gerenciar famílias.",
+  operador: "Edita o catálogo, configura cestas e acessa relatórios operacionais.",
+  colaborador: "Cadastra famílias e alimentos, registra entradas e entregas, sem relatórios ou administração.",
 };
 
 const roleCapabilities: Record<string, string[]> = {
@@ -74,11 +74,20 @@ const roleCapabilities: Record<string, string[]> = {
     "Agendamentos, entregas e rastreabilidade",
   ],
   colaborador: [
-    "Famílias, pessoas e benefícios",
-    "Produtos, entradas e movimentações",
-    "Agendamentos e entregas",
+    "Famílias, pessoas e novos alimentos",
+    "Entradas, movimentações e entregas",
+    "Sem relatórios ou edição do cadastro mestre",
   ],
 };
+
+const roleDisplayOrder = ["colaborador", "lider_social", "operador", "admin"];
+
+function compareRolesForDisplay(first: RoleOptionResponse, second: RoleOptionResponse): number {
+  const firstIndex = roleDisplayOrder.indexOf(first.name);
+  const secondIndex = roleDisplayOrder.indexOf(second.name);
+  return (firstIndex === -1 ? roleDisplayOrder.length : firstIndex) -
+    (secondIndex === -1 ? roleDisplayOrder.length : secondIndex);
+}
 
 function createInitialFormState(): UserFormState {
   return {
@@ -87,7 +96,7 @@ function createInitialFormState(): UserFormState {
     email: "",
     password: "",
     is_active: true,
-    roles: [],
+    roles: ["colaborador"],
   };
 }
 
@@ -226,7 +235,8 @@ export function UsersPage() {
         formData.email !== "" ||
         formData.password !== "" ||
         !formData.is_active ||
-        formData.roles.length > 0
+        formData.roles.length !== 1 ||
+        formData.roles[0] !== "colaborador"
       );
     }
 
@@ -578,12 +588,23 @@ export function UsersPage() {
             {!editingUser ? <p className={styles.formHint}>{PASSWORD_POLICY_HINT}</p> : null}
 
             <section className={styles.permissionBlock}>
-              <div><h3>Perfis de acesso</h3><p>Selecione somente as responsabilidades necessárias para esta pessoa.</p></div>
+              <div><h3>Perfis de acesso</h3><p>Para uma pessoa comum, mantenha somente “Colaborador (uso diário)”. Perfis adicionais somam permissões.</p></div>
+              {formData.roles.some((role) => role !== "colaborador") ? (
+                <p className={styles.permissionWarning} role="status">
+                  Atenção: qualquer perfil adicional amplia o acesso; Coordenação social, Responsável por estoque e Administrador liberam Relatórios. Para um acesso comum, deixe somente Colaborador.
+                </p>
+              ) : null}
               <div className={styles.roleChoices}>
-                {roles.map((role) => (
+                {roles.toSorted(compareRolesForDisplay).map((role) => (
                   <label className={styles.checkCard} key={role.id}>
                     <input type="checkbox" checked={formData.roles.includes(role.name)} onChange={() => toggleRole(role.name)} />
-                    <span><strong>{formatRole(role.name)}</strong><small>{formatRoleDescription(role.name, role.description)}</small></span>
+                    <span>
+                      <strong>
+                        {formatRole(role.name)}
+                        {role.name === "colaborador" ? <em className={styles.recommendedRole}>Recomendado</em> : null}
+                      </strong>
+                      <small>{formatRoleDescription(role.name, role.description)}</small>
+                    </span>
                   </label>
                 ))}
               </div>

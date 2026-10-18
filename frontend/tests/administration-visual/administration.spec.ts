@@ -16,6 +16,7 @@ const roles = [
   { id: 1, name: "admin", description: "Acesso administrativo completo." },
   { id: 2, name: "lider_social", description: "Atendimento e avaliação social." },
   { id: 3, name: "operador", description: "Operação logística e de estoque." },
+  { id: 4, name: "colaborador", description: "Operação diária sem acesso gerencial." },
 ];
 
 const users = [
@@ -110,6 +111,16 @@ test("cadastro de usuário abre formulário funcional", async ({ page }, testInf
   await expect(dialog).toBeVisible();
   await expect(dialog.getByLabel("Nome completo")).toBeVisible();
   await expect(dialog.getByText("Perfis de acesso", { exact: true })).toBeVisible();
+  await expect(dialog.getByLabel("Colaborador (uso diário)")).toBeChecked();
+
+  const loginField = dialog.getByLabel("Login de acesso");
+  await loginField.click();
+  await loginField.pressSequentially("pessoa.teste");
+  await expect(loginField).toHaveValue("pessoa.teste");
+  await expect(loginField).toBeFocused();
+
+  await dialog.getByLabel("Responsável por estoque").check();
+  await expect(dialog.getByText(/liberam Relatórios/)).toBeVisible();
   await page.screenshot({ path: path.join(evidenceDirectory, `administracao-cadastro-${testInfo.project.name}.png`), fullPage: true });
 });
 

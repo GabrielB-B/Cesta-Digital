@@ -37,6 +37,11 @@ export function AdministrationDialog({
   const titleId = useId();
   const descriptionId = useId();
   const dialogRef = useRef<HTMLElement>(null);
+  const onRequestCloseRef = useRef(onRequestClose);
+
+  useEffect(() => {
+    onRequestCloseRef.current = onRequestClose;
+  }, [onRequestClose]);
 
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -50,7 +55,7 @@ export function AdministrationDialog({
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
-        onRequestClose();
+        onRequestCloseRef.current();
         return;
       }
 
@@ -85,7 +90,7 @@ export function AdministrationDialog({
       document.body.style.overflow = previousOverflow;
       previouslyFocused?.focus();
     };
-  }, [onRequestClose]);
+  }, []);
 
   function handleBackdropClick(event: MouseEvent<HTMLDivElement>) {
     if (event.target === event.currentTarget) {

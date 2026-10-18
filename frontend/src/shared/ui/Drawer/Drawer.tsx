@@ -37,6 +37,11 @@ export function Drawer({
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -52,7 +57,7 @@ export function Drawer({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -81,7 +86,7 @@ export function Drawer({
       document.body.style.overflow = previousOverflow;
       previouslyFocused?.focus();
     };
-  }, [onClose, open]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -110,7 +115,12 @@ export function Drawer({
               </p>
             ) : null}
           </div>
-          <button className={styles.close} onClick={onClose} aria-label="Fechar painel">
+          <button
+            type="button"
+            className={styles.close}
+            onClick={onClose}
+            aria-label="Fechar painel"
+          >
             <X aria-hidden="true" size={18} />
           </button>
         </header>

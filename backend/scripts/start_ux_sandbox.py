@@ -129,9 +129,9 @@ def seed_minimal_data(session_factory, access: dict[str, str]) -> None:
             name: Role(name=name, description=description)
             for name, description in (
                 ("admin", "Administração do sistema"),
-                ("lider_social", "Cadastro e avaliação social"),
-                ("operador", "Estoque, cestas e entregas"),
-                ("colaborador", "Famílias, alimentos, entradas e entregas"),
+                ("lider_social", "Coordenação de análises sociais e relatórios"),
+                ("operador", "Gestão do catálogo, estoque, cestas e relatórios"),
+                ("colaborador", "Uso diário sem relatórios ou edição do catálogo"),
             )
         }
         db.add_all(roles.values())
@@ -182,9 +182,9 @@ def seed_synthetic_data(session_factory, access: dict[str, str]) -> None:
             name: Role(name=name, description=description)
             for name, description in (
                 ("admin", "Administrador do sandbox UX"),
-                ("lider_social", "Lideranca social do sandbox UX"),
-                ("operador", "Operacao de estoque do sandbox UX"),
-                ("colaborador", "Atendimento e operacao cotidiana do sandbox UX"),
+                ("lider_social", "Coordenacao social e relatorios do sandbox UX"),
+                ("operador", "Catalogo, estoque e relatorios do sandbox UX"),
+                ("colaborador", "Uso diario sem relatorios ou edicao do catalogo"),
             )
         }
         db.add_all(roles.values())
