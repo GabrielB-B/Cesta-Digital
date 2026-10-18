@@ -82,6 +82,23 @@ class MinimalUxSandboxSeedTests(unittest.TestCase):
         self.assertEqual(self.scalar_count(User), 1)
         self.assertEqual(self.scalar_count(UserRole), 1)
 
+    def test_minimal_seed_adds_missing_role_to_existing_database(self) -> None:
+        seed_minimal_data(self.session_factory, self.access)
+
+        with self.session_factory() as db:
+            collaborator_role = db.scalar(
+                select(Role).where(Role.name == "colaborador")
+            )
+            self.assertIsNotNone(collaborator_role)
+            db.delete(collaborator_role)
+            db.commit()
+
+        seed_minimal_data(self.session_factory, self.access)
+
+        self.assertEqual(self.scalar_count(Role), 4)
+        self.assertEqual(self.scalar_count(User), 1)
+        self.assertEqual(self.scalar_count(UserRole), 1)
+
     def test_synthetic_seed_includes_the_four_homologation_profiles(self) -> None:
         seed_synthetic_data(self.session_factory, self.access)
 

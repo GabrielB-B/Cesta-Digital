@@ -21,6 +21,12 @@ REPOSITORY_DIR = BACKEND_DIR.parent
 DEFAULT_RUNTIME_DIR = REPOSITORY_DIR / ".ux-sandbox"
 DEFAULT_DATABASE_PATH = DEFAULT_RUNTIME_DIR / "cesta-digital-ux.sqlite3"
 DEFAULT_CREDENTIALS_PATH = DEFAULT_RUNTIME_DIR / "access.json"
+SANDBOX_ROLE_DEFINITIONS = (
+    ("admin", "Administracao do sistema"),
+    ("lider_social", "Coordenacao de analises sociais e relatorios"),
+    ("operador", "Gestao do catalogo, estoque, cestas e relatorios"),
+    ("colaborador", "Uso diario sem relatorios ou edicao do catalogo"),
+)
 
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
@@ -112,30 +118,44 @@ def configure_isolated_environment(
     os.environ.update(isolated_values)
 
 
+def ensure_sandbox_roles(db):
+    """Sincroniza perfis estruturais sem apagar os dados de uma base antiga."""
+    from sqlalchemy import select
+
+    from app.models.role import Role
+
+    role_names = [name for name, _ in SANDBOX_ROLE_DEFINITIONS]
+    roles = {
+        role.name: role
+        for role in db.scalars(select(Role).where(Role.name.in_(role_names))).all()
+    }
+
+    for name, description in SANDBOX_ROLE_DEFINITIONS:
+        role = roles.get(name)
+        if role is None:
+            role = Role(name=name, description=description)
+            db.add(role)
+            roles[name] = role
+        else:
+            role.description = description
+
+    db.flush()
+    return roles
+
+
 def seed_minimal_data(session_factory, access: dict[str, str]) -> None:
     """Cria somente o acesso necessário para um banco de homologação vazio."""
     from sqlalchemy import select
 
     from app.core.security import get_password_hash
-    from app.models.role import Role
     from app.models.user import User
     from app.models.user_role import UserRole
 
     with session_factory() as db:
+        roles = ensure_sandbox_roles(db)
         if db.scalar(select(User.id).limit(1)) is not None:
+            db.commit()
             return
-
-        roles = {
-            name: Role(name=name, description=description)
-            for name, description in (
-                ("admin", "Administração do sistema"),
-                ("lider_social", "Coordenação de análises sociais e relatórios"),
-                ("operador", "Gestão do catálogo, estoque, cestas e relatórios"),
-                ("colaborador", "Uso diário sem relatórios ou edição do catálogo"),
-            )
-        }
-        db.add_all(roles.values())
-        db.flush()
 
         admin = User(
             name="Administrador UX",
@@ -164,7 +184,6 @@ def seed_synthetic_data(session_factory, access: dict[str, str]) -> None:
     from app.models.item import Item
     from app.models.item_category import ItemCategory
     from app.models.person import Person
-    from app.models.role import Role
     from app.models.social_assessment import SocialAssessment
     from app.models.stock_batch import StockBatch
     from app.models.stock_movement import StockMovement
@@ -175,20 +194,10 @@ def seed_synthetic_data(session_factory, access: dict[str, str]) -> None:
     now = datetime.now()
 
     with session_factory() as db:
+        roles = ensure_sandbox_roles(db)
         if db.scalar(select(User.id).limit(1)) is not None:
+            db.commit()
             return
-
-        roles = {
-            name: Role(name=name, description=description)
-            for name, description in (
-                ("admin", "Administrador do sandbox UX"),
-                ("lider_social", "Coordenacao social e relatorios do sandbox UX"),
-                ("operador", "Catalogo, estoque e relatorios do sandbox UX"),
-                ("colaborador", "Uso diario sem relatorios ou edicao do catalogo"),
-            )
-        }
-        db.add_all(roles.values())
-        db.flush()
 
         shared_password_hash = get_password_hash(access["password"])
         users = {
