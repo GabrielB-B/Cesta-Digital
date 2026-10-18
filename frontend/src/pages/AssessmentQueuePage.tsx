@@ -247,17 +247,33 @@ export function AssessmentQueuePage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.pageHeader}>
-        <div>
+      <header className={styles.pageHeader} data-testid="assessment-header">
+        <div className={styles.headerCopy}>
           <h1>Fila de análise social</h1>
           <p>Avalie novas famílias e revise decisões próximas do vencimento.</p>
         </div>
-        {referenceDate ? (
-          <span className={styles.referenceDate}>
-            <CalendarCheck2 aria-hidden="true" />
-            Posição em {formatDateOnly(referenceDate)}
-          </span>
-        ) : null}
+        <div className={styles.headerActions}>
+          {referenceDate ? (
+            <span className={styles.referenceDate}>
+              <CalendarCheck2 aria-hidden="true" />
+              Posição em {formatDateOnly(referenceDate)}
+            </span>
+          ) : null}
+          {selectedItem ? (
+            <Link
+              className={styles.primaryAction}
+              to={`/families/${selectedItem.family_id}/assessments/new`}
+            >
+              <Plus aria-hidden="true" />
+              {selectedItem.latest_assessment_id ? "Nova reavaliação" : "Nova avaliação"}
+            </Link>
+          ) : (
+            <Link className={styles.primaryAction} to="/families">
+              <UsersRound aria-hidden="true" />
+              Selecionar família
+            </Link>
+          )}
+        </div>
       </header>
 
       <section className={styles.statusGrid} aria-label="Situações da fila">
@@ -267,6 +283,7 @@ export function AssessmentQueuePage() {
           return (
             <button
               key={status.value}
+              data-testid="assessment-status-card"
               className={`${styles.statusCard} ${styles[`statusCard${status.tone}`]}${isActive ? ` ${styles.statusCardActive}` : ""}`}
               type="button"
               aria-pressed={isActive}
@@ -283,7 +300,11 @@ export function AssessmentQueuePage() {
         })}
       </section>
 
-      <div className={styles.toolbarRow}>
+      <div className={styles.toolbarRow} data-testid="assessment-toolbar">
+        <div className={styles.toolbarSummary}>
+          <span>Fila operacional</span>
+          <strong>{total} {total === 1 ? "família" : "famílias"} nesta seleção</strong>
+        </div>
         <form
           key={`assessment-search-${activeSearch}`}
           className={styles.searchForm}
@@ -310,25 +331,14 @@ export function AssessmentQueuePage() {
             Ver toda a fila
           </button>
         ) : null}
-
-        {selectedItem ? (
-          <Link
-            className={styles.primaryAction}
-            to={`/families/${selectedItem.family_id}/assessments/new`}
-          >
-            <Plus aria-hidden="true" />
-            {selectedItem.latest_assessment_id ? "Nova reavaliação" : "Nova avaliação"}
-          </Link>
-        ) : (
-          <Link className={styles.primaryAction} to="/families">
-            <UsersRound aria-hidden="true" />
-            Selecionar família
-          </Link>
-        )}
       </div>
 
       <div className={styles.workspace}>
-        <section className={styles.queuePanel} aria-label="Fila de análise social">
+        <section
+          className={styles.queuePanel}
+          aria-label="Fila de análise social"
+          data-testid="assessment-queue-panel"
+        >
           {isLoading ? (
             <div className={styles.loadingList} aria-live="polite" aria-busy="true">
               <span>Organizando a fila de avaliações…</span>
@@ -499,7 +509,11 @@ export function AssessmentQueuePage() {
           )}
         </section>
 
-        <aside className={styles.detailPanel} aria-label="Avaliação selecionada">
+        <aside
+          className={styles.detailPanel}
+          aria-label="Avaliação selecionada"
+          data-testid="assessment-detail-panel"
+        >
           {selectedItem ? (
             <>
               <div className={styles.detailHeading}>

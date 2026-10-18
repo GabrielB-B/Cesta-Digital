@@ -99,3 +99,22 @@ npm run test:visual:assessments
 Gabriel aprovou a continuidade em 20/08/2026. O marco será consolidado em commit
 próprio e a aba Estoque será iniciada em uma nova branch. O `NO-GO` para
 operação e dados reais permanece vigente; esta branch não foi publicada.
+
+## 9. Refinamento premium — 18/10/2026
+
+A homologação em tela ampla mostrou que a implementação preservava o contrato,
+mas distribuía pouco peso visual entre título, indicadores, busca, tabela e
+painel contextual. O refinamento manteve a identidade e alterou somente a
+composição da fila:
+
+- ação principal integrada ao cabeçalho, ao lado da data de referência;
+- indicadores maiores, com números tabulares e estado ativo mais evidente;
+- busca transformada em faixa operacional de largura integral;
+- proporção fluida entre tabela e painel selecionado em 1440/1920 px;
+- linhas, tipografia, foco, hover e alvos de toque ampliados;
+- indicadores em grade 2 × 2 no celular para antecipar o conteúdo operacional;
+- evidência adicional em 1920 × 950.
+
+Não houve alteração de regra, rota, payload, RBAC, backend, banco ou migration.
+Gates atualizados: lint e build aprovados, E2E 50/50 e matriz visual de Análises
+sociais com 13 aprovações e 7 skips intencionais por viewport.

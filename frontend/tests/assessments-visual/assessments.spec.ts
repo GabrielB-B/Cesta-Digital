@@ -1,4 +1,7 @@
+import path from "node:path";
 import { expect, test, type Route } from "@playwright/test";
+
+const evidenceDirectory = path.resolve("showcase/evidence/v2-07");
 
 const currentUser = {
   id: 1,
@@ -313,6 +316,24 @@ test("fila usa painel no desktop, cards nas telas menores e não causa overflow"
     await expect(table).toBeVisible();
     await expect(page.getByLabel("Avaliação selecionada")).toBeVisible();
     await expect(page.getByLabel("Navegação principal").getByRole("link", { name: "Análises sociais" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByTestId("assessment-header").getByRole("link", { name: /Nova (re)?avaliação/ })).toBeVisible();
+
+    const [statusCardBox, toolbarBox, searchBox, queueBox, detailBox] = await Promise.all([
+      page.getByTestId("assessment-status-card").first().boundingBox(),
+      page.getByTestId("assessment-toolbar").boundingBox(),
+      page.getByRole("search").boundingBox(),
+      page.getByTestId("assessment-queue-panel").boundingBox(),
+      page.getByTestId("assessment-detail-panel").boundingBox(),
+    ]);
+    expect(statusCardBox?.height).toBeGreaterThanOrEqual(112);
+    expect(searchBox?.width ?? 0).toBeGreaterThan((toolbarBox?.width ?? 0) * 0.48);
+    expect(Math.abs((queueBox?.y ?? 0) - (detailBox?.y ?? 0))).toBeLessThanOrEqual(2);
+    expect(queueBox?.width ?? 0).toBeGreaterThan((detailBox?.width ?? 0) * 2);
+
+    const tableFontSize = await table.locator("tbody td").first().evaluate((element) =>
+      Number.parseFloat(window.getComputedStyle(element).fontSize),
+    );
+    expect(tableFontSize).toBeGreaterThanOrEqual(13);
   } else {
     await expect(table).toBeHidden();
     await expect(page.locator("article").first()).toBeVisible();
@@ -326,7 +347,7 @@ test("fila usa painel no desktop, cards nas telas menores e não causa overflow"
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 
   await page.screenshot({
-    path: testInfo.outputPath(`avaliacoes-${testInfo.project.name}.png`),
+    path: path.join(evidenceDirectory, `avaliacoes-${testInfo.project.name}.png`),
     fullPage: viewportWidth >= 1100,
   });
 });
@@ -351,7 +372,7 @@ test("formulário separa cálculo, decisão técnica e retorno", async ({ page }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 
   await page.screenshot({
-    path: testInfo.outputPath(`avaliacao-formulario-${testInfo.project.name}.png`),
+    path: path.join(evidenceDirectory, `avaliacao-formulario-${testInfo.project.name}.png`),
     fullPage: true,
   });
 });

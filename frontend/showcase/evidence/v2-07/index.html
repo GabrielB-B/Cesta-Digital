@@ -24,6 +24,7 @@
       figcaption span { color: #7b8492; font-weight: 500; }
       figure a { display: block; background: #eef0f3; }
       img { display: block; width: 100%; height: auto; }
+      .wide { grid-column: 1 / -1; }
       .mobile img { width: min(100%, 390px); margin: 0 auto; }
       .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
       .note { padding: 18px; background: white; border: 1px solid #e2e5e9; border-radius: 12px; }
@@ -38,9 +39,9 @@
   <body>
     <main>
       <header>
-        <h1>V2-07B · Avaliações</h1>
+        <h1>V2-07B · Análises sociais</h1>
         <p>Comparação da direção aprovada com a fila real de aptidão e o formulário de decisão técnica.</p>
-        <span class="status">Aprovado em 20/08/2026</span>
+        <span class="status">Refinado em 18/10/2026</span>
       </header>
 
       <section>
@@ -56,6 +57,10 @@
           <figure>
             <figcaption>Implementação desktop <span>1440 px · página completa</span></figcaption>
             <a href="avaliacoes-desktop-1440.png" target="_blank" rel="noreferrer"><img src="avaliacoes-desktop-1440.png" alt="Fila V2 de Avaliações em desktop" /></a>
+          </figure>
+          <figure class="wide">
+            <figcaption>Implementação em tela ampla <span>1920 px · página completa</span></figcaption>
+            <a href="avaliacoes-desktop-1920.png" target="_blank" rel="noreferrer"><img src="avaliacoes-desktop-1920.png" alt="Fila de Análises sociais em tela ampla" /></a>
           </figure>
         </div>
       </section>
