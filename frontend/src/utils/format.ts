@@ -47,6 +47,10 @@ export function formatCurrency(value: string | number | null | undefined): strin
 export function formatDecimalInputValue(
   value: string | number | null | undefined
 ): string {
+  if (typeof value !== "number" && String(value ?? "").trim() === "") {
+    return "";
+  }
+
   const numericValue =
     typeof value === "number" ? value : Number(String(value ?? "0").replace(",", "."));
 

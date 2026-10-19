@@ -36,7 +36,7 @@ export type BenefitFormValues = z.infer<typeof benefitFormSchema>;
 export const newBenefitDefaults: BenefitFormValues = {
   person_id: "",
   benefit_type: "",
-  monthly_amount: "0",
+  monthly_amount: "",
   counts_as_income: true,
   is_active: true,
   start_date: "",

@@ -55,7 +55,7 @@ export const newPersonDefaults: PersonFormValues = {
   is_currently_studying: false,
   is_currently_working: false,
   occupation: "",
-  individual_income: "0",
+  individual_income: "",
   attends_church: false,
   church_name: "",
   church_role: "",

@@ -2268,7 +2268,11 @@ test("family creation makes church and UPG relationship easy to fill", async ({ 
   await page.getByRole("button", { name: "Próximo" }).click();
 
   const incomeField = page.getByRole("spinbutton", { name: "Renda mensal total" });
+  const expensesField = page.getByRole("spinbutton", { name: "Despesas essenciais" });
+  await expect(incomeField).toHaveValue("");
+  await expect(expensesField).toHaveValue("");
   await incomeField.fill("850");
+  await expensesField.fill("0");
   await incomeField.blur();
   await page.getByRole("button", { name: "Próximo" }).click();
 
@@ -2420,6 +2424,7 @@ test("family member create validates fields and preserves the person payload", a
   await page.getByRole("textbox", { name: "Parentesco" }).fill("filho");
   await page.getByRole("button", { name: "Próximo" }).click();
   const incomeField = page.getByRole("spinbutton", { name: "Renda individual" });
+  await expect(incomeField).toHaveValue("");
   await incomeField.fill("125");
   await expect(incomeField).toHaveValue("125");
   await page.getByLabel("Está estudando").check();
@@ -2518,7 +2523,9 @@ test("family benefit create validates dates and preserves the income payload", a
   await expect(page.getByRole("textbox", { name: "Tipo do benefício" })).toBeFocused();
 
   await page.getByRole("textbox", { name: "Tipo do benefício" }).fill("Auxílio alimentação");
-  await page.getByRole("spinbutton", { name: "Valor mensal" }).fill("325.50");
+  const monthlyAmountField = page.getByRole("spinbutton", { name: "Valor mensal" });
+  await expect(monthlyAmountField).toHaveValue("");
+  await monthlyAmountField.fill("325.50");
   await page.getByRole("combobox", { name: "Pessoa vinculada" }).selectOption("1");
   await page.getByLabel("Data inicial").fill("2026-02-01");
   await page.getByLabel("Data final").fill("2026-01-31");

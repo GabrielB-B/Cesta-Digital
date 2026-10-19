@@ -30,8 +30,8 @@ auxiliares devem existir somente quando acrescentam informação necessária.
 - Dashboard, Famílias, Estoque, Entradas, Categorias, Entregas, Tipos de Cesta,
   Relatórios e Administração: cabeçalhos principais simplificados;
 - estilos exclusivos dos textos removidos também eliminados;
-- campos monetários selecionam o zero inicial ao receber foco, evitando
-  anexação acidental de dígitos em navegadores diferentes;
+- campos monetários de novos cadastros começam vazios, evitando assumir renda
+  zero e impedindo anexação acidental de dígitos em navegadores diferentes;
 - nenhuma mudança em rotas, payloads, permissões ou regras de negócio.
 
 ## Gates
@@ -39,7 +39,8 @@ auxiliares devem existir somente quando acrescentam informação necessária.
 - lint e build de produção: aprovados;
 - escala tipográfica: aprovada;
 - E2E: 50/50 aprovados;
-- cenário de renda individual repetido cinco vezes após a correção: aprovado;
+- três cenários monetários críticos repetidos cinco vezes em execução serial:
+  15/15 aprovados;
 - shell: 13 aprovados, 3 skips por viewport;
 - Dashboard: 13 aprovados, 3 skips;
 - Famílias: 25 aprovados, 15 skips;

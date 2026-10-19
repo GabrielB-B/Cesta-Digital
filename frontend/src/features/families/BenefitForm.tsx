@@ -74,7 +74,11 @@ export function BenefitForm({
     setActionError("Revise os campos destacados antes de salvar.");
     const firstInvalid = ["benefit_type", "monthly_amount", "end_date"]
       .find((field) => nextErrors[field as keyof BenefitFormValues]);
-    if (firstInvalid) setFocus(firstInvalid as keyof BenefitFormValues);
+    if (firstInvalid) {
+      window.requestAnimationFrame(() => {
+        setFocus(firstInvalid as keyof BenefitFormValues);
+      });
+    }
   }
 
   async function deleteBenefit() {

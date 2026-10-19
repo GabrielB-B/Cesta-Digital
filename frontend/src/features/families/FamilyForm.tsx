@@ -612,7 +612,7 @@ export function FamilyForm({
                       <span>Renda mensal total</span>
                       <CurrencyInput
                         {...incomeField}
-                        value={incomeField.value ?? "0"}
+                        value={incomeField.value ?? ""}
                         onBlur={(event) => {
                           incomeField.onChange(
                             formatDecimalInputValue(event.currentTarget.value)
@@ -628,7 +628,7 @@ export function FamilyForm({
                       <span>Despesas essenciais</span>
                       <CurrencyInput
                         {...expensesField}
-                        value={expensesField.value ?? "0"}
+                        value={expensesField.value ?? ""}
                         onBlur={(event) => {
                           expensesField.onChange(
                             formatDecimalInputValue(event.currentTarget.value)

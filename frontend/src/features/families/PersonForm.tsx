@@ -297,7 +297,7 @@ export function PersonForm({
                     <span>Renda individual</span>
                     <CurrencyInput
                       {...incomeRegister}
-                      value={values.individual_income ?? "0"}
+                      value={values.individual_income ?? ""}
                       aria-invalid={Boolean(errors.individual_income)}
                       aria-describedby={errorId("individual_income")}
                       onChange={(event) => setValue("individual_income", event.target.value, { shouldDirty: true, shouldValidate: true })}
