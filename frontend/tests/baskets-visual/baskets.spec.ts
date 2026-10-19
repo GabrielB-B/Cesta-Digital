@@ -134,7 +134,7 @@ test("tipos de cesta segue a referência com composição e resumo reais", async
   await page.screenshot({ path: path.join(evidenceDirectory, `tipos-cesta-${testInfo.project.name}.png`), fullPage: true });
 });
 
-test("desktop amplo mantém topo compacto e composição centralizada", async ({ page }, testInfo) => {
+test("desktop amplo mantém topo compacto e aproveita o espaço operacional", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-1440", "Validação adicional executada uma vez em desktop amplo.");
   await page.setViewportSize({ width: 1920, height: 950 });
   await page.goto("/basket-types");
@@ -142,11 +142,15 @@ test("desktop amplo mantém topo compacto e composição centralizada", async ({
 
   const topbarBox = await page.locator('header[aria-label="Barra do aplicativo"]').boundingBox();
   const contentBox = await page.locator("#conteudo-principal > section").boundingBox();
+  const workspaceBox = await page.locator("#conteudo-principal").boundingBox();
   const searchBox = await page.getByRole("search").boundingBox();
   const createBox = await page.getByRole("link", { name: "Nova cesta" }).boundingBox();
 
   expect(topbarBox?.height).toBeLessThanOrEqual(65);
-  expect(contentBox?.width).toBeLessThanOrEqual(1441);
+  expect(contentBox).not.toBeNull();
+  expect(workspaceBox).not.toBeNull();
+  expect(contentBox!.width).toBeGreaterThanOrEqual(workspaceBox!.width - 1);
+  expect(contentBox!.width).toBeGreaterThan(1600);
   expect(Math.abs((searchBox?.y ?? 0) - (createBox?.y ?? 0))).toBeLessThanOrEqual(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 

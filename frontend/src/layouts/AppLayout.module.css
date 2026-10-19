@@ -311,7 +311,7 @@
   max-width: var(--cd-content-max);
   min-height: var(--cd-topbar-height);
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--cd-workspace-gutter);
 }
 
 .topbarIdentity {
@@ -527,7 +527,7 @@
   width: 100%;
   max-width: var(--cd-content-max);
   margin: 0 auto;
-  padding: 1.75rem 2rem 3rem;
+  padding: 1.75rem var(--cd-workspace-gutter) 3rem;
 }
 
 .drawerBackdrop,

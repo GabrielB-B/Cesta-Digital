@@ -136,10 +136,14 @@ test("dashboard mantém leitura analítica em desktop amplo", async ({ page }, t
   await page.evaluate(() => document.fonts.ready);
 
   const contentBox = await page.locator("#conteudo-principal > section").boundingBox();
+  const workspaceBox = await page.locator("#conteudo-principal").boundingBox();
   const distributionBox = await page.getByRole("region", { name: "Situação das famílias" }).boundingBox();
   const quickActionsBox = await page.getByRole("region", { name: "Ações rápidas" }).boundingBox();
 
-  expect(contentBox?.width).toBeLessThanOrEqual(1441);
+  expect(contentBox).not.toBeNull();
+  expect(workspaceBox).not.toBeNull();
+  expect(contentBox!.width).toBeGreaterThanOrEqual(workspaceBox!.width - 1);
+  expect(contentBox!.width).toBeGreaterThan(1600);
   expect(Math.abs((distributionBox?.y ?? 0) - (quickActionsBox?.y ?? 0))).toBeLessThanOrEqual(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 

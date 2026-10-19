@@ -63,7 +63,8 @@
   --cd-topbar-height: 4rem;
   --cd-mobile-topbar-height: 3.5rem;
   --cd-mobile-bottom-nav-height: 4rem;
-  --cd-content-max: 90rem;
+  --cd-content-max: 120rem;
+  --cd-workspace-gutter: clamp(1.5rem, 2vw, 2.5rem);
   --cd-form-max: 45rem;
 
   --cd-motion-fast: 120ms;

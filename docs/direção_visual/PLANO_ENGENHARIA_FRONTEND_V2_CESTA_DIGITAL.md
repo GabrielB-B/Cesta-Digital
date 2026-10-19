@@ -165,7 +165,7 @@ Se futuramente houver listagem de avaliações, entradas/lotes ou relatórios, a
 - Logo compacto no topo da sidebar. Não duplicar marca na topbar.
 - Itens agrupados por módulo; estado ativo com fundo `brand-soft`, ícone/texto escuros e detalhe rosa discreto.
 - Topbar de 64 px: breadcrumb/section opcional à esquerda; conta/notificações/contexto à direita.
-- Área de conteúdo fluida até 1440 px. Tabelas aproveitam largura; formulários limitados a ~720 px.
+- Área operacional fluida até 1920 px, com margem lateral responsiva de 24–40 px. Tabelas e painéis aproveitam a largura; formulários mantêm limites locais adequados à leitura.
 
 ### 7.2 Mobile < 900 px
 

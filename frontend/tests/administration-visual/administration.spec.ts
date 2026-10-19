@@ -85,8 +85,12 @@ test("administração ampla usa abas acima do espaço de trabalho", async ({ pag
   const tableBox = await page.getByRole("table", { name: "Usuários e perfis cadastrados" }).boundingBox();
   const asideBox = await page.locator('main[aria-labelledby="administration-title"] aside').boundingBox();
   const contentBox = await page.locator("#conteudo-principal > section").boundingBox();
+  const workspaceBox = await page.locator("#conteudo-principal").boundingBox();
 
-  expect(contentBox?.width).toBeLessThanOrEqual(1441);
+  expect(contentBox).not.toBeNull();
+  expect(workspaceBox).not.toBeNull();
+  expect(contentBox!.width).toBeGreaterThanOrEqual(workspaceBox!.width - 1);
+  expect(contentBox!.width).toBeGreaterThan(1600);
   expect((navigationBox?.y ?? 0)).toBeLessThan(tableBox?.y ?? 0);
   expect((asideBox?.x ?? 0)).toBeGreaterThan((tableBox?.x ?? 0) + (tableBox?.width ?? 0) - 2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
@@ -99,7 +103,7 @@ test("perfis explicam permissões reais", async ({ page }, testInfo) => {
   await page.goto("/users?view=roles");
   await expect(page.getByRole("heading", { name: "Perfis de acesso" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Administrador", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Operador", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Responsável por estoque", exact: true })).toBeVisible();
   await page.screenshot({ path: path.join(evidenceDirectory, `administracao-perfis-${testInfo.project.name}.png`), fullPage: true });
 });
 
