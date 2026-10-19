@@ -2419,7 +2419,9 @@ test("family member create validates fields and preserves the person payload", a
   await page.getByLabel("Data de nascimento").fill("2014-03-11");
   await page.getByRole("textbox", { name: "Parentesco" }).fill("filho");
   await page.getByRole("button", { name: "Próximo" }).click();
-  await page.getByRole("spinbutton", { name: "Renda individual" }).fill("125");
+  const incomeField = page.getByRole("spinbutton", { name: "Renda individual" });
+  await incomeField.fill("125");
+  await expect(incomeField).toHaveValue("125");
   await page.getByLabel("Está estudando").check();
   await page.getByLabel("Frequenta igreja ou UPG").check();
   await page.getByRole("textbox", { name: "Igreja ou UPG" }).fill("UPG Central");
