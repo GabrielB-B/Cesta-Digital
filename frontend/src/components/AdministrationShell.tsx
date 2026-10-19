@@ -27,7 +27,6 @@ export function AdministrationShell({
       <PageHeader
         title="Administração"
         titleId="administration-title"
-        description="Gerencie acessos, perfis e registros de segurança do Cesta Digital."
       />
 
       <section className={styles.frame}>

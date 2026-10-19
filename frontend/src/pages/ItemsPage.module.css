@@ -17,14 +17,6 @@
   letter-spacing: -0.035em;
 }
 
-.pageHeader p {
-  max-width: 48rem;
-  margin: 0.3rem 0 0;
-  color: var(--cd-text-muted);
-  font-size: 0.9375rem;
-  line-height: 1.5rem;
-}
-
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -488,7 +480,6 @@
   .page { gap: 1rem; }
   .pageHeader { padding-top: 0; }
   .pageHeader h1 { font-size: 1.625rem; }
-  .pageHeader p { font-size: 0.85rem; line-height: 1.3rem; }
   .metrics { gap: 0.75rem; }
   .metricCard { min-height: 7rem; padding: 0.9rem; }
   .metricIcon { width: 2.75rem; height: 2.75rem; }

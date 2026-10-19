@@ -325,40 +325,6 @@
   display: none;
 }
 
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--cd-text-muted);
-  font-size: 0.8125rem;
-  line-height: 1.25rem;
-  white-space: nowrap;
-}
-
-.breadcrumb svg {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex: 0 0 auto;
-  color: #98a2b3;
-}
-
-.breadcrumbSection,
-.breadcrumbCurrent {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.breadcrumbSection {
-  font-weight: 580;
-}
-
-.breadcrumbCurrent {
-  color: #16233a;
-  font-weight: 680;
-}
-
 .topbarActions {
   display: flex;
   align-items: center;
@@ -666,7 +632,6 @@
     display: block;
   }
 
-  .breadcrumb,
   .topbarEnvironmentNotice {
     display: none;
   }

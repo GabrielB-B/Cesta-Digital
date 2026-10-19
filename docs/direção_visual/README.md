@@ -30,6 +30,7 @@ de 18/08/2026. Ela deve ser consultada antes de toda alteração visual.
 23. [`Cesta_Digital_Frontend_V2_Baseline_Desktop.png`](./Cesta_Digital_Frontend_V2_Baseline_Desktop.png) — baseline estética geral anterior às referências por tela.
 24. [`cesta-digital-frontend-v2-design-tokens.json`](./cesta-digital-frontend-v2-design-tokens.json) — tokens canônicos.
 25. [`Cesta_Digital_Simbolo_Oficial_Transparente.png`](./Cesta_Digital_Simbolo_Oficial_Transparente.png) — símbolo oficial preservado.
+26. [`REGISTRO_V2_21_DENSIDADE_EDITORIAL.md`](./REGISTRO_V2_21_DENSIDADE_EDITORIAL.md) — simplificação dos cabeçalhos, remoção de repetições e homologação visual transversal.
 
 O PDF é a versão diagramada do plano mestre. O CSS canônico de tokens foi
 materializado no frontend no marco de fundação V2-02.

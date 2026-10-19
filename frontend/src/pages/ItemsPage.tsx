@@ -254,10 +254,6 @@ export function ItemsPage() {
       <header className={styles.pageHeader}>
         <div>
           <h1>Estoque</h1>
-          <p>
-            Acompanhe alimentos, produtos de higiene e demais itens doados, com
-            quantidades e prazos de validade.
-          </p>
         </div>
       </header>
 

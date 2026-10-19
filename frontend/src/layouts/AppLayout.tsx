@@ -1,7 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
-  ChevronRight,
   Heart,
   Menu,
   UserRound,
@@ -429,17 +428,6 @@ export function AppLayout() {
                 <div className={styles.mobileBrand}>
                   <ShellBrand compact />
                 </div>
-                <nav className={styles.breadcrumb} aria-label="Localização atual">
-                  <span className={styles.breadcrumbSection}>{routeMeta.section}</span>
-                  {routeMeta.title !== routeMeta.section ? (
-                    <>
-                      <ChevronRight aria-hidden="true" />
-                      <span className={styles.breadcrumbCurrent} aria-current="page">
-                        {routeMeta.title}
-                      </span>
-                    </>
-                  ) : null}
-                </nav>
               </div>
 
               <div className={styles.topbarActions}>

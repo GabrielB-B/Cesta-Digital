@@ -23,13 +23,6 @@
   letter-spacing: -0.035em;
 }
 
-.pageHeader p {
-  margin: 0.3rem 0 0;
-  color: var(--cd-text-muted);
-  font-size: 0.9375rem;
-  line-height: 1.5rem;
-}
-
 .toolbar {
   position: relative;
   display: grid;
@@ -731,11 +724,6 @@
 
   .pageHeader h1 {
     font-size: 1.625rem;
-  }
-
-  .pageHeader p {
-    font-size: 0.875rem;
-    line-height: 1.3rem;
   }
 
   .toolbar {

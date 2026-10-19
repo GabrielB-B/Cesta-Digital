@@ -201,7 +201,6 @@ export function FamiliesPage() {
       <header className={styles.pageHeader}>
         <div>
           <h1>Famílias</h1>
-          <p>Cadastros e acompanhamento social.</p>
         </div>
       </header>
 

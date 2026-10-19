@@ -355,7 +355,6 @@ export function DeliveriesPage() {
       <header className={styles.pageHeader}>
         <div>
           <h1>Entregas</h1>
-          <p>Agende, acompanhe e confirme a distribuição das cestas para as famílias.</p>
         </div>
         <button
           type="button"

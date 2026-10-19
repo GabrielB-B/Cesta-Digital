@@ -366,7 +366,6 @@ export function DashboardPage() {
           <h1>
             Olá, {getFirstName(user?.name)} <span aria-hidden="true">👋</span>
           </h1>
-          <p>Acompanhe os indicadores e o que precisa de ação agora.</p>
         </div>
         <div className={styles.headerContext} aria-label={`Visão de ${dateFormatter.format(new Date())}`}>
           <span aria-hidden="true" />

@@ -117,7 +117,6 @@ export function StockBatchesPage() {
       <header className={styles.pageHeader}>
         <div>
           <h1>Entradas</h1>
-          <p>Registre e acompanhe os recebimentos e lotes adicionados ao estoque.</p>
         </div>
         <Link className={styles.primaryAction} to="/stock-batches/new">
           <Plus aria-hidden="true" />

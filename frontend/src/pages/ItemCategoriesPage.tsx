@@ -225,7 +225,6 @@ export function ItemCategoriesPage() {
       <header className={styles.pageHeader}>
         <div>
           <h1>Categorias</h1>
-          <p>Organize os grupos usados no cadastro de produtos.</p>
         </div>
       </header>
 

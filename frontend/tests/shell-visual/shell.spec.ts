@@ -69,7 +69,7 @@ test.beforeEach(async ({ page }) => {
   ).toBeVisible();
 });
 
-test("shell mantém localização, responsividade e ausência de overflow", async ({
+test("shell mantém navegação, responsividade e ausência de overflow", async ({
   page,
 }, testInfo) => {
   const viewportWidth = page.viewportSize()?.width ?? 0;
@@ -82,6 +82,7 @@ test("shell mantém localização, responsividade e ausência de overflow", asyn
 
   await expect(activeHome).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("button", { name: "Conta de Ana Silva" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Localização atual" })).toHaveCount(0);
 
   const horizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,

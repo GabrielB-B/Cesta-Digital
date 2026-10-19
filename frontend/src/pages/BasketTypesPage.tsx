@@ -134,7 +134,6 @@ export function BasketTypesPage() {
     <div className={styles.page}>
       <PageHeader
         title="Tipos de cesta"
-        description="Defina e gerencie as composições disponíveis para entrega."
       />
 
       <div className={styles.commandBar}>

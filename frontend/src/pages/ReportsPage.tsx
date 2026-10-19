@@ -173,7 +173,6 @@ export function ReportsPage() {
     <main className={styles.page} aria-labelledby="reports-title">
       <header className={styles.pageHeader}>
         <h1 id="reports-title">Relatórios</h1>
-        <p>Acompanhe os principais indicadores operacionais e de impacto social.</p>
       </header>
 
       <form className={styles.filters} onSubmit={applyPeriod}>
