@@ -2,7 +2,7 @@
 
 **Branch:** `feat/analises-layout-premium`
 
-**Status:** implementação, homologação local e aceite visual de Gabriel concluídos
+**Status:** implementação, aceite visual, homologação local e preview remoto concluídos
 
 ## Diagnóstico
 
@@ -51,10 +51,13 @@ auxiliares devem existir somente quando acrescentam informação necessária.
 - Tipos de Cesta: 9 aprovados, 7 skips;
 - Relatórios: 6 aprovados, 2 skips;
 - Administração: 11 aprovados, 9 skips;
-- overflow horizontal: ausente nos viewports cobertos.
+- overflow horizontal: ausente nos viewports cobertos;
+- CI remoto com backend, frontend, migrações MySQL e contratos operacionais:
+  aprovado;
+- preview da branch publicado pela integração Vercel.
 
 ## Próximo gate
 
-Publicar a branch aprovada no ambiente de homologação e executar o roteiro
-manual por perfil. Merge em `main`, promoção a produção e uso de dados pessoais
-reais continuam fora deste checkpoint.
+Executar no preview o roteiro manual de login e fluxo crítico por perfil,
+incluindo a validação da origem no CORS. Merge em `main`, promoção a produção e
+uso de dados pessoais reais continuam fora deste checkpoint.
