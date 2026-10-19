@@ -5,6 +5,11 @@ export interface BasketTypeResponse {
   notes: string | null;
 }
 
+export interface OperationalBasketTypeResponse {
+  id: number;
+  name: string;
+}
+
 export interface BasketTypeOverviewItemResponse extends BasketTypeResponse {
   item_count: number;
   estimated_value: string;

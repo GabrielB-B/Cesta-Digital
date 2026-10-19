@@ -609,8 +609,11 @@ Simular 400, 401, 403, 409, 422, 500, timeout e perda de rede durante formulári
 - [ ] Admin: usuários, auditoria e configurações autorizadas.
 - [ ] Liderança social: dados sociais autorizados, sem administração indevida.
 - [ ] Operador: estoque/distribuição e projeção social mínima.
-- [ ] Colaborador: famílias, alimentos, entradas e entregas; sem análises sociais,
-  relatórios, configuração de categorias/cestas ou administração.
+- [ ] Colaborador: diretório mínimo de famílias, entradas, saídas manuais e
+  entregas; sem edição social, catálogo, ajustes, relatórios, categorias/cestas
+  ou administração.
+- [ ] Projeção operacional não retorna renda, contatos, saúde, benefícios,
+  avaliações, observações sociais ou código interno.
 - [ ] Sem papel: acesso negado no frontend e backend.
 - [ ] Ação crítica registra auditoria.
 

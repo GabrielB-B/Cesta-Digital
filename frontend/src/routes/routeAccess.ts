@@ -8,9 +8,10 @@ import type { AppRole } from "../types/auth";
  */
 export const ROUTE_ACCESS = {
   authenticated: ["admin", "lider_social", "operador", "colaborador"],
-  familyRecords: ["admin", "lider_social", "colaborador"],
+  familyDirectory: ["admin", "lider_social", "operador", "colaborador"],
+  familyManagement: ["admin", "lider_social"],
   socialAssessments: ["admin", "lider_social"],
-  inventory: ["admin", "operador", "colaborador"],
+  inventoryOperations: ["admin", "operador", "colaborador"],
   inventoryCatalog: ["admin", "operador"],
   inventoryConfiguration: ["admin", "operador"],
   deliveries: ["admin", "operador", "colaborador"],

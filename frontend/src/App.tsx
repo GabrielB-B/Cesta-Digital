@@ -110,7 +110,7 @@ function App() {
             <Route
               path="families"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.familyRecords}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.familyDirectory}>
                   <FamiliesPage />
                 </RoleRoute>
               }
@@ -126,7 +126,7 @@ function App() {
             <Route
               path="families/new"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.familyRecords}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.familyManagement}>
                   <FamilyCreatePage />
                 </RoleRoute>
               }
@@ -134,7 +134,7 @@ function App() {
             <Route
               path="families/:familyId"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.familyRecords}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.familyManagement}>
                   <FamilyDetailPage />
                 </RoleRoute>
               }
@@ -142,7 +142,7 @@ function App() {
             <Route
               path="families/:familyId/edit"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.familyRecords}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.familyManagement}>
                   <FamilyEditPage />
                 </RoleRoute>
               }
@@ -150,7 +150,7 @@ function App() {
             <Route
               path="families/:familyId/people/new"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.familyRecords}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.familyManagement}>
                   <FamilyPersonCreatePage />
                 </RoleRoute>
               }
@@ -158,7 +158,7 @@ function App() {
             <Route
               path="families/:familyId/people/:personId/edit"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.familyRecords}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.familyManagement}>
                   <FamilyPersonEditPage />
                 </RoleRoute>
               }
@@ -166,7 +166,7 @@ function App() {
             <Route
               path="families/:familyId/benefits/new"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.familyRecords}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.familyManagement}>
                   <FamilyBenefitCreatePage />
                 </RoleRoute>
               }
@@ -174,7 +174,7 @@ function App() {
             <Route
               path="families/:familyId/benefits/:benefitId/edit"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.familyRecords}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.familyManagement}>
                   <FamilyBenefitEditPage />
                 </RoleRoute>
               }
@@ -190,7 +190,7 @@ function App() {
             <Route
               path="items"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.inventory}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.inventoryOperations}>
                   <ItemsPage />
                 </RoleRoute>
               }
@@ -206,7 +206,7 @@ function App() {
             <Route
               path="items/new"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.inventory}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.inventoryCatalog}>
                   <ItemCreatePage />
                 </RoleRoute>
               }
@@ -214,7 +214,7 @@ function App() {
             <Route
               path="items/:itemId"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.inventory}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.inventoryOperations}>
                   <ItemDetailPage />
                 </RoleRoute>
               }
@@ -222,7 +222,7 @@ function App() {
             <Route
               path="stock-batches"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.inventory}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.inventoryOperations}>
                   <StockBatchesPage />
                 </RoleRoute>
               }
@@ -230,7 +230,7 @@ function App() {
             <Route
               path="stock-batches/new"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.inventory}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.inventoryOperations}>
                   <StockBatchCreatePage />
                 </RoleRoute>
               }
@@ -238,7 +238,7 @@ function App() {
             <Route
               path="stock-movements/new"
               element={
-                <RoleRoute allowedRoles={ROUTE_ACCESS.inventory}>
+                <RoleRoute allowedRoles={ROUTE_ACCESS.inventoryOperations}>
                   <StockMovementCreatePage />
                 </RoleRoute>
               }

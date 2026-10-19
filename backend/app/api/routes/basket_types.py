@@ -49,7 +49,7 @@ def create_basket_type_endpoint(
 @router.get(
     "/basket-types",
     response_model=list[BasketTypeResponse],
-    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
 )
 def list_basket_types_endpoint(
     response: Response,
@@ -75,7 +75,7 @@ def list_basket_types_endpoint(
 @router.get(
     "/basket-types/overview",
     response_model=list[BasketTypeOverviewItemResponse],
-    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
 )
 def list_basket_types_overview_endpoint(
     response: Response,
@@ -101,7 +101,7 @@ def list_basket_types_overview_endpoint(
 @router.get(
     "/basket-types/{basket_type_id}",
     response_model=BasketTypeDetailResponse,
-    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
 )
 def get_basket_type_detail_endpoint(
     basket_type_id: int,

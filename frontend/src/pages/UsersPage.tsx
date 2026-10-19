@@ -54,7 +54,7 @@ const roleDescriptions: Record<string, string> = {
   admin: "Administra acessos, acompanha auditoria e opera todos os módulos.",
   lider_social: "Aprova análises e acessa relatórios sociais, além de gerenciar famílias.",
   operador: "Edita o catálogo, configura cestas e acessa relatórios operacionais.",
-  colaborador: "Cadastra famílias e alimentos, registra entradas e entregas, sem relatórios ou administração.",
+  colaborador: "Registra entradas, saídas e entregas; consulta famílias sem editar dados sociais ou cadastros mestres.",
 };
 
 const roleCapabilities: Record<string, string[]> = {
@@ -74,9 +74,9 @@ const roleCapabilities: Record<string, string[]> = {
     "Agendamentos, entregas e rastreabilidade",
   ],
   colaborador: [
-    "Famílias, pessoas e novos alimentos",
-    "Entradas, movimentações e entregas",
-    "Sem relatórios ou edição do cadastro mestre",
+    "Consulta operacional de famílias",
+    "Entradas, saídas manuais e entregas",
+    "Sem catálogo, configurações, relatórios ou administração",
   ],
 };
 
@@ -303,9 +303,7 @@ export function UsersPage() {
   function toggleRole(roleName: string) {
     setFormData((previous) => ({
       ...previous,
-      roles: previous.roles.includes(roleName)
-        ? previous.roles.filter((role) => role !== roleName)
-        : [...previous.roles, roleName],
+      roles: [roleName],
     }));
   }
 
@@ -588,16 +586,11 @@ export function UsersPage() {
             {!editingUser ? <p className={styles.formHint}>{PASSWORD_POLICY_HINT}</p> : null}
 
             <section className={styles.permissionBlock}>
-              <div><h3>Perfis de acesso</h3><p>Para uma pessoa comum, mantenha somente “Colaborador (uso diário)”. Perfis adicionais somam permissões.</p></div>
-              {formData.roles.some((role) => role !== "colaborador") ? (
-                <p className={styles.permissionWarning} role="status">
-                  Atenção: qualquer perfil adicional amplia o acesso; Coordenação social, Responsável por estoque e Administrador liberam Relatórios. Para um acesso comum, deixe somente Colaborador.
-                </p>
-              ) : null}
+              <div><h3>Perfil de acesso</h3><p>Escolha uma responsabilidade principal. O sistema aplica somente as permissões desse perfil.</p></div>
               <div className={styles.roleChoices}>
                 {roles.toSorted(compareRolesForDisplay).map((role) => (
                   <label className={styles.checkCard} key={role.id}>
-                    <input type="checkbox" checked={formData.roles.includes(role.name)} onChange={() => toggleRole(role.name)} />
+                    <input type="radio" name="user_role" checked={formData.roles.includes(role.name)} onChange={() => toggleRole(role.name)} />
                     <span>
                       <strong>
                         {formatRole(role.name)}

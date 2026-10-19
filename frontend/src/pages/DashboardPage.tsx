@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
+  ArrowUpFromLine,
   CalendarDays,
   CalendarPlus,
   Circle,
@@ -123,7 +124,11 @@ export function DashboardPage() {
 
   const canAccessFamilies = userHasAnyRole(
     user?.roles ?? [],
-    ROUTE_ACCESS.familyRecords,
+    ROUTE_ACCESS.familyDirectory,
+  );
+  const canManageFamilies = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.familyManagement,
   );
   const canAccessAssessments = userHasAnyRole(
     user?.roles ?? [],
@@ -131,7 +136,7 @@ export function DashboardPage() {
   );
   const canAccessInventory = userHasAnyRole(
     user?.roles ?? [],
-    ROUTE_ACCESS.inventory,
+    ROUTE_ACCESS.inventoryOperations,
   );
   const canConfigureBaskets = userHasAnyRole(
     user?.roles ?? [],
@@ -217,9 +222,16 @@ export function DashboardPage() {
         label: "Nova entrada",
         icon: PackagePlus,
       });
+      if (!canManageFamilies) {
+        actions.push({
+          to: "/stock-movements/new",
+          label: "Registrar saída",
+          icon: ArrowUpFromLine,
+        });
+      }
     }
 
-    if (canAccessFamilies) {
+    if (canManageFamilies) {
       actions.push({
         to: "/families/new",
         label: "Nova família",
@@ -244,7 +256,7 @@ export function DashboardPage() {
     }
 
     return actions.slice(0, 4);
-  }, [canAccessDeliveries, canAccessFamilies, canAccessInventory, canConfigureBaskets]);
+  }, [canAccessDeliveries, canAccessInventory, canConfigureBaskets, canManageFamilies]);
 
   if (isLoading) {
     return (
@@ -484,7 +496,7 @@ export function DashboardPage() {
       </section>
 
       <div className={styles.dashboardFooterGrid}>
-        {canAccessFamilies ? (
+        {canManageFamilies ? (
           <section className={styles.distributionPanel} aria-labelledby="family-distribution-title">
             <div className={styles.quickHeader}>
               <div>
@@ -525,7 +537,7 @@ export function DashboardPage() {
 
         {quickActions.length > 0 ? (
           <section
-            className={`${styles.quickPanel}${canAccessFamilies ? "" : ` ${styles.quickPanelWide}`}`}
+            className={`${styles.quickPanel}${canManageFamilies ? "" : ` ${styles.quickPanelWide}`}`}
             aria-labelledby="dashboard-quick-actions"
           >
             <div className={styles.quickHeader}>

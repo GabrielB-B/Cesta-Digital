@@ -7,6 +7,17 @@ export interface FamilyContactResponse {
   notes: string | null;
 }
 
+export interface OperationalFamilyResponse {
+  id: number;
+  display_name: string;
+  status: string;
+  total_residents: number;
+  neighborhood: string;
+  city: string;
+  state: string;
+  eligible_for_delivery: boolean;
+}
+
 export interface FamilyPersonResponse {
   id: number;
   full_name: string;

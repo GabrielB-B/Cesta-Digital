@@ -38,7 +38,7 @@ def create_item_category_endpoint(
 @router.get(
     "/item-categories",
     response_model=list[ItemCategoryResponse],
-    dependencies=[Depends(require_any_role("admin", "operador", "colaborador"))],
+    dependencies=[Depends(require_any_role("admin", "operador"))],
 )
 def list_item_categories_endpoint(
     db: Annotated[Session, Depends(get_db)],

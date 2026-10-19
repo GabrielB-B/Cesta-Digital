@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDownToLine, ChevronDown } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
+import { useAuth } from "../contexts/useAuth";
+import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
 import type {
   ItemDetailResponse,
   StockBatchCreatePayload,
@@ -81,6 +83,11 @@ export function StockBatchFormPanel({
   onCreated,
 }: StockBatchFormPanelProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canAdjustStock = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.inventoryCatalog,
+  );
   const [searchParams] = useSearchParams();
   const requestedItemId = searchParams.get("itemId");
   const cameFromItemCreation = searchParams.get("from") === "item-create";
@@ -421,7 +428,7 @@ export function StockBatchFormPanel({
             <option value="doacao_item">Doação de item</option>
             <option value="compra_igreja">Compra com recursos da instituição</option>
             <option value="conversao_dinheiro">Conversão de doação em dinheiro</option>
-            <option value="ajuste">Ajuste de inventário</option>
+            {canAdjustStock ? <option value="ajuste">Ajuste de inventário</option> : null}
           </select>
         </label>
 

@@ -25,6 +25,7 @@ from app.schemas.delivery import (
     DeliveryScheduleUpdate,
 )
 from app.services.audit_log_service import record_audit_log
+from app.services.family_identity import family_display_name
 from app.services.stock_availability_policy import (
     operational_today,
     stock_batch_fefo_ordering,
@@ -32,47 +33,6 @@ from app.services.stock_availability_policy import (
 )
 
 ACTIVE_SCHEDULE_STATUSES = {"agendado", "reagendado"}
-NAME_PARTICLES = {"da", "das", "de", "do", "dos", "e"}
-NAME_SUFFIXES = {
-    "filho",
-    "filha",
-    "júnior",
-    "junior",
-    "neto",
-    "neta",
-    "sobrinho",
-    "sobrinha",
-}
-
-
-def _family_display_name(responsible_name: str | None, neighborhood: str) -> str:
-    name_parts = (responsible_name or "").strip().split()
-    if name_parts:
-        last_part = name_parts[-1]
-        if last_part.casefold() in NAME_SUFFIXES and len(name_parts) > 1:
-            previous_part = next(
-                (
-                    part
-                    for part in reversed(name_parts[:-1])
-                    if part.casefold() not in NAME_PARTICLES
-                ),
-                None,
-            )
-            surname = f"{previous_part} {last_part}" if previous_part else last_part
-        else:
-            surname = next(
-                (
-                    part
-                    for part in reversed(name_parts)
-                    if part.casefold() not in NAME_PARTICLES
-                ),
-                last_part,
-            )
-        return f"Família {surname}"
-
-    return f"Família em {neighborhood}"
-
-
 def _delivery_period_conditions(
     period: DeliveryOperationsPeriod,
     reference_date: date,
@@ -229,7 +189,7 @@ def get_delivery_operations(
     items = []
     for row in rows:
         item = dict(row)
-        item["family_display_name"] = _family_display_name(
+        item["family_display_name"] = family_display_name(
             item.pop("_responsible_name", None),
             item["neighborhood"],
         )

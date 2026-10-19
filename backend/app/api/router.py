@@ -13,6 +13,7 @@ from app.api.routes.item_categories import router as item_categories_router
 from app.api.routes.items import router as items_router
 from app.api.routes.item_images import public_router as public_item_images_router
 from app.api.routes.item_images import router as item_images_router
+from app.api.routes.operational import router as operational_router
 from app.api.routes.people import router as people_router
 from app.api.routes.reports import router as reports_router
 from app.api.routes.social_assessments import router as social_assessments_router
@@ -33,6 +34,7 @@ api_router.include_router(item_categories_router)
 api_router.include_router(items_router)
 api_router.include_router(item_images_router)
 api_router.include_router(public_item_images_router)
+api_router.include_router(operational_router)
 api_router.include_router(stock_batches_router)
 api_router.include_router(stock_movements_router)
 api_router.include_router(stock_summary_router)

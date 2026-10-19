@@ -1,12 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.stock_movement import StockMovementCreate, StockMovementResponse
+from app.services.auth_service import get_user_roles
 from app.services.stock_movement_service import (
     create_stock_movement,
     list_stock_movements,
@@ -25,6 +26,12 @@ def create_stock_movement_endpoint(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """Registra uma movimentação de estoque sobre um lote existente."""
+    roles = set(get_user_roles(db, current_user.id))
+    if not roles.intersection({"admin", "operador"}) and payload.movement_type != "saida_manual":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Colaboradores podem registrar apenas saídas manuais de estoque.",
+        )
     return create_stock_movement(db, payload, current_user)
 
 

@@ -52,6 +52,9 @@ class UserAdminBase(BaseModel):
         if not normalized_roles:
             raise ValueError("Selecione pelo menos um perfil para o usuario.")
 
+        if len(normalized_roles) > 1:
+            raise ValueError("Selecione apenas um perfil principal por usuario.")
+
         return normalized_roles
 
 

@@ -29,10 +29,10 @@ Os dados devem ser usados somente para:
 - `admin`: administracao de usuarios, auditoria e acesso amplo aos modulos.
 - `lider_social`: familias, pessoas, beneficios, avaliacoes e resumo financeiro.
 - `operador`: estoque, tipos de cesta, agendamentos e entregas.
-- `colaborador`: cadastro de familias, pessoas, beneficios e novos produtos;
-  operacao de entradas, movimentacoes e entregas. Nao altera o cadastro mestre de
-  produtos existentes nem acessa historico/decisao de avaliacao social, relatorios,
-  configuracao de categorias/cestas, usuarios ou auditoria.
+- `colaborador`: consulta uma projeção mínima de famílias e opera entradas,
+  saídas manuais e entregas. Não recebe contatos, renda, saúde, benefícios,
+  avaliações ou observações sociais; também não cria/edita famílias, produtos,
+  categorias, tipos de cesta, ajustes de estoque, usuários ou auditoria.
 
 Qualquer novo perfil deve ser documentado antes de entrar em uso.
 

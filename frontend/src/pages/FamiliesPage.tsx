@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
+import { useAuth } from "../contexts/useAuth";
+import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
 import type {
   FamilyDetailResponse,
   FamilyListItemResponse,
@@ -26,6 +28,7 @@ import {
   getQueryText,
 } from "../utils/list-query";
 import styles from "./FamiliesPage.module.css";
+import { OperationalFamiliesPage } from "./OperationalFamiliesPage";
 
 const PAGE_SIZE = 25;
 
@@ -63,7 +66,7 @@ function getPaginationItems(currentPage: number, totalPages: number) {
   return [1, "ellipsis", currentPage, "ellipsis", totalPages] as const;
 }
 
-export function FamiliesPage() {
+function ManagedFamiliesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeSearch = getQueryText(searchParams, "q");
   const activeStatus = getQueryText(searchParams, "status");
@@ -465,4 +468,14 @@ export function FamiliesPage() {
       </div>
     </div>
   );
+}
+
+export function FamiliesPage() {
+  const { user } = useAuth();
+  const canManageFamilies = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.familyManagement,
+  );
+
+  return canManageFamilies ? <ManagedFamiliesPage /> : <OperationalFamiliesPage />;
 }

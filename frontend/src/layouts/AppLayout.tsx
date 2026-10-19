@@ -220,7 +220,7 @@ export function AppLayout() {
           path: "/families",
           label: "Famílias",
           icon: "families",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.familyRecords),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.familyDirectory),
         },
         {
           path: "/assessments",
@@ -232,13 +232,13 @@ export function AppLayout() {
           path: "/items",
           label: "Estoque",
           icon: "items",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.inventory),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.inventoryOperations),
         },
         {
           path: "/stock-batches",
           label: "Entradas",
           icon: "entries",
-          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.inventory),
+          visible: userHasAnyRole(userRoles, ROUTE_ACCESS.inventoryOperations),
         },
         {
           path: "/item-categories",

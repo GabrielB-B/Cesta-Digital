@@ -3,6 +3,8 @@ import { ArrowRightLeft, PackageSearch } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { ProductImage } from "../components/ProductImage";
+import { useAuth } from "../contexts/useAuth";
+import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
 import { getApiErrorMessage } from "../utils/api-error";
 import { formatDateOnly } from "../utils/format";
 import {
@@ -100,6 +102,11 @@ function isBatchBlockedForMovement(
  */
 export function StockMovementCreatePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canAdjustStock = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.inventoryCatalog,
+  );
   const [searchParams] = useSearchParams();
   const requestedItemId = searchParams.get("itemId");
 
@@ -646,11 +653,13 @@ export function StockMovementCreatePage() {
                 onChange={handleInputChange}
                 aria-describedby="movement-type-help"
               >
-                {movementTypeOptions.map((option) => (
+                {movementTypeOptions
+                  .filter((option) => canAdjustStock || option.value === "saida_manual")
+                  .map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
-                ))}
+                  ))}
               </select>
               <small id="movement-type-help">
                 {movementTypeHelp[formData.movement_type]}

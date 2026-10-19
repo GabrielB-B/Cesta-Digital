@@ -19,6 +19,8 @@ import {
 import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { ProductImage } from "../components/ProductImage";
+import { useAuth } from "../contexts/useAuth";
+import { ROUTE_ACCESS, userHasAnyRole } from "../routes/routeAccess";
 import type {
   StockMovementResponse,
   StockOverviewAttention,
@@ -109,6 +111,11 @@ function getMovementSignal(movementType: string) {
 }
 
 export function ItemsPage() {
+  const { user } = useAuth();
+  const canManageCatalog = userHasAnyRole(
+    user?.roles ?? [],
+    ROUTE_ACCESS.inventoryCatalog,
+  );
   const [searchParams, setSearchParams] = useSearchParams();
   const activeSearch = getQueryText(searchParams, "q");
   const activeStatus = getQueryText(searchParams, "active");
@@ -332,10 +339,12 @@ export function ItemsPage() {
           {filterCount ? <span className={styles.filterCount}>{filterCount}</span> : null}
         </button>
 
-        <Link className={styles.secondaryAction} to="/items/new">
-          <PackagePlus aria-hidden="true" />
-          Novo produto
-        </Link>
+        {canManageCatalog ? (
+          <Link className={styles.secondaryAction} to="/items/new">
+            <PackagePlus aria-hidden="true" />
+            Novo produto
+          </Link>
+        ) : null}
 
         <Link className={styles.primaryAction} to="/stock-batches/new">
           <Plus aria-hidden="true" />
@@ -389,7 +398,7 @@ export function ItemsPage() {
             <div className={styles.stateMessage}>
               <Package aria-hidden="true" />
               <strong>Nenhum produto encontrado</strong>
-              <span>Ajuste os filtros ou cadastre um novo produto.</span>
+              <span>{canManageCatalog ? "Ajuste os filtros ou cadastre um novo produto." : "Ajuste os filtros para consultar o catálogo."}</span>
               {filterCount || activeSearch ? (
                 <button type="button" onClick={handleClearFilters}>Limpar filtros</button>
               ) : null}

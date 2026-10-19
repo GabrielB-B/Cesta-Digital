@@ -120,24 +120,22 @@ Matriz vigente:
 
 | Perfil | Uso principal | Não acessa |
 |---|---|---|
-| `colaborador` | famílias, membros, benefícios, cadastro de novos produtos, entradas, movimentações e entregas | edição do cadastro mestre de produtos, análises sociais, relatórios, configuração de categorias/cestas, usuários e auditoria |
+| `colaborador` | consulta operacional de famílias, entradas, saídas manuais e entregas | edição de famílias, catálogo, ajustes de estoque, relatórios, categorias/cestas, usuários e auditoria |
 | `lider_social` | famílias, análises sociais e relatórios autorizados | estoque, configuração operacional e administração |
-| `operador` | estoque, categorias, tipos de cesta, entregas e relatórios operacionais | famílias, análises sociais e administração |
+| `operador` | estoque, catálogo, categorias, tipos de cesta, entregas, relatórios operacionais e consulta mínima de famílias | cadastro social, análises sociais e administração |
 | `admin` | acesso completo, usuários e auditoria | — |
 
-O `colaborador` pode consultar categorias e tipos de cesta somente pela API quando
-um formulário de produto ou entrega precisa dessas opções. Ele não recebe as
-rotas de configuração nem permissão de escrita nesses cadastros.
+O `colaborador` não acessa os endpoints completos de categorias, tipos de cesta
+ou famílias. Para registrar uma entrega, recebe apenas opções mínimas pelos
+endpoints `/operational/*`. Consulte `docs/MATRIZ_PERMISSOES.md`.
 
 ### Cadastro e operação diária (`colaborador`)
 
-1. Cadastre uma familia.
-2. Cadastre membros da familia.
-3. Edite ou exclua membros quando necessario.
-4. Cadastre beneficios.
-5. Edite ou exclua beneficios quando necessario.
-6. Cadastre novos produtos e registre entradas ou movimentações. A revisão posterior do cadastro mestre fica com `operador` ou `admin`.
-7. Agende e confirme entregas.
+1. Consulte a família em modo somente leitura.
+2. Registre a entrada de alimentos já existentes no catálogo.
+3. Registre saídas manuais quando houver retirada operacional fora de uma entrega.
+4. Agende a cesta para uma família apta.
+5. Confirme a entrega para baixar o estoque automaticamente.
 
 ### Análise social (`lider_social` ou `admin`)
 

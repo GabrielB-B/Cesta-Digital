@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, require_any_role
@@ -11,6 +11,7 @@ from app.schemas.stock_batch import (
     StockBatchMetadataUpdate,
     StockBatchResponse,
 )
+from app.services.auth_service import get_user_roles
 from app.services.stock_batch_service import (
     create_stock_batch,
     list_stock_batches,
@@ -30,12 +31,19 @@ def create_stock_batch_endpoint(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """Registra uma entrada de lote no estoque."""
+    roles = set(get_user_roles(db, current_user.id))
+    if not roles.intersection({"admin", "operador"}) and payload.source_type == "ajuste":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Ajustes de inventário exigem o perfil de operador.",
+        )
     return create_stock_batch(db, payload, current_user)
 
 
 @router.patch(
     "/stock-batches/{batch_id}/metadata",
     response_model=StockBatchResponse,
+    dependencies=[Depends(require_any_role("admin", "operador"))],
 )
 def update_stock_batch_metadata_endpoint(
     batch_id: int,

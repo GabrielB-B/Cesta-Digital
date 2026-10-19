@@ -1117,6 +1117,22 @@ async function mockApi(page: Page, user = currentUser) {
       items: auditLogs,
     })
   );
+  // Registradas por último para prevalecer sobre os curingas de /families e /basket-types.
+  await page.route("**/operational/families**", async (route) =>
+    fulfillJson(route, [{
+      id: family.id,
+      display_name: "Família Pereira",
+      status: family.status,
+      total_residents: family.total_residents,
+      neighborhood: family.neighborhood,
+      city: family.city,
+      state: family.state,
+      eligible_for_delivery: true,
+    }], { "X-Total-Count": "1" })
+  );
+  await page.route("**/operational/basket-types", async (route) =>
+    fulfillJson(route, [{ id: basketType.id, name: basketType.name }])
+  );
 }
 
 test.beforeEach(async ({ page }) => {
@@ -1126,9 +1142,10 @@ test.beforeEach(async ({ page }) => {
 test("route access groups remain equal to the approved RBAC baseline", () => {
   expect(ROUTE_ACCESS).toEqual({
     authenticated: ["admin", "lider_social", "operador", "colaborador"],
-    familyRecords: ["admin", "lider_social", "colaborador"],
+    familyDirectory: ["admin", "lider_social", "operador", "colaborador"],
+    familyManagement: ["admin", "lider_social"],
     socialAssessments: ["admin", "lider_social"],
-    inventory: ["admin", "operador", "colaborador"],
+    inventoryOperations: ["admin", "operador", "colaborador"],
     inventoryCatalog: ["admin", "operador"],
     inventoryConfiguration: ["admin", "operador"],
     deliveries: ["admin", "operador", "colaborador"],
@@ -1197,7 +1214,7 @@ for (const scenario of routeAccessUsers) {
   });
 }
 
-test("collaborator family detail omits social analysis controls", async ({ page }) => {
+test("collaborator sees a read-only family directory and cannot open social records", async ({ page }) => {
   const collaborator = routeAccessUsers.find(
     (scenario) => scenario.role === "colaborador",
   );
@@ -1208,13 +1225,26 @@ test("collaborator family detail omits social analysis controls", async ({ page 
     fulfillJson(route, collaborator.user),
   );
 
-  await page.goto("/families/1");
+  await page.goto("/");
+  const quickActions = page.getByLabel("Ações rápidas");
+  await expect(quickActions.getByRole("link", { name: "Nova entrada" })).toBeVisible();
+  await expect(quickActions.getByRole("link", { name: "Registrar saída" })).toBeVisible();
+  await expect(quickActions.getByRole("link", { name: "Agendar entrega" })).toBeVisible();
+  await expect(quickActions.getByRole("link", { name: "Nova família" })).toHaveCount(0);
+  await expect(quickActions.getByRole("link", { name: "Tipos de cesta" })).toHaveCount(0);
 
-  await expect(page.getByRole("heading", { name: /Família/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Registrar avaliação" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Análises sociais" })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Histórico de aptidão" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Salvar status" })).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/families");
+
+  await expect(page.getByRole("heading", { name: "Famílias", exact: true })).toBeVisible();
+  await expect(page.getByText("Somente visualização")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Família Pereira" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Nova família" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Ver detalhes" })).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+  await page.goto("/families/1");
+  await expect(page.getByRole("heading", { name: "Acesso restrito" })).toBeVisible();
 });
 
 test("collaborator can operate stock without editing the product catalog", async ({ page }) => {
@@ -1232,8 +1262,13 @@ test("collaborator can operate stock without editing the product catalog", async
 
   await expect(page.getByRole("heading", { level: 1, name: "Arroz 1kg" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Editar produto" })).toHaveCount(0);
+  await expect(page.getByText("Editar rastreabilidade")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Registrar entrada" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Registrar saída" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Relatórios" })).toHaveCount(0);
+
+  await page.goto("/stock-batches/new");
+  await expect(page.getByRole("option", { name: "Ajuste de inventário" })).toHaveCount(0);
 });
 
 test("anonymous deep links return to login without protected content", async ({ page }) => {

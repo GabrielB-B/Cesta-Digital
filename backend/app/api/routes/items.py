@@ -20,7 +20,12 @@ router = APIRouter(
 )
 
 
-@router.post("/items", response_model=ItemResponse, status_code=201)
+@router.post(
+    "/items",
+    response_model=ItemResponse,
+    status_code=201,
+    dependencies=[Depends(require_any_role("admin", "operador"))],
+)
 def create_item_endpoint(
     payload: ItemCreate,
     db: Annotated[Session, Depends(get_db)],

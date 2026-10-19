@@ -67,14 +67,14 @@ class UserAdminServiceTests(unittest.TestCase):
             email="maria@example.com",
             password="Senha@Segura123",
             is_active=True,
-            roles=["admin", "operador"],
+            roles=["operador"],
         )
 
         result = create_user(self.db, payload, self.admin_user)
 
         self.assertEqual(result["email"], "maria@example.com")
         self.assertEqual(result["login_name"], "maria")
-        self.assertEqual(sorted(result["roles"]), ["admin", "operador"])
+        self.assertEqual(result["roles"], ["operador"])
 
         user = self.db.scalar(select(User).where(User.login_name == "maria"))
         self.assertIsNotNone(user)
@@ -83,7 +83,7 @@ class UserAdminServiceTests(unittest.TestCase):
         user_roles = list(
             self.db.scalars(select(UserRole).where(UserRole.user_id == user.id)).all()
         )
-        self.assertEqual(len(user_roles), 2)
+        self.assertEqual(len(user_roles), 1)
 
         audit = self.db.scalar(select(AuditLog).where(AuditLog.event_type == "user.created"))
         self.assertIsNotNone(audit)

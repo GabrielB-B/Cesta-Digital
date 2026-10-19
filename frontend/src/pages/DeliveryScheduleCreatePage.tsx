@@ -2,21 +2,20 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, CalendarPlus, CheckCircle2, Info } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
-import type { BasketTypeResponse } from "../types/basket";
+import type { OperationalBasketTypeResponse } from "../types/basket";
 import type {
   DeliveryScheduleCreatePayload,
   DeliveryScheduleResponse,
 } from "../types/delivery";
-import type { FamilyListItemResponse } from "../types/family";
+import type { OperationalFamilyResponse } from "../types/family";
 import { getApiErrorMessage } from "../utils/api-error";
-import { getFamilyDisplayName } from "../utils/family-identity";
 import { formatTodayForInput } from "../utils/format";
 import styles from "./DeliveryScheduleCreatePage.module.css";
 
 export function DeliveryScheduleCreatePage() {
   const navigate = useNavigate();
-  const [families, setFamilies] = useState<FamilyListItemResponse[]>([]);
-  const [basketTypes, setBasketTypes] = useState<BasketTypeResponse[]>([]);
+  const [families, setFamilies] = useState<OperationalFamilyResponse[]>([]);
+  const [basketTypes, setBasketTypes] = useState<OperationalBasketTypeResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -28,17 +27,14 @@ export function DeliveryScheduleCreatePage() {
     notes: "",
   });
 
-  const eligibleFamilies = families.filter(
-    (family) =>
-      family.status === "apta_recorrente" || family.status === "apta_emergencial",
-  );
-
   useEffect(() => {
     let isMounted = true;
 
     void Promise.all([
-      api.get<FamilyListItemResponse[]>("/families", { params: { limit: 200 } }),
-      api.get<BasketTypeResponse[]>("/basket-types", { params: { limit: 200 } }),
+      api.get<OperationalFamilyResponse[]>("/operational/families", {
+        params: { eligible_only: true, limit: 200 },
+      }),
+      api.get<OperationalBasketTypeResponse[]>("/operational/basket-types"),
     ])
       .then(([familiesResponse, basketTypesResponse]) => {
         if (!isMounted) return;
@@ -132,13 +128,13 @@ export function DeliveryScheduleCreatePage() {
               name="family_id"
               value={formData.family_id}
               onChange={handleInputChange}
-              disabled={isLoading || eligibleFamilies.length === 0}
+              disabled={isLoading || families.length === 0}
               required
             >
               <option value="">Selecione</option>
-              {eligibleFamilies.map((family) => (
+              {families.map((family) => (
                 <option key={family.id} value={family.id}>
-                  {getFamilyDisplayName(family)} · {family.city}/{family.state} · {family.status === "apta_recorrente" ? "Apta recorrente" : "Apta emergencial"}
+                  {family.display_name} · {family.city}/{family.state} · {family.status === "apta_recorrente" ? "Apta recorrente" : "Apta emergencial"}
                 </option>
               ))}
             </select>
@@ -158,7 +154,7 @@ export function DeliveryScheduleCreatePage() {
               required
             >
               <option value="">Selecione</option>
-              {basketTypes.filter((basketType) => basketType.is_active).map((basketType) => (
+              {basketTypes.map((basketType) => (
                 <option key={basketType.id} value={basketType.id}>{basketType.name}</option>
               ))}
             </select>
@@ -197,7 +193,7 @@ export function DeliveryScheduleCreatePage() {
           </label>
         </div>
 
-        {!isLoading && eligibleFamilies.length === 0 ? (
+        {!isLoading && families.length === 0 ? (
           <div className={styles.eligibilityWarning} role="status">
             <Info aria-hidden="true" />
             <div>
@@ -214,7 +210,7 @@ export function DeliveryScheduleCreatePage() {
           <button
             type="submit"
             className={styles.primaryAction}
-            disabled={isSubmitting || isLoading || eligibleFamilies.length === 0}
+            disabled={isSubmitting || isLoading || families.length === 0}
           >
             <CheckCircle2 aria-hidden="true" />
             {isSubmitting ? "Salvando…" : "Criar agendamento"}

@@ -160,7 +160,9 @@ export function ItemDetailPage() {
           api.get<StockMovementResponse[]>("/stock-movements", {
             params: { item_id: parsedItemId, limit: 100 },
           }),
-          api.get<ItemCategoryResponse[]>("/item-categories"),
+          canManageInventoryCatalog
+            ? api.get<ItemCategoryResponse[]>("/item-categories")
+            : Promise.resolve(null),
         ]);
 
         if (!isMounted) {
@@ -181,7 +183,7 @@ export function ItemDetailPage() {
           )
         );
         setMovements(movementsResponse.data);
-        setCategories(categoriesResponse.data);
+        setCategories(categoriesResponse?.data ?? []);
         setEditForm(toItemEditDraft(loadedItem));
       } catch (err) {
         if (isMounted) {
@@ -201,7 +203,7 @@ export function ItemDetailPage() {
     return () => {
       isMounted = false;
     };
-  }, [itemId]);
+  }, [canManageInventoryCatalog, itemId]);
 
   const usableCurrentQuantity = useMemo(() => {
     if (!item?.is_active) {
@@ -914,6 +916,7 @@ export function ItemDetailPage() {
                       </p>
                     ) : null}
 
+                    {canManageInventoryCatalog ? (
                     <details className={styles.batchEditor}>
                       <summary>Editar rastreabilidade</summary>
                       <form
@@ -1016,6 +1019,7 @@ export function ItemDetailPage() {
                         </div>
                       </form>
                     </details>
+                    ) : null}
                   </article>
                 );
               })}
@@ -1034,7 +1038,7 @@ export function ItemDetailPage() {
                 className={styles.contextAction}
                 to={`/stock-movements/new?itemId=${item.id}`}
               >
-                Ajustar saldo
+                {canManageInventoryCatalog ? "Ajustar saldo" : "Registrar saída"}
               </Link>
             ) : (
               <History aria-hidden="true" />

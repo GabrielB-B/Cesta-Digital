@@ -14,7 +14,8 @@ export interface NavigationContract {
 }
 
 const allRoles = ["admin", "lider_social", "operador", "colaborador"] as const;
-const familyRoles = ["admin", "lider_social", "colaborador"] as const;
+const familyDirectoryRoles = ["admin", "lider_social", "operador", "colaborador"] as const;
+const familyManagementRoles = ["admin", "lider_social"] as const;
 const assessmentRoles = ["admin", "lider_social"] as const;
 const inventoryRoles = ["admin", "operador", "colaborador"] as const;
 const inventoryConfigurationRoles = ["admin", "operador"] as const;
@@ -45,7 +46,7 @@ export const APP_ROUTE_CONTRACTS = [
     path: "/families",
     title: "Famílias",
     sectionPath: "/families",
-    allowedRoles: familyRoles,
+    allowedRoles: familyDirectoryRoles,
   },
   {
     path: "/assessments",
@@ -57,43 +58,43 @@ export const APP_ROUTE_CONTRACTS = [
     path: "/families/new",
     title: "Cadastrar família",
     sectionPath: "/families",
-    allowedRoles: familyRoles,
+    allowedRoles: familyManagementRoles,
   },
   {
     path: "/families/1",
     title: "Detalhe da família",
     sectionPath: "/families",
-    allowedRoles: familyRoles,
+    allowedRoles: familyManagementRoles,
   },
   {
     path: "/families/1/edit",
     title: "Editar família",
     sectionPath: "/families",
-    allowedRoles: familyRoles,
+    allowedRoles: familyManagementRoles,
   },
   {
     path: "/families/1/people/new",
     title: "Cadastrar pessoa",
     sectionPath: "/families",
-    allowedRoles: familyRoles,
+    allowedRoles: familyManagementRoles,
   },
   {
     path: "/families/1/people/1/edit",
     title: "Editar pessoa",
     sectionPath: "/families",
-    allowedRoles: familyRoles,
+    allowedRoles: familyManagementRoles,
   },
   {
     path: "/families/1/benefits/new",
     title: "Cadastrar benefício",
     sectionPath: "/families",
-    allowedRoles: familyRoles,
+    allowedRoles: familyManagementRoles,
   },
   {
     path: "/families/1/benefits/1/edit",
     title: "Editar benefício",
     sectionPath: "/families",
-    allowedRoles: familyRoles,
+    allowedRoles: familyManagementRoles,
   },
   {
     path: "/families/1/assessments/new",
@@ -111,7 +112,7 @@ export const APP_ROUTE_CONTRACTS = [
     path: "/items/new",
     title: "Novo produto",
     sectionPath: "/items",
-    allowedRoles: inventoryRoles,
+    allowedRoles: inventoryConfigurationRoles,
   },
   {
     path: "/items/1",
@@ -201,7 +202,7 @@ export const APP_ROUTE_CONTRACTS = [
 
 export const NAVIGATION_CONTRACTS = [
   { path: "/", label: "Início", allowedRoles: allRoles },
-  { path: "/families", label: "Famílias", allowedRoles: familyRoles },
+  { path: "/families", label: "Famílias", allowedRoles: familyDirectoryRoles },
   { path: "/assessments", label: "Análises sociais", allowedRoles: assessmentRoles },
   {
     path: "/reports",

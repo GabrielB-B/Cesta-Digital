@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, require_any_role
 from app.db.session import get_db
-from app.models.family import Family
 from app.models.user import User
 from app.schemas.family import (
     FamilyCreate,
@@ -14,7 +13,6 @@ from app.schemas.family import (
     FamilyStatusUpdate,
     FamilyUpdate,
 )
-from app.services.auth_service import get_user_roles
 from app.services.family_service import (
     create_family,
     get_family_detail,
@@ -26,20 +24,8 @@ from app.services.family_service import (
 router = APIRouter(
     prefix="/families",
     tags=["Familias"],
-    dependencies=[Depends(require_any_role("admin", "lider_social", "colaborador"))],
+    dependencies=[Depends(require_any_role("admin", "lider_social"))],
 )
-
-
-def _family_detail_for_user(
-    db: Session,
-    current_user: User,
-    family: Family,
-) -> FamilyDetailResponse:
-    response = FamilyDetailResponse.model_validate(family)
-    roles = set(get_user_roles(db, current_user.id))
-    if not roles.intersection({"admin", "lider_social"}):
-        response.assessments = []
-    return response
 
 
 @router.post("", response_model=FamilyResponse, status_code=201)
@@ -81,8 +67,7 @@ def get_family_detail_endpoint(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """Retorna o detalhe completo de uma familia."""
-    family = get_family_detail(db, family_id)
-    return _family_detail_for_user(db, current_user, family)
+    return get_family_detail(db, family_id)
 
 
 @router.put("/{family_id}", response_model=FamilyDetailResponse)
@@ -93,8 +78,7 @@ def update_family_endpoint(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """Atualiza os dados cadastrais completos de uma familia."""
-    family = update_family(db, family_id, payload, current_user)
-    return _family_detail_for_user(db, current_user, family)
+    return update_family(db, family_id, payload, current_user)
 
 
 @router.patch(
