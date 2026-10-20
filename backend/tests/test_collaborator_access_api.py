@@ -1,7 +1,6 @@
-from datetime import date
-
 from integration_test_case import ApiIntegrationTestCase
 from app.models.family import Family
+from app.services.stock_availability_policy import operational_today
 
 
 class CollaboratorAccessApiIntegrationTests(ApiIntegrationTestCase):
@@ -165,7 +164,7 @@ class CollaboratorAccessApiIntegrationTests(ApiIntegrationTestCase):
                 "source_type": "doacao_item",
                 "status": "disponivel",
                 "entry_quantity": 10,
-                "entry_date": date.today().isoformat(),
+                "entry_date": operational_today().isoformat(),
                 "expiration_date": None,
                 "estimated_unit_value": 1,
                 "notes": None,
@@ -181,7 +180,7 @@ class CollaboratorAccessApiIntegrationTests(ApiIntegrationTestCase):
                 "item_id": item["id"],
                 "source_type": "ajuste",
                 "entry_quantity": 2,
-                "entry_date": date.today().isoformat(),
+                "entry_date": operational_today().isoformat(),
                 "expiration_date": None,
                 "estimated_unit_value": 1,
                 "notes": "Tentativa de ajuste",
@@ -205,7 +204,7 @@ class CollaboratorAccessApiIntegrationTests(ApiIntegrationTestCase):
                 "item_id": item["id"],
                 "source_type": "doacao_item",
                 "entry_quantity": 10,
-                "entry_date": date.today().isoformat(),
+                "entry_date": operational_today().isoformat(),
                 "expiration_date": None,
                 "estimated_unit_value": 1,
                 "notes": None,
